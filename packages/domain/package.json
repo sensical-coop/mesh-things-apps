@@ -1,0 +1,23 @@
+{
+  "name": "@mtt/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared/*": "./src/shared/*.ts",
+    "./authz/*": "./src/authz/*.ts",
+    "./mesh/*": "./src/mesh/*.ts",
+    "./device/*": "./src/device/*.ts",
+    "./measurement/*": "./src/measurement/*.ts",
+    "./readings/*": "./src/readings/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@mtt/tsconfig": "workspace:^",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

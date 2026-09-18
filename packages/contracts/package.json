@@ -1,0 +1,28 @@
+{
+  "name": "@mtt/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/generated/index.ts",
+    "./client": "./src/generated/client.gen.ts",
+    "./query": "./src/generated/@tanstack/react-query.gen.ts",
+    "./zod": "./src/generated/zod.gen.ts"
+  },
+  "scripts": {
+    "openapi-ts": "openapi-ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.89.0",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.90.2",
+    "@mtt/tsconfig": "workspace:^",
+    "typescript": "^5.8.3"
+  }
+}

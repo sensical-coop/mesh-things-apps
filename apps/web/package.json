@@ -1,0 +1,48 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@fontsource-variable/inter-tight": "^5.2.8",
+    "@fontsource/geist-mono": "^5.2.7",
+    "@mtt/contracts": "workspace:*",
+    "@mtt/ui": "workspace:*",
+    "@remixicon/react": "^4.9.0",
+    "@tanstack/react-query": "^5.89.0",
+    "@tanstack/react-router": "^1.170.38",
+    "@tanstack/react-table": "^9.2.4",
+    "@tanstack/react-virtual": "^3.14.13",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.3.0",
+    "date-fns": "^4.4.0",
+    "echarts": "^6.1.0",
+    "lucide-react": "^1.47.0",
+    "maplibre-gl": "^6",
+    "motion": "^13.4.0",
+    "nuqs": "^2.10.1",
+    "react": "^19.1.0",
+    "react-day-picker": "^10.0.1",
+    "react-dom": "^19.1.0",
+    "temporal-polyfill": "^1.0.5"
+  },
+  "devDependencies": {
+    "@mtt/tsconfig": "workspace:^",
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^5.0.2",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.8.3",
+    "vite": "^7.1.5"
+  }
+}

@@ -1,0 +1,74 @@
+@import "tailwindcss";
+@import "@mtt/ui/boardui.css";
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+@source "../../../packages/ui/src";
+
+@theme inline {
+  --font-heading: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
+  --font-sans: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --color-foreground: var(--color-text-primary);
+  --color-background: var(--color-background-primary-default);
+  --color-primary: var(--oa-primary);
+  --color-primary-foreground: #ffffff;
+  --color-muted: var(--color-background-secondary-default);
+  --color-muted-foreground: var(--color-text-secondary);
+  --color-border: var(--color-separator-border);
+  --color-input: var(--color-separator-border);
+  --color-ring: var(--color-border-focus-ring);
+  --color-secondary: var(--oa-secondary);
+  --color-secondary-foreground: var(--ink);
+  --color-destructive: var(--color-text-error-primary);
+  --color-popover: var(--color-background-primary-default);
+  --color-popover-foreground: var(--color-text-primary);
+}
+
+/* EvilCharts probes these class names for axis/tooltip ink. */
+@layer utilities {
+  .text-foreground {
+    color: var(--color-text-primary);
+  }
+  .text-muted-foreground {
+    color: var(--color-text-secondary);
+  }
+  .text-border {
+    color: var(--color-separator-border);
+  }
+  .text-background {
+    color: var(--color-background-primary-default);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-separator-border outline-border-focus-ring/50;
+  }
+  html {
+    @apply overflow-x-clip font-sans antialiased;
+    font-synthesis: none;
+  }
+  body {
+    @apply m-0 min-h-svh bg-background-full text-text-primary;
+  }
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+  }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+  }
+  .maplibregl-ctrl-attrib {
+    @apply rounded-md border border-separator-border bg-background-primary-default text-text-secondary shadow-card;
+  }
+  .maplibregl-ctrl-attrib a {
+    @apply text-text-secondary;
+  }
+  .maplibregl-ctrl-attrib a:hover {
+    @apply text-text-primary;
+  }
+  .maplibregl-ctrl-attrib-button {
+    @apply bg-transparent! dark:invert;
+  }
+}

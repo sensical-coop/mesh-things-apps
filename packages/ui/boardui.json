@@ -1,0 +1,16 @@
+{
+  "paths": {
+    "components": "src/components",
+    "utils": "src/utils",
+    "hooks": "src/hooks",
+    "styles": "src/boardui",
+    "lib": "src"
+  },
+  "aliases": {
+    "components": "@mtt/ui/components",
+    "utils": "@mtt/ui/utils",
+    "hooks": "@mtt/ui/hooks",
+    "styles": "@mtt/ui/styles",
+    "lib": "@mtt/ui"
+  }
+}

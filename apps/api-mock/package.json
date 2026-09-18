@@ -1,0 +1,24 @@
+{
+  "name": "api-mock",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "@mtt/contracts": "workspace:*",
+    "@mtt/domain": "workspace:*",
+    "better-auth": "^1.7.5",
+    "hono": "^4.9.8"
+  },
+  "devDependencies": {
+    "@mtt/tsconfig": "workspace:^",
+    "@types/node": "^22.15.21",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3"
+  }
+}
