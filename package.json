@@ -8,7 +8,8 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts"
+    "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts",
+    "shadcn": "pnpm dlx shadcn@latest --cwd apps/web"
   },
   "devDependencies": {
     "turbo": "^2.5.4",

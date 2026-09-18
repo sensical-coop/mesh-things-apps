@@ -10,14 +10,14 @@ Formato: job → pantalla → contrato (operación OpenAPI). Los formularios y e
 
 ## Fase 1 — inventario y telemetría
 
-Shell autenticado: cookie Better Auth contra `api-mock`. `/login` es email/password (look OA). No hay register ni API keys.
+Shell autenticado bajo `/console`: cookie Better Auth contra `api-mock`. `/login` es email/password (look OA). `/` es landing pública. No hay register ni API keys.
 
 ### Mallas
 
 **US-10 · Ver mis mallas**  
 Como owner, veo mis mallas (etiqueta, identificador, recuento de devices) para elegir dónde trabajar.
 
-- **Ruta:** `/meshes`
+- **Ruta:** `/console/meshes`
 - **Estados:** loading, vacío (“Aún no hay mallas”), error de red, lista
 - **Secretos:** no mostrar `psk_b64` en la lista
 - **Contrato:** `GET /meshes` → schema de respuesta generado
@@ -25,7 +25,7 @@ Como owner, veo mis mallas (etiqueta, identificador, recuento de devices) para e
 **US-11 · Crear una malla**  
 Como owner, creo una malla con etiqueta y PSK para que los gateways se unan a esa red.
 
-- **Ruta:** diálogo o `/meshes/new` desde la lista
+- **Ruta:** diálogo o `/console/meshes/new` desde la lista
 - **Campos:** label, PSK (tratado como secreto; no loguear)
 - **Validación:** schema Zod de request `POST /meshes`
 - **Tras éxito:** ir al detalle de la malla creada
@@ -34,7 +34,7 @@ Como owner, creo una malla con etiqueta y PSK para que los gateways se unan a es
 **US-12 · Detalle de malla**  
 Como owner, abro una malla y veo nodos y gateways juntos.
 
-- **Ruta:** `/meshes/$meshId`
+- **Ruta:** `/console/meshes/$meshId`
 - **UI:** cabecera (label) + tabla de devices (gateway sí/no, `is_allowed`, `last_seen`, label/name)
 - **PSK:** visible solo aquí, copiable, no en querystring
 - **Estados:** 404, loading, lista vacía de devices
@@ -54,14 +54,14 @@ Como owner, registro `node_id` + `mesh_id` y marco si es gateway.
 **US-21 · Inventario filtrable**  
 Como owner, listo todos mis devices y filtro por malla, gateway, permitido, con/sin blueprint.
 
-- **Ruta:** `/devices`
+- **Ruta:** `/console/devices`
 - **Tabla:** label/name, mesh, gateway, allowed, last_seen → click a ficha
 - **Contrato:** `GET /devices` (`mesh_id`, `is_gateway`, `is_allowed`, `has_postprocessing`)
 
 **US-22 · Ficha de dispositivo**  
 Como owner, veo identidad, rol de gateway, `last_seen`, coords y si ubicación/nodeinfo están overridden.
 
-- **Ruta:** `/devices/$deviceUuid`
+- **Ruta:** `/console/devices/$deviceUuid`
 - **Bloques:** identidad (`DeviceRead`) · canales vistos (`GET .../measurements`) · variantes de telemetría (`GET .../telemetry-variants`)
 - **Unidades y nombres de canal:** `GET /measurements` (no hardcodear °C)
 - **Contrato:** `GET /devices/{device_uuid}` y nested lists
@@ -88,13 +88,16 @@ Como owner, elijo canal, rango y agregación y veo la serie.
 
 | Ruta | Historias |
 |---|---|
-| `/` | redirect a `/meshes` |
-| `/meshes` | US-10, US-11 |
-| `/meshes/$meshId` | US-12, US-20 |
-| `/devices` | US-21 |
-| `/devices/$deviceUuid` | US-22, US-30, US-31 |
+| `/` | landing pública |
+| `/login` | sesión |
+| `/console` | redirect a `/console/meshes` |
+| `/console/meshes` | US-10, US-11 |
+| `/console/meshes/$meshId` | US-12, US-20 |
+| `/console/devices` | US-21 |
+| `/console/devices/$deviceUuid` | US-22, US-30, US-31 |
+| `/console/blueprints` | US-42 (parcial) |
 
-Fuera de fase 1: `/login`, `/register`, `/settings`, `/map`, `/blueprints`, catálogo superuser.
+Fuera de fase 1: `/register`, `/settings`, `/map`, catálogo superuser.
 
 ---
 

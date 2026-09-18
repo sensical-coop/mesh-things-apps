@@ -2,8 +2,9 @@ import { client } from "@mtt/contracts/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { App } from "./app";
+import { TooltipProvider } from "@mtt/ui/components/ui/tooltip";
+import { Layout } from "./layout";
+import { router } from "@/router/app-router";
 import "./styles.css";
 
 client.setConfig({
@@ -19,7 +20,7 @@ createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <App />
+        <Layout router={router} />
       </TooltipProvider>
     </QueryClientProvider>
   </StrictMode>,

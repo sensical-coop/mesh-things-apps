@@ -13,13 +13,16 @@
   "iconLibrary": "lucide",
   "rtl": false,
   "aliases": {
-    "components": "@mtt/ui",
-    "utils": "@mtt/ui/utils",
-    "ui": "@mtt/ui",
-    "lib": "@mtt/ui",
-    "hooks": "@mtt/ui"
+    "components": "#components",
+    "utils": "#lib/utils",
+    "ui": "#components/ui",
+    "lib": "#lib",
+    "hooks": "#hooks"
   },
   "registries": {
+    "@evilcharts": "https://evilcharts.com/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}.json",
+    "@mapcn": "https://mapcn.dev/r/{name}.json",
     "@reui": "https://reui.io/r/{style}/{name}.json"
   }
 }

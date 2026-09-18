@@ -19,6 +19,8 @@ Orden de verdad para **producto y HTTP**: architecture + ui-stories + OpenAPI. L
 
 Orden de verdad para **UI**: OA Design (look) → BoardUI (nombres de token y primitivas) → shadcn / ReUI (piezas extra). Si un componente BoardUI choca con OA (p. ej. `rounded-3xl` vs squircle), gana OA: `oa-squircle` / `oa-squircle-inset`, pills en acciones, peso ≤ 500.
 
+**Mapa de ficheros** (chrome, `router/`, `pages/`, `features/`, dónde cae shadcn, ciclo Layout/Shell): [docs/architecture.md](./docs/architecture.md) — secciones *Features (web + api-mock)* y *UI (`packages/ui`)*. No improvisar `app.tsx` / `shell.tsx` / `chrome/` / primitivas bajo `apps/web/src`.
+
 ## Monorepo (fase 1 de diseño ya montada)
 
 pnpm + Turborepo. Scope npm `@mtt/*`.
@@ -26,13 +28,30 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 | Pieza | Rol |
 |---|---|
 | `packages/tsconfig` | TS compartido |
-| `packages/ui` | BoardUI (`src/boardui`), remap OA (`src/oa.css`), ReUI Frame, botón BoardUI |
-| `apps/web` | Vite + React 19. Consume `@mtt/ui` |
+| `packages/ui` | BoardUI + shadcn + ReUI + EvilCharts + mapcn. Destino de `pnpm shadcn`. Árbol en architecture. |
+| `apps/web` | Vite + React 19. Ver tabla siguiente. |
 | `packages/contracts` | Hey API + Zod 4.6 generado. Solo borde HTTP. |
 | `packages/domain` | Vertical slices (sin Zod) |
-| `apps/api-mock` | HTTP in-memory; parsea bodies con `@mtt/contracts/zod` |
+| `apps/api-mock` | HTTP in-memory; repos en `src/features/<name>/repository.ts`; parsea bodies con `@mtt/contracts/zod` |
 
-Web **no** importa domain. Zod 4.6 generado vive en `@mtt/contracts/zod` (borde HTTP). No editar output de `openapi-ts`.
+### `apps/web` — dónde va cada cosa
+
+Detalle y árbol: [docs/architecture.md](./docs/architecture.md). Resumen:
+
+| Sitio | Contenido |
+|---|---|
+| `src/main.tsx` | Providers + `<Layout router={router} />`. El instance sale de `@/router/app-router`. |
+| `src/layout.tsx` | `Layout` (`RouterProvider`) y `Shell` (auth + header + outlet + footer). Única excepción a un componente por fichero. |
+| `src/header.tsx`, `src/footer.tsx` | Chrome de consola, mismo nivel que `layout.tsx`. |
+| `src/router/router.ts` | Paths + `href()`. Import `@/router`. |
+| `src/router/app-router.tsx` | Árbol TanStack. No llamar al fichero `router.tsx` (choque Darwin con `router.ts`). |
+| `src/components/` | Producto: `form/`, `kpi/`, `series/`, brand, flag, modal, … Un `.tsx` = un componente. |
+| `src/lib/` | Helpers sin JSX (`format`, `page-heading`, `dialog-actions`). |
+| `src/features/<name>/` | Entidades de negocio: `repository.ts`, opcional `model.ts` / `ui/`. Sin rutas. |
+| `src/pages/` | Rutas (`home`, `login`, `meshes`, `devices`, `blueprints`). `route.ts` + `page.tsx`; invocan features. |
+| `test/` | `node:test`. Prohibido `*.test.ts` bajo `src/`. |
+
+Web **no** importa domain. Primitivas **no** viven en `apps/web/src`. Zod 4.6 generado vive en `@mtt/contracts/zod` (borde HTTP). No editar output de `openapi-ts`.
 
 ## Diseño visual
 
@@ -51,10 +70,16 @@ Instalar primitivas:
 ```bash
 cd packages/ui
 npx boardui@latest add <nombre>
-pnpm dlx shadcn@latest add @reui/<nombre>
 ```
 
-`components.json` registra `@reui`. Templates de página enteros van en `apps/web`, no en el paquete UI.
+Desde la raíz (`pnpm shadcn` = `--cwd apps/web`; el `components.json` de web apunta `ui` a `@mtt/ui`):
+
+```bash
+pnpm shadcn add button
+pnpm shadcn add @reui/<nombre>
+```
+
+Primitivas: `packages/ui/src/components/{base,ui,reui,evilcharts}`. Piezas de app: `apps/web/src/components/` (un componente por fichero; excepción `layout.tsx`). Tests: `apps/web/test/`. Registries en ambos `components.json`: `@reui`, `@evilcharts`, `@mapcn`.
 
 Docs BoardUI: [installation](https://www.boardui.com/installation).
 
@@ -71,6 +96,7 @@ Docs BoardUI: [installation](https://www.boardui.com/installation).
 - Funciones nombradas, hooks, TypeScript.
 - Servidor (mock) como fuente de verdad vía Query cuando exista el cliente.
 - Fase 1: login cookie (Better Auth). Sin register ni API keys.
+- **Un componente por fichero.** Un `.tsx` exporta un componente. Prohibido barrels tipo `widgets.tsx`. Helpers sin UI → `src/lib/`. Excepción documentada: `src/layout.tsx` (`Layout` + `Shell`).
 
 ## OpenSpec
 

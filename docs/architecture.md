@@ -19,8 +19,8 @@ apps/api-mock --> packages/domain + packages/contracts
 | `packages/contracts` | Output de `@hey-api/openapi-ts`. SDK fetch, tipos, **Zod** (request + response), `*Options` / `*Mutation`. | Código a mano. Se regenera si cambia el YAML. |
 | `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `authz`). Entidades, invariantes, puertos de repo. Como `@taller/domain`. | Tipos Hey API. No fetch. No React. |
 | `apps/api-mock` | Servidor HTTP que implementa las rutas de fase 1. Datos en memoria. Sesión Better Auth + cookie. Parsea bodies con Zod de contracts; mapea domain → JSON del OpenAPI. | Backend real. Persistencia. |
-| `apps/web` | Vite + React + TanStack (cuando toque). UI: BoardUI + OA + ReUI Frame. Cliente HTTP = contracts. | Reglas de malla/device. Tipos OpenAPI a mano. |
-| `packages/ui` | Tokens BoardUI remapeados a OA, Button BoardUI, Frame ReUI. | Lógica de negocio. |
+| `apps/web` | Vite + React + TanStack. Chrome de consola (`layout`/`header`/`footer`), `router/`, `pages/`, `features/`, `components/` de app, `lib/`. Tests en `test/`. | Primitivas shadcn/BoardUI/ReUI/EvilCharts. Reglas de malla/device. |
+| `packages/ui` | Tokens OA/BoardUI y **todas** las primitivas instaladas (BoardUI, shadcn, ReUI, EvilCharts, mapcn). Destino del CLI `pnpm shadcn`. | Páginas, fetch, features, chrome de consola. |
 
 `packages/tsconfig` compartido, mismo patrón que taller.
 
@@ -39,6 +39,99 @@ contracts  -->  (solo runtime generado: fetch client, zod)
 Domain no importa `@meshtastic-things/contracts`. Los DTO del YAML y el modelo de dominio son dos capas: el mock traduce.
 
 La web **no** importa `packages/domain`. Consume JSON ya validado (SDK con `validator: true` sobre Zod) y pinta.
+
+---
+
+## Features (web + api-mock)
+
+Cada entidad de negocio vive en `features/<name>/` en el lado que la necesita. Las rutas viven en `apps/web/src/pages/` y solo orquestan features (repos, `model`, `ui/`). El HTTP generado no se llama desde las páginas: sale del `repository` de la feature.
+
+| Feature | Web | api-mock |
+|---|---|---|
+| `auth` | `repository` + `session` | Better Auth en `auth.ts` (no hay `features/auth`) |
+| `mesh` | `repository` + `model` | `repository.ts` |
+| `device` | `repository` + `model` + `ui/` badges | `repository.ts` |
+| `readings` | solo `repository.ts` (lo consume device) | `repository.ts` |
+| `blueprint` | `repository` | `repository.ts` (sin puerto de domain) |
+| `measurement` | — | `repository.ts` |
+
+### Cliente (`apps/web`) — mapa de ficheros
+
+Alias Vite `@` → `apps/web/src`. Import de primitivas: `@mtt/ui/…`, nunca copiar el registry a `src/`.
+
+```
+apps/web/
+  components.json          # CLI shadcn: ui → @mtt/ui/components/ui (escribe en packages/ui)
+  src/
+    main.tsx               # QueryClient + TooltipProvider + <Layout router={router} />
+    styles.css             # Tailwind; @source de @mtt/ui
+    layout.tsx             # Layout (RouterProvider) + Shell (consola)
+    header.tsx
+    footer.tsx
+    router/
+      router.ts            # paths + href()
+      app-router.tsx       # createRoute / createRouter
+      index.ts             # reexporta routes, href  (no el instance)
+    components/            # piezas de producto, no primitivas
+      form/                # form-field, form-number, form-select, form-checkbox
+      kpi/                 # kpi, kpi-panel + helpers kpi-icon.ts, kpi-shell.ts
+      series/              # series-plot, series-chart
+      brand.tsx            # logo + pageWidth
+      flag.tsx
+      modal.tsx
+      skeleton-rows.tsx
+      status-copy.tsx
+    lib/                   # sin JSX
+      format.ts
+      page-heading.ts
+      dialog-actions.ts
+    features/<name>/
+      repository.ts
+      model.ts             # opcional; presentación
+      ui/                  # opcional; badges de la feature
+    pages/
+      home/                # landing pública
+      login/
+      meshes/list|detail
+      devices/list|detail
+      blueprints/list
+        # cada carpeta de ruta: route.ts + page.tsx
+  test/                    # *.test.ts — node:test
+```
+
+Arranque (para no ciclar `layout` ↔ `app-router`):
+
+1. `app-router.tsx` importa `Shell` desde `@/layout` y exporta `router`.
+2. `main.tsx` importa `router` y lo pasa a `Layout`.
+3. `Layout` **no** importa el instance del router.
+
+| Pieza | Dónde | Qué hace |
+|---|---|---|
+| Paths | `src/router/router.ts` | `Object.freeze` de rutas absolutas y `consoleChild`. `href(path, params)` sustituye `$param`. Nadie pega `"/console/…"` en JSX. Import de paths: `@/router`. |
+| Árbol | `src/router/app-router.tsx` | `createRootRoute` → landing `/`, login `/login`, consola `/console` (`Shell`) + hijos. El fichero se llama `app-router.tsx` **a propósito**: Darwin no admite `router.ts` y `router.tsx` en el mismo directorio. |
+| Instance | `export const router` en `app-router.tsx` | Solo `main.tsx` lo monta. `index.ts` no lo reexporta. |
+| Layout | `src/layout.tsx` | `Layout` = `RouterProvider` (prop `router`). `Shell` = auth gate (`authRepository.me`) + `Header` + `<Outlet />` + `Footer`. Única excepción a “un componente por fichero”. |
+| Header / Footer | `src/header.tsx`, `src/footer.tsx` | Mismo nivel que `layout.tsx` / `main.tsx`. No hay carpeta `chrome/`. |
+| Brand | `src/components/brand.tsx` | Logo y `pageWidth`. |
+| KPI / series | `src/components/kpi/`, `src/components/series/` | Un componente por `.tsx`. Helpers sin UI en `.ts` junto al KPI. |
+| Forms de app | `src/components/form/` | Wrappers de producto. Inputs shadcn en `@mtt/ui`. |
+| Format | `src/lib/format.ts` | Fechas, duraciones, números. |
+| Shader login | `src/pages/login/shader-backdrop.tsx` | Cinta WebGL detrás de la tarjeta. **No** es `DialogOverlay` (`@mtt/ui/components/ui/dialog`). |
+| Feature HTTP | `src/features/<name>/repository.ts` | Único sitio de esa feature que importa `@mtt/contracts/query` (y SDK auth). |
+| Presentación | `src/features/<name>/model.ts` | Títulos, silent, role label. Sin fetch. |
+| UI de feature | `src/features/<name>/ui/` | Solo si se reutiliza en varias rutas (badges de device). Piezas de una sola página van junto a `page.tsx`. |
+| Página | `src/pages/<ruta>/` | Mismo nivel que `features/`. `home/`, `login/`, `meshes/`, `devices/`, `blueprints/`. `route.ts` + `page.tsx`. Extra de detalle (p. ej. `chart-range.ts`) vive en esa carpeta. La landing no es una feature. |
+| Tests | `apps/web/test/` | `format`, `router`, `device-model`, `chart-range`. Importan `../src/…`. |
+
+**Un componente por fichero.** Un `.tsx` de app exporta **un** componente React. Tipos y helpers de ese componente pueden ir al mismo fichero; un segundo componente va a otro archivo. Helpers sin JSX → `src/lib/` (o un `.ts` colocalizado si solo lo usa esa carpeta).
+
+Excepción: `layout.tsx` exporta `Layout` y `Shell` (eran `app.tsx` + `shell.tsx`). No reintroducir `app.tsx`, `shell.tsx`, `widgets.tsx`, `form-fields.tsx`, ni `chrome/`.
+
+### Servidor (`apps/api-mock/src`)
+
+`features/<name>/repository.ts` implementa el puerto de domain (`MemoryMeshes` → `IMeshRepository`, etc.). `store.ts` solo siembra IDs y llama a esas clases. Blueprints de fase 1 no tienen puerto de domain: el tipo `BlueprintRow` vive en la feature.
+
+Controllers (`app.ts`) siguen mapeando HTTP → repo → JSON OpenAPI.
 
 ---
 
@@ -90,8 +183,8 @@ Nadie reexporta tipos a mano “porque el gen es feo”. Si el YAML cambia: rege
 
 Uso en web:
 
-- Queries: `useQuery(devicesListOptions({ query: { mesh_id } }))`
-- Mutaciones: `...devicesCreateMutation()` + invalidar query keys generadas
+- Queries: `useQuery(deviceRepository.list({ query: { mesh_id } }))` (las `*Options` viven en el repository de la feature)
+- Mutaciones: `...deviceRepository.create()` + invalidar query keys del mismo repository
 - Forms: `zMeshesCreateData` / `zDevicesCreateData` con `safeParse` (hoy); el mismo schema si pasa a TanStack Form
 
 Uso en mock:
@@ -128,7 +221,7 @@ Owner de fase 1: slice `authz` (`role`: owner / staff / superuser). Flags OpenAP
 ## api-mock
 
 - Proceso propio (`pnpm --filter api-mock dev`), CORS abierto al Vite.
-- Store: `Map`s en RAM, seed al arrancar (2 mallas, 4 owners, mix de gateways/nodos, lecturas sintéticas).
+- Store: seed en `store.ts`; repos in-memory en `features/*/repository.ts`.
 - Implementa **solo** las operaciones de las UI stories de fase 1. El resto del YAML puede 501.
 - Cookie de sesión Better Auth. El briefing de API keys espera.
 
@@ -144,19 +237,85 @@ Repos in-memory implementan los puertos de domain. Controllers: Zod request → 
 
 ---
 
-## UI (BoardUI + OA + ReUI)
+## UI (`packages/ui`)
 
-- Tokens BoardUI en `packages/ui/src/boardui/`. Look OA en `packages/ui/src/oa.css`.
-- Instalar: `npx boardui@latest add <name>` y `pnpm dlx shadcn@latest add @reui/<name>` desde `packages/ui`.
+Un paquete. **No** hay `apps/web/src/components/{ui,reui,evilcharts}`: esas carpetas son el registry y viven aquí. La app envuelve (form, kpi, series, modal), no reinstala.
+
+```
+packages/ui/src/
+  boardui/                 # CSS BoardUI (tokens)
+  oa.css                   # remap OA
+  oa/springs.ts
+  theme.ts
+  utils.ts                 # cn / cx  →  @mtt/ui/utils
+  utils/                   # cx, dismiss-on-outside-press
+  hooks/                   # use-mobile
+  lib/                     # filter-url → query string
+  components/
+    base/                  # BoardUI (npx boardui add)
+    ui/                    # shadcn (button, dialog, map, …)
+    reui/                  # frame, filters, cascader, date-selector, number-field
+    evilcharts/            # charts/ + ui/
+    data-table.tsx
+    smart-filters.tsx
+```
+
+`package.json` de `@mtt/ui` exporta por segmento (`./components/ui/*`, `./components/reui/*`, …) y aliases `#components/*` para que el CLI de shadcn resuelva imports internos **dentro** del paquete.
+
+Importar por el export del paquete, no por `@/` de web:
+
+| Qué | Import |
+|---|---|
+| BoardUI Button / Chip | `@mtt/ui/components/base/buttons/button`, `…/base/badges/chip` |
+| shadcn | `@mtt/ui/components/ui/<name>` |
+| Frame ReUI | `@mtt/ui/reui/frame` (archivo: `components/reui/frame.tsx`) |
+| Filtros / cascader / number-field | `@mtt/ui/components/reui/…` |
+| Charts | `@mtt/ui/components/evilcharts/charts/…` |
+| Data table / smart filters | `@mtt/ui/components/data-table`, `@mtt/ui/components/smart-filters` |
+| `cn` / `cx` | `@mtt/ui/utils` o `@mtt/ui/utils/cx` |
+| Tema | `@mtt/ui/theme` |
+| Query string de filtros | `@mtt/ui/lib/filter-url` |
+
+Instalar (las primitivas **siempre** caen en `packages/ui`):
+
+```bash
+cd packages/ui && npx boardui@latest add <name>
+
+# desde la raíz del monorepo (package.json → --cwd apps/web)
+pnpm shadcn add button
+pnpm shadcn add @reui/<nombre>
+pnpm shadcn add @evilcharts/<nombre>
+```
+
+Hay **dos** `components.json`:
+
+| Fichero | Rol |
+|---|---|
+| `apps/web/components.json` | El que usa `pnpm shadcn`. Alias `ui` → `@mtt/ui/components/ui` (y registries `@reui`, `@evilcharts`, `@mapcn`). |
+| `packages/ui/components.json` | Aliases `#components`, `#lib`, `#hooks` para el código ya instalado en el paquete. CSS apunta a `apps/web/src/styles.css`. |
+
+No lanzar shadcn “a pelo” contra `apps/web/src/components`. Si un add deja ficheros ahí, moverlos a `packages/ui` y cambiar imports a `@mtt/ui/…`.
+
 - Apps importan `@mtt/ui/boardui.css`. `@source` del paquete UI en `apps/web/src/styles.css`.
 - Tema: clase `.dark` + `boardui:theme`. Default light (cuerpo blanco OA).
 - Skill: `.cursor/skills/oa-design/`. Compilado: [oa-design.md](./oa-design.md).
 
+## Tests
+
+| Dónde | Runner | Qué |
+|---|---|---|
+| `apps/web/test/*.test.ts` | `node --test` (`pnpm --filter web test`) | Router, format, models de presentación. **Prohibido** `*.test.ts` bajo `apps/web/src/`. |
+| `packages/domain/tests/<slice>/` | vitest | Invariantes de dominio. |
+
+No meter tests de UI/primitivas en `packages/ui` salvo que el propio paquete gane un runner.
+
 ## Web (fase 1)
 
-Rutas en [ui-stories.md](./ui-stories.md). Login en `/login`. Fetch con `credentials: include`.
+Rutas: constantes en `apps/web/src/router/router.ts` (historias en [ui-stories.md](./ui-stories.md)). Landing pública en `/`. Login en `/login`. Inventario autenticado bajo `/console`. Fetch con `credentials: include`.
 
-`VITE_API_URL` apunta al mock. CSRF cookie no-op en el mock.
+`VITE_API_URL` apunta al mock (compile-time; mismo ARG en `docker/Dockerfile`). CSRF cookie no-op en el mock.
+
+Imagen frontend: `docker build -f docker/Dockerfile .` — `vite build` con plugin `nitro()`, runtime `node .output/server/index.mjs` (puerto 80). No incluye `api-mock`. Vite no es el proceso de producción. Nginx, si existe, solo como reverse proxy.
 
 ---
 
@@ -167,7 +326,13 @@ Rutas en [ui-stories.md](./ui-stories.md). Login en `/login`. Fetch con `credent
 - Zod escrito a mano para bodies que el gen ya emite
 - Meter reglas de “disallow antes de mover” en un `useEffect`
 - Persistir API keys en el navegador (cuando llegue US-43)
-- Implementar `/owners/*` más allá de login/me/list/retrieve y el perfil
+- Meter primitivas shadcn/BoardUI/ReUI/EvilCharts en `apps/web/src` (van a `packages/ui`)
+- Colocalizar `*.test.ts` dentro de `apps/web/src` (van a `apps/web/test/`)
+- Exportar más de un componente desde el mismo `.tsx` (salvo `layout.tsx`: `Layout` + `Shell`)
+- Crear `router.ts` y `router.tsx` juntos (usar `router/router.ts` + `router/app-router.tsx`)
+- Que `layout.tsx` importe `router` desde `app-router` (ciclo). El instance entra por props desde `main.tsx`.
+- Reintroducir `app.tsx`, `shell.tsx`, `chrome/`, `widgets.tsx`, `form-fields.tsx`
+- Meter rutas o la landing dentro de `features/` (van a `src/pages/`; features son entidades)
 
 ---
 

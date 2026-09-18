@@ -1,14 +1,14 @@
 import type { Actor } from "@mtt/domain/authz/authz";
-import { Device, matchesDeviceFilter, type DeviceCreate, type DeviceListFilter } from "@mtt/domain/device/Device";
-import type { IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
-import { Mesh, meshFilterValue } from "@mtt/domain/mesh/Mesh";
-import type { MeshCreate } from "@mtt/domain/mesh/Mesh";
-import type { IMeshRepository } from "@mtt/domain/mesh/IMeshRepository";
-import type { IMeasurementRepository, MeasurementType } from "@mtt/domain/measurement/Measurement";
-import type { IReadingsRepository, LatestReading, SeriesQuery } from "@mtt/domain/readings/Readings";
+import { Device } from "@mtt/domain/device/Device";
+import { Mesh } from "@mtt/domain/mesh/Mesh";
+import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 import { NIL_BLUEPRINT_ID } from "@mtt/domain/shared/blueprint";
-import { matchesListFilters, type ListFilter } from "@mtt/domain/shared/list-filter";
+import type { BlueprintRow } from "./features/blueprint/repository";
+import { MemoryDevices } from "./features/device/repository";
+import { MemoryMeshes } from "./features/mesh/repository";
+import { MemoryMeasurements } from "./features/measurement/repository";
+import { MemoryReadings } from "./features/readings/repository";
 
 export const OWNER_ID = "22222222-2222-4222-8222-222222222222";
 export const OWNER_BO_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
@@ -38,161 +38,7 @@ export const OWNER_STAFF_PASSWORD = "mesh-staff-12";
 
 const t0 = "2026-01-01T00:00:00.000Z";
 
-export class MemoryMeshes implements IMeshRepository {
-  readonly items = new Map<string, Mesh>();
-
-  async list(filters?: ListFilter[]): Promise<Mesh[]> {
-    const items = [...this.items.values()];
-    if (!filters?.length) return items;
-    return items.filter((mesh) => matchesListFilters((field) => meshFilterValue(mesh, field), filters));
-  }
-
-  async get(id: string): Promise<Mesh | null> {
-    return this.items.get(id) ?? null;
-  }
-
-  async insert(input: MeshCreate): Promise<Mesh> {
-    const now = nowIso();
-    const mesh = new Mesh({
-      id: newId(),
-      channelId: input.channelId,
-      pskB64: input.pskB64,
-      label: input.label ?? null,
-      ownerId: input.ownerId,
-      createdAt: now,
-      updatedAt: now,
-    });
-    this.items.set(mesh.id, mesh);
-    return mesh;
-  }
-}
-
-export class MemoryDevices implements IDeviceRepository {
-  readonly items = new Map<string, Device>();
-
-  async list(filters?: DeviceListFilter): Promise<Device[]> {
-    return [...this.items.values()].filter((d) => matchesDeviceFilter(d, filters));
-  }
-
-  async get(uuid: string): Promise<Device | null> {
-    return this.items.get(uuid) ?? null;
-  }
-
-  async insert(input: DeviceCreate): Promise<Device> {
-    const now = nowIso();
-    const device = new Device({
-      uuid: newId(),
-      nodeId: input.nodeId,
-      meshId: input.meshId,
-      label: input.label ?? null,
-      isGateway: input.isGateway,
-      isAllowed: true,
-      adminKeysB64: [],
-      latitude: input.latitude ?? null,
-      longitude: input.longitude ?? null,
-      locationOverridden: false,
-      name: input.name ?? null,
-      shortName: input.shortName ?? null,
-      hardwareType: null,
-      role: null,
-      nodeinfoOverridden: false,
-      postprocessingBlueprintId: null,
-      readingIntervalSeconds: null,
-      publishIntervalSeconds: null,
-      lastSeen: now,
-      createdAt: now,
-      updatedAt: now,
-    });
-    this.items.set(device.uuid, device);
-    return device;
-  }
-
-  async update(uuid: string, patch: Partial<DeviceCreate> & {
-    isAllowed?: boolean;
-    postprocessingBlueprintId?: string | null;
-    readingIntervalSeconds?: number | null;
-    publishIntervalSeconds?: number | null;
-    locationOverridden?: boolean;
-  }): Promise<Device | null> {
-    const device = this.items.get(uuid);
-    if (!device) return null;
-    if (patch.label !== undefined) device.label = patch.label ?? null;
-    if (patch.name !== undefined) device.name = patch.name ?? null;
-    if (patch.shortName !== undefined) device.shortName = patch.shortName ?? null;
-    if (patch.latitude !== undefined) device.latitude = patch.latitude ?? null;
-    if (patch.longitude !== undefined) device.longitude = patch.longitude ?? null;
-    if (patch.isAllowed !== undefined) device.isAllowed = patch.isAllowed;
-    if (patch.postprocessingBlueprintId !== undefined) {
-      device.postprocessingBlueprintId = patch.postprocessingBlueprintId;
-    }
-    if (patch.readingIntervalSeconds !== undefined) {
-      device.readingIntervalSeconds = patch.readingIntervalSeconds;
-    }
-    if (patch.publishIntervalSeconds !== undefined) {
-      device.publishIntervalSeconds = patch.publishIntervalSeconds;
-    }
-    if (patch.locationOverridden !== undefined) device.locationOverridden = patch.locationOverridden;
-    device.updatedAt = nowIso();
-    return device;
-  }
-}
-
-export class MemoryMeasurements implements IMeasurementRepository {
-  constructor(private readonly rows: MeasurementType[]) {}
-
-  async list(): Promise<MeasurementType[]> {
-    return this.rows;
-  }
-}
-
-export class MemoryReadings implements IReadingsRepository {
-  constructor(
-    private readonly devices: MemoryDevices,
-    private readonly measurements: MeasurementType[],
-  ) {}
-
-  async latest(deviceUuid: string): Promise<LatestReading[]> {
-    const device = await this.devices.get(deviceUuid);
-    if (!device) return [];
-    if (device.uuid !== DEVICE_NODE_ID && device.uuid !== DEVICE_GW_ID) return [];
-    return this.measurements.map((m, i) => ({
-      payloadKind: m.payloadKind,
-      fieldName: m.fieldName,
-      channel: m.channel,
-      value: i === 0 ? 21.4 : i === 1 ? 8.1 : 0.91,
-      time: t0,
-      unit: m.nativeUnit,
-      quantityKind: m.quantityKind,
-      vocabularyUri: m.vocabularyUri,
-      origin: m.origin,
-    }));
-  }
-
-  async series(deviceUuid: string, query: SeriesQuery) {
-    const device = await this.devices.get(deviceUuid);
-    if (!device) {
-      return { payloadKind: query.payloadKind ?? "environmentmetrics", series: [] };
-    }
-    const temp = this.measurements[0];
-    const channel = query.channel ?? temp?.channel ?? "environmentmetrics.temperature";
-    const payloadKind = query.payloadKind ?? channel.split(".")[0] ?? "environmentmetrics";
-    const points = Array.from({ length: 24 }, (_, i) => ({
-      time: new Date(Date.parse(t0) + i * 3600_000).toISOString(),
-      value: 18 + Math.sin(i / 3) * 3,
-    }));
-    return { payloadKind, series: [{ channel, points }] };
-  }
-}
-
-export type BlueprintRow = {
-  id: string;
-  name: string;
-  description: string | null;
-  ownerId: string;
-  steps: { id: string; order: number; function_name: string; inputs: unknown; params: unknown; outputs: unknown }[];
-  createdAt: string;
-  updatedAt: string;
-};
+export type { BlueprintRow };
 
 export type Store = {
   meshes: MemoryMeshes;
@@ -366,7 +212,7 @@ export function createStore(owners: StoreOwners = {}): Store {
     meshes,
     devices,
     measurements,
-    readings: new MemoryReadings(devices, meas),
+    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID]), t0),
     actors,
     blueprints: [
       {
