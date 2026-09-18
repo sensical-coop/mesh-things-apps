@@ -4,7 +4,7 @@ import { type ReactElement } from "react";
 import { LandingCobe } from "./cobe";
 import { LandingReveal } from "./reveal";
 
-export function LandingHero({ signedIn }: { signedIn: boolean }): ReactElement {
+export function LandingHero(): ReactElement {
   return (
     <section className="relative -mt-16 min-h-dvh overflow-hidden sm:-mt-20">
       <div className="relative z-10 mx-auto max-w-4xl px-4 pt-36 text-center sm:px-6 sm:pt-44">
@@ -23,15 +23,9 @@ export function LandingHero({ signedIn }: { signedIn: boolean }): ReactElement {
             <ButtonLink href={routes.login} size="medium">
               Sign in
             </ButtonLink>
-            {signedIn ? (
-              <ButtonLink href={routes.meshes} variant="secondary" size="medium">
-                Open console
-              </ButtonLink>
-            ) : (
-              <ButtonLink href={routes.login} variant="secondary" size="medium">
-                See the product
-              </ButtonLink>
-            )}
+            <ButtonLink href={routes.login} variant="secondary" size="medium">
+              See the product
+            </ButtonLink>
           </div>
         </LandingReveal>
       </div>

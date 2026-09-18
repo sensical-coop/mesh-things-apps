@@ -14,7 +14,7 @@ function subscribeTheme(onStoreChange: () => void): () => void {
   return () => globalThis.removeEventListener("boardui-theme", onStoreChange);
 }
 
-export function LandingHeader({ signedIn }: { signedIn: boolean }): ReactElement {
+export function LandingHeader(): ReactElement {
   const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
   const [scrolled, setScrolled] = useState(false);
 
@@ -61,15 +61,9 @@ export function LandingHeader({ signedIn }: { signedIn: boolean }): ReactElement
               toggleTheme();
             }}
           />
-          {signedIn ? (
-            <ButtonLink href={routes.meshes} size="small">
-              Open console
-            </ButtonLink>
-          ) : (
-            <ButtonLink href={routes.login} size="small">
-              Sign in
-            </ButtonLink>
-          )}
+          <ButtonLink href={routes.login} size="small">
+            Sign in
+          </ButtonLink>
         </div>
       </div>
     </header>
