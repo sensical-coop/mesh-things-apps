@@ -14,7 +14,9 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-strip-types test/*.test.ts"
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "extract-messages": "formatjs extract 'src/**/*.{ts,tsx}' --out-file src/locales/en.extracted.json --flatten",
+    "check-messages": "formatjs extract 'src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter-tight": "^5.2.8",
@@ -31,9 +33,12 @@
     "react": "^19.1.0",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.1.0",
-    "temporal-polyfill": "^1.0.5"
+    "react-intl": "^12.1.1",
+    "temporal-polyfill": "^1.0.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@formatjs/cli": "^6.16.30",
     "@mtt/tsconfig": "workspace:^",
     "@tailwindcss/vite": "^4.1.13",
     "@types/geojson": "^7946.0.16",

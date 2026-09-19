@@ -6,7 +6,9 @@ import { RiCloseLine, RiMenuLine, RiMoonLine, RiSunLine } from "@remixicon/react
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
+import { useIntl } from "react-intl";
 import { BrandMark, pageWidth } from "@/components/brand";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
 
 const headerLinkClass =
@@ -24,6 +26,7 @@ function NavLinks({
   onNavigate?: () => void;
   stacked?: boolean;
 }): ReactElement {
+  const { formatMessage } = useIntl();
   const linkClass = stacked ? cx(headerLinkClass, "block w-full px-3 py-2") : headerLinkClass;
   const activeClass = stacked
     ? cx(headerLinkClass, "block w-full bg-background-secondary-default px-3 py-2 text-text-primary")
@@ -38,7 +41,7 @@ function NavLinks({
         activeProps={{ className: activeClass }}
         onClick={onNavigate}
       >
-        Meshes
+        {formatMessage({ id: "console.footer.meshes", defaultMessage: "Meshes" })}
       </Link>
       <Link
         to={routes.devices}
@@ -46,7 +49,7 @@ function NavLinks({
         activeProps={{ className: activeClass }}
         onClick={onNavigate}
       >
-        Devices
+        {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
       </Link>
       <Link
         to={routes.blueprints}
@@ -54,13 +57,14 @@ function NavLinks({
         activeProps={{ className: activeClass }}
         onClick={onNavigate}
       >
-        Blueprints
+        {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
       </Link>
     </>
   );
 }
 
 export function Header(): ReactElement {
+  const { formatMessage } = useIntl();
   const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -96,15 +100,16 @@ export function Header(): ReactElement {
             className={cx(headerLinkClass, "hidden md:inline")}
             onClick={() => logout.mutate({})}
           >
-            Sign out
+            {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
           </button>
+          <LanguageSwitcher />
           <Button
             type="button"
             variant="secondary"
             size="small"
             iconOnly
             leadingIcon={theme === "dark" ? RiSunLine : RiMoonLine}
-            aria-label="Toggle color theme"
+            aria-label={formatMessage({ id: "common.themeToggle.label", defaultMessage: "Toggle color theme" })}
             onClick={() => {
               toggleTheme();
             }}
@@ -116,7 +121,11 @@ export function Header(): ReactElement {
             iconOnly
             className="md:hidden"
             leadingIcon={menuOpen ? RiCloseLine : RiMenuLine}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-label={
+              menuOpen
+                ? formatMessage({ id: "console.header.closeMenu", defaultMessage: "Close menu" })
+                : formatMessage({ id: "console.header.openMenu", defaultMessage: "Open menu" })
+            }
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             onClick={() => setMenuOpen((open) => !open)}
@@ -133,7 +142,7 @@ export function Header(): ReactElement {
             className={cx(headerLinkClass, "w-full px-3 py-2 text-start")}
             onClick={() => logout.mutate({})}
           >
-            Sign out
+            {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
           </button>
         </div>
       ) : null}

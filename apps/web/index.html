@@ -20,6 +20,28 @@
         }
       })();
     </script>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("mtt:locale");
+          var supported = ["en", "es"];
+          var lang = stored && supported.indexOf(stored) > -1 ? stored : null;
+          if (!lang) {
+            var langs = navigator.languages || [navigator.language];
+            for (var i = 0; i < langs.length; i++) {
+              var prefix = (langs[i] || "").split("-")[0];
+              if (supported.indexOf(prefix) > -1) {
+                lang = prefix;
+                break;
+              }
+            }
+          }
+          document.documentElement.lang = lang || "en";
+        } catch (e) {
+          document.documentElement.lang = "en";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

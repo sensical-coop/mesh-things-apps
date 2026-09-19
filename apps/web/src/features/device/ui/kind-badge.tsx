@@ -1,4 +1,5 @@
 import { type ReactElement } from "react";
+import { useIntl } from "react-intl";
 import { Flag } from "@/components/flag";
 
 export type DeviceKindBadgeProps = {
@@ -6,5 +7,12 @@ export type DeviceKindBadgeProps = {
 };
 
 export function DeviceKindBadge({ isGateway }: DeviceKindBadgeProps): ReactElement {
-  return <Flag on={isGateway} yes="Gateway" no="Node" />;
+  const { formatMessage } = useIntl();
+  return (
+    <Flag
+      on={isGateway}
+      yes={formatMessage({ id: "feature.device.kindBadge.gateway", defaultMessage: "Gateway" })}
+      no={formatMessage({ id: "feature.device.kindBadge.node", defaultMessage: "Node" })}
+    />
+  );
 }

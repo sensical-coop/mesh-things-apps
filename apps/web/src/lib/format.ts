@@ -16,20 +16,40 @@ function toZoned(iso: string): Temporal.ZonedDateTime | null {
 const whenOpts: Intl.DateTimeFormatOptions = { dateStyle: "medium", timeStyle: "short" };
 const clockOpts: Intl.DateTimeFormatOptions = { timeStyle: "short" };
 
-export function formatWhen(iso: string | null): string {
-  if (!iso) return "Never seen";
-  return toZoned(iso)?.toLocaleString(undefined, whenOpts) ?? iso;
+export type FormatLabels = {
+  neverSeen: string;
+  yes: string;
+  no: string;
+  emDash: string;
+  hourUnit: string;
+  minuteUnit: string;
+  secondUnit: string;
+};
+
+export const EN_FORMAT_LABELS: FormatLabels = {
+  neverSeen: "Never seen",
+  yes: "Yes",
+  no: "No",
+  emDash: "—",
+  hourUnit: "h",
+  minuteUnit: "min",
+  secondUnit: "s",
+};
+
+export function formatWhen(iso: string | null, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+  if (!iso) return labels.neverSeen;
+  return toZoned(iso)?.toLocaleString(locale, whenOpts) ?? iso;
 }
 
 const relativeUnits = ["year", "month", "week", "day", "hour", "minute", "second"] as const;
 
 /** Temporal has no toRelative; Instant.until + RelativeTimeFormat is the MDN path. */
-export function toRelative(iso: string): string | null {
+export function toRelative(iso: string, locale?: string): string | null {
   const zoned = toZoned(iso);
   if (!zoned) return null;
   const now = Temporal.Now.zonedDateTimeISO(zoned.timeZoneId);
   const duration = zoned.until(now, { largestUnit: "year", smallestUnit: "second" });
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const parts = {
     year: duration.years,
     month: duration.months,
@@ -46,23 +66,23 @@ export function toRelative(iso: string): string | null {
   return rtf.format(0, "second");
 }
 
-export function formatLastSeen(iso: string | null): string {
-  if (!iso) return "Never seen";
-  const abs = formatWhen(iso);
-  const rel = toRelative(iso);
+export function formatLastSeen(iso: string | null, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+  if (!iso) return labels.neverSeen;
+  const abs = formatWhen(iso, locale, labels);
+  const rel = toRelative(iso, locale);
   return rel ? `${abs} (${rel})` : abs;
 }
 
-export function formatClock(iso: string): string {
-  return toZoned(iso)?.toLocaleString(undefined, clockOpts) ?? iso;
+export function formatClock(iso: string, locale?: string): string {
+  return toZoned(iso)?.toLocaleString(locale, clockOpts) ?? iso;
 }
 
-export function formatValue(value: unknown): string {
+export function formatValue(value: unknown, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
   if (typeof value === "number" && Number.isFinite(value)) {
-    return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return value.toLocaleString(locale, { maximumFractionDigits: 2 });
   }
-  if (typeof value === "boolean") return value ? "Yes" : "No";
-  if (value == null) return "—";
+  if (typeof value === "boolean") return value ? labels.yes : labels.no;
+  if (value == null) return labels.emDash;
   return String(value);
 }
 
@@ -72,22 +92,30 @@ export function asNumber(value: unknown): number | null {
   return null;
 }
 
-export function formatRatio(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 });
+export function formatRatio(
+  value: number | null | undefined,
+  locale?: string,
+  labels: FormatLabels = EN_FORMAT_LABELS,
+): string {
+  if (value == null || !Number.isFinite(value)) return labels.emDash;
+  return value.toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 });
 }
 
 /** Seconds as hours, minutes, seconds. Empty or invalid → em dash. */
-export function formatSecondsAsHms(seconds: number | null | undefined): string {
-  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "—";
+export function formatSecondsAsHms(
+  seconds: number | null | undefined,
+  locale?: string,
+  labels: FormatLabels = EN_FORMAT_LABELS,
+): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return labels.emDash;
   const total = Math.trunc(seconds);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
   const parts: string[] = [];
-  if (h) parts.push(`${h} h`);
-  if (m) parts.push(`${m} min`);
-  if (s || parts.length === 0) parts.push(`${s} s`);
+  if (h) parts.push(`${h} ${labels.hourUnit}`);
+  if (m) parts.push(`${m} ${labels.minuteUnit}`);
+  if (s || parts.length === 0) parts.push(`${s} ${labels.secondUnit}`);
   return parts.join(" ");
 }
 

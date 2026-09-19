@@ -3,8 +3,10 @@ import { useQueryStates } from "nuqs";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { RiFilter3Line } from "@remixicon/react";
 import { Filters } from "@mtt/ui/components/reui/filters/filters";
+import { resolveFilterLabels } from "@mtt/ui/components/reui/filters/filters-i18n";
+import type { FilterOperatorLabels } from "@mtt/ui/components/reui/filters/filters-operators";
 import { createFilterQuery, flattenFilterConditions } from "@mtt/ui/components/reui/filters/filters-query";
-import type { FilterField, FilterQuery } from "@mtt/ui/components/reui/filters/filters-types";
+import type { FilterField, FilterLabels, FilterQuery } from "@mtt/ui/components/reui/filters/filters-types";
 import {
   filterUrlPatchEquals,
   parseAsFilterValue,
@@ -111,7 +113,16 @@ export function useSmartFilters({ specs }: { specs: FilterSpec[] }): SmartFilter
   };
 }
 
-export function SmartFilterToolbar({ filters }: { filters: SmartFilters }): ReactNode {
+export function SmartFilterToolbar({
+  filters,
+  labels: labelsProp,
+  operatorLabels,
+}: {
+  filters: SmartFilters;
+  labels?: Partial<FilterLabels>;
+  operatorLabels?: FilterOperatorLabels;
+}): ReactNode {
+  const labels = resolveFilterLabels(labelsProp);
   return (
     <div className="flex flex-wrap items-start gap-2">
       <Filters
@@ -120,9 +131,11 @@ export function SmartFilterToolbar({ filters }: { filters: SmartFilters }): Reac
         onQueryChange={filters.onChange}
         size="sm"
         showClear
+        labels={labels}
+        operatorLabels={operatorLabels}
         trigger={
           <Button type="button" variant="secondary" size="small" leadingIcon={RiFilter3Line}>
-            Add filter
+            {labels.addFilter}
           </Button>
         }
       />
