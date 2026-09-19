@@ -10,9 +10,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type ReactElement, useMemo } from "react";
+import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
-import { formatLastSeen } from "@/lib/format";
+import { useFormatters } from "@/hooks/use-formatters";
+import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
+import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { listQuery } from "@mtt/ui/lib/filter-url";
 import { href, routes } from "@/router";
 import { pageHeadingClass } from "@/lib/page-heading";
@@ -30,6 +33,10 @@ type DeviceRow = DeviceRead & { meshLabel: string };
 const col = legacyCreateColumnHelper<DeviceRow>();
 
 export function DevicesPage(): ReactElement {
+  const { formatMessage } = useIntl();
+  const { formatLastSeen } = useFormatters();
+  const filterLabels = useTranslatedFilterLabels();
+  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   const meshes = useQuery(meshRepository.list());
   const meshOptions = useMemo(
     () => (meshes.data ?? []).map((mesh) => ({ value: mesh.id, label: meshTitle(mesh) })),
@@ -37,46 +44,75 @@ export function DevicesPage(): ReactElement {
   );
   const specs = useMemo<FilterSpec[]>(
     () => [
-      { key: "label", urlKey: "label", label: "Label", type: "text" },
+      {
+        key: "label",
+        urlKey: "label",
+        label: formatMessage({ id: "page.devices.list.filters.label", defaultMessage: "Label" }),
+        type: "text",
+      },
       {
         key: "mesh_id",
         urlKey: "mesh_id",
-        label: "Mesh",
+        label: formatMessage({ id: "page.devices.list.filters.mesh", defaultMessage: "Mesh" }),
         type: "select",
         options: meshOptions,
       },
       {
         key: "is_gateway",
         urlKey: "is_gateway",
-        label: "Role",
+        label: formatMessage({ id: "page.devices.list.filters.role", defaultMessage: "Role" }),
         type: "select",
         options: [
-          { value: "true", label: "Gateway" },
-          { value: "false", label: "Node" },
+          {
+            value: "true",
+            label: formatMessage({ id: "page.devices.list.filters.roleGateway", defaultMessage: "Gateway" }),
+          },
+          {
+            value: "false",
+            label: formatMessage({ id: "page.devices.list.filters.roleNode", defaultMessage: "Node" }),
+          },
         ],
       },
       {
         key: "is_allowed",
         urlKey: "is_allowed",
-        label: "Allowed",
+        label: formatMessage({ id: "page.devices.list.filters.allowed", defaultMessage: "Allowed" }),
         type: "select",
         options: [
-          { value: "true", label: "Allowed" },
-          { value: "false", label: "Blocked" },
+          {
+            value: "true",
+            label: formatMessage({ id: "page.devices.list.filters.allowedTrue", defaultMessage: "Allowed" }),
+          },
+          {
+            value: "false",
+            label: formatMessage({ id: "page.devices.list.filters.allowedFalse", defaultMessage: "Blocked" }),
+          },
         ],
       },
       {
         key: "has_postprocessing",
         urlKey: "has_postprocessing",
-        label: "Blueprint",
+        label: formatMessage({ id: "page.devices.list.filters.blueprint", defaultMessage: "Blueprint" }),
         type: "select",
         options: [
-          { value: "true", label: "With blueprint" },
-          { value: "false", label: "Without blueprint" },
+          {
+            value: "true",
+            label: formatMessage({
+              id: "page.devices.list.filters.blueprintTrue",
+              defaultMessage: "With blueprint",
+            }),
+          },
+          {
+            value: "false",
+            label: formatMessage({
+              id: "page.devices.list.filters.blueprintFalse",
+              defaultMessage: "Without blueprint",
+            }),
+          },
         ],
       },
     ],
-    [meshOptions],
+    [meshOptions, formatMessage],
   );
   const filters = useSmartFilters({ specs });
   const devices = useQuery(deviceRepository.list({ query: listQuery(filters.queryString) }));
@@ -95,27 +131,27 @@ export function DevicesPage(): ReactElement {
     () => [
       col.accessor((row) => deviceTitle(row), {
         id: "device",
-        header: "Device",
+        header: formatMessage({ id: "page.devices.list.columns.device", defaultMessage: "Device" }),
       }),
       col.accessor("meshLabel", {
-        header: "Mesh",
+        header: formatMessage({ id: "page.devices.list.columns.mesh", defaultMessage: "Mesh" }),
         cell: (info) => <span className="text-text-secondary">{info.getValue()}</span>,
       }),
       col.accessor("is_gateway", {
-        header: "Role",
+        header: formatMessage({ id: "page.devices.list.columns.role", defaultMessage: "Role" }),
         cell: (info) => <DeviceKindBadge isGateway={info.getValue()} />,
       }),
       col.accessor("is_allowed", {
-        header: "Allowed",
+        header: formatMessage({ id: "page.devices.list.columns.allowed", defaultMessage: "Allowed" }),
         cell: (info) => <DeviceAllowedBadge allowed={info.getValue()} />,
       }),
       col.display({
         id: "radio",
-        header: "Radio",
+        header: formatMessage({ id: "page.devices.list.columns.radio", defaultMessage: "Radio" }),
         cell: (info) => <DeviceSilentBadge device={info.row.original} />,
       }),
       col.accessor("last_seen", {
-        header: "Last seen",
+        header: formatMessage({ id: "page.devices.list.columns.lastSeen", defaultMessage: "Last seen" }),
         cell: (info) => (
           <span className="tabular-nums text-text-secondary">{formatLastSeen(info.getValue())}</span>
         ),
@@ -123,39 +159,53 @@ export function DevicesPage(): ReactElement {
       col.display({
         id: "open",
         enableSorting: false,
-        header: () => <span className="block text-end">Actions</span>,
+        header: () => (
+          <span className="block text-end">
+            {formatMessage({ id: "page.devices.list.columns.actions", defaultMessage: "Actions" })}
+          </span>
+        ),
         cell: ({ row }) => (
           <div className="flex justify-end">
             <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
-              Open
+              {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
             </ButtonLink>
           </div>
         ),
       }),
     ],
-    [],
+    [formatMessage, formatLastSeen],
   );
 
   return (
     <>
       <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">Devices</h1>
+        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
+          {formatMessage({ id: "page.devices.list.title", defaultMessage: "Devices" })}
+        </h1>
       </div>
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Inventory</FrameTitle>
+            <FrameTitle>
+              {formatMessage({ id: "page.devices.list.inventory.title", defaultMessage: "Inventory" })}
+            </FrameTitle>
             <FrameDescription>
               {devices.isPending
-                ? "Loading devices."
+                ? formatMessage({ id: "page.devices.list.inventory.loading", defaultMessage: "Loading devices." })
                 : devices.error
-                  ? "Devices didn't load. Check that the mock is running on 8787."
-                  : "Filter, then open a device for readings."}
+                  ? formatMessage({
+                      id: "page.devices.list.inventory.error",
+                      defaultMessage: "Devices didn't load. Check that the mock is running on 8787.",
+                    })
+                  : formatMessage({
+                      id: "page.devices.list.inventory.description",
+                      defaultMessage: "Filter, then open a device for readings.",
+                    })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel>
             <div className="mb-4">
-              <SmartFilterToolbar filters={filters} />
+              <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
             </div>
             {devices.isPending ? <SkeletonRows /> : null}
             {devices.error ? null : devices.isPending ? null : (
@@ -163,10 +213,22 @@ export function DevicesPage(): ReactElement {
                 data={rows}
                 columns={columns}
                 getRowId={(row) => row.uuid}
+                previousPageLabel={formatMessage({
+                  id: "common.dataTable.previousPage",
+                  defaultMessage: "Previous page",
+                })}
+                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
+                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                 empty={
                   filters.active
-                    ? "No devices match these filters."
-                    : "No devices yet. Register a device from a mesh."
+                    ? formatMessage({
+                        id: "page.devices.list.empty.filtered",
+                        defaultMessage: "No devices match these filters.",
+                      })
+                    : formatMessage({
+                        id: "page.devices.list.empty.default",
+                        defaultMessage: "No devices yet. Register a device from a mesh.",
+                      })
                 }
               />
             )}

@@ -90,10 +90,19 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.3.0(react@19.3.0)
+      react-intl:
+        specifier: ^12.1.1
+        version: 12.1.1(@types/react@19.3.0)(react@19.3.0)
       temporal-polyfill:
         specifier: ^1.0.5
         version: 1.0.5
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
+      '@formatjs/cli':
+        specifier: ^6.16.30
+        version: 6.16.30
       '@mtt/tsconfig':
         specifier: workspace:^
         version: link:../../packages/tsconfig
@@ -535,6 +544,76 @@ packages:
 
   '@fontsource/geist-mono@5.3.0':
     resolution: {integrity: sha512-UtJ1BBBCVpMYdIcW7nEB45UAoAw5M53ZXs2t0ciPW+IokuAAIc56M8+kW5tXbRJCTpDw4XTtU7proT6NdQAHTg==}
+
+  '@formatjs/cli-native-darwin-arm64@1.1.24':
+    resolution: {integrity: sha512-2i/fKUcawvTe022vN1LcpCJMBHcN2pFgOzg3Hr24jV0QMpoZVpB5RuM8fhZCy9E/STnOTP+P5W9uuPhg5eCGUA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@formatjs/cli-native-linux-arm64-musl@1.0.22':
+    resolution: {integrity: sha512-YUJ1ArreQGEdr2VaBIvpUVx3242YRFAwaKljlm0bOAckdk1JogzGnxIb5OJzFxlKiZkXWGFlO+erpRB6q0+kHg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@formatjs/cli-native-linux-arm64@1.2.24':
+    resolution: {integrity: sha512-L0hFov7dgC6m9WM2cqolaL3zA48vpwe/gqd7MKILt+TrHR4ZlVv9CXvzXMDucn//FcTZw0NFBKgVXcHvlimY2g==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@formatjs/cli-native-linux-x64-musl@1.0.22':
+    resolution: {integrity: sha512-hUwkDw47LQ0ESJvKsbZOWI50w/NP1hATfRrUy9mGRCRqKj1YTJ/HQxOjVfnrpiVEImjs4Ptws69RuIgxB5QGOA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@formatjs/cli-native-linux-x64@1.1.24':
+    resolution: {integrity: sha512-bp6FKYz8AQaHdeNI6rvMSk49ni4/uS+6AoxL/GiKXv2fL8zc459mkctTnwGR9Ol2in71Gq+nFKoZGFS50EHWCA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@formatjs/cli-native-win32-x64@1.1.25':
+    resolution: {integrity: sha512-tYjaYxtfBoGClwnBMtGuMQV/hbXY3mrGR5QRo9Tzk9Uwpa573gojtI8sqhn5jkzqjKPG1Ob3vVIJxcJmSnqemg==}
+    cpu: [x64]
+    os: [win32]
+
+  '@formatjs/cli@6.16.30':
+    resolution: {integrity: sha512-9pHgUriIJAsHfkoYuShydq5jHMp0IMQk7sdIkXgqD3m5UKTZIDfOyuJyuqJM5T55HOxz97y4iSSoWp7rfgdvNA==}
+    engines: {node: '>= 20.12.0'}
+    hasBin: true
+    peerDependencies:
+      '@glimmer/env': '*'
+      '@glimmer/reference': '*'
+      '@glimmer/syntax': ^0.84.3 || ^0.95.0
+      '@glimmer/validator': '*'
+      '@vue/compiler-core': '3'
+      content-tag: '4'
+      vue: '3'
+    peerDependenciesMeta:
+      '@glimmer/env':
+        optional: true
+      '@glimmer/reference':
+        optional: true
+      '@glimmer/syntax':
+        optional: true
+      '@glimmer/validator':
+        optional: true
+      '@vue/compiler-core':
+        optional: true
+      content-tag:
+        optional: true
+      vue:
+        optional: true
+
+  '@formatjs/fast-memoize@3.1.7':
+    resolution: {integrity: sha512-zXfhLpvA6T7+efdt9JLbBwZ00tT7NsBMDVnDu8rpHeNNv8KfRZAMo2gkG0k9lK/Nzc//3kJ9pImsfuJxk3KhUA==}
+
+  '@formatjs/icu-messageformat-parser@3.5.19':
+    resolution: {integrity: sha512-a5PAqgd3QPUge635SxrjPLIlTErcGwm3AMyTdmZXl0IqWXTdCx9AnuioEmvEZAV2HpeFdynLPXMvHv7dXGEWWw==}
+
+  '@formatjs/icu-skeleton-parser@2.1.12':
+    resolution: {integrity: sha512-ca7tZMLpfHX3sUD7hP6gE/qr6Iq89EDd3ZLeRhbsB7r0UD55DGJq+tmFLzrGrnx5StahUevQmQQVtbDRHsfDHA==}
+
+  '@formatjs/intl@6.1.1':
+    resolution: {integrity: sha512-kKxt7HZrmlSChntA4OAD5DlaDcKeUJOOvWKA/7ORiM1dQ+GYuiIz6FuDOkMeo/aVzSJ6hA25etFAtCnHEalqJw==}
 
   '@hey-api/codegen-core@0.5.5':
     resolution: {integrity: sha512-f2ZHucnA2wBGAY8ipB4wn/mrEYW+WUxU2huJmUvfDO6AE2vfILSHeF3wCO39Pz4wUYPoAWZByaauftLrOfC12Q==}
@@ -1421,6 +1500,9 @@ packages:
   httpxy@0.5.5:
     resolution: {integrity: sha512-uDjmnPyp1q4Sgzf3w+J/Fc6UqcCEj0x4Wjp7OqK5dGhNeDgpyrAmnS6ey8QWrX3SWDon2DMKf9sBa5X9+CVyMA==}
 
+  intl-messageformat@12.1.1:
+    resolution: {integrity: sha512-ZNwni2Ihmge8FZ0O+n7JQXHNAZfFGN/ovLrIxyfFK/bEsnHV2bG3W75Z24GdKmMepiq21SiMfANNPze+xjSCHA==}
+
   is-docker@3.0.0:
     resolution: {integrity: sha512-eljcgEDlEns/7AXFosB5K/2nCM4P7FQPkGc/DWLy5rmFEWvZayGrik1d9/QIY5nJ4f9YsVvBkA6kJpHn9rISdQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -1780,6 +1862,12 @@ packages:
     resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
     peerDependencies:
       react: ^19.3.0
+
+  react-intl@12.1.1:
+    resolution: {integrity: sha512-W+i+eifLA3ZTVmAtdfjU7+2dBPAapJeaFwHGKeEyVv1xYUft6tBEU5z1dmgvJlkgs6mn8phFHP5wQQIfU1SjCQ==}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      react: '>=18.0.0'
 
   react-router@8.4.0:
     resolution: {integrity: sha512-JtydAkBvU9UTEe5qNC+POhu+ZBNM7rlKY2IegwXc7Idj7xfRG16x5RZrw3mju+XlqBxfvb2ky9P3jUp9WyWC1g==}
@@ -2272,6 +2360,47 @@ snapshots:
   '@fontsource-variable/inter-tight@5.3.0': {}
 
   '@fontsource/geist-mono@5.3.0': {}
+
+  '@formatjs/cli-native-darwin-arm64@1.1.24':
+    optional: true
+
+  '@formatjs/cli-native-linux-arm64-musl@1.0.22':
+    optional: true
+
+  '@formatjs/cli-native-linux-arm64@1.2.24':
+    optional: true
+
+  '@formatjs/cli-native-linux-x64-musl@1.0.22':
+    optional: true
+
+  '@formatjs/cli-native-linux-x64@1.1.24':
+    optional: true
+
+  '@formatjs/cli-native-win32-x64@1.1.25':
+    optional: true
+
+  '@formatjs/cli@6.16.30':
+    optionalDependencies:
+      '@formatjs/cli-native-darwin-arm64': 1.1.24
+      '@formatjs/cli-native-linux-arm64': 1.2.24
+      '@formatjs/cli-native-linux-arm64-musl': 1.0.22
+      '@formatjs/cli-native-linux-x64': 1.1.24
+      '@formatjs/cli-native-linux-x64-musl': 1.0.22
+      '@formatjs/cli-native-win32-x64': 1.1.25
+
+  '@formatjs/fast-memoize@3.1.7': {}
+
+  '@formatjs/icu-messageformat-parser@3.5.19':
+    dependencies:
+      '@formatjs/icu-skeleton-parser': 2.1.12
+
+  '@formatjs/icu-skeleton-parser@2.1.12': {}
+
+  '@formatjs/intl@6.1.1':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.7
+      '@formatjs/icu-messageformat-parser': 3.5.19
+      intl-messageformat: 12.1.1
 
   '@hey-api/codegen-core@0.5.5(typescript@5.9.3)':
     dependencies:
@@ -2998,6 +3127,11 @@ snapshots:
 
   httpxy@0.5.5: {}
 
+  intl-messageformat@12.1.1:
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.7
+      '@formatjs/icu-messageformat-parser': 3.5.19
+
   is-docker@3.0.0: {}
 
   is-in-ssh@1.0.0: {}
@@ -3309,6 +3443,14 @@ snapshots:
     dependencies:
       react: 19.3.0
       scheduler: 0.28.0
+
+  react-intl@12.1.1(@types/react@19.3.0)(react@19.3.0):
+    dependencies:
+      '@formatjs/icu-messageformat-parser': 3.5.19
+      '@formatjs/intl': 6.1.1
+      '@types/react': 19.3.0
+      intl-messageformat: 12.1.1
+      react: 19.3.0
 
   react-router@8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:

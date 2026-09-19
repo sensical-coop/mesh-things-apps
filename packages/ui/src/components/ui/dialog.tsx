@@ -41,9 +41,11 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeLabel = "Close",
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  closeLabel?: string
 }) {
   return (
     <DialogPortal>
@@ -69,7 +71,7 @@ function DialogContent({
                   size="small"
                   iconOnly
                   leadingIcon={RiCloseLine}
-                  aria-label="Close"
+                  aria-label={closeLabel}
                   className="absolute top-3 right-3 rounded-full"
                 />
               }
@@ -94,10 +96,12 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 function DialogFooter({
   className,
   showCloseButton = false,
+  closeLabel = "Close",
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
+  closeLabel?: string
 }) {
   return (
     <div
@@ -113,7 +117,7 @@ function DialogFooter({
         <DialogPrimitive.Close
           render={<Button variant="secondary" size="small" className="rounded-full" />}
         >
-          Close
+          {closeLabel}
         </DialogPrimitive.Close>
       ) : null}
     </div>

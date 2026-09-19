@@ -10,6 +10,7 @@ import {
 import { RiAddLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
+import { useIntl } from "react-intl";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { FormField } from "@/components/form/form-field";
@@ -23,21 +24,29 @@ import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
 
 export function BlueprintsPage(): ReactElement {
+  const { formatMessage } = useIntl();
   const blueprints = useQuery(blueprintRepository.list());
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">Blueprints</h1>
+        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
+          {formatMessage({ id: "page.blueprints.list.title", defaultMessage: "Blueprints" })}
+        </h1>
         <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-          New blueprint
+          {formatMessage({ id: "page.blueprints.list.newBlueprint", defaultMessage: "New blueprint" })}
         </Button>
       </div>
       <Frame className="shadow-card">
         <FrameHeader>
-          <FrameTitle>Recipes</FrameTitle>
-          <FrameDescription>Assign a blueprint on the device page. Algorithms come from GET /algorithms.</FrameDescription>
+          <FrameTitle>{formatMessage({ id: "page.blueprints.list.panel.title", defaultMessage: "Recipes" })}</FrameTitle>
+          <FrameDescription>
+            {formatMessage({
+              id: "page.blueprints.list.panel.description",
+              defaultMessage: "Assign a blueprint on the device page. Algorithms come from GET /algorithms.",
+            })}
+          </FrameDescription>
         </FrameHeader>
         <FramePanel>
           {blueprints.isPending ? <SkeletonRows /> : null}
@@ -47,13 +56,18 @@ export function BlueprintsPage(): ReactElement {
                 <li key={bp.id} className="flex min-w-0 flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="min-w-0 break-words">{bp.name}</span>
                   <span className="min-w-0 break-words text-caption-1-regular text-text-secondary sm:text-end">
-                    {bp.steps.map((s) => s.function_name).join(", ") || "No steps"}
+                    {bp.steps.map((s) => s.function_name).join(", ") ||
+                      formatMessage({ id: "page.blueprints.list.noSteps", defaultMessage: "No steps" })}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            !blueprints.isPending && <StatusCopy>No blueprints yet.</StatusCopy>
+            !blueprints.isPending && (
+              <StatusCopy>
+                {formatMessage({ id: "page.blueprints.list.none", defaultMessage: "No blueprints yet." })}
+              </StatusCopy>
+            )
           )}
         </FramePanel>
       </Frame>
@@ -63,6 +77,7 @@ export function BlueprintsPage(): ReactElement {
 }
 
 function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => void }): ReactElement {
+  const { formatMessage } = useIntl();
   const algorithms = useQuery(blueprintRepository.algorithms());
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +108,10 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
       },
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Invalid");
+      setError(
+        parsed.error.issues[0]?.message ??
+          formatMessage({ id: "page.blueprints.list.createDialog.invalid", defaultMessage: "Invalid" }),
+      );
       return;
     }
     setError(null);
@@ -103,37 +121,66 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
   return (
     <Modal
       open={open}
-      title="New blueprint"
-      description="One step is enough to attach later. Wire inputs on the API if the recipe needs channels."
+      title={formatMessage({ id: "page.blueprints.list.createDialog.title", defaultMessage: "New blueprint" })}
+      description={formatMessage({
+        id: "page.blueprints.list.createDialog.description",
+        defaultMessage: "One step is enough to attach later. Wire inputs on the API if the recipe needs channels.",
+      })}
       onClose={onClose}
     >
       <form className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
-          <FormField id="blueprint-name" label="Name">
+          <FormField
+            id="blueprint-name"
+            label={formatMessage({ id: "page.blueprints.list.createDialog.name", defaultMessage: "Name" })}
+          >
             <Input id="blueprint-name" name="name" required autoComplete="off" />
           </FormField>
-          <FormField id="blueprint-algorithm" label="Algorithm">
+          <FormField
+            id="blueprint-algorithm"
+            label={formatMessage({ id: "page.blueprints.list.createDialog.algorithm", defaultMessage: "Algorithm" })}
+          >
             <FormSelect
               id="blueprint-algorithm"
               name="function_name"
               required
-              placeholder="Select algorithm"
+              placeholder={formatMessage({
+                id: "page.blueprints.list.createDialog.algorithmPlaceholder",
+                defaultMessage: "Select algorithm",
+              })}
               items={(algorithms.data ?? []).map((alg) => ({ label: alg.name, value: alg.name }))}
             />
           </FormField>
-          <FormField id="blueprint-description" label="Description">
+          <FormField
+            id="blueprint-description"
+            label={formatMessage({
+              id: "page.blueprints.list.createDialog.descriptionField",
+              defaultMessage: "Description",
+            })}
+          >
             <Textarea id="blueprint-description" name="description" />
           </FormField>
         </FieldGroup>
         {error || create.error ? (
-          <StatusCopy>{error ?? "The blueprint was not saved. Check the fields and try again."}</StatusCopy>
+          <StatusCopy>
+            {error ??
+              formatMessage({
+                id: "page.blueprints.list.createDialog.error",
+                defaultMessage: "The blueprint was not saved. Check the fields and try again.",
+              })}
+          </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
           <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            Cancel
+            {formatMessage({ id: "page.blueprints.list.createDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={create.isPending}>
-            {create.isPending ? "Saving" : "Create blueprint"}
+            {create.isPending
+              ? formatMessage({ id: "page.blueprints.list.createDialog.saving", defaultMessage: "Saving" })
+              : formatMessage({
+                  id: "page.blueprints.list.createDialog.create",
+                  defaultMessage: "Create blueprint",
+                })}
           </Button>
         </div>
       </form>

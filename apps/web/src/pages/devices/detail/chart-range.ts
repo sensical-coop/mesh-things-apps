@@ -3,9 +3,24 @@ export type DeviceChartRange =
   | { kind: "custom"; label: string; start: string; stop: string; window: string };
 
 export const CHART_RANGE_PRESETS = [
-  { label: "Last 24 hours", start: "-24h", window: "1h" },
-  { label: "Last 7 days", start: "-7d", window: "6h" },
-  { label: "Last 30 days", start: "-30d", window: "1d" },
+  {
+    label: "Last 24 hours",
+    messageId: "page.devices.detail.chartRange.last24h",
+    start: "-24h",
+    window: "1h",
+  },
+  {
+    label: "Last 7 days",
+    messageId: "page.devices.detail.chartRange.last7d",
+    start: "-7d",
+    window: "6h",
+  },
+  {
+    label: "Last 30 days",
+    messageId: "page.devices.detail.chartRange.last30d",
+    start: "-30d",
+    window: "1d",
+  },
 ] as const;
 
 export function defaultChartRange(): DeviceChartRange {
@@ -31,15 +46,15 @@ function windowForSpanMs(spanMs: number): string {
   return "1d";
 }
 
-export function formatCustomRangeLabel(start: Date, end: Date): string {
+export function formatCustomRangeLabel(start: Date, end: Date, locale?: string): string {
   const sameDay = start.toDateString() === end.toDateString();
   const sameYear = start.getFullYear() === end.getFullYear();
-  const startFmt = new Intl.DateTimeFormat(undefined, {
+  const startFmt = new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     year: sameYear ? undefined : "numeric",
   });
-  const endFmt = new Intl.DateTimeFormat(undefined, {
+  const endFmt = new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -48,12 +63,12 @@ export function formatCustomRangeLabel(start: Date, end: Date): string {
   return `${startFmt.format(start)} – ${endFmt.format(end)}`;
 }
 
-export function customRangeFromDates(from: Date, to: Date): DeviceChartRange {
+export function customRangeFromDates(from: Date, to: Date, locale?: string): DeviceChartRange {
   const start = from.getTime() <= to.getTime() ? from : to;
   const end = from.getTime() <= to.getTime() ? to : from;
   return {
     kind: "custom",
-    label: formatCustomRangeLabel(start, end),
+    label: formatCustomRangeLabel(start, end, locale),
     start: start.toISOString(),
     stop: end.toISOString(),
     window: windowForSpanMs(Math.max(end.getTime() - start.getTime(), 0)),

@@ -5,6 +5,8 @@ import { cx } from "@mtt/ui/utils/cx";
 import { RiCalendarLine } from "@remixicon/react";
 import { type ReactElement, useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { useIntl } from "react-intl";
+import { useLocale } from "@/hooks/use-locale";
 import {
   CHART_RANGE_PRESETS,
   type DeviceChartRange,
@@ -44,6 +46,8 @@ function RangeRow({
 }
 
 export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePickerProps): ReactElement {
+  const { formatMessage } = useIntl();
+  const [locale] = useLocale();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
 
@@ -63,16 +67,22 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
 
   function applyCustom() {
     if (!draft?.from) return;
-    onChange(customRangeFromDates(draft.from, draft.to ?? draft.from));
+    onChange(customRangeFromDates(draft.from, draft.to ?? draft.from, locale));
     setOpen(false);
   }
+
+  const presetMatch =
+    value.kind === "preset" ? CHART_RANGE_PRESETS.find((preset) => preset.start === value.start) : undefined;
+  const displayLabel = presetMatch
+    ? formatMessage({ id: presetMatch.messageId, defaultMessage: presetMatch.label })
+    : value.label;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <Button type="button" size="small" variant="secondary" leadingIcon={RiCalendarLine} className="max-w-full">
-            <span className="truncate">{value.label}</span>
+            <span className="truncate">{displayLabel}</span>
           </Button>
         }
       />
@@ -82,14 +92,21 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
         sideOffset={4}
       >
         <div className="flex flex-col sm:flex-row">
-          <div className="flex min-w-44 flex-col gap-0.5 p-1" role="group" aria-label="Quick range">
+          <div
+            className="flex min-w-44 flex-col gap-0.5 p-1"
+            role="group"
+            aria-label={formatMessage({
+              id: "page.devices.detail.chartRange.quickRange",
+              defaultMessage: "Quick range",
+            })}
+          >
             {CHART_RANGE_PRESETS.map((preset) => (
               <RangeRow
                 key={preset.start}
                 selected={value.kind === "preset" && value.start === preset.start}
                 onClick={() => applyPreset(preset)}
               >
-                {preset.label}
+                {formatMessage({ id: preset.messageId, defaultMessage: preset.label })}
               </RangeRow>
             ))}
           </div>
@@ -110,7 +127,7 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
               }}
             />
             <Button type="button" size="small" className="self-end" disabled={!draft?.from} onClick={applyCustom}>
-              Apply dates
+              {formatMessage({ id: "page.devices.detail.chartRange.applyDates", defaultMessage: "Apply dates" })}
             </Button>
           </div>
         </div>
