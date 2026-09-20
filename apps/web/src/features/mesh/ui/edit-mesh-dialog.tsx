@@ -43,11 +43,15 @@ export function EditMeshDialog({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
+    const channelId = String(form.get("channel_id") ?? "").trim();
     const psk = String(form.get("psk_b64") ?? "");
     // psk_b64 is only sent when the owner actually typed a new one — the
     // field starts blank (PSKs aren't echoed back to the client), and
     // MeshUpdate treats an absent key as "leave unchanged".
-    const body: { label: string | null; psk_b64?: string } = { label: label === "" ? null : label };
+    const body: { label: string | null; channel_id: string; psk_b64?: string } = {
+      label: label === "" ? null : label,
+      channel_id: channelId,
+    };
     if (psk !== "") body.psk_b64 = psk;
     const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
     if (!parsed.success) {
@@ -72,7 +76,7 @@ export function EditMeshDialog({
       )}
       description={formatMessage({
         id: "feature.mesh.editDialog.description",
-        defaultMessage: "Label and pre-shared key. The channel id can't be changed after creation.",
+        defaultMessage: "Label, channel id, and pre-shared key.",
       })}
       onClose={onClose}
     >
@@ -84,6 +88,19 @@ export function EditMeshDialog({
             error={errors.label}
           >
             <Input id="mesh-edit-label" name="label" autoComplete="off" defaultValue={mesh.label ?? ""} />
+          </FormField>
+          <FormField
+            id="mesh-edit-channel"
+            label={formatMessage({ id: "feature.mesh.editDialog.channelId", defaultMessage: "Channel id" })}
+            error={errors.channel_id}
+          >
+            <Input
+              id="mesh-edit-channel"
+              name="channel_id"
+              required
+              autoComplete="off"
+              defaultValue={mesh.channel_id}
+            />
           </FormField>
           <FormField
             id="mesh-edit-psk"

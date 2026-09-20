@@ -327,7 +327,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
     if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
-    const updated = await db.meshes.update(mesh.id, parsed.data.body ?? {});
+    const patch = parsed.data.body ?? {};
+    const updated = await db.meshes.update(mesh.id, {
+      channelId: patch.channel_id,
+      pskB64: patch.psk_b64,
+      label: patch.label,
+    });
     if (!updated) return c.json({ detail: "Not found" }, 404);
     return c.json(meshJson(updated, canSeePsk(actor, updated)));
   });

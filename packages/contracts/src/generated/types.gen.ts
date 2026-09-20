@@ -224,9 +224,10 @@ export type MeshCreate = {
 };
 
 /**
- * PUT /meshes/{id}: only psk_b64 and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
  */
 export type MeshUpdate = {
+    channel_id?: string;
     label?: string | null;
 };
 
@@ -510,9 +511,10 @@ export type MeshWritable = {
 };
 
 /**
- * PUT /meshes/{id}: only psk_b64 and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
  */
 export type MeshUpdateWritable = {
+    channel_id?: string;
     /**
      * Base64-encoded channel PSK
      */
