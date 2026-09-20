@@ -83,7 +83,7 @@ export function MeshDetailPage(): ReactElement {
               <StatusCopy>
                 {formatMessage({
                   id: "page.meshes.detail.psk.error",
-                  defaultMessage: "This mesh is not in the inventory, or the mock is not running.",
+                  defaultMessage: "This mesh is not in the inventory, or the API is unreachable.",
                 })}
               </StatusCopy>
             ) : null}
