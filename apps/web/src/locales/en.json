@@ -7,6 +7,7 @@
   "common.format.minuteUnit": "min",
   "common.format.secondUnit": "s",
   "common.languageSwitcher.label": "Change language",
+  "common.ownerColumn.me": "{name} (me)",
 
   "page.devices.list.title": "Devices",
   "page.devices.list.inventory.title": "Inventory",
@@ -29,6 +30,7 @@
   "page.devices.list.columns.role": "Role",
   "page.devices.list.columns.allowed": "Allowed",
   "page.devices.list.columns.radio": "Radio",
+  "page.devices.list.columns.owner": "Owner",
   "page.devices.list.columns.lastSeen": "Last seen",
   "page.devices.list.columns.actions": "Actions",
   "page.devices.list.open": "Open",
@@ -128,6 +130,7 @@
   "page.meshes.list.columns.mesh": "Mesh",
   "page.meshes.list.columns.channel": "Channel",
   "page.meshes.list.columns.devices": "Devices",
+  "page.meshes.list.columns.owner": "Owner",
   "page.meshes.list.columns.actions": "Actions",
   "page.meshes.list.open": "Open",
   "page.meshes.list.delete": "Delete mesh",
