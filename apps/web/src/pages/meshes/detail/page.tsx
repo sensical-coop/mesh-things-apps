@@ -108,11 +108,18 @@ export function MeshDetailPage(): ReactElement {
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Pre-shared key" })}</FrameTitle>
+            <FrameTitle>
+              <span>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Channel ID" })}</span>
+              {mesh.data ? (
+                <code className="rounded-md bg-background-secondary-default px-1.5 py-0.5 font-mono text-body-2-regular text-text-primary">
+                  {mesh.data.channel_id}
+                </code>
+              ) : null}
+            </FrameTitle>
             <FrameDescription>
               {formatMessage({
                 id: "page.meshes.detail.psk.description",
-                defaultMessage: "Visible only on this mesh. Copy it; do not put it in a URL.",
+                defaultMessage: "Mesh PSK.",
               })}
             </FrameDescription>
           </FrameHeader>

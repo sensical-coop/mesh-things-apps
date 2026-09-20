@@ -54,7 +54,7 @@ export function MeshesPage(): ReactElement {
       {
         key: "channel_id",
         urlKey: "channel_id",
-        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel id" }),
+        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel ID" }),
         type: "text",
       },
     ],
@@ -302,7 +302,7 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
           </FormField>
           <FormField
             id="mesh-channel"
-            label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel id" })}
+            label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" })}
             error={errors.channel_id}
           >
             <Input id="mesh-channel" name="channel_id" required autoComplete="off" />
