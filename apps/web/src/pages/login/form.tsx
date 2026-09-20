@@ -117,7 +117,7 @@ export function LoginForm(): ReactElement {
             defaultMessage="Don't have an account? <link>Sign up</link>."
             values={{
               link: (chunks: ReactNode) => (
-                <Link to={routes.signup} className="underline underline-offset-2">
+                <Link to={routes.signup} className="underline underline-offset-2 text-accent-500">
                   {chunks}
                 </Link>
               ),

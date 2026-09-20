@@ -102,7 +102,7 @@ export function SignupForm(): ReactElement {
                 defaultMessage="I agree to the <link>Terms and Conditions</link>."
                 values={{
                   link: (chunks: ReactNode) => (
-                    <Link to={routes.terms} target="_blank" className="underline underline-offset-2">
+                    <Link to={routes.terms} target="_blank" className="underline underline-offset-2 text-accent-500">
                       {chunks}
                     </Link>
                   ),
@@ -123,7 +123,7 @@ export function SignupForm(): ReactElement {
             defaultMessage="Already have an account? <link>Sign in</link>."
             values={{
               link: (chunks: ReactNode) => (
-                <Link to={routes.login} className="underline underline-offset-2">
+                <Link to={routes.login} className="underline underline-offset-2 text-accent-500">
                   {chunks}
                 </Link>
               ),
