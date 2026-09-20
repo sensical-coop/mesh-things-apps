@@ -1,4 +1,5 @@
 import type {
+  DeviceMeasurement,
   DeviceQualityResponse,
   DeviceRead,
   DeviceTelemetryVariant,
@@ -16,7 +17,7 @@ import {
   FrameTitle,
 } from "@mtt/ui/reui/frame";
 import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { type ReactElement, useMemo, useState } from "react";
+import { type ReactElement, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -46,6 +47,10 @@ import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
 
+function chartAnchorId(channel: string): string {
+  return `chart-${channel}`;
+}
+
 export function DeviceDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { deviceUuid } = useParams({ from: routes.device });
@@ -67,18 +72,17 @@ export function DeviceDetailPage(): ReactElement {
       query: { start: "-24h" },
     }),
   );
-  const variantId = variants.data?.[0]?.telemetry_variant.id;
-  const ranges = useQuery({
-    ...readingsRepository.variantMeasurements({
-      path: { telemetry_variant_id: variantId ?? "00000000-0000-4000-8000-000000000000" },
-    }),
-    enabled: Boolean(variantId),
-  });
   const names = useMemo(
     () => new globalThis.Map((catalog.data ?? []).map((m: MeasurementTypeRead) => [m.channel, m])),
     [catalog.data],
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [scrollToChannel, setScrollToChannel] = useState<string | null>(null);
+
+  function handleViewChart(channel: string) {
+    setScrollToChannel(channel);
+    void setTab("dashboard");
+  }
 
   const chartChannels = useMemo(() => {
     const fromLatest = (latest.data?.readings ?? [])
@@ -170,8 +174,9 @@ export function DeviceDetailPage(): ReactElement {
             device={device}
             quality={quality}
             variants={variants}
-            ranges={ranges}
+            seen={seen}
             names={names}
+            onViewChart={handleViewChart}
           />
         </TabsContent>
         <TabsContent value="dashboard" className="mt-6 flex flex-col gap-6">
@@ -182,6 +187,8 @@ export function DeviceDetailPage(): ReactElement {
             latestKpis={latestKpis}
             chartChannels={chartChannels}
             names={names}
+            scrollToChannel={scrollToChannel}
+            onScrolled={() => setScrollToChannel(null)}
           />
         </TabsContent>
       </Tabs>
@@ -195,17 +202,27 @@ function DeviceStatusTab({
   device,
   quality,
   variants,
-  ranges,
+  seen,
   names,
+  onViewChart,
 }: {
   device: UseQueryResult<DeviceRead>;
   quality: UseQueryResult<DeviceQualityResponse>;
   variants: UseQueryResult<DeviceTelemetryVariant[]>;
-  ranges: UseQueryResult<TelemetryVariantMeasurementRead[]>;
+  seen: UseQueryResult<DeviceMeasurement[]>;
   names: NamesByChannel;
+  onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen, formatRatio, formatWhen } = useFormatters();
+  const rangeQueries = useQueries({
+    queries: (variants.data ?? []).map((variant) => ({
+      ...readingsRepository.variantMeasurements({
+        path: { telemetry_variant_id: variant.telemetry_variant.id },
+      }),
+      enabled: Boolean(variant.telemetry_variant.id),
+    })),
+  });
   const qualitySummary = quality.data ? qualityHeadlineKpis(quality.data, formatMessage, formatRatio) : [];
   const pointsIngested = quality.data?.points_ingested;
   return (
@@ -444,47 +461,173 @@ function DeviceStatusTab({
             })}
           </FrameDescription>
         </FrameHeader>
-        <FramePanel>
+        <FramePanel className="flex flex-col gap-8">
           {variants.isPending ? <SkeletonRows rows={2} /> : null}
-          {variants.data?.length ? (
-            <ul className="oa-arrive flex flex-col gap-2 text-body-medium text-text-primary">
-              {variants.data.map((row) => (
-                <li key={row.id} className="flex min-w-0 flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                  <span className="min-w-0 break-words">{row.telemetry_variant.name ?? row.telemetry_variant.payload_kind}</span>
-                  <span className="min-w-0 break-words text-caption-1-regular text-text-secondary sm:text-end">
-                    {formatMessage(
-                      { id: "page.devices.detail.variants.last", defaultMessage: "last {when}" },
-                      { when: formatWhen(row.last_seen) },
-                    )}
-                    {row.telemetry_variant.default_reading_interval_seconds
-                      ? ` · ${row.telemetry_variant.default_reading_interval_seconds}s`
-                      : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            !variants.isPending && (
-              <StatusCopy>
-                {formatMessage({
-                  id: "page.devices.detail.variants.none",
-                  defaultMessage: "No telemetry variants discovered yet.",
-                })}
-              </StatusCopy>
-            )
-          )}
-          {ranges.data?.length ? (
-            <ul className="mt-3 flex flex-col gap-1 text-caption-1-regular text-text-secondary">
-              {ranges.data.map((row) => (
-                <li key={row.id}>
-                  {row.measurement_type.display_name ?? row.measurement_type.channel}: {row.valid_min ?? "—"} … {row.valid_max ?? "—"}
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          {variants.data?.length
+            ? variants.data.map((variant, index) => (
+                <TelemetryVariantSection
+                  key={variant.id}
+                  variant={variant}
+                  device={device.data}
+                  measurements={(seen.data ?? []).filter(
+                    (row) => row.telemetry_variant_id === variant.telemetry_variant.id,
+                  )}
+                  ranges={rangeQueries[index]?.data ?? []}
+                  onViewChart={onViewChart}
+                />
+              ))
+            : !variants.isPending && (
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.devices.detail.variants.none",
+                    defaultMessage: "No telemetry variants discovered yet.",
+                  })}
+                </StatusCopy>
+              )}
         </FramePanel>
       </Frame>
     </>
+  );
+}
+
+function TelemetryVariantSection({
+  variant,
+  device,
+  measurements,
+  ranges,
+  onViewChart,
+}: {
+  variant: DeviceTelemetryVariant;
+  device: DeviceRead | undefined;
+  measurements: DeviceMeasurement[];
+  ranges: TelemetryVariantMeasurementRead[];
+  onViewChart: (channel: string) => void;
+}): ReactElement {
+  const { formatMessage } = useIntl();
+  const { formatLastSeen, formatWhen } = useFormatters();
+  const tv = variant.telemetry_variant;
+  const rangeByMeasurementTypeId = new globalThis.Map(ranges.map((row) => [row.measurement_type.id, row]));
+  const deviceReading = device?.reading_interval_seconds;
+  const devicePublish = device?.publish_interval_seconds;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h3 className="min-w-0 break-words text-body-medium text-text-primary">
+            {tv.name ?? tv.payload_kind}
+          </h3>
+          <span className="min-w-0 break-words text-caption-1-regular text-text-secondary">
+            {formatMessage(
+              { id: "page.devices.detail.variants.last", defaultMessage: "last {when}" },
+              { when: formatWhen(variant.last_seen) },
+            )}
+            {deviceReading != null
+              ? ` · ${formatMessage(
+                  {
+                    id: "page.devices.detail.variants.deviceInterval",
+                    defaultMessage: "reading {reading}s · publish {publish}s",
+                  },
+                  { reading: deviceReading, publish: devicePublish ?? "—" },
+                )}`
+              : tv.default_reading_interval_seconds
+                ? ` · ${formatMessage(
+                    {
+                      id: "page.devices.detail.variants.defaultInterval",
+                      defaultMessage: "default reading {seconds}s",
+                    },
+                    { seconds: tv.default_reading_interval_seconds },
+                  )}`
+                : ""}
+          </span>
+        </div>
+        {tv.description ? (
+          <p className="text-caption-1-regular text-text-secondary">{tv.description}</p>
+        ) : null}
+      </div>
+      {measurements.length ? (
+        <div className="oa-arrive overflow-x-auto">
+          <table className="w-full min-w-[36rem] caption-bottom text-left text-body-2-regular">
+            <thead>
+              <tr>
+                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                  {formatMessage({
+                    id: "page.devices.detail.variants.columns.measurement",
+                    defaultMessage: "Measurement",
+                  })}
+                </th>
+                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                  {formatMessage({ id: "page.devices.detail.variants.columns.unit", defaultMessage: "Unit" })}
+                </th>
+                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                  {formatMessage({
+                    id: "page.devices.detail.variants.columns.range",
+                    defaultMessage: "Valid range",
+                  })}
+                </th>
+                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                  {formatMessage({
+                    id: "page.devices.detail.variants.columns.lastSeen",
+                    defaultMessage: "Last seen",
+                  })}
+                </th>
+                <th className="h-8 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                  {formatMessage({ id: "page.devices.detail.variants.columns.chart", defaultMessage: "Chart" })}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {measurements.map((row) => {
+                const range = rangeByMeasurementTypeId.get(row.measurement_type.id);
+                const channel = row.measurement_type.channel;
+                const chartable =
+                  row.measurement_type.origin === "measured" || row.measurement_type.origin === "derived";
+                return (
+                  <tr key={row.id} className="text-text-primary hover:bg-background-primary-hover">
+                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
+                      {row.measurement_type.display_name ?? channel}
+                    </td>
+                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
+                      {row.measurement_type.native_unit ?? "—"}
+                    </td>
+                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
+                      {range ? `${range.valid_min ?? "—"} … ${range.valid_max ?? "—"}` : "—"}
+                    </td>
+                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
+                      {formatLastSeen(row.last_seen)}
+                    </td>
+                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
+                      {chartable ? (
+                        <a
+                          href={`#${chartAnchorId(channel)}`}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            onViewChart(channel);
+                          }}
+                          className="rounded-full text-caption-1-medium text-accent-500 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                        >
+                          {formatMessage({
+                            id: "page.devices.detail.variants.viewChart",
+                            defaultMessage: "View chart",
+                          })}
+                        </a>
+                      ) : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <StatusCopy>
+          {formatMessage({
+            id: "page.devices.detail.variants.noMeasurements",
+            defaultMessage: "No measurements discovered for this variant yet.",
+          })}
+        </StatusCopy>
+      )}
+    </div>
   );
 }
 
@@ -495,6 +638,8 @@ function DeviceDashboardTab({
   latestKpis,
   chartChannels,
   names,
+  scrollToChannel,
+  onScrolled,
 }: {
   deviceUuid: string;
   ready: boolean;
@@ -502,6 +647,8 @@ function DeviceDashboardTab({
   latestKpis: LatestReading[];
   chartChannels: string[];
   names: NamesByChannel;
+  scrollToChannel: string | null;
+  onScrolled: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { formatValue, formatWhen } = useFormatters();
@@ -522,6 +669,18 @@ function DeviceDashboardTab({
       enabled: ready,
     })),
   });
+
+  useEffect(() => {
+    if (!scrollToChannel || !chartChannels.includes(scrollToChannel)) return;
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(chartAnchorId(scrollToChannel))?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+    onScrolled();
+    return () => cancelAnimationFrame(frame);
+  }, [scrollToChannel, chartChannels, onScrolled]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -604,16 +763,16 @@ function DeviceDashboardTab({
                     defaultMessage: "Mean",
                   });
               const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
+              let content: ReactElement;
               if (series?.isPending) {
-                return (
-                  <KpiPanel key={channel} label={label} hint={hint} icon={icon} className="min-h-52" aria-hidden>
+                content = (
+                  <KpiPanel label={label} hint={hint} icon={icon} className="min-h-52" aria-hidden>
                     <SkeletonRows rows={5} />
                   </KpiPanel>
                 );
-              }
-              if (series?.error) {
-                return (
-                  <KpiPanel key={channel} label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
+              } else if (series?.error) {
+                content = (
+                  <KpiPanel label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
                     <StatusCopy>
                       {formatMessage({
                         id: "page.devices.detail.dashboard.history.seriesError",
@@ -622,10 +781,9 @@ function DeviceDashboardTab({
                     </StatusCopy>
                   </KpiPanel>
                 );
-              }
-              if (!points?.length) {
-                return (
-                  <KpiPanel key={channel} label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
+              } else if (!points?.length) {
+                content = (
+                  <KpiPanel label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
                     <StatusCopy>
                       {formatMessage({
                         id: "page.devices.detail.dashboard.history.noPoints",
@@ -634,9 +792,13 @@ function DeviceDashboardTab({
                     </StatusCopy>
                   </KpiPanel>
                 );
+              } else {
+                content = <SeriesChart label={label} hint={hint} icon={icon} points={points} className="min-h-52" />;
               }
               return (
-                <SeriesChart key={channel} label={label} hint={hint} icon={icon} points={points} className="min-h-52" />
+                <div key={channel} id={chartAnchorId(channel)} className="scroll-mt-6">
+                  {content}
+                </div>
               );
             })}
           </div>
