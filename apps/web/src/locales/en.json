@@ -180,6 +180,7 @@
   "page.meshes.detail.devices.columns.allowed": "Allowed",
   "page.meshes.detail.devices.columns.radio": "Radio",
   "page.meshes.detail.devices.columns.lastSeen": "Last seen",
+  "page.meshes.detail.devices.columns.actions": "Actions",
   "page.meshes.detail.registerGatewayDialog.title": "Register gateway",
   "page.meshes.detail.registerGatewayDialog.description": "A registered gateway authorizes its traffic to be decoded.",
   "page.meshes.detail.registerGatewayDialog.label": "Label",

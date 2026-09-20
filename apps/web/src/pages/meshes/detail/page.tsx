@@ -1,5 +1,6 @@
+import type { DeviceRead } from "@mtt/contracts";
 import { zDevicesCreateData } from "@mtt/contracts/zod";
-import { Button } from "@mtt/ui/components/base/buttons/button";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -30,8 +31,9 @@ import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
+import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { useFormatters } from "@/hooks/use-formatters";
-import { routes } from "@/router";
+import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
@@ -45,12 +47,14 @@ export function MeshDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen } = useFormatters();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
   const me = useQuery({ ...authRepository.me(), retry: false });
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [settingsDevice, setSettingsDevice] = useState<DeviceRead | null>(null);
   const canDelete =
     mesh.data != null && (me.data?.is_superuser === true || mesh.data.owner_id === me.data?.id);
 
@@ -230,6 +234,12 @@ export function MeshDetailPage(): ReactElement {
                           defaultMessage: "Last seen",
                         })}
                       </th>
+                      <th className="h-8 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                        {formatMessage({
+                          id: "page.meshes.detail.devices.columns.actions",
+                          defaultMessage: "Actions",
+                        })}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -259,6 +269,25 @@ export function MeshDetailPage(): ReactElement {
                         <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap tabular-nums text-text-secondary">
                           {formatLastSeen(device.last_seen)}
                         </td>
+                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
+                          <div className="flex justify-end gap-2">
+                            <ButtonLink
+                              href={href(routes.device, { deviceUuid: device.uuid })}
+                              size="xs"
+                              variant="secondary"
+                            >
+                              {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
+                            </ButtonLink>
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="secondary"
+                              onClick={() => setSettingsDevice(device)}
+                            >
+                              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -284,6 +313,16 @@ export function MeshDetailPage(): ReactElement {
         onClose={() => setDeleteOpen(false)}
         onDeleted={() => void navigate({ to: routes.meshes })}
       />
+      {settingsDevice ? (
+        <DeviceSettingsDialog
+          device={settingsDevice}
+          open
+          onClose={() => setSettingsDevice(null)}
+          onSaved={() =>
+            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: meshId } }) })
+          }
+        />
+      ) : null}
     </>
   );
 }
