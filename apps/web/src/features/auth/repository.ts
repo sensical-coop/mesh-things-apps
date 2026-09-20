@@ -1,6 +1,8 @@
 import { ownersCsrfCookieRetrieve } from "@mtt/contracts";
 import {
   ownersCreateMutation,
+  ownersListOptions,
+  ownersListQueryKey,
   ownersLoginCreateMutation,
   ownersLogoutCreateMutation,
   ownersMeResendVerificationCreateMutation,
@@ -16,6 +18,8 @@ export const authRepository = {
   logout: ownersLogoutCreateMutation,
   me: ownersMeRetrieveOptions,
   meKey: ownersMeRetrieveQueryKey,
+  list: ownersListOptions,
+  listKey: ownersListQueryKey,
   resendVerification: ownersMeResendVerificationCreateMutation,
   verifyEmail: ownersVerifyEmailRetrieveOptions,
 };
