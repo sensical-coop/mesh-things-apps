@@ -12,7 +12,7 @@ import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
@@ -80,7 +80,15 @@ export function MeshesPage(): ReactElement {
       col.accessor((row) => meshTitle(row), {
         id: "label",
         header: formatMessage({ id: "page.meshes.list.columns.mesh", defaultMessage: "Mesh" }),
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <Link
+            to={routes.mesh}
+            params={{ meshId: info.row.original.id }}
+            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            {info.getValue()}
+          </Link>
+        ),
       }),
       col.accessor("channel_id", {
         header: formatMessage({ id: "page.meshes.list.columns.channel", defaultMessage: "Channel" }),

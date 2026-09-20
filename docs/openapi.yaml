@@ -1868,6 +1868,9 @@ components:
         is_allowed:
           type: boolean
           readOnly: true
+        alarms_enabled:
+          type: boolean
+          readOnly: true
         admin_keys_b64:
           type: array
           items:
@@ -1932,6 +1935,7 @@ components:
           format: date-time
           readOnly: true
       required:
+      - alarms_enabled
       - created_at
       - hardware_type
       - is_allowed
@@ -1996,6 +2000,10 @@ components:
           description: 'Base64-encoded admin keys (up to 3). Warning: PUT replaces
             the whole list.'
         is_allowed:
+          type: boolean
+        is_gateway:
+          type: boolean
+        alarms_enabled:
           type: boolean
         latitude:
           type: number

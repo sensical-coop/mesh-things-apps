@@ -1,5 +1,5 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -9,7 +9,8 @@ import {
 } from "@mtt/ui/reui/frame";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
-import { type ReactElement, useMemo } from "react";
+import { type ReactElement, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
@@ -24,6 +25,7 @@ import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
+import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
@@ -37,6 +39,7 @@ export function DevicesPage(): ReactElement {
   const { formatLastSeen } = useFormatters();
   const filterLabels = useTranslatedFilterLabels();
   const filterOperatorLabels = useTranslatedFilterOperatorLabels();
+  const [settingsDevice, setSettingsDevice] = useState<DeviceRow | null>(null);
   const meshes = useQuery(meshRepository.list());
   const meshOptions = useMemo(
     () => (meshes.data ?? []).map((mesh) => ({ value: mesh.id, label: meshTitle(mesh) })),
@@ -132,6 +135,15 @@ export function DevicesPage(): ReactElement {
       col.accessor((row) => deviceTitle(row), {
         id: "device",
         header: formatMessage({ id: "page.devices.list.columns.device", defaultMessage: "Device" }),
+        cell: (info) => (
+          <Link
+            to={routes.device}
+            params={{ deviceUuid: info.row.original.uuid }}
+            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            {info.getValue()}
+          </Link>
+        ),
       }),
       col.accessor("meshLabel", {
         header: formatMessage({ id: "page.devices.list.columns.mesh", defaultMessage: "Mesh" }),
@@ -165,10 +177,13 @@ export function DevicesPage(): ReactElement {
           </span>
         ),
         cell: ({ row }) => (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
             </ButtonLink>
+            <Button type="button" size="xs" variant="secondary" onClick={() => setSettingsDevice(row.original)}>
+              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+            </Button>
           </div>
         ),
       }),
@@ -235,6 +250,9 @@ export function DevicesPage(): ReactElement {
           </FramePanel>
         </Frame>
       </div>
+      {settingsDevice ? (
+        <DeviceSettingsDialog device={settingsDevice} open onClose={() => setSettingsDevice(null)} />
+      ) : null}
     </>
   );
 }

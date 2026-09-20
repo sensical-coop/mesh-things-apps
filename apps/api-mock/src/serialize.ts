@@ -26,6 +26,7 @@ export function deviceJson(device: Device) {
     label: device.label,
     is_gateway: device.isGateway,
     is_allowed: device.isAllowed,
+    alarms_enabled: device.alarmsEnabled,
     admin_keys_b64: device.adminKeysB64,
     latitude: device.latitude,
     longitude: device.longitude,

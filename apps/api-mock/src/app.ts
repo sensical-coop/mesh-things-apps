@@ -393,6 +393,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       latitude: lat,
       longitude: lon,
       isAllowed: patch.is_allowed,
+      isGateway: patch.is_gateway,
+      alarmsEnabled: patch.alarms_enabled,
       postprocessingBlueprintId:
         patch.postprocessing_blueprint_id === undefined
           ? undefined

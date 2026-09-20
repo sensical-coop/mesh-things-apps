@@ -15,8 +15,8 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import { useMutation, useQueries, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, useMemo, useState } from "react";
+import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { type ReactElement, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -24,13 +24,7 @@ import { useIntl, type IntlShape } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
-import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
-import { FormSelect } from "@/components/form/form-select";
 import { useFormatters, type Formatters } from "@/hooks/use-formatters";
-import { blueprintRepository } from "@/features/blueprint/repository";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { readingsRepository } from "@/features/readings/repository";
@@ -41,17 +35,15 @@ import { kpiIconFor } from "@/components/kpi/kpi-icon";
 import { SeriesChart } from "@/components/series/series-chart";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { Modal } from "@/components/modal";
-import { dialogActionsClass } from "@/lib/dialog-actions";
 import { chartRangeQuery, defaultChartRange, type DeviceChartRange } from "./chart-range";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceChartRangePicker } from "./chart-range-picker";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
+import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
-const NIL_BLUEPRINT_ID = "00000000-0000-4000-8000-000000000000";
 const DEVICE_TABS = ["status", "dashboard"] as const;
 
 export function DeviceDetailPage(): ReactElement {
@@ -660,192 +652,6 @@ function DeviceDashboardTab({
         )}
       </section>
     </div>
-  );
-}
-
-type IntervalSecondsFieldProps = {
-  id: string;
-  name: string;
-  label: string;
-  defaultValue: number | null;
-};
-
-function IntervalSecondsField({ id, name, label, defaultValue }: IntervalSecondsFieldProps): ReactElement {
-  const { formatSecondsAsHms } = useFormatters();
-  const [seconds, setSeconds] = useState(defaultValue);
-  return (
-    <FormField id={id} label={label}>
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <FormNumber id={id} name={name} min={0} defaultValue={defaultValue ?? undefined} onValueChange={setSeconds} />
-        </div>
-        <p className="shrink-0 whitespace-nowrap text-caption-1-regular text-text-tertiary tabular-nums" aria-live="polite">
-          {formatSecondsAsHms(seconds)}
-        </p>
-      </div>
-    </FormField>
-  );
-}
-
-function DeviceSettingsDialog({
-  device,
-  open,
-  onClose,
-}: {
-  device: DeviceRead;
-  open: boolean;
-  onClose: () => void;
-}): ReactElement {
-  const { formatMessage } = useIntl();
-  const queryClient = useQueryClient();
-  const blueprints = useQuery(blueprintRepository.list());
-  const [error, setError] = useState<string | null>(null);
-  const update = useMutation({
-    ...deviceRepository.update(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }),
-      });
-      onClose();
-    },
-  });
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const lat = String(form.get("latitude") ?? "").trim();
-    const lon = String(form.get("longitude") ?? "").trim();
-    if ((lat === "") !== (lon === "")) {
-      setError(
-        formatMessage({
-          id: "page.devices.detail.settings.latLonError",
-          defaultMessage: "Latitude and longitude must be provided together.",
-        }),
-      );
-      return;
-    }
-    setError(null);
-    const blueprint = String(form.get("postprocessing_blueprint_id") ?? "");
-    const blueprintId = blueprint === "__none__" ? "" : blueprint;
-    update.mutate({
-      path: { device_uuid: device.uuid },
-      body: {
-        is_allowed: form.get("is_allowed") === "on",
-        reading_interval_seconds: Number(form.get("reading_interval_seconds")) || null,
-        publish_interval_seconds: Number(form.get("publish_interval_seconds")) || null,
-        postprocessing_blueprint_id: blueprintId || NIL_BLUEPRINT_ID,
-        latitude: lat === "" ? null : Number(lat),
-        longitude: lon === "" ? null : Number(lon),
-      },
-    });
-  }
-
-  return (
-    <Modal
-      open={open}
-      title={formatMessage({ id: "page.devices.detail.settings.title", defaultMessage: "Edit settings" })}
-      description={formatMessage({
-        id: "page.devices.detail.settings.description",
-        defaultMessage: "Allowed, intervals, blueprint, and coordinates.",
-      })}
-      onClose={onClose}
-    >
-      <form key={`${device.uuid}-${open}`} className="flex flex-col gap-5" onSubmit={onSubmit}>
-        <FieldGroup>
-          <FormCheckbox
-            id="device-allowed"
-            name="is_allowed"
-            label={formatMessage({ id: "page.devices.detail.settings.allowed", defaultMessage: "Allowed" })}
-            defaultChecked={device.is_allowed}
-          />
-          <IntervalSecondsField
-            id="device-reading"
-            name="reading_interval_seconds"
-            label={formatMessage({
-              id: "page.devices.detail.settings.readingInterval",
-              defaultMessage: "Reading interval (s)",
-            })}
-            defaultValue={device.reading_interval_seconds}
-          />
-          <IntervalSecondsField
-            id="device-publish"
-            name="publish_interval_seconds"
-            label={formatMessage({
-              id: "page.devices.detail.settings.publishInterval",
-              defaultMessage: "Publish interval (s)",
-            })}
-            defaultValue={device.publish_interval_seconds}
-          />
-          <FormField
-            id="device-blueprint"
-            label={formatMessage({ id: "page.devices.detail.settings.blueprint", defaultMessage: "Blueprint" })}
-          >
-            <FormSelect
-              id="device-blueprint"
-              name="postprocessing_blueprint_id"
-              defaultValue={
-                device.postprocessing_blueprint_id === NIL_BLUEPRINT_ID ||
-                device.postprocessing_blueprint_id === null
-                  ? "__none__"
-                  : device.postprocessing_blueprint_id
-              }
-              items={[
-                {
-                  label: formatMessage({
-                    id: "page.devices.detail.settings.blueprintNone",
-                    defaultMessage: "None",
-                  }),
-                  value: "__none__",
-                },
-                ...(blueprints.data ?? []).map((bp) => ({ label: bp.name, value: bp.id })),
-              ]}
-            />
-          </FormField>
-          <FormField
-            id="device-lat"
-            label={formatMessage({ id: "page.devices.detail.settings.latitude", defaultMessage: "Latitude" })}
-          >
-            <FormNumber
-              id="device-lat"
-              name="latitude"
-              min={-90}
-              max={90}
-              step="any"
-              defaultValue={device.latitude ?? undefined}
-            />
-          </FormField>
-          <FormField
-            id="device-lon"
-            label={formatMessage({ id: "page.devices.detail.settings.longitude", defaultMessage: "Longitude" })}
-          >
-            <FormNumber
-              id="device-lon"
-              name="longitude"
-              min={-180}
-              max={180}
-              step="any"
-              defaultValue={device.longitude ?? undefined}
-            />
-          </FormField>
-        </FieldGroup>
-        {error || update.error ? (
-          <StatusCopy>
-            {error ??
-              formatMessage({ id: "page.devices.detail.settings.updateFailed", defaultMessage: "Update failed." })}
-          </StatusCopy>
-        ) : null}
-        <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.devices.detail.settings.cancel", defaultMessage: "Cancel" })}
-          </Button>
-          <Button type="submit" size="small" disabled={update.isPending}>
-            {update.isPending
-              ? formatMessage({ id: "page.devices.detail.settings.saving", defaultMessage: "Saving" })
-              : formatMessage({ id: "page.devices.detail.settings.save", defaultMessage: "Save settings" })}
-          </Button>
-        </div>
-      </form>
-    </Modal>
   );
 }
 
