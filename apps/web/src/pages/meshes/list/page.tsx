@@ -32,6 +32,7 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
+import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 
 type MeshRow = Mesh & { devices: number };
 
@@ -296,65 +297,6 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
           </Button>
         </div>
       </form>
-    </Modal>
-  );
-}
-
-function DeleteMeshDialog({ mesh, onClose }: { mesh: MeshRow | null; onClose: () => void }): ReactElement {
-  const { formatMessage } = useIntl();
-  const queryClient = useQueryClient();
-  const destroy = useMutation({
-    ...meshRepository.destroy(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      onClose();
-    },
-  });
-
-  return (
-    <Modal
-      open={mesh !== null}
-      title={formatMessage({ id: "page.meshes.list.deleteDialog.title", defaultMessage: "Delete mesh" })}
-      description={
-        mesh
-          ? formatMessage(
-              {
-                id: "page.meshes.list.deleteDialog.description",
-                defaultMessage:
-                  "This deletes {mesh} and every device registered on it. This can't be undone.",
-              },
-              { mesh: meshTitle(mesh) },
-            )
-          : ""
-      }
-      onClose={onClose}
-    >
-      <div className="flex flex-col gap-5">
-        {destroy.error ? (
-          <StatusCopy>
-            {formatMessage({
-              id: "page.meshes.list.deleteDialog.error",
-              defaultMessage: "The mesh was not deleted. Try again.",
-            })}
-          </StatusCopy>
-        ) : null}
-        <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.meshes.list.deleteDialog.cancel", defaultMessage: "Cancel" })}
-          </Button>
-          <Button
-            type="button"
-            variant="danger"
-            size="small"
-            disabled={destroy.isPending}
-            onClick={() => mesh && destroy.mutate({ path: { mesh_id: mesh.id } })}
-          >
-            {destroy.isPending
-              ? formatMessage({ id: "page.meshes.list.deleteDialog.deleting", defaultMessage: "Deleting" })
-              : formatMessage({ id: "page.meshes.list.deleteDialog.confirm", defaultMessage: "Delete mesh" })}
-          </Button>
-        </div>
-      </div>
     </Modal>
   );
 }
