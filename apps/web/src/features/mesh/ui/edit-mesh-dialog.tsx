@@ -91,7 +91,7 @@ export function EditMeshDialog({
           </FormField>
           <FormField
             id="mesh-edit-channel"
-            label={formatMessage({ id: "feature.mesh.editDialog.channelId", defaultMessage: "Channel id" })}
+            label={formatMessage({ id: "feature.mesh.editDialog.channelId", defaultMessage: "Channel ID" })}
             error={errors.channel_id}
           >
             <Input
