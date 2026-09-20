@@ -7,10 +7,16 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import { RiAddLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@mtt/ui/components/ui/dropdown-menu";
+import { RiAddLine, RiArrowDownSLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
@@ -19,6 +25,7 @@ import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
 import { Input } from "@mtt/ui/components/ui/input";
+import { authRepository } from "@/features/auth/repository";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
@@ -33,14 +40,20 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
+import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen } = useFormatters();
+  const navigate = useNavigate();
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
+  const me = useQuery({ ...authRepository.me(), retry: false });
   const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const canDelete =
+    mesh.data != null && (me.data?.is_superuser === true || mesh.data.owner_id === me.data?.id);
 
   const plotted = useMemo(
     () => (devices.data ?? []).filter((d) => d.latitude != null && d.longitude != null),
@@ -62,9 +75,27 @@ export function MeshDetailPage(): ReactElement {
               : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
           </h1>
         </div>
-        <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-          {formatMessage({ id: "page.meshes.detail.registerDevice", defaultMessage: "Register device" })}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
+            {formatMessage({ id: "page.meshes.detail.registerDevice", defaultMessage: "Register device" })}
+          </Button>
+          {canDelete ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button type="button" variant="secondary" size="small" trailingIcon={RiArrowDownSLine}>
+                    {formatMessage({ id: "page.meshes.detail.actions.label", defaultMessage: "Actions" })}
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
+                  {formatMessage({ id: "page.meshes.detail.actions.delete", defaultMessage: "Delete" })}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+        </div>
       </div>
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
@@ -249,6 +280,11 @@ export function MeshDetailPage(): ReactElement {
       {mesh.data ? (
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
       ) : null}
+      <DeleteMeshDialog
+        mesh={deleteOpen ? (mesh.data ?? null) : null}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={() => void navigate({ to: routes.meshes })}
+      />
     </>
   );
 }
