@@ -610,7 +610,7 @@ function TelemetryVariantSection({
                     defaultMessage: "Last seen",
                   })}
                 </th>
-                <th className="h-8 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                   {formatMessage({ id: "page.devices.detail.variants.columns.chart", defaultMessage: "Chart" })}
                 </th>
               </tr>

@@ -32,6 +32,15 @@ export class MemoryMeshes implements IMeshRepository {
     return mesh;
   }
 
+  async update(id: string, patch: { pskB64?: string; label?: string | null }): Promise<Mesh | null> {
+    const mesh = this.items.get(id);
+    if (!mesh) return null;
+    if (patch.pskB64 !== undefined) mesh.pskB64 = patch.pskB64;
+    if (patch.label !== undefined) mesh.label = patch.label;
+    mesh.updatedAt = nowIso();
+    return mesh;
+  }
+
   async delete(id: string): Promise<boolean> {
     return this.items.delete(id);
   }
