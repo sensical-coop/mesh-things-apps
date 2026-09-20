@@ -12,6 +12,7 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { deviceRepository } from "@/features/device/repository";
+import { deviceTitle } from "@/features/device/model";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useFormatters } from "@/hooks/use-formatters";
 
@@ -103,7 +104,10 @@ export function DeviceSettingsDialog({
   return (
     <Modal
       open={open}
-      title={formatMessage({ id: "feature.device.settingsDialog.title", defaultMessage: "Edit settings" })}
+      title={formatMessage(
+        { id: "feature.device.settingsDialog.title", defaultMessage: "Edit settings — {name}" },
+        { name: deviceTitle(device) },
+      )}
       description={formatMessage({
         id: "feature.device.settingsDialog.description",
         defaultMessage: "Allowed, gateway, alarms, intervals, blueprint, and coordinates.",
