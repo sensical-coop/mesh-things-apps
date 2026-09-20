@@ -358,9 +358,14 @@ function RegisterDeviceDialog({
           <FormField
             id="device-node"
             label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node id" })}
+            hint={formatMessage({
+              id: "page.meshes.detail.registerGatewayDialog.nodeIdHint",
+              defaultMessage:
+                "The decimal node number (i.e. the version without '!'). Example: 2130636288.",
+            })}
             error={errors.node_id}
           >
-            <FormNumber id="device-node" name="node_id" min={0} required />
+            <FormNumber id="device-node" name="node_id" min={0} max={4294967295} step={1} required />
           </FormField>
         </FieldGroup>
         {create.error ? (

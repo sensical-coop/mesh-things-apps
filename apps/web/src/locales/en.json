@@ -184,6 +184,7 @@
   "page.meshes.detail.registerGatewayDialog.description": "A registered gateway authorizes its traffic to be decoded.",
   "page.meshes.detail.registerGatewayDialog.label": "Label",
   "page.meshes.detail.registerGatewayDialog.nodeId": "Node id",
+  "page.meshes.detail.registerGatewayDialog.nodeIdHint": "The decimal node number (i.e. the version without '!'). Example: 2130636288.",
   "page.meshes.detail.registerGatewayDialog.error": "Registration failed. Check node id and try again.",
   "page.meshes.detail.registerGatewayDialog.cancel": "Cancel",
   "page.meshes.detail.registerGatewayDialog.registering": "Registering gateway",

@@ -184,6 +184,7 @@
   "page.meshes.detail.registerGatewayDialog.description": "Una pasarela registrada autoriza que su tráfico sea decodificado.",
   "page.meshes.detail.registerGatewayDialog.label": "Etiqueta",
   "page.meshes.detail.registerGatewayDialog.nodeId": "Id. de nodo",
+  "page.meshes.detail.registerGatewayDialog.nodeIdHint": "El número de nodo en decimal (la versión sin '!'XXXXXXXX'). Por ejemplo: 2130636288.",
   "page.meshes.detail.registerGatewayDialog.error": "El registro falló. Comprueba el id. de nodo e inténtalo de nuevo.",
   "page.meshes.detail.registerGatewayDialog.cancel": "Cancelar",
   "page.meshes.detail.registerGatewayDialog.registering": "Registrando pasarela",
