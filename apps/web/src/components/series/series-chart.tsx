@@ -14,6 +14,7 @@ export function SeriesChart({
   hint,
   className,
   icon,
+  windowMs,
 }: {
   points: Point[];
   compareLabel?: string;
@@ -22,17 +23,18 @@ export function SeriesChart({
   hint?: string;
   className?: string;
   icon?: RemixiconComponentType;
+  windowMs?: number | null;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const valueLabel = label ?? formatMessage({ id: "common.seriesChart.value", defaultMessage: "Value" });
   const compareText = compareLabel ?? formatMessage({ id: "common.seriesChart.compare", defaultMessage: "Compare" });
   const body = (
     <>
-      <SeriesPlot points={points} seriesLabel={valueLabel} />
+      <SeriesPlot points={points} seriesLabel={valueLabel} windowMs={windowMs} />
       {compare ? (
         <div>
           <p className="mb-2 text-caption-1-medium text-text-secondary">{compareText}</p>
-          <SeriesPlot points={compare} seriesLabel={compareText} />
+          <SeriesPlot points={compare} seriesLabel={compareText} windowMs={windowMs} />
         </div>
       ) : null}
     </>

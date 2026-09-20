@@ -1135,7 +1135,11 @@ function buildAreaSeries(ctx: OptionBuildContext): LineSeriesOption[] {
     const curve = curveConfig(area.curveType ?? curveType);
 
     const values = data.map((row, i) => {
-      const value = Number(row[key]) || 0;
+      const raw = row[key];
+      // A missing/null datum is an empty bucket (no data for that x), not a
+      // zero reading, kept as `null` so the line breaks there
+      if (raw === null || raw === undefined) return null;
+      const value = Number(raw) || 0;
       if (!isExpanded) return value;
       const total = rowTotals[i];
       return total ? value / total : 0;

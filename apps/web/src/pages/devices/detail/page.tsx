@@ -34,9 +34,12 @@ import { Kpi } from "@/components/kpi/kpi";
 import { KpiPanel } from "@/components/kpi/kpi-panel";
 import { kpiIconFor } from "@/components/kpi/kpi-icon";
 import { SeriesChart } from "@/components/series/series-chart";
+import { parseWindowMs } from "@/components/series/fill-gaps";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { chartRangeQuery, defaultChartRange, type DeviceChartRange } from "./chart-range";
+import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRange } from "./chart-range";
+import { CHART_AGG_OPTIONS, availableResolutions, type ChartAgg } from "./chart-resolution";
+import { DeviceChartResolutionPicker } from "./chart-resolution-picker";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
@@ -104,6 +107,41 @@ export function DeviceDetailPage(): ReactElement {
       ),
     [latest.data],
   );
+
+  // Same grouping as the Status tab's telemetry-variant tables: each channel
+  // belongs to exactly one telemetry variant, discovered via `seen` (the
+  // per-device measurement list, which is the only place carrying
+  // telemetry_variant_id — LatestReading itself only has the bare channel).
+  const latestGroups = useMemo<LatestKpiGroup[]>(() => {
+    const variantIdByChannel = new globalThis.Map(
+      (seen.data ?? []).map((row) => [row.measurement_type.channel, row.telemetry_variant_id]),
+    );
+    const variantById = new globalThis.Map(
+      (variants.data ?? []).map((row) => [row.telemetry_variant.id, row.telemetry_variant]),
+    );
+    const groups = new globalThis.Map<string, LatestKpiGroup>();
+    const order: string[] = [];
+    for (const reading of latestKpis) {
+      const variantId = variantIdByChannel.get(reading.channel) ?? "";
+      if (!groups.has(variantId)) {
+        const tv = variantId ? variantById.get(variantId) : undefined;
+        groups.set(variantId, {
+          key: variantId || "other",
+          title:
+            tv?.name ??
+            tv?.payload_kind ??
+            formatMessage({ id: "page.devices.detail.dashboard.latest.other", defaultMessage: "Other" }),
+          readings: [],
+        });
+        order.push(variantId);
+      }
+      groups.get(variantId)?.readings.push(reading);
+    }
+    return order.flatMap((id) => {
+      const group = groups.get(id);
+      return group ? [group] : [];
+    });
+  }, [latestKpis, seen.data, variants.data, formatMessage]);
 
   return (
     <>
@@ -184,7 +222,7 @@ export function DeviceDetailPage(): ReactElement {
             deviceUuid={deviceUuid}
             ready={Boolean(device.data)}
             latestPending={latest.isPending}
-            latestKpis={latestKpis}
+            latestGroups={latestGroups}
             chartChannels={chartChannels}
             names={names}
             scrollToChannel={scrollToChannel}
@@ -197,6 +235,7 @@ export function DeviceDetailPage(): ReactElement {
 }
 
 type NamesByChannel = Map<string, MeasurementTypeRead>;
+type LatestKpiGroup = { key: string; title: string; readings: LatestReading[] };
 
 function DeviceStatusTab({
   device,
@@ -635,7 +674,7 @@ function DeviceDashboardTab({
   deviceUuid,
   ready,
   latestPending,
-  latestKpis,
+  latestGroups,
   chartChannels,
   names,
   scrollToChannel,
@@ -644,7 +683,7 @@ function DeviceDashboardTab({
   deviceUuid: string;
   ready: boolean;
   latestPending: boolean;
-  latestKpis: LatestReading[];
+  latestGroups: LatestKpiGroup[];
   chartChannels: string[];
   names: NamesByChannel;
   scrollToChannel: string | null;
@@ -654,6 +693,20 @@ function DeviceDashboardTab({
   const { formatValue, formatWhen } = useFormatters();
   const [range, setRange] = useState<DeviceChartRange>(defaultChartRange);
   const rangeQuery = chartRangeQuery(range);
+  const [resolution, setResolution] = useState(() => windowForSpanMs(range.spanMs));
+  const [agg, setAgg] = useState<ChartAgg>("mean");
+
+  // The resolution ladder is bounded by the selected range (so a 30-day range
+  // can't be asked for at 1-minute buckets); when the range grows/shrinks past
+  // what the current resolution supports, fall back to that range's default.
+  useEffect(() => {
+    const valid = availableResolutions(range.spanMs);
+    if (!valid.some((option) => option.value === resolution)) {
+      setResolution(windowForSpanMs(range.spanMs));
+    }
+  }, [range.spanMs, resolution]);
+
+  const windowMs = parseWindowMs(resolution);
   const seriesQueries = useQueries({
     queries: chartChannels.map((channel) => ({
       ...readingsRepository.series({
@@ -662,8 +715,8 @@ function DeviceDashboardTab({
           channel,
           start: rangeQuery.start,
           stop: rangeQuery.stop,
-          window: rangeQuery.window,
-          agg: "mean",
+          window: resolution,
+          agg,
         },
       }),
       enabled: ready,
@@ -703,21 +756,28 @@ function DeviceDashboardTab({
             ))}
           </div>
         ) : null}
-        {latestKpis.length ? (
-          <div className="oa-arrive grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Latest readings">
-            {latestKpis.map((reading) => {
-              const type = names.get(reading.channel);
-              const unit = reading.unit ?? type?.native_unit;
-              return (
-                <Kpi
-                  key={reading.channel}
-                  icon={kpiIconFor(`${reading.field_name} ${reading.channel}`)}
-                  label={type?.display_name ?? reading.channel}
-                  value={`${formatValue(reading.value)}${unit ? ` ${unit}` : ""}`}
-                  hint={formatWhen(reading.time)}
-                />
-              );
-            })}
+        {latestGroups.length ? (
+          <div className="oa-arrive flex flex-col gap-5">
+            {latestGroups.map((group) => (
+              <div key={group.key} className="flex flex-col gap-2">
+                <h3 className="min-w-0 break-words text-body-medium text-text-primary">{group.title}</h3>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={group.title}>
+                  {group.readings.map((reading) => {
+                    const type = names.get(reading.channel);
+                    const unit = reading.unit ?? type?.native_unit;
+                    return (
+                      <Kpi
+                        key={reading.channel}
+                        icon={kpiIconFor(`${reading.field_name} ${reading.channel}`)}
+                        label={reading.field_name}
+                        value={`${formatValue(reading.value)}${unit ? ` ${unit}` : ""}`}
+                        hint={formatWhen(reading.time)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           !latestPending && (
@@ -740,11 +800,20 @@ function DeviceDashboardTab({
             <p className="text-body-regular text-text-secondary">
               {formatMessage({
                 id: "page.devices.detail.dashboard.history.description",
-                defaultMessage: "Mean values per channel for the selected range.",
+                defaultMessage: "Values per channel for the selected range, resolution, and aggregation.",
               })}
             </p>
           </div>
-          <DeviceChartRangePicker value={range} onChange={setRange} />
+          <div className="flex flex-wrap items-center gap-2">
+            <DeviceChartResolutionPicker
+              spanMs={range.spanMs}
+              resolution={resolution}
+              onResolutionChange={setResolution}
+              agg={agg}
+              onAggChange={setAgg}
+            />
+            <DeviceChartRangePicker value={range} onChange={setRange} />
+          </div>
         </div>
         {chartChannels.length ? (
           <div className="oa-arrive grid items-start gap-3 sm:grid-cols-2">
@@ -753,15 +822,15 @@ function DeviceDashboardTab({
               const type = names.get(channel);
               const points = series?.data?.series[0]?.points;
               const label = type?.display_name ?? channel;
+              // CHART_AGG_OPTIONS covers every ChartAgg value, so this always matches.
+              const aggOption = CHART_AGG_OPTIONS.find((option) => option.value === agg)!;
+              const aggLabel = formatMessage({ id: aggOption.messageId, defaultMessage: aggOption.label });
               const hint = type?.native_unit
                 ? formatMessage(
-                    { id: "page.devices.detail.dashboard.history.meanHint", defaultMessage: "Mean · {unit}" },
-                    { unit: type.native_unit },
+                    { id: "page.devices.detail.dashboard.history.aggHint", defaultMessage: "{agg} · {unit}" },
+                    { agg: aggLabel, unit: type.native_unit },
                   )
-                : formatMessage({
-                    id: "page.devices.detail.dashboard.history.meanHintDefault",
-                    defaultMessage: "Mean",
-                  });
+                : aggLabel;
               const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
               let content: ReactElement;
               if (series?.isPending) {
@@ -793,7 +862,16 @@ function DeviceDashboardTab({
                   </KpiPanel>
                 );
               } else {
-                content = <SeriesChart label={label} hint={hint} icon={icon} points={points} className="min-h-52" />;
+                content = (
+                  <SeriesChart
+                    label={label}
+                    hint={hint}
+                    icon={icon}
+                    points={points}
+                    windowMs={windowMs}
+                    className="min-h-52"
+                  />
+                );
               }
               return (
                 <div key={channel} id={chartAnchorId(channel)} className="scroll-mt-6">

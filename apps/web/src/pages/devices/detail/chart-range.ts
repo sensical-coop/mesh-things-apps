@@ -1,45 +1,47 @@
 export type DeviceChartRange =
-  | { kind: "preset"; label: string; start: string; window: string }
-  | { kind: "custom"; label: string; start: string; stop: string; window: string };
+  | { kind: "preset"; label: string; start: string; spanMs: number }
+  | { kind: "custom"; label: string; start: string; stop: string; spanMs: number };
 
 export const CHART_RANGE_PRESETS = [
   {
     label: "Last 24 hours",
     messageId: "page.devices.detail.chartRange.last24h",
     start: "-24h",
-    window: "1h",
+    spanMs: 86_400_000,
   },
   {
     label: "Last 7 days",
     messageId: "page.devices.detail.chartRange.last7d",
     start: "-7d",
-    window: "6h",
+    spanMs: 7 * 86_400_000,
   },
   {
     label: "Last 30 days",
     messageId: "page.devices.detail.chartRange.last30d",
     start: "-30d",
-    window: "1d",
+    spanMs: 30 * 86_400_000,
   },
 ] as const;
 
 export function defaultChartRange(): DeviceChartRange {
   const preset = CHART_RANGE_PRESETS[0];
-  return { kind: "preset", label: preset.label, start: preset.start, window: preset.window };
+  return { kind: "preset", label: preset.label, start: preset.start, spanMs: preset.spanMs };
 }
 
 export function chartRangeQuery(range: DeviceChartRange): {
   start: string;
-  window: string;
   stop?: string;
 } {
   if (range.kind === "preset") {
-    return { start: range.start, window: range.window };
+    return { start: range.start };
   }
-  return { start: range.start, stop: range.stop, window: range.window };
+  return { start: range.start, stop: range.stop };
 }
 
-function windowForSpanMs(spanMs: number): string {
+// Same "1h" default up to 2 days, "6h" up to 14, else "1d" the range picker used
+// to bake into each preset — now the starting point for the resolution picker,
+// which the user may then widen or narrow.
+export function windowForSpanMs(spanMs: number): string {
   const days = spanMs / 86_400_000;
   if (days <= 2) return "1h";
   if (days <= 14) return "6h";
@@ -71,7 +73,7 @@ export function customRangeFromDates(from: Date, to: Date, locale?: string): Dev
     label: formatCustomRangeLabel(start, end, locale),
     start: start.toISOString(),
     stop: end.toISOString(),
-    window: windowForSpanMs(Math.max(end.getTime() - start.getTime(), 0)),
+    spanMs: Math.max(end.getTime() - start.getTime(), 0),
   };
 }
 
