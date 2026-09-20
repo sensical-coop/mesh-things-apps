@@ -60,7 +60,7 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
       kind: "preset",
       label: preset.label,
       start: preset.start,
-      window: preset.window,
+      spanMs: preset.spanMs,
     });
     setOpen(false);
   }
