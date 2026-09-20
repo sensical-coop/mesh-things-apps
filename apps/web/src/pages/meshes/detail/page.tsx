@@ -88,7 +88,16 @@ export function MeshDetailPage(): ReactElement {
               </StatusCopy>
             ) : null}
             {mesh.data ? (
-              <PskReveal value={mesh.data.psk_b64} />
+              mesh.data.psk_b64 ? (
+                <PskReveal value={mesh.data.psk_b64} />
+              ) : (
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.meshes.detail.psk.notVisible",
+                    defaultMessage: "The pre-shared key isn't visible for this mesh.",
+                  })}
+                </StatusCopy>
+              )
             ) : null}
           </FramePanel>
         </Frame>

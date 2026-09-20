@@ -462,13 +462,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Mesh'
+              $ref: '#/components/schemas/MeshCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Mesh'
+              $ref: '#/components/schemas/MeshCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Mesh'
+              $ref: '#/components/schemas/MeshCreate'
         required: true
       security:
       - bearerAuth: []
@@ -2243,8 +2243,24 @@ components:
       - created_at
       - id
       - owner_id
-      - psk_b64
       - updated_at
+    MeshCreate:
+      type: object
+      description: POST /meshes input
+      properties:
+        channel_id:
+          type: string
+          maxLength: 255
+        psk_b64:
+          type: string
+          description: Base64-encoded channel PSK
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+      required:
+      - channel_id
+      - psk_b64
     MeshUpdate:
       type: object
       description: 'PUT /meshes/{id}: only psk_b64 and label are editable.'

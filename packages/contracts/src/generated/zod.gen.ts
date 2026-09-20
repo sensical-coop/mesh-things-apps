@@ -242,7 +242,7 @@ export const zLatestReadingsResponse = z.object({
 export const zMesh = z.object({
     id: z.uuid().readonly(),
     channel_id: z.string().max(255),
-    psk_b64: z.string(),
+    psk_b64: z.optional(z.string()),
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
@@ -250,6 +250,18 @@ export const zMesh = z.object({
     owner_id: z.uuid().readonly(),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * POST /meshes input
+ */
+export const zMeshCreate = z.object({
+    channel_id: z.string().max(255),
+    psk_b64: z.string(),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ]))
 });
 
 /**
@@ -748,7 +760,7 @@ export const zDeviceUpdateWritable = z.object({
 
 export const zMeshWritable = z.object({
     channel_id: z.string().max(255),
-    psk_b64: z.string(),
+    psk_b64: z.optional(z.string()),
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
@@ -969,7 +981,7 @@ export const zMeshesListData = z.object({
 export const zMeshesListResponse = z.array(zMesh);
 
 export const zMeshesCreateData = z.object({
-    body: zMeshWritable,
+    body: zMeshCreate,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
