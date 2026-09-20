@@ -118,7 +118,7 @@ export const zDeviceRead = z.object({
     ]).readonly(),
     is_gateway: z.boolean().readonly(),
     is_allowed: z.boolean().readonly(),
-    admin_keys_b64: z.array(z.string()).readonly(),
+    admin_keys_b64: z.optional(z.array(z.string()).readonly()),
     latitude: z.union([
         z.number().readonly(),
         z.null()
@@ -145,7 +145,10 @@ export const zDeviceRead = z.object({
         z.null()
     ]).readonly(),
     nodeinfo_overridden: z.boolean().readonly(),
-    postprocessing_blueprint_id: z.uuid().readonly(),
+    postprocessing_blueprint_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
     reading_interval_seconds: z.union([
         z.int().readonly(),
         z.null()

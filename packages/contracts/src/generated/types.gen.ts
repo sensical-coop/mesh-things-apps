@@ -90,7 +90,7 @@ export type DeviceRead = {
     readonly label: string | null;
     readonly is_gateway: boolean;
     readonly is_allowed: boolean;
-    readonly admin_keys_b64: Array<string>;
+    readonly admin_keys_b64?: Array<string>;
     readonly latitude: number | null;
     readonly longitude: number | null;
     readonly location_overridden: boolean;
@@ -99,7 +99,7 @@ export type DeviceRead = {
     readonly hardware_type: string | null;
     readonly role: string | null;
     readonly nodeinfo_overridden: boolean;
-    readonly postprocessing_blueprint_id: string;
+    readonly postprocessing_blueprint_id: string | null;
     readonly reading_interval_seconds: number | null;
     readonly publish_interval_seconds: number | null;
     readonly last_seen: string | null;

@@ -1909,6 +1909,7 @@ components:
           type: string
           format: uuid
           readOnly: true
+          nullable: true
         reading_interval_seconds:
           type: integer
           readOnly: true
@@ -1931,7 +1932,6 @@ components:
           format: date-time
           readOnly: true
       required:
-      - admin_keys_b64
       - created_at
       - hardware_type
       - is_allowed
