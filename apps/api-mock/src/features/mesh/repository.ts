@@ -31,4 +31,8 @@ export class MemoryMeshes implements IMeshRepository {
     this.items.set(mesh.id, mesh);
     return mesh;
   }
+
+  async delete(id: string): Promise<boolean> {
+    return this.items.delete(id);
+  }
 }

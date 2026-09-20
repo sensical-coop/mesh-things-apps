@@ -1,5 +1,6 @@
 import {
   meshesCreateMutation,
+  meshesDestroyMutation,
   meshesDevicesListOptions,
   meshesDevicesListQueryKey,
   meshesListOptions,
@@ -12,6 +13,7 @@ export const meshRepository = {
   listKey: meshesListQueryKey,
   retrieve: meshesRetrieveOptions,
   create: meshesCreateMutation,
+  destroy: meshesDestroyMutation,
   devices: meshesDevicesListOptions,
   devicesKey: meshesDevicesListQueryKey,
 };

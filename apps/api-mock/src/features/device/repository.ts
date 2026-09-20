@@ -73,4 +73,8 @@ export class MemoryDevices implements IDeviceRepository {
     device.updatedAt = nowIso();
     return device;
   }
+
+  async delete(uuid: string): Promise<boolean> {
+    return this.items.delete(uuid);
+  }
 }
