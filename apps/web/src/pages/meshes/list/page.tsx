@@ -131,7 +131,7 @@ export function MeshesPage(): ReactElement {
                 : meshes.error
                   ? formatMessage({
                       id: "page.meshes.list.panel.error",
-                      defaultMessage: "Meshes didn't load. Check that the mock is running on 8787.",
+                      defaultMessage: "Meshes didn't load. Check your connection to the API and try again.",
                     })
                   : formatMessage({
                       id: "page.meshes.list.panel.description",

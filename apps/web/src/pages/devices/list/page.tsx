@@ -195,7 +195,7 @@ export function DevicesPage(): ReactElement {
                 : devices.error
                   ? formatMessage({
                       id: "page.devices.list.inventory.error",
-                      defaultMessage: "Devices didn't load. Check that the mock is running on 8787.",
+                      defaultMessage: "Devices didn't load. Check your connection to the API and try again.",
                     })
                   : formatMessage({
                       id: "page.devices.list.inventory.description",
