@@ -268,9 +268,10 @@ export const zMeshCreate = z.object({
 });
 
 /**
- * PUT /meshes/{id}: only psk_b64 and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
  */
 export const zMeshUpdate = z.object({
+    channel_id: z.optional(z.string().max(255)),
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
@@ -773,9 +774,10 @@ export const zMeshWritable = z.object({
 });
 
 /**
- * PUT /meshes/{id}: only psk_b64 and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
  */
 export const zMeshUpdateWritable = z.object({
+    channel_id: z.optional(z.string().max(255)),
     psk_b64: z.optional(z.string()),
     label: z.optional(z.union([
         z.string().max(255),

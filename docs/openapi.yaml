@@ -2271,8 +2271,11 @@ components:
       - psk_b64
     MeshUpdate:
       type: object
-      description: 'PUT /meshes/{id}: only psk_b64 and label are editable.'
+      description: 'PUT /meshes/{id}: channel_id, psk_b64, and label are editable.'
       properties:
+        channel_id:
+          type: string
+          maxLength: 255
         psk_b64:
           type: string
           writeOnly: true
