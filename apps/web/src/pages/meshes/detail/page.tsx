@@ -270,7 +270,7 @@ export function MeshDetailPage(): ReactElement {
                           {formatLastSeen(device.last_seen)}
                         </td>
                         <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-start gap-2">
                             <ButtonLink
                               href={href(routes.device, { deviceUuid: device.uuid })}
                               size="xs"

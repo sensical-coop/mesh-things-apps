@@ -127,7 +127,7 @@ export function MeshesPage(): ReactElement {
         cell: ({ row }) => {
           const canDelete = isSuperuser || row.original.owner_id === meId;
           return (
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-start gap-2">
               <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
                 {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
               </ButtonLink>
