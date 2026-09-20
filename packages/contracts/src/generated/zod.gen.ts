@@ -118,6 +118,7 @@ export const zDeviceRead = z.object({
     ]).readonly(),
     is_gateway: z.boolean().readonly(),
     is_allowed: z.boolean().readonly(),
+    alarms_enabled: z.boolean().readonly(),
     admin_keys_b64: z.optional(z.array(z.string()).readonly()),
     latitude: z.union([
         z.number().readonly(),
@@ -174,6 +175,8 @@ export const zDeviceUpdate = z.object({
         z.null()
     ])),
     is_allowed: z.optional(z.boolean()),
+    is_gateway: z.optional(z.boolean()),
+    alarms_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -720,6 +723,8 @@ export const zDeviceUpdateWritable = z.object({
     ])),
     admin_keys_b64: z.optional(z.array(z.string())),
     is_allowed: z.optional(z.boolean()),
+    is_gateway: z.optional(z.boolean()),
+    alarms_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()

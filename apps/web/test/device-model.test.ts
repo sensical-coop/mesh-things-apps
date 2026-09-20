@@ -10,6 +10,7 @@ const device = {
   label: "Gateway",
   is_gateway: true,
   is_allowed: true,
+  alarms_enabled: true,
   admin_keys_b64: [],
   latitude: null,
   longitude: null,
