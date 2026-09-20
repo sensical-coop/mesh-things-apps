@@ -21,7 +21,6 @@ import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
 import { Input } from "@mtt/ui/components/ui/input";
@@ -77,7 +76,7 @@ export function MeshDetailPage(): ReactElement {
         </div>
         <div className="flex items-center gap-2">
           <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-            {formatMessage({ id: "page.meshes.detail.registerDevice", defaultMessage: "Register device" })}
+            {formatMessage({ id: "page.meshes.detail.registerGateway", defaultMessage: "Register gateway" })}
           </Button>
           {canDelete ? (
             <DropdownMenu>
@@ -320,7 +319,7 @@ function RegisterDeviceDialog({
       body: {
         mesh_id: meshId,
         node_id: Number(form.get("node_id")),
-        is_gateway: form.get("is_gateway") === "on",
+        is_gateway: true,
         label: label === "" ? null : label,
       },
     });
@@ -340,9 +339,9 @@ function RegisterDeviceDialog({
   return (
     <Modal
       open={open}
-      title={formatMessage({ id: "page.meshes.detail.registerDialog.title", defaultMessage: "Register device" })}
+      title={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.title", defaultMessage: "Register gateway" })}
       description={formatMessage({
-        id: "page.meshes.detail.registerDialog.description",
+        id: "page.meshes.detail.registerGatewayDialog.description",
         defaultMessage: "A registered gateway authorizes its traffic to be decoded.",
       })}
       onClose={onClose}
@@ -351,46 +350,41 @@ function RegisterDeviceDialog({
         <FieldGroup>
           <FormField
             id="device-label"
-            label={formatMessage({ id: "page.meshes.detail.registerDialog.label", defaultMessage: "Label" })}
+            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" })}
             error={errors.label}
           >
             <Input id="device-label" name="label" autoComplete="off" />
           </FormField>
           <FormField
             id="device-node"
-            label={formatMessage({ id: "page.meshes.detail.registerDialog.nodeId", defaultMessage: "Node id" })}
+            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node id" })}
             error={errors.node_id}
           >
             <FormNumber id="device-node" name="node_id" min={0} required />
           </FormField>
-          <FormCheckbox
-            id="device-gateway"
-            name="is_gateway"
-            label={formatMessage({
-              id: "page.meshes.detail.registerDialog.isGateway",
-              defaultMessage: "This device is a gateway",
-            })}
-          />
         </FieldGroup>
         {create.error ? (
           <StatusCopy>
             {formatMessage({
-              id: "page.meshes.detail.registerDialog.error",
+              id: "page.meshes.detail.registerGatewayDialog.error",
               defaultMessage: "Registration failed. Check node id and try again.",
             })}
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
           <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.meshes.detail.registerDialog.cancel", defaultMessage: "Cancel" })}
+            {formatMessage({ id: "page.meshes.detail.registerGatewayDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={create.isPending}>
             {create.isPending
               ? formatMessage({
-                  id: "page.meshes.detail.registerDialog.registering",
-                  defaultMessage: "Registering device",
+                  id: "page.meshes.detail.registerGatewayDialog.registering",
+                  defaultMessage: "Registering gateway",
                 })
-              : formatMessage({ id: "page.meshes.detail.registerDialog.title", defaultMessage: "Register device" })}
+              : formatMessage({
+                  id: "page.meshes.detail.registerGatewayDialog.title",
+                  defaultMessage: "Register gateway",
+                })}
           </Button>
         </div>
       </form>
