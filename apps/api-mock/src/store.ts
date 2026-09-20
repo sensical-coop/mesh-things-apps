@@ -40,6 +40,11 @@ const t0 = "2026-01-01T00:00:00.000Z";
 
 export type { BlueprintRow };
 
+export type OwnerVerification = {
+  emailVerifiedAt: string | null;
+  emailVerificationSentAt: string | null;
+};
+
 export type Store = {
   meshes: MemoryMeshes;
   devices: MemoryDevices;
@@ -47,18 +52,29 @@ export type Store = {
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
   actors: Map<string, Actor>;
+  verifications: Map<string, OwnerVerification>;
+  verificationTokens: Map<string, string>;
 };
 
 export type StoreOwners = {
   adaId?: string;
   boId?: string;
   actors?: Map<string, Actor>;
+  verifications?: Map<string, OwnerVerification>;
 };
 
 export function createStore(owners: StoreOwners = {}): Store {
   const adaId = owners.adaId ?? OWNER_ID;
   const boId = owners.boId ?? OWNER_BO_ID;
   const actors = owners.actors ?? new Map<string, Actor>();
+  const verifications =
+    owners.verifications ??
+    new Map<string, OwnerVerification>(
+      [...actors.values()].map((actor) => [
+        actor.id,
+        { emailVerifiedAt: actor.createdAt, emailVerificationSentAt: actor.createdAt },
+      ]),
+    );
   const meas: MeasurementType[] = [
     {
       id: MEAS_TEMP_ID,
@@ -214,6 +230,8 @@ export function createStore(owners: StoreOwners = {}): Store {
     measurements,
     readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID]), t0),
     actors,
+    verifications,
+    verificationTokens: new Map<string, string>(),
     blueprints: [
       {
         id: BLUEPRINT_ID,

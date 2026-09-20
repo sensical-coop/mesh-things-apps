@@ -1,9 +1,9 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FramePanel } from "@mtt/ui/reui/frame";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { type FormEvent, type ReactElement, useState } from "react";
-import { useIntl } from "react-intl";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
@@ -106,6 +106,19 @@ export function LoginForm(): ReactElement {
             defaultMessage:
               "Mock accounts: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (all meshes), staff@sensical.test (read, no PSK). Password mesh-owner-12, except admin mesh-admin-12 and staff mesh-staff-12.",
           })}
+        </p>
+        <p className="text-caption-1-regular text-text-tertiary">
+          <FormattedMessage
+            id="page.login.form.noAccount"
+            defaultMessage="Don't have an account? <link>Sign up</link>."
+            values={{
+              link: (chunks: ReactNode) => (
+                <Link to={routes.signup} className="underline underline-offset-2">
+                  {chunks}
+                </Link>
+              ),
+            }}
+          />
         </p>
       </FramePanel>
     </Frame>
