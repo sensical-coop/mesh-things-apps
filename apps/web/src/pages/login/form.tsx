@@ -11,6 +11,8 @@ import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
 
+const MOCK_API_DISABLED = import.meta.env.VITE_DISABLE_MOCK_API === "true";
+
 export function LoginForm(): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -76,7 +78,7 @@ export function LoginForm(): ReactElement {
                 type="email"
                 required
                 autoComplete="username"
-                defaultValue="owner@sensical.test"
+                defaultValue={MOCK_API_DISABLED ? undefined : "owner@sensical.test"}
               />
             </FormField>
             <FormField
@@ -89,7 +91,7 @@ export function LoginForm(): ReactElement {
                 type="password"
                 required
                 autoComplete="current-password"
-                defaultValue="mesh-owner-12"
+                defaultValue={MOCK_API_DISABLED ? undefined : "mesh-owner-12"}
               />
             </FormField>
           </FieldGroup>
@@ -100,13 +102,15 @@ export function LoginForm(): ReactElement {
               : formatMessage({ id: "page.login.form.signIn", defaultMessage: "Sign in" })}
           </Button>
         </form>
-        <p className="text-caption-1-regular text-text-tertiary">
-          {formatMessage({
-            id: "page.login.form.mockAccounts",
-            defaultMessage:
-              "Mock accounts: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (all meshes), staff@sensical.test (read, no PSK). Password mesh-owner-12, except admin mesh-admin-12 and staff mesh-staff-12.",
-          })}
-        </p>
+        {MOCK_API_DISABLED ? null : (
+          <p className="text-caption-1-regular text-text-tertiary">
+            {formatMessage({
+              id: "page.login.form.mockAccounts",
+              defaultMessage:
+                "Mock accounts: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (all meshes), staff@sensical.test (read, no PSK). Password mesh-owner-12, except admin mesh-admin-12 and staff mesh-staff-12.",
+            })}
+          </p>
+        )}
         <p className="text-caption-1-regular text-text-tertiary">
           <FormattedMessage
             id="page.login.form.noAccount"

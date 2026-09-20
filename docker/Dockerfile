@@ -1,6 +1,8 @@
 # Frontend via Nitro Node server. From repo root:
-#   docker build -f docker/Dockerfile --build-arg VITE_API_URL=http://127.0.0.1:8787 -t mtt-web .
-#   docker run --rm -p 8080:80 mtt-web
+# Local development:
+#   docker build -f docker/Dockerfile --build-arg VITE_API_URL=http://localhost \
+#     --build-arg VITE_DISABLE_MOCK_API=true -t mtt-web-local .
+#   docker run --rm -p 5174:80 mtt-web-local
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
@@ -11,7 +13,9 @@ COPY apps/web ./apps/web
 COPY packages ./packages
 RUN corepack prepare pnpm@10.6.1 --activate && pnpm install --frozen-lockfile
 ARG VITE_API_URL
+ARG VITE_DISABLE_MOCK_API
 ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_DISABLE_MOCK_API=$VITE_DISABLE_MOCK_API
 RUN pnpm --filter web build
 
 FROM node:22-alpine

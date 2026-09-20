@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev --filter=web --filter=api-mock",
+    "dev": "[ -f .env ] && . ./.env; if [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ]; then turbo run dev --filter=web; else turbo run dev --filter=web --filter=api-mock; fi",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
