@@ -316,6 +316,19 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.json(devices.map(deviceJson));
   });
 
+  app.delete("/meshes/:mesh_id", async (c) => {
+    const actor = c.get("actor");
+    const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
+    if (!mesh) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteMesh(actor, mesh)) {
+      return c.json({ detail: "You do not have permission to perform this action." }, 403);
+    }
+    const devices = await db.devices.list({ meshId: mesh.id });
+    for (const device of devices) await db.devices.delete(device.uuid);
+    await db.meshes.delete(mesh.id);
+    return c.body(null, 204);
+  });
+
   app.get("/devices", async (c) => {
     const actor = c.get("actor");
     const devices = (await devicesFor(db, actor)).filter((device) =>
