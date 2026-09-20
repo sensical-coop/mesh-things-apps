@@ -1,4 +1,5 @@
 import { authRepository } from "@/features/auth/repository";
+import { isOwnerSession } from "@/features/auth/session";
 import { cx } from "@mtt/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet, RouterProvider } from "@tanstack/react-router";
@@ -20,6 +21,9 @@ export function Shell(): ReactElement {
   }
   if (me.error) {
     return <Navigate to={routes.login} />;
+  }
+  if (!isOwnerSession(me)) {
+    return <Navigate to={routes.verifyPending} />;
   }
 
   return (

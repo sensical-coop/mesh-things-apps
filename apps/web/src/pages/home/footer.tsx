@@ -44,6 +44,12 @@ export function LandingFooter(): ReactElement {
             <Link to={routes.login} className={linkClass}>
               {formatMessage({ id: "page.home.header.signIn", defaultMessage: "Sign in" })}
             </Link>
+            <Link to={routes.signup} className={linkClass}>
+              {formatMessage({ id: "page.home.header.signUp", defaultMessage: "Sign up" })}
+            </Link>
+            <Link to={routes.terms} className={linkClass}>
+              {formatMessage({ id: "page.home.header.terms", defaultMessage: "Terms" })}
+            </Link>
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">Sensical</p>

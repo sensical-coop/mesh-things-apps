@@ -1,6 +1,10 @@
 export const routes = Object.freeze({
   home: "/",
   login: "/login",
+  signup: "/signup",
+  verifyPending: "/verify-pending",
+  verifyEmail: "/verify-email",
+  terms: "/terms",
   console: "/console",
   meshes: "/console/meshes",
   mesh: "/console/meshes/$meshId",

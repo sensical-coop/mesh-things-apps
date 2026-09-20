@@ -34,7 +34,8 @@ const faqs = [
     qId: "page.home.faq.signIn.q",
     qDefault: "Who can sign in?",
     aId: "page.home.faq.signIn.a",
-    aDefault: "Phase 1 is one owner login. There is no public register and no API keys on this site.",
+    aDefault:
+      "Anyone can register an account. A new account stays inactive until you confirm the email address you signed up with.",
   },
 ] as const;
 

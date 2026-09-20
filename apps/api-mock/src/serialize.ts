@@ -89,7 +89,10 @@ export function ownerPublicJson(actor: Actor) {
   };
 }
 
-export function ownerReadJson(actor: Actor) {
+export function ownerReadJson(
+  actor: Actor,
+  verification: { emailVerifiedAt: string | null; emailVerificationSentAt: string | null },
+) {
   const flags = flagsForRole(actor.role);
   return {
     id: actor.id,
@@ -98,17 +101,32 @@ export function ownerReadJson(actor: Actor) {
     is_superuser: flags.isSuperuser,
     is_staff: flags.isStaff,
     is_active: actor.isActive,
-    email_verified_at: actor.createdAt,
-    email_verification_sent_at: actor.createdAt,
+    email_verified_at: verification.emailVerifiedAt,
+    email_verification_sent_at: verification.emailVerificationSentAt,
     last_login: actor.lastLogin,
     created_at: actor.createdAt,
   };
 }
 
-export function ownerProfileJson(actor: Actor, devices: Device[]) {
+export function ownerProfileJson(
+  actor: Actor,
+  devices: Device[],
+  verification: { emailVerifiedAt: string | null; emailVerificationSentAt: string | null },
+) {
   return {
-    ...ownerReadJson(actor),
+    ...ownerReadJson(actor, verification),
     devices: devices.map(deviceJson),
+  };
+}
+
+export function ownerWithApiKeyJson(
+  actor: Actor,
+  verification: { emailVerifiedAt: string | null; emailVerificationSentAt: string | null },
+  apiKey: string,
+) {
+  return {
+    ...ownerReadJson(actor, verification),
+    api_key: apiKey,
   };
 }
 
