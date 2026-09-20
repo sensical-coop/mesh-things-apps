@@ -784,7 +784,8 @@ function DeviceSettingsDialog({
               id="device-blueprint"
               name="postprocessing_blueprint_id"
               defaultValue={
-                device.postprocessing_blueprint_id === NIL_BLUEPRINT_ID
+                device.postprocessing_blueprint_id === NIL_BLUEPRINT_ID ||
+                device.postprocessing_blueprint_id === null
                   ? "__none__"
                   : device.postprocessing_blueprint_id
               }
