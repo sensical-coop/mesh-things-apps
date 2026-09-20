@@ -395,12 +395,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       isAllowed: patch.is_allowed,
       isGateway: patch.is_gateway,
       alarmsEnabled: patch.alarms_enabled,
-      postprocessingBlueprintId:
-        patch.postprocessing_blueprint_id === undefined
-          ? undefined
-          : patch.postprocessing_blueprint_id === NIL_BLUEPRINT_ID
-            ? null
-            : patch.postprocessing_blueprint_id,
+      postprocessingBlueprintId: patch.postprocessing_blueprint_id,
       readingIntervalSeconds: patch.reading_interval_seconds,
       publishIntervalSeconds: patch.publish_interval_seconds,
       locationOverridden: lat != null && lon != null ? true : undefined,
