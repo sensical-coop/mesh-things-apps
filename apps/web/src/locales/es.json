@@ -180,6 +180,7 @@
   "page.meshes.detail.devices.columns.allowed": "Permitido",
   "page.meshes.detail.devices.columns.radio": "Radio",
   "page.meshes.detail.devices.columns.lastSeen": "Última vez visto",
+  "page.meshes.detail.devices.columns.actions": "Acciones",
   "page.meshes.detail.registerGatewayDialog.title": "Registrar pasarela",
   "page.meshes.detail.registerGatewayDialog.description": "Una pasarela registrada autoriza que su tráfico sea decodificado.",
   "page.meshes.detail.registerGatewayDialog.label": "Etiqueta",
