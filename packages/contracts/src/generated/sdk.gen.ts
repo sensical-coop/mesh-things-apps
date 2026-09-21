@@ -708,6 +708,7 @@ export const ownersRequestPasswordResetCreate = <ThrowOnError extends boolean = 
 export const ownersResetPasswordCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersResetPasswordCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersResetPasswordCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersResetPasswordCreateData.parseAsync(data),
     responseValidator: async (data) => await zOwnersResetPasswordCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/owners/reset-password',
     ...options,
     headers: {

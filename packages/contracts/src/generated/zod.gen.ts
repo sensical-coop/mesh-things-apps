@@ -419,7 +419,7 @@ export const zOwnerRequestPasswordReset = z.object({
  * POST /owners/reset-password input
  */
 export const zOwnerResetPassword = z.object({
-    token: z.string()
+    new_password: z.string()
 });
 
 export const zOwnerUpdate = z.object({
@@ -646,7 +646,9 @@ export const zTelemetryVariantMeasurementRead = z.object({
 
 /**
  * PUT /telemetry-variants/{id}/measurements/{link_id}. Only the
- * catalog-wide default detector list is editable. Superusers only
+ * catalog-wide default detector list is editable. Superusers only —
+ * the range detector's valid_min/valid_max live per-device on
+ * DeviceMeasurementUpdate instead, with no catalog default.
  */
 export const zTelemetryVariantMeasurementUpdate = z.object({
     default_enabled_detectors: z.optional(z.array(z.string()))
@@ -842,14 +844,6 @@ export const zOwnerCreateWritable = z.object({
 export const zOwnerLoginWritable = z.object({
     email: z.email(),
     password: z.string()
-});
-
-/**
- * POST /owners/reset-password input
- */
-export const zOwnerResetPasswordWritable = z.object({
-    token: z.string(),
-    new_password: z.string()
 });
 
 /**
@@ -1245,7 +1239,7 @@ export const zOwnersRequestPasswordResetCreateData = z.object({
 export const zOwnersRequestPasswordResetCreateResponse = zDetail;
 
 export const zOwnersResetPasswordCreateData = z.object({
-    body: zOwnerResetPasswordWritable,
+    body: zOwnerResetPassword,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });

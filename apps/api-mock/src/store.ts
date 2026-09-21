@@ -107,6 +107,7 @@ export type Store = {
   actors: Map<string, Actor>;
   verifications: Map<string, OwnerVerification>;
   verificationTokens: Map<string, string>;
+  passwordResetTokens: Map<string, { ownerId: string; sentAt: string }>;
   // Per-device-measurement override: null = inherit the catalog default below.
   detectorOverrides: Map<string, string[] | null>;
   // Catalog-wide default per telemetry-variant/measurement link (VARIANT_LINK_ID).
@@ -295,6 +296,7 @@ export function createStore(owners: StoreOwners = {}): Store {
     actors,
     verifications,
     verificationTokens: new Map<string, string>(),
+    passwordResetTokens: new Map<string, { ownerId: string; sentAt: string }>(),
     detectorOverrides: new Map<string, string[] | null>(),
     telemetryVariantMeasurements: new Map<string, TelemetryVariantMeasurementLink>([
       [VARIANT_LINK_ID, { defaultEnabledDetectors: ["range"] }],

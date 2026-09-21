@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { landingHomePage } from "@/pages/home/route";
 import { authLoginPage } from "@/pages/login/route";
 import { authSignupPage } from "@/pages/signup/route";
+import { authForgotPasswordPage } from "@/pages/forgot-password/route";
+import { authResetPasswordPage } from "@/pages/reset-password/route";
 import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
@@ -34,6 +36,16 @@ const loginRoute = createRoute({
 const signupRoute = createRoute({
   getParentRoute: () => rootRoute,
   ...authSignupPage,
+});
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authForgotPasswordPage,
+});
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authResetPasswordPage,
 });
 
 const verifyPendingRoute = createRoute({
@@ -104,6 +116,8 @@ const routeTree = rootRoute.addChildren([
   landingRoute,
   loginRoute,
   signupRoute,
+  forgotPasswordRoute,
+  resetPasswordRoute,
   verifyPendingRoute,
   verifyEmailRoute,
   termsRoute,
