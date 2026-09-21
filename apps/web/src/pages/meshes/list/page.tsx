@@ -13,12 +13,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { deviceRepository } from "@/features/device/repository";
+import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
+import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { listQuery } from "@mtt/ui/lib/filter-url";
 import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
@@ -34,12 +37,25 @@ type MeshRow = Mesh & { devices: number };
 const col = legacyCreateColumnHelper<MeshRow>();
 
 export function MeshesPage(): ReactElement {
+  const { formatMessage } = useIntl();
+  const filterLabels = useTranslatedFilterLabels();
+  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   const specs = useMemo<FilterSpec[]>(
     () => [
-      { key: "label", urlKey: "label", label: "Label", type: "text" },
-      { key: "channel_id", urlKey: "channel_id", label: "Channel id", type: "text" },
+      {
+        key: "label",
+        urlKey: "label",
+        label: formatMessage({ id: "page.meshes.list.filters.label", defaultMessage: "Label" }),
+        type: "text",
+      },
+      {
+        key: "channel_id",
+        urlKey: "channel_id",
+        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel id" }),
+        type: "text",
+      },
     ],
-    [],
+    [formatMessage],
   );
   const filters = useSmartFilters({ specs });
   const meshes = useQuery(meshRepository.list({ query: listQuery(filters.queryString) }));
@@ -59,56 +75,73 @@ export function MeshesPage(): ReactElement {
     () => [
       col.accessor((row) => meshTitle(row), {
         id: "label",
-        header: "Mesh",
+        header: formatMessage({ id: "page.meshes.list.columns.mesh", defaultMessage: "Mesh" }),
         cell: (info) => info.getValue(),
       }),
       col.accessor("channel_id", {
-        header: "Channel",
+        header: formatMessage({ id: "page.meshes.list.columns.channel", defaultMessage: "Channel" }),
         cell: (info) => <span className="text-text-secondary">{info.getValue()}</span>,
       }),
       col.accessor("devices", {
-        header: "Devices",
+        header: formatMessage({ id: "page.meshes.list.columns.devices", defaultMessage: "Devices" }),
         cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
       }),
       col.display({
         id: "open",
-        header: () => <span className="block text-end">Actions</span>,
+        header: () => (
+          <span className="block text-end">
+            {formatMessage({ id: "page.meshes.list.columns.actions", defaultMessage: "Actions" })}
+          </span>
+        ),
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex justify-end">
             <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
-              Open
+              {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
             </ButtonLink>
           </div>
         ),
       }),
     ],
-    [],
+    [formatMessage],
   );
 
   return (
     <>
       <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">Meshes</h1>
+        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
+          {formatMessage({ id: "page.meshes.list.title", defaultMessage: "Meshes" })}
+        </h1>
         <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-          Create mesh
+          {formatMessage({ id: "page.meshes.list.createMesh", defaultMessage: "Create mesh" })}
         </Button>
       </div>
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Your meshes</FrameTitle>
+            <FrameTitle>
+              {formatMessage({ id: "page.meshes.list.panel.title", defaultMessage: "Your meshes" })}
+            </FrameTitle>
             <FrameDescription>
               {meshes.isPending
-                ? "Loading meshes. This usually takes a few seconds."
+                ? formatMessage({
+                    id: "page.meshes.list.panel.loading",
+                    defaultMessage: "Loading meshes. This usually takes a few seconds.",
+                  })
                 : meshes.error
-                  ? "Meshes didn't load. Check that the mock is running on 8787."
-                  : "Open a mesh to see its nodes and gateways."}
+                  ? formatMessage({
+                      id: "page.meshes.list.panel.error",
+                      defaultMessage: "Meshes didn't load. Check that the mock is running on 8787.",
+                    })
+                  : formatMessage({
+                      id: "page.meshes.list.panel.description",
+                      defaultMessage: "Open a mesh to see its nodes and gateways.",
+                    })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel>
             <div className="mb-4">
-              <SmartFilterToolbar filters={filters} />
+              <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
             </div>
             {meshes.isPending ? <SkeletonRows /> : null}
             {meshes.error ? null : meshes.isPending ? null : (
@@ -116,10 +149,22 @@ export function MeshesPage(): ReactElement {
                 data={rows}
                 columns={columns}
                 getRowId={(row) => row.id}
+                previousPageLabel={formatMessage({
+                  id: "common.dataTable.previousPage",
+                  defaultMessage: "Previous page",
+                })}
+                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
+                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                 empty={
                   filters.active
-                    ? "No meshes match these filters."
-                    : "No meshes yet. Create a mesh so gateways have a channel and key to join."
+                    ? formatMessage({
+                        id: "page.meshes.list.empty.filtered",
+                        defaultMessage: "No meshes match these filters.",
+                      })
+                    : formatMessage({
+                        id: "page.meshes.list.empty.default",
+                        defaultMessage: "No meshes yet. Create a mesh so gateways have a channel and key to join.",
+                      })
                 }
               />
             )}
@@ -132,6 +177,7 @@ export function MeshesPage(): ReactElement {
 }
 
 function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => void }): ReactElement {
+  const { formatMessage } = useIntl();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -171,36 +217,57 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
   return (
     <Modal
       open={open}
-      title="Create mesh"
-      description="Gateways join with this channel id and pre-shared key."
+      title={formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}
+      description={formatMessage({
+        id: "page.meshes.list.createDialog.description",
+        defaultMessage: "Gateways join with this channel id and pre-shared key.",
+      })}
       onClose={onClose}
     >
       <form className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
-          <FormField id="mesh-label" label="Label" error={errors.label}>
+          <FormField
+            id="mesh-label"
+            label={formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" })}
+            error={errors.label}
+          >
             <Input id="mesh-label" name="label" autoComplete="off" />
           </FormField>
-          <FormField id="mesh-channel" label="Channel id" error={errors.channel_id}>
+          <FormField
+            id="mesh-channel"
+            label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel id" })}
+            error={errors.channel_id}
+          >
             <Input id="mesh-channel" name="channel_id" required autoComplete="off" />
           </FormField>
           <FormField
             id="mesh-psk"
-            label="PSK"
-            hint="Base64 channel key. Stored on the mesh, never shown in the list."
+            label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
+            hint={formatMessage({
+              id: "page.meshes.list.createDialog.pskHint",
+              defaultMessage: "Base64 channel key. Stored on the mesh, never shown in the list.",
+            })}
             error={errors.psk_b64}
           >
             <Input id="mesh-psk" name="psk_b64" type="password" required autoComplete="new-password" />
           </FormField>
         </FieldGroup>
         {create.error ? (
-          <StatusCopy>The mesh was not created. Check the fields and try again.</StatusCopy>
+          <StatusCopy>
+            {formatMessage({
+              id: "page.meshes.list.createDialog.error",
+              defaultMessage: "The mesh was not created. Check the fields and try again.",
+            })}
+          </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
           <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            Cancel
+            {formatMessage({ id: "page.meshes.list.createDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={create.isPending}>
-            {create.isPending ? "Creating mesh" : "Create mesh"}
+            {create.isPending
+              ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
+              : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}
           </Button>
         </div>
       </form>

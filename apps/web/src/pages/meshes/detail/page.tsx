@@ -11,6 +11,7 @@ import { RiAddLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/r
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
+import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
@@ -23,7 +24,7 @@ import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
-import { formatLastSeen } from "@/lib/format";
+import { useFormatters } from "@/hooks/use-formatters";
 import { routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
@@ -34,6 +35,8 @@ import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 
 export function MeshDetailPage(): ReactElement {
+  const { formatMessage } = useIntl();
+  const { formatLastSeen } = useFormatters();
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
@@ -50,27 +53,39 @@ export function MeshDetailPage(): ReactElement {
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-caption-1-regular text-text-secondary">
             <Link to={routes.meshes} className="hover:text-text-primary">
-              Meshes
+              {formatMessage({ id: "page.meshes.detail.breadcrumb", defaultMessage: "Meshes" })}
             </Link>
           </p>
           <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
-            {mesh.data ? meshTitle(mesh.data) : "Mesh"}
+            {mesh.data
+              ? meshTitle(mesh.data)
+              : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
           </h1>
         </div>
         <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-          Register device
+          {formatMessage({ id: "page.meshes.detail.registerDevice", defaultMessage: "Register device" })}
         </Button>
       </div>
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Pre-shared key</FrameTitle>
-            <FrameDescription>Visible only on this mesh. Copy it; do not put it in a URL.</FrameDescription>
+            <FrameTitle>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Pre-shared key" })}</FrameTitle>
+            <FrameDescription>
+              {formatMessage({
+                id: "page.meshes.detail.psk.description",
+                defaultMessage: "Visible only on this mesh. Copy it; do not put it in a URL.",
+              })}
+            </FrameDescription>
           </FrameHeader>
           <FramePanel>
             {mesh.isPending ? <SkeletonRows rows={1} /> : null}
             {mesh.error ? (
-              <StatusCopy>This mesh is not in the inventory, or the mock is not running.</StatusCopy>
+              <StatusCopy>
+                {formatMessage({
+                  id: "page.meshes.detail.psk.error",
+                  defaultMessage: "This mesh is not in the inventory, or the mock is not running.",
+                })}
+              </StatusCopy>
             ) : null}
             {mesh.data ? (
               <PskReveal value={mesh.data.psk_b64} />
@@ -79,9 +94,17 @@ export function MeshDetailPage(): ReactElement {
         </Frame>
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Fleet</FrameTitle>
+            <FrameTitle>{formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}</FrameTitle>
             <FrameDescription>
-              {plotted.length ? "Devices with coordinates." : "No coordinates on this mesh yet."}
+              {plotted.length
+                ? formatMessage({
+                    id: "page.meshes.detail.fleet.hasCoords",
+                    defaultMessage: "Devices with coordinates.",
+                  })
+                : formatMessage({
+                    id: "page.meshes.detail.fleet.noCoords",
+                    defaultMessage: "No coordinates on this mesh yet.",
+                  })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel>
@@ -112,19 +135,35 @@ export function MeshDetailPage(): ReactElement {
                 </Map>
               </div>
             ) : (
-              !devices.isPending && <StatusCopy>Register coordinates on a device to plot the mesh.</StatusCopy>
+              !devices.isPending && (
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.meshes.detail.fleet.noneToPlot",
+                    defaultMessage: "Register coordinates on a device to plot the mesh.",
+                  })}
+                </StatusCopy>
+              )
             )}
           </FramePanel>
         </Frame>
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Devices</FrameTitle>
+            <FrameTitle>{formatMessage({ id: "page.meshes.detail.devices.title", defaultMessage: "Devices" })}</FrameTitle>
             <FrameDescription>
               {devices.isPending
-                ? "Loading devices on this mesh."
+                ? formatMessage({
+                    id: "page.meshes.detail.devices.loading",
+                    defaultMessage: "Loading devices on this mesh.",
+                  })
                 : devices.data?.length
-                  ? "Gateways and nodes share this channel."
-                  : "No devices registered on this mesh."}
+                  ? formatMessage({
+                      id: "page.meshes.detail.devices.description",
+                      defaultMessage: "Gateways and nodes share this channel.",
+                    })
+                  : formatMessage({
+                      id: "page.meshes.detail.devices.none",
+                      defaultMessage: "No devices registered on this mesh.",
+                    })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel>
@@ -135,19 +174,22 @@ export function MeshDetailPage(): ReactElement {
                   <thead>
                     <tr>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        Device
+                        {formatMessage({ id: "page.meshes.detail.devices.columns.device", defaultMessage: "Device" })}
                       </th>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        Role
+                        {formatMessage({ id: "page.meshes.detail.devices.columns.role", defaultMessage: "Role" })}
                       </th>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        Allowed
+                        {formatMessage({ id: "page.meshes.detail.devices.columns.allowed", defaultMessage: "Allowed" })}
                       </th>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        Radio
+                        {formatMessage({ id: "page.meshes.detail.devices.columns.radio", defaultMessage: "Radio" })}
                       </th>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        Last seen
+                        {formatMessage({
+                          id: "page.meshes.detail.devices.columns.lastSeen",
+                          defaultMessage: "Last seen",
+                        })}
                       </th>
                     </tr>
                   </thead>
@@ -185,7 +227,12 @@ export function MeshDetailPage(): ReactElement {
               </div>
             ) : null}
             {devices.data && devices.data.length === 0 ? (
-              <StatusCopy>Register a node or gateway to start decoding traffic.</StatusCopy>
+              <StatusCopy>
+                {formatMessage({
+                  id: "page.meshes.detail.devices.registerHint",
+                  defaultMessage: "Register a node or gateway to start decoding traffic.",
+                })}
+              </StatusCopy>
             ) : null}
           </FramePanel>
         </Frame>
@@ -206,6 +253,7 @@ function RegisterDeviceDialog({
   open: boolean;
   onClose: () => void;
 }): ReactElement {
+  const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const create = useMutation({
@@ -247,27 +295,57 @@ function RegisterDeviceDialog({
   return (
     <Modal
       open={open}
-      title="Register device"
-      description="A registered gateway authorizes its traffic to be decoded."
+      title={formatMessage({ id: "page.meshes.detail.registerDialog.title", defaultMessage: "Register device" })}
+      description={formatMessage({
+        id: "page.meshes.detail.registerDialog.description",
+        defaultMessage: "A registered gateway authorizes its traffic to be decoded.",
+      })}
       onClose={onClose}
     >
       <form className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
-          <FormField id="device-label" label="Label" error={errors.label}>
+          <FormField
+            id="device-label"
+            label={formatMessage({ id: "page.meshes.detail.registerDialog.label", defaultMessage: "Label" })}
+            error={errors.label}
+          >
             <Input id="device-label" name="label" autoComplete="off" />
           </FormField>
-          <FormField id="device-node" label="Node id" error={errors.node_id}>
+          <FormField
+            id="device-node"
+            label={formatMessage({ id: "page.meshes.detail.registerDialog.nodeId", defaultMessage: "Node id" })}
+            error={errors.node_id}
+          >
             <FormNumber id="device-node" name="node_id" min={0} required />
           </FormField>
-          <FormCheckbox id="device-gateway" name="is_gateway" label="This device is a gateway" />
+          <FormCheckbox
+            id="device-gateway"
+            name="is_gateway"
+            label={formatMessage({
+              id: "page.meshes.detail.registerDialog.isGateway",
+              defaultMessage: "This device is a gateway",
+            })}
+          />
         </FieldGroup>
-        {create.error ? <StatusCopy>Registration failed. Check node id and try again.</StatusCopy> : null}
+        {create.error ? (
+          <StatusCopy>
+            {formatMessage({
+              id: "page.meshes.detail.registerDialog.error",
+              defaultMessage: "Registration failed. Check node id and try again.",
+            })}
+          </StatusCopy>
+        ) : null}
         <div className={dialogActionsClass}>
           <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            Cancel
+            {formatMessage({ id: "page.meshes.detail.registerDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={create.isPending}>
-            {create.isPending ? "Registering device" : "Register device"}
+            {create.isPending
+              ? formatMessage({
+                  id: "page.meshes.detail.registerDialog.registering",
+                  defaultMessage: "Registering device",
+                })
+              : formatMessage({ id: "page.meshes.detail.registerDialog.title", defaultMessage: "Register device" })}
           </Button>
         </div>
       </form>
@@ -276,6 +354,7 @@ function RegisterDeviceDialog({
 }
 
 function PskReveal({ value }: { value: string }): ReactElement {
+  const { formatMessage } = useIntl();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
@@ -291,7 +370,9 @@ function PskReveal({ value }: { value: string }): ReactElement {
           leadingIcon={open ? RiEyeOffLine : RiEyeLine}
           onClick={() => setOpen((v) => !v)}
         >
-          {open ? "Hide" : "Show"}
+          {open
+            ? formatMessage({ id: "page.meshes.detail.psk.hide", defaultMessage: "Hide" })
+            : formatMessage({ id: "page.meshes.detail.psk.show", defaultMessage: "Show" })}
         </Button>
         <Button
           type="button"
@@ -302,7 +383,9 @@ function PskReveal({ value }: { value: string }): ReactElement {
             void navigator.clipboard.writeText(value).then(() => setCopied(true));
           }}
         >
-          {copied ? "Copied" : "Copy"}
+          {copied
+            ? formatMessage({ id: "page.meshes.detail.psk.copied", defaultMessage: "Copied" })
+            : formatMessage({ id: "page.meshes.detail.psk.copy", defaultMessage: "Copy" })}
         </Button>
       </div>
     </div>

@@ -18,9 +18,20 @@ export type DataTableProps<T> = {
   columns: DataTableColumn<T>[];
   empty?: ReactNode;
   getRowId?: (row: T) => string;
+  previousPageLabel?: string;
+  nextPageLabel?: string;
+  pageRangeOfLabel?: string;
 };
 
-export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<T>): ReactElement {
+export function DataTable<T>({
+  data,
+  columns,
+  empty,
+  getRowId,
+  previousPageLabel = "Previous page",
+  nextPageLabel = "Next page",
+  pageRangeOfLabel = "of",
+}: DataTableProps<T>): ReactElement {
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([]);
   const table = useLegacyTable({
     data: data as never[],
@@ -118,7 +129,7 @@ export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<
       {total > pageSize ? (
         <div className="flex h-12 min-w-0 shrink-0 flex-wrap items-center justify-between gap-2 px-3.5 text-caption-1-regular text-text-secondary">
           <span>
-            {pageIndex * pageSize + 1}–{Math.min((pageIndex + 1) * pageSize, total)} of {total}
+            {pageIndex * pageSize + 1}–{Math.min((pageIndex + 1) * pageSize, total)} {pageRangeOfLabel} {total}
           </span>
           <div className="flex gap-1">
             <Button
@@ -127,7 +138,7 @@ export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<
               size="xs"
               iconOnly
               leadingIcon={RiArrowLeftSLine}
-              aria-label="Previous page"
+              aria-label={previousPageLabel}
               disabled={!table.getCanPreviousPage()}
               onClick={() => table.previousPage()}
             />
@@ -137,7 +148,7 @@ export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<
               size="xs"
               iconOnly
               leadingIcon={RiArrowRightSLine}
-              aria-label="Next page"
+              aria-label={nextPageLabel}
               disabled={!table.getCanNextPage()}
               onClick={() => table.nextPage()}
             />

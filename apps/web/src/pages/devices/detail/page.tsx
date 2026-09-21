@@ -20,6 +20,7 @@ import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { useIntl, type IntlShape } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
@@ -28,7 +29,7 @@ import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
 import { FormSelect } from "@/components/form/form-select";
-import { formatLastSeen, formatRatio, formatSecondsAsHms, formatValue, formatWhen } from "@/lib/format";
+import { useFormatters, type Formatters } from "@/hooks/use-formatters";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
@@ -54,6 +55,7 @@ const NIL_BLUEPRINT_ID = "00000000-0000-4000-8000-000000000000";
 const DEVICE_TABS = ["status", "dashboard"] as const;
 
 export function DeviceDetailPage(): ReactElement {
+  const { formatMessage } = useIntl();
   const { deviceUuid } = useParams({ from: routes.device });
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(DEVICE_TABS).withDefault("status"));
   const device = useQuery(deviceRepository.retrieve({ path: { device_uuid: deviceUuid } }));
@@ -127,7 +129,7 @@ export function DeviceDetailPage(): ReactElement {
           <div className="flex min-w-0 items-center gap-4">
             <Link
               to={routes.devices}
-              aria-label="Back to devices"
+              aria-label={formatMessage({ id: "page.devices.detail.back", defaultMessage: "Back to devices" })}
               className={cx(
                 buttonStyles.base,
                 buttonStyles.size.small,
@@ -148,7 +150,9 @@ export function DeviceDetailPage(): ReactElement {
               ) : null}
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <h1 className="min-w-0 text-balance break-words text-title-2-medium tracking-tight text-text-primary">
-                  {device.data ? deviceTitle(device.data) : "Device"}
+                  {device.data
+                    ? deviceTitle(device.data)
+                    : formatMessage({ id: "page.devices.detail.fallbackTitle", defaultMessage: "Device" })}
                 </h1>
                 {device.data ? <DeviceRoleBadge device={device.data} /> : null}
                 {device.data ? <DeviceSilentBadge device={device.data} /> : null}
@@ -157,16 +161,16 @@ export function DeviceDetailPage(): ReactElement {
           </div>
           {device.data ? (
             <Button type="button" size="small" variant="secondary" onClick={() => setSettingsOpen(true)}>
-              Edit settings
+              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
             </Button>
           ) : null}
         </div>
         <TabsList className="mt-3 p-1">
           <TabsTrigger value="status" className="px-4 py-1.5 text-body-medium">
-            Status
+            {formatMessage({ id: "page.devices.detail.tabs.status", defaultMessage: "Status" })}
           </TabsTrigger>
           <TabsTrigger value="dashboard" className="px-4 py-1.5 text-body-medium">
-            Dashboard
+            {formatMessage({ id: "page.devices.detail.tabs.dashboard", defaultMessage: "Dashboard" })}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="status" keepMounted className="mt-6 flex flex-col gap-6">
@@ -208,46 +212,88 @@ function DeviceStatusTab({
   ranges: UseQueryResult<TelemetryVariantMeasurementRead[]>;
   names: NamesByChannel;
 }): ReactElement {
-  const qualitySummary = quality.data ? qualityHeadlineKpis(quality.data) : [];
+  const { formatMessage } = useIntl();
+  const { formatLastSeen, formatRatio, formatWhen } = useFormatters();
+  const qualitySummary = quality.data ? qualityHeadlineKpis(quality.data, formatMessage, formatRatio) : [];
   const pointsIngested = quality.data?.points_ingested;
   return (
     <>
       <div className="grid gap-6 lg:grid-cols-2">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Identity</FrameTitle>
+            <FrameTitle>{formatMessage({ id: "page.devices.detail.identity.title", defaultMessage: "Identity" })}</FrameTitle>
             <FrameDescription>
               {device.isPending
-                ? "Loading this registration."
+                ? formatMessage({
+                    id: "page.devices.detail.identity.loading",
+                    defaultMessage: "Loading this registration.",
+                  })
                 : device.error
-                  ? "This device is not in the inventory."
-                  : "Registration, hardware, and last time it was heard."}
+                  ? formatMessage({
+                      id: "page.devices.detail.identity.error",
+                      defaultMessage: "This device is not in the inventory.",
+                    })
+                  : formatMessage({
+                      id: "page.devices.detail.identity.description",
+                      defaultMessage: "Registration, hardware, and last time it was heard.",
+                    })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel className="flex-1">
             {device.isPending ? <SkeletonRows rows={4} /> : null}
             {device.data ? (
               <dl className="oa-arrive grid gap-3 sm:grid-cols-2">
-                <Item label="Node id" value={String(device.data.node_id)} />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.nodeId", defaultMessage: "Node id" })}
+                  value={String(device.data.node_id)}
+                />
                 {device.data.label && device.data.label.trim() !== deviceTitle(device.data) ? (
-                  <Item label="Label" value={device.data.label} />
+                  <Item
+                    label={formatMessage({ id: "page.devices.detail.identity.label", defaultMessage: "Label" })}
+                    value={device.data.label}
+                  />
                 ) : null}
                 <Item
-                  label="Allowed"
+                  label={formatMessage({ id: "page.devices.detail.identity.allowed", defaultMessage: "Allowed" })}
                   value={<DeviceAllowedBadge allowed={device.data.is_allowed} />}
                 />
-                <Item label="Last seen" value={formatLastSeen(device.data.last_seen)} />
-                <Item label="Hardware" value={device.data.hardware_type ?? "Unknown"} />
                 <Item
-                  label="Read / publish"
+                  label={formatMessage({ id: "page.devices.detail.identity.lastSeen", defaultMessage: "Last seen" })}
+                  value={formatLastSeen(device.data.last_seen)}
+                />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.hardware", defaultMessage: "Hardware" })}
+                  value={
+                    device.data.hardware_type ??
+                    formatMessage({ id: "page.devices.detail.identity.unknownHardware", defaultMessage: "Unknown" })
+                  }
+                />
+                <Item
+                  label={formatMessage({
+                    id: "page.devices.detail.identity.readPublish",
+                    defaultMessage: "Read / publish",
+                  })}
                   value={`${device.data.reading_interval_seconds ?? "—"}s / ${device.data.publish_interval_seconds ?? "—"}s`}
                 />
                 <Item
-                  label="Coordinates"
+                  label={formatMessage({
+                    id: "page.devices.detail.identity.coordinates",
+                    defaultMessage: "Coordinates",
+                  })}
                   value={
                     device.data.latitude != null && device.data.longitude != null
-                      ? `${device.data.latitude}, ${device.data.longitude}${device.data.location_overridden ? " (overridden)" : ""}`
-                      : "No coordinates"
+                      ? `${device.data.latitude}, ${device.data.longitude}${
+                          device.data.location_overridden
+                            ? ` (${formatMessage({
+                                id: "page.devices.detail.identity.overridden",
+                                defaultMessage: "overridden",
+                              })})`
+                            : ""
+                        }`
+                      : formatMessage({
+                          id: "page.devices.detail.identity.noCoordinates",
+                          defaultMessage: "No coordinates",
+                        })
                   }
                 />
               </dl>
@@ -256,11 +302,17 @@ function DeviceStatusTab({
         </Frame>
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>Location</FrameTitle>
+            <FrameTitle>{formatMessage({ id: "page.devices.detail.location.title", defaultMessage: "Location" })}</FrameTitle>
             <FrameDescription>
               {device.data?.latitude != null && device.data.longitude != null
-                ? "Last reported coordinates on the map."
-                : "This device has no coordinates yet."}
+                ? formatMessage({
+                    id: "page.devices.detail.location.hasCoords",
+                    defaultMessage: "Last reported coordinates on the map.",
+                  })
+                : formatMessage({
+                    id: "page.devices.detail.location.noCoords",
+                    defaultMessage: "This device has no coordinates yet.",
+                  })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel className="flex min-h-80 flex-1 flex-col">
@@ -276,18 +328,34 @@ function DeviceStatusTab({
                 label={deviceTitle(device.data)}
               />
             ) : (
-              !device.isPending && <StatusCopy>No coordinates to plot.</StatusCopy>
+              !device.isPending && (
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.devices.detail.location.noCoordsToPlot",
+                    defaultMessage: "No coordinates to plot.",
+                  })}
+                </StatusCopy>
+              )
             )}
           </FramePanel>
         </Frame>
       </div>
       <Frame className="shadow-card">
         <FrameHeader>
-          <FrameTitle>Quality</FrameTitle>
+          <FrameTitle>{formatMessage({ id: "page.devices.detail.quality.title", defaultMessage: "Quality" })}</FrameTitle>
           <FrameDescription>
             {pointsIngested != null
-              ? `${pointsIngested.toLocaleString()} points ingested in the last 24 hours.`
-              : "Ingest, plausibility, and alarms for the last 24 hours."}
+              ? formatMessage(
+                  {
+                    id: "page.devices.detail.quality.pointsIngested",
+                    defaultMessage: "{count, number} points ingested in the last 24 hours.",
+                  },
+                  { count: pointsIngested },
+                )
+              : formatMessage({
+                  id: "page.devices.detail.quality.descriptionDefault",
+                  defaultMessage: "Ingest, plausibility, and alarms for the last 24 hours.",
+                })}
           </FrameDescription>
         </FrameHeader>
         <FramePanel>
@@ -298,7 +366,14 @@ function DeviceStatusTab({
               ))}
             </div>
           ) : null}
-          {quality.error ? <StatusCopy>Quality did not load. The worker may not have run.</StatusCopy> : null}
+          {quality.error ? (
+            <StatusCopy>
+              {formatMessage({
+                id: "page.devices.detail.quality.error",
+                defaultMessage: "Quality did not load. The worker may not have run.",
+              })}
+            </StatusCopy>
+          ) : null}
           {quality.data ? (
             <div className="flex flex-col gap-6">
               <div className="oa-arrive grid gap-3 sm:grid-cols-3" role="group" aria-label="Quality summary">
@@ -308,15 +383,28 @@ function DeviceStatusTab({
               </div>
               {quality.data.channels.length ? (
                 <div className="flex flex-col gap-2">
-                  <p className="text-caption-1-medium text-text-secondary">By channel</p>
+                  <p className="text-caption-1-medium text-text-secondary">
+                    {formatMessage({ id: "page.devices.detail.quality.byChannel", defaultMessage: "By channel" })}
+                  </p>
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[20rem] text-left text-body-2-regular">
                       <thead>
                         <tr>
-                          <th className="h-8 pe-2 text-caption-1-medium text-text-secondary">Channel</th>
-                          <th className="h-8 px-2 text-caption-1-medium text-text-secondary">Complete</th>
-                          <th className="h-8 px-2 text-caption-1-medium text-text-secondary">Observed</th>
-                          <th className="h-8 ps-2 text-caption-1-medium text-text-secondary">Largest gap</th>
+                          <th className="h-8 pe-2 text-caption-1-medium text-text-secondary">
+                            {formatMessage({ id: "page.devices.detail.quality.columns.channel", defaultMessage: "Channel" })}
+                          </th>
+                          <th className="h-8 px-2 text-caption-1-medium text-text-secondary">
+                            {formatMessage({ id: "page.devices.detail.quality.columns.complete", defaultMessage: "Complete" })}
+                          </th>
+                          <th className="h-8 px-2 text-caption-1-medium text-text-secondary">
+                            {formatMessage({ id: "page.devices.detail.quality.columns.observed", defaultMessage: "Observed" })}
+                          </th>
+                          <th className="h-8 ps-2 text-caption-1-medium text-text-secondary">
+                            {formatMessage({
+                              id: "page.devices.detail.quality.columns.largestGap",
+                              defaultMessage: "Largest gap",
+                            })}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -332,7 +420,7 @@ function DeviceStatusTab({
                               {row.observed ?? "—"} / {row.expected ?? "—"}
                             </td>
                             <td className="ps-2 py-1.5 tabular-nums text-text-secondary">
-                              {formatGapShort(row.largest_gap_seconds)}
+                              {formatGapShort(row.largest_gap_seconds, formatMessage)}
                             </td>
                           </tr>
                         ))}
@@ -341,7 +429,12 @@ function DeviceStatusTab({
                   </div>
                 </div>
               ) : (
-                <StatusCopy>No quality channels yet.</StatusCopy>
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.devices.detail.quality.noChannels",
+                    defaultMessage: "No quality channels yet.",
+                  })}
+                </StatusCopy>
               )}
             </div>
           ) : null}
@@ -349,8 +442,15 @@ function DeviceStatusTab({
       </Frame>
       <Frame className="shadow-card">
         <FrameHeader>
-          <FrameTitle>Telemetry variants</FrameTitle>
-          <FrameDescription>Payload families this device has sent, plus curated plausibility ranges.</FrameDescription>
+          <FrameTitle>
+            {formatMessage({ id: "page.devices.detail.variants.title", defaultMessage: "Telemetry variants" })}
+          </FrameTitle>
+          <FrameDescription>
+            {formatMessage({
+              id: "page.devices.detail.variants.description",
+              defaultMessage: "Payload families this device has sent, plus curated plausibility ranges.",
+            })}
+          </FrameDescription>
         </FrameHeader>
         <FramePanel>
           {variants.isPending ? <SkeletonRows rows={2} /> : null}
@@ -360,7 +460,10 @@ function DeviceStatusTab({
                 <li key={row.id} className="flex min-w-0 flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="min-w-0 break-words">{row.telemetry_variant.name ?? row.telemetry_variant.payload_kind}</span>
                   <span className="min-w-0 break-words text-caption-1-regular text-text-secondary sm:text-end">
-                    last {formatWhen(row.last_seen)}
+                    {formatMessage(
+                      { id: "page.devices.detail.variants.last", defaultMessage: "last {when}" },
+                      { when: formatWhen(row.last_seen) },
+                    )}
                     {row.telemetry_variant.default_reading_interval_seconds
                       ? ` · ${row.telemetry_variant.default_reading_interval_seconds}s`
                       : ""}
@@ -369,7 +472,14 @@ function DeviceStatusTab({
               ))}
             </ul>
           ) : (
-            !variants.isPending && <StatusCopy>No telemetry variants discovered yet.</StatusCopy>
+            !variants.isPending && (
+              <StatusCopy>
+                {formatMessage({
+                  id: "page.devices.detail.variants.none",
+                  defaultMessage: "No telemetry variants discovered yet.",
+                })}
+              </StatusCopy>
+            )
           )}
           {ranges.data?.length ? (
             <ul className="mt-3 flex flex-col gap-1 text-caption-1-regular text-text-secondary">
@@ -401,6 +511,8 @@ function DeviceDashboardTab({
   chartChannels: string[];
   names: NamesByChannel;
 }): ReactElement {
+  const { formatMessage } = useIntl();
+  const { formatValue, formatWhen } = useFormatters();
   const [range, setRange] = useState<DeviceChartRange>(defaultChartRange);
   const rangeQuery = chartRangeQuery(range);
   const seriesQueries = useQueries({
@@ -423,8 +535,15 @@ function DeviceDashboardTab({
     <div className="flex flex-col gap-10">
       <section className="flex flex-col gap-4" aria-label="Latest readings">
         <div className="flex flex-col gap-1">
-          <h2 className="text-title-3-medium text-text-primary">Latest readings</h2>
-          <p className="text-body-regular text-text-secondary">Current values from this device.</p>
+          <h2 className="text-title-3-medium text-text-primary">
+            {formatMessage({ id: "page.devices.detail.dashboard.latest.title", defaultMessage: "Latest readings" })}
+          </h2>
+          <p className="text-body-regular text-text-secondary">
+            {formatMessage({
+              id: "page.devices.detail.dashboard.latest.description",
+              defaultMessage: "Current values from this device.",
+            })}
+          </p>
         </div>
         {latestPending ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-hidden>
@@ -450,15 +569,29 @@ function DeviceDashboardTab({
             })}
           </div>
         ) : (
-          !latestPending && <StatusCopy>No readings in the lookback.</StatusCopy>
+          !latestPending && (
+            <StatusCopy>
+              {formatMessage({
+                id: "page.devices.detail.dashboard.latest.none",
+                defaultMessage: "No readings in the lookback.",
+              })}
+            </StatusCopy>
+          )
         )}
       </section>
 
       <section className="flex flex-col gap-6" aria-label="Historical series">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-1">
-            <h2 className="text-title-3-medium text-text-primary">History</h2>
-            <p className="text-body-regular text-text-secondary">Mean values per channel for the selected range.</p>
+            <h2 className="text-title-3-medium text-text-primary">
+              {formatMessage({ id: "page.devices.detail.dashboard.history.title", defaultMessage: "History" })}
+            </h2>
+            <p className="text-body-regular text-text-secondary">
+              {formatMessage({
+                id: "page.devices.detail.dashboard.history.description",
+                defaultMessage: "Mean values per channel for the selected range.",
+              })}
+            </p>
           </div>
           <DeviceChartRangePicker value={range} onChange={setRange} />
         </div>
@@ -469,7 +602,15 @@ function DeviceDashboardTab({
               const type = names.get(channel);
               const points = series?.data?.series[0]?.points;
               const label = type?.display_name ?? channel;
-              const hint = type?.native_unit ? `Mean · ${type.native_unit}` : "Mean";
+              const hint = type?.native_unit
+                ? formatMessage(
+                    { id: "page.devices.detail.dashboard.history.meanHint", defaultMessage: "Mean · {unit}" },
+                    { unit: type.native_unit },
+                  )
+                : formatMessage({
+                    id: "page.devices.detail.dashboard.history.meanHintDefault",
+                    defaultMessage: "Mean",
+                  });
               const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
               if (series?.isPending) {
                 return (
@@ -481,14 +622,24 @@ function DeviceDashboardTab({
               if (series?.error) {
                 return (
                   <KpiPanel key={channel} label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
-                    <StatusCopy>This series did not load.</StatusCopy>
+                    <StatusCopy>
+                      {formatMessage({
+                        id: "page.devices.detail.dashboard.history.seriesError",
+                        defaultMessage: "This series did not load.",
+                      })}
+                    </StatusCopy>
                   </KpiPanel>
                 );
               }
               if (!points?.length) {
                 return (
                   <KpiPanel key={channel} label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
-                    <StatusCopy>No points in this range for this channel.</StatusCopy>
+                    <StatusCopy>
+                      {formatMessage({
+                        id: "page.devices.detail.dashboard.history.noPoints",
+                        defaultMessage: "No points in this range for this channel.",
+                      })}
+                    </StatusCopy>
                   </KpiPanel>
                 );
               }
@@ -498,7 +649,14 @@ function DeviceDashboardTab({
             })}
           </div>
         ) : (
-          !latestPending && <StatusCopy>No measured series on this device yet.</StatusCopy>
+          !latestPending && (
+            <StatusCopy>
+              {formatMessage({
+                id: "page.devices.detail.dashboard.history.none",
+                defaultMessage: "No measured series on this device yet.",
+              })}
+            </StatusCopy>
+          )
         )}
       </section>
     </div>
@@ -513,6 +671,7 @@ type IntervalSecondsFieldProps = {
 };
 
 function IntervalSecondsField({ id, name, label, defaultValue }: IntervalSecondsFieldProps): ReactElement {
+  const { formatSecondsAsHms } = useFormatters();
   const [seconds, setSeconds] = useState(defaultValue);
   return (
     <FormField id={id} label={label}>
@@ -537,6 +696,7 @@ function DeviceSettingsDialog({
   open: boolean;
   onClose: () => void;
 }): ReactElement {
+  const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const blueprints = useQuery(blueprintRepository.list());
   const [error, setError] = useState<string | null>(null);
@@ -556,7 +716,12 @@ function DeviceSettingsDialog({
     const lat = String(form.get("latitude") ?? "").trim();
     const lon = String(form.get("longitude") ?? "").trim();
     if ((lat === "") !== (lon === "")) {
-      setError("Latitude and longitude must be provided together.");
+      setError(
+        formatMessage({
+          id: "page.devices.detail.settings.latLonError",
+          defaultMessage: "Latitude and longitude must be provided together.",
+        }),
+      );
       return;
     }
     setError(null);
@@ -578,26 +743,43 @@ function DeviceSettingsDialog({
   return (
     <Modal
       open={open}
-      title="Edit settings"
-      description="Allowed, intervals, blueprint, and coordinates."
+      title={formatMessage({ id: "page.devices.detail.settings.title", defaultMessage: "Edit settings" })}
+      description={formatMessage({
+        id: "page.devices.detail.settings.description",
+        defaultMessage: "Allowed, intervals, blueprint, and coordinates.",
+      })}
       onClose={onClose}
     >
       <form key={`${device.uuid}-${open}`} className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
-          <FormCheckbox id="device-allowed" name="is_allowed" label="Allowed" defaultChecked={device.is_allowed} />
+          <FormCheckbox
+            id="device-allowed"
+            name="is_allowed"
+            label={formatMessage({ id: "page.devices.detail.settings.allowed", defaultMessage: "Allowed" })}
+            defaultChecked={device.is_allowed}
+          />
           <IntervalSecondsField
             id="device-reading"
             name="reading_interval_seconds"
-            label="Reading interval (s)"
+            label={formatMessage({
+              id: "page.devices.detail.settings.readingInterval",
+              defaultMessage: "Reading interval (s)",
+            })}
             defaultValue={device.reading_interval_seconds}
           />
           <IntervalSecondsField
             id="device-publish"
             name="publish_interval_seconds"
-            label="Publish interval (s)"
+            label={formatMessage({
+              id: "page.devices.detail.settings.publishInterval",
+              defaultMessage: "Publish interval (s)",
+            })}
             defaultValue={device.publish_interval_seconds}
           />
-          <FormField id="device-blueprint" label="Blueprint">
+          <FormField
+            id="device-blueprint"
+            label={formatMessage({ id: "page.devices.detail.settings.blueprint", defaultMessage: "Blueprint" })}
+          >
             <FormSelect
               id="device-blueprint"
               name="postprocessing_blueprint_id"
@@ -607,12 +789,21 @@ function DeviceSettingsDialog({
                   : device.postprocessing_blueprint_id
               }
               items={[
-                { label: "None", value: "__none__" },
+                {
+                  label: formatMessage({
+                    id: "page.devices.detail.settings.blueprintNone",
+                    defaultMessage: "None",
+                  }),
+                  value: "__none__",
+                },
                 ...(blueprints.data ?? []).map((bp) => ({ label: bp.name, value: bp.id })),
               ]}
             />
           </FormField>
-          <FormField id="device-lat" label="Latitude">
+          <FormField
+            id="device-lat"
+            label={formatMessage({ id: "page.devices.detail.settings.latitude", defaultMessage: "Latitude" })}
+          >
             <FormNumber
               id="device-lat"
               name="latitude"
@@ -622,7 +813,10 @@ function DeviceSettingsDialog({
               defaultValue={device.latitude ?? undefined}
             />
           </FormField>
-          <FormField id="device-lon" label="Longitude">
+          <FormField
+            id="device-lon"
+            label={formatMessage({ id: "page.devices.detail.settings.longitude", defaultMessage: "Longitude" })}
+          >
             <FormNumber
               id="device-lon"
               name="longitude"
@@ -633,13 +827,20 @@ function DeviceSettingsDialog({
             />
           </FormField>
         </FieldGroup>
-        {error || update.error ? <StatusCopy>{error ?? "Update failed."}</StatusCopy> : null}
+        {error || update.error ? (
+          <StatusCopy>
+            {error ??
+              formatMessage({ id: "page.devices.detail.settings.updateFailed", defaultMessage: "Update failed." })}
+          </StatusCopy>
+        ) : null}
         <div className={dialogActionsClass}>
           <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            Cancel
+            {formatMessage({ id: "page.devices.detail.settings.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={update.isPending}>
-            {update.isPending ? "Saving" : "Save settings"}
+            {update.isPending
+              ? formatMessage({ id: "page.devices.detail.settings.saving", defaultMessage: "Saving" })
+              : formatMessage({ id: "page.devices.detail.settings.save", defaultMessage: "Save settings" })}
           </Button>
         </div>
       </form>
@@ -681,12 +882,16 @@ function DeviceLocationMap({
 }
 
 /** Status tab: headline signals only; per-channel detail lives in the table below. */
-function qualityHeadlineKpis(quality: DeviceQualityResponse): { label: string; value: string; hint: string }[] {
+function qualityHeadlineKpis(
+  quality: DeviceQualityResponse,
+  formatMessage: IntlShape["formatMessage"],
+  formatRatio: Formatters["formatRatio"],
+): { label: string; value: string; hint: string }[] {
   const alarms = Object.entries(quality.alarms_by_detector);
   const alarmCount = alarms.reduce((sum, [, n]) => sum + n, 0);
   const alarmHint =
     alarmCount === 0
-      ? "No detector alarms"
+      ? formatMessage({ id: "page.devices.detail.quality.kpi.noAlarms", defaultMessage: "No detector alarms" })
       : alarms
           .filter(([, n]) => n > 0)
           .map(([detector, n]) => `${detector.replaceAll("_", " ")} ${n}`)
@@ -697,27 +902,48 @@ function qualityHeadlineKpis(quality: DeviceQualityResponse): { label: string; v
   const completeness = ratios.length ? ratios.reduce((sum, n) => sum + n, 0) / ratios.length : null;
   return [
     {
-      label: "Plausibility",
+      label: formatMessage({ id: "page.devices.detail.quality.kpi.plausibility", defaultMessage: "Plausibility" }),
       value: formatRatio(quality.plausibility_ratio),
-      hint: "Readings inside expected range",
+      hint: formatMessage({
+        id: "page.devices.detail.quality.kpi.plausibilityHint",
+        defaultMessage: "Readings inside expected range",
+      }),
     },
     {
-      label: "Completeness",
+      label: formatMessage({ id: "page.devices.detail.quality.kpi.completeness", defaultMessage: "Completeness" }),
       value: formatRatio(completeness),
-      hint: quality.channels.length ? `Mean across ${quality.channels.length} channels` : "No channels yet",
+      hint: quality.channels.length
+        ? formatMessage(
+            {
+              id: "page.devices.detail.quality.kpi.completenessHint",
+              defaultMessage: "Mean across {count} channels",
+            },
+            { count: quality.channels.length },
+          )
+        : formatMessage({ id: "page.devices.detail.quality.kpi.noChannelsHint", defaultMessage: "No channels yet" }),
     },
     {
-      label: "Alarms",
+      label: formatMessage({ id: "page.devices.detail.quality.kpi.alarms", defaultMessage: "Alarms" }),
       value: String(alarmCount),
       hint: alarmHint,
     },
   ];
 }
 
-function formatGapShort(seconds: number | null): string {
-  if (seconds == null || !Number.isFinite(seconds)) return "—";
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  return `${Math.round(seconds / 60)} min`;
+function formatGapShort(seconds: number | null, formatMessage: IntlShape["formatMessage"]): string {
+  if (seconds == null || !Number.isFinite(seconds)) {
+    return formatMessage({ id: "common.format.emDash", defaultMessage: "—" });
+  }
+  if (seconds < 60) {
+    return formatMessage(
+      { id: "page.devices.detail.quality.gapSeconds", defaultMessage: "{count}s" },
+      { count: Math.round(seconds) },
+    );
+  }
+  return formatMessage(
+    { id: "page.devices.detail.quality.gapMinutes", defaultMessage: "{count} min" },
+    { count: Math.round(seconds / 60) },
+  );
 }
 
 function Item({ label, value }: { label: string; value: ReactElement | string }): ReactElement {

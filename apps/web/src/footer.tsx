@@ -3,6 +3,7 @@ import { cx } from "@mtt/ui/utils";
 import { RiGithubLine, RiLinkedinLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
+import { useIntl } from "react-intl";
 import { routes } from "@/router";
 import { BrandMark, SITE, pageWidth } from "@/components/brand";
 
@@ -28,6 +29,7 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
 }
 
 export function Footer(): ReactElement {
+  const { formatMessage } = useIntl();
   return (
     <footer
       className={cx(
@@ -45,30 +47,33 @@ export function Footer(): ReactElement {
             <BrandMark className="h-3.5" />
           </a>
           <p className="text-body-regular text-text-secondary">
-            Mesh telemetry for operators. Built by Sensical SCCL in Barcelona.
+            {formatMessage({
+              id: "console.footer.tagline",
+              defaultMessage: "Mesh telemetry for operators. Built by Sensical SCCL in Barcelona.",
+            })}
           </p>
         </div>
         <div className="flex flex-wrap gap-10">
-          <FooterColumn title="Product">
+          <FooterColumn title={formatMessage({ id: "console.footer.product", defaultMessage: "Product" })}>
             <nav aria-label="Product" className="flex flex-col gap-2">
               <Link to={routes.meshes} className={footerLinkClass}>
-                Meshes
+                {formatMessage({ id: "console.footer.meshes", defaultMessage: "Meshes" })}
               </Link>
               <Link to={routes.devices} className={footerLinkClass}>
-                Devices
+                {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
               </Link>
               <Link to={routes.blueprints} className={footerLinkClass}>
-                Blueprints
+                {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
               </Link>
             </nav>
           </FooterColumn>
           <FooterColumn title="Sensical">
             <nav aria-label="Sensical" className="flex flex-col gap-2">
               <a href={SITE} className={footerLinkClass}>
-                Website
+                {formatMessage({ id: "console.footer.website", defaultMessage: "Website" })}
               </a>
               <a href={`${SITE}/contact`} className={footerLinkClass}>
-                Contact
+                {formatMessage({ id: "console.footer.contact", defaultMessage: "Contact" })}
               </a>
             </nav>
           </FooterColumn>
