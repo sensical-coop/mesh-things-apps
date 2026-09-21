@@ -17,7 +17,7 @@ Mantén el inventario de la malla, los permisos de pasarela y el historial de ca
 Iniciar sesión
 ```
 
-## page.home.hero.seeProduct
+## page.home.hero.howItWorks
 ```text
 Ver el producto
 ```

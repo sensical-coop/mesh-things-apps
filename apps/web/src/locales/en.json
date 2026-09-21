@@ -312,7 +312,7 @@
   "page.home.hero.title": "The world's first <accent>storage and data solution for Meshtastic</accent>",
   "page.home.hero.subtitle": "Keep mesh inventory, gateway permission and channel history in one place, <highlight>without a spreadsheet export.</highlight>",
   "page.home.hero.signIn": "Sign in",
-  "page.home.hero.seeProduct": "See the product",
+  "page.home.hero.howItWorks": "How it works",
 
   "page.home.cta.title": "Know the mesh by tonight.",
   "page.home.cta.subtitle": "Sign in to the console, create a mesh, and watch the first packets land.",

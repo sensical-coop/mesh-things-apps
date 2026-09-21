@@ -12,10 +12,10 @@ import { LandingPacketFeed } from "./packet-feed";
 import { LandingReveal } from "./reveal";
 
 const channels = [
-  { id: "temperature", nameId: "page.home.steps.channels.temperature", nameDefault: "temperature", value: "412", fill: "100%" },
-  { id: "humidity", nameId: "page.home.steps.channels.humidity", nameDefault: "humidity", value: "268", fill: "65%" },
-  { id: "position", nameId: "page.home.steps.channels.position", nameDefault: "position", value: "194", fill: "47%" },
-  { id: "battery", nameId: "page.home.steps.channels.battery", nameDefault: "battery", value: "122", fill: "30%" },
+  { id: "temperature", nameId: "page.home.steps.channels.temperature", nameDefault: "temperature", value: "30", fill: "40%" },
+  { id: "humidity", nameId: "page.home.steps.channels.humidity", nameDefault: "humidity", value: "65", fill: "65%" },
+  { id: "position", nameId: "page.home.steps.channels.co2", nameDefault: "position", value: "450", fill: "10%" },
+  { id: "battery", nameId: "page.home.steps.channels.battery", nameDefault: "battery", value: "30", fill: "30%" },
 ] as const;
 
 export function LandingSteps(): ReactElement {
@@ -49,14 +49,26 @@ export function LandingSteps(): ReactElement {
                 </FrameDescription>
               </FrameHeader>
               <FramePanel className="flex h-44 flex-col justify-center font-mono text-caption-1-regular text-text-secondary">
-                <p>mesh create west-med</p>
+                <p className="mt-2">
+                  {formatMessage({
+                    id: "page.home.steps.registerMesh.create",
+                    defaultMessage: "mesh create west-med",
+                  })}
+                </p>
                 <p className="mt-2 text-text-primary">
-                  {formatMessage({ id: "page.home.steps.registerMesh.created", defaultMessage: "created west-med" })}
+                  {formatMessage({ id: "page.home.steps.registerMesh.created",
+                    defaultMessage: "created west-med" })}
                 </p>
                 <p className="mt-2">
                   {formatMessage({
                     id: "page.home.steps.registerMesh.pskHint",
                     defaultMessage: "psk stays on the gateway",
+                  })}
+                </p>
+                <p className="mt-2 text-text-primary">
+                  {formatMessage({
+                    id: "page.home.steps.registerMesh.pskCreated",
+                    defaultMessage: "created psk stays on the gateway",
                   })}
                 </p>
               </FramePanel>

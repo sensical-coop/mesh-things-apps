@@ -32,8 +32,8 @@ export function LandingHero(): ReactElement {
             <ButtonLink href={routes.login} size="medium">
               {formatMessage({ id: "page.home.hero.signIn", defaultMessage: "Sign in" })}
             </ButtonLink>
-            <ButtonLink href={routes.login} variant="secondary" size="medium">
-              {formatMessage({ id: "page.home.hero.seeProduct", defaultMessage: "See the product" })}
+            <ButtonLink href="#proof" variant="secondary" size="medium">
+              {formatMessage({ id: "page.home.hero.howItWorks", defaultMessage: "How it works" })}
             </ButtonLink>
           </div>
         </LandingReveal>

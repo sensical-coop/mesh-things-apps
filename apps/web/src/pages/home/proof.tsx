@@ -8,7 +8,8 @@ import {
 } from "@mtt/ui/reui/frame";
 import { RiEarthLine, RiLockLine, RiPulseLine } from "@remixicon/react";
 import { type ReactElement } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { richTextValues } from "@/lib/intl-tags";
 import { LandingGlobe } from "./globe";
 import { LandingPacketFeed } from "./packet-feed";
 import { LandingReveal } from "./reveal";
@@ -52,76 +53,89 @@ export function LandingProof({ className }: { className?: string }): ReactElemen
   const { formatMessage } = useIntl();
   return (
     <LandingReveal className={className}>
-      <ul className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-        <li>
-          <Frame className="h-full shadow-card">
-            <FrameHeader>
-              <FrameTitle>
-                <RiPulseLine />
-                {formatMessage({ id: "page.home.proof.packets.title", defaultMessage: "Packets" })}
-              </FrameTitle>
-              <FrameDescription>
-                {formatMessage({
-                  id: "page.home.proof.packets.description",
-                  defaultMessage: "Telemetry as it lands, with nothing to refresh.",
-                })}
-              </FrameDescription>
-            </FrameHeader>
-            <FramePanel className="h-52 overflow-hidden p-0 [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]">
-              <LandingPacketFeed />
-            </FramePanel>
-          </Frame>
-        </li>
-        <li>
-          <Frame className="h-full shadow-card">
-            <FrameHeader>
-              <FrameTitle>
-                <RiEarthLine />
-                {formatMessage({ id: "page.home.proof.globe.title", defaultMessage: "Live globe" })}
-              </FrameTitle>
-              <FrameDescription>
-                {formatMessage({
-                  id: "page.home.proof.globe.description",
-                  defaultMessage: "Sample mesh over the western Mediterranean.",
-                })}
-              </FrameDescription>
-            </FrameHeader>
-            <FramePanel className="h-52 overflow-hidden p-0">
-              <LandingGlobe />
-            </FramePanel>
-          </Frame>
-        </li>
-        <li>
-          <Frame className="h-full shadow-card">
-            <FrameHeader>
-              <FrameTitle>
-                <RiLockLine />
-                {formatMessage({ id: "page.home.proof.lora.title", defaultMessage: "The radio stays LoRa" })}
-              </FrameTitle>
-              <FrameDescription>
-                {formatMessage({
-                  id: "page.home.proof.lora.description",
-                  defaultMessage: "Nowhere to click. Nothing to accept.",
-                })}
-              </FrameDescription>
-            </FrameHeader>
-            <FramePanel className="flex h-52 flex-col justify-center p-0">
-              <ul className="flex flex-col" aria-hidden>
-                {privacy.map((row) => (
-                  <li key={row.id} className="flex h-8 items-center justify-between gap-3 px-3">
-                    <span className="text-body-medium text-text-primary">
-                      {formatMessage({ id: row.labelId, defaultMessage: row.labelDefault })}
-                    </span>
-                    <Chip variant="caption" color={row.color} className="rounded-full">
-                      {formatMessage({ id: row.valueId, defaultMessage: row.valueDefault })}
-                    </Chip>
-                  </li>
-                ))}
-              </ul>
-            </FramePanel>
-          </Frame>
-        </li>
-      </ul>
+      <section id="proof" className="scroll-mt-24">
+        <LandingReveal>
+          <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
+            <FormattedMessage
+              id="page.home.proof.heading"
+              defaultMessage="Three steps from a mesh to a chart, <secondary>and the first one is a name.</secondary>"
+              values={richTextValues}
+            />
+          </h2>
+        </LandingReveal>
+        <LandingReveal className="mt-12 sm:mt-16">
+          <ul className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+            <li>
+              <Frame className="h-full shadow-card">
+                <FrameHeader>
+                  <FrameTitle>
+                    <RiPulseLine />
+                    {formatMessage({ id: "page.home.proof.packets.title", defaultMessage: "Packets" })}
+                  </FrameTitle>
+                  <FrameDescription>
+                    {formatMessage({
+                      id: "page.home.proof.packets.description",
+                      defaultMessage: "Telemetry as it lands, with nothing to refresh.",
+                    })}
+                  </FrameDescription>
+                </FrameHeader>
+                <FramePanel className="h-52 overflow-hidden p-0 [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]">
+                  <LandingPacketFeed />
+                </FramePanel>
+              </Frame>
+            </li>
+            <li>
+              <Frame className="h-full shadow-card">
+                <FrameHeader>
+                  <FrameTitle>
+                    <RiEarthLine />
+                    {formatMessage({ id: "page.home.proof.globe.title", defaultMessage: "Live globe" })}
+                  </FrameTitle>
+                  <FrameDescription>
+                    {formatMessage({
+                      id: "page.home.proof.globe.description",
+                      defaultMessage: "Sample mesh over the western Mediterranean.",
+                    })}
+                  </FrameDescription>
+                </FrameHeader>
+                <FramePanel className="h-52 overflow-hidden p-0">
+                  <LandingGlobe />
+                </FramePanel>
+              </Frame>
+            </li>
+            <li>
+              <Frame className="h-full shadow-card">
+                <FrameHeader>
+                  <FrameTitle>
+                    <RiLockLine />
+                    {formatMessage({ id: "page.home.proof.lora.title", defaultMessage: "The radio stays LoRa" })}
+                  </FrameTitle>
+                  <FrameDescription>
+                    {formatMessage({
+                      id: "page.home.proof.lora.description",
+                      defaultMessage: "Nowhere to click. Nothing to accept.",
+                    })}
+                  </FrameDescription>
+                </FrameHeader>
+                <FramePanel className="flex h-52 flex-col justify-center p-0">
+                  <ul className="flex flex-col" aria-hidden>
+                    {privacy.map((row) => (
+                      <li key={row.id} className="flex h-8 items-center justify-between gap-3 px-3">
+                        <span className="text-body-medium text-text-primary">
+                          {formatMessage({ id: row.labelId, defaultMessage: row.labelDefault })}
+                        </span>
+                        <Chip variant="caption" color={row.color} className="rounded-full">
+                          {formatMessage({ id: row.valueId, defaultMessage: row.valueDefault })}
+                        </Chip>
+                      </li>
+                    ))}
+                  </ul>
+                </FramePanel>
+              </Frame>
+            </li>
+          </ul>
+        </LandingReveal>
+      </section>
     </LandingReveal>
   );
 }

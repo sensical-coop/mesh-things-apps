@@ -312,7 +312,7 @@
   "page.home.hero.title": "La primera <accent>solución de almacenamiento y datos para Meshtastic</accent> del mundo",
   "page.home.hero.subtitle": "Mantén el inventario de la malla, los permisos de pasarela y el historial de canales en un solo lugar, <highlight>sin exportar una hoja de cálculo.</highlight>",
   "page.home.hero.signIn": "Iniciar sesión",
-  "page.home.hero.seeProduct": "Ver el producto",
+  "page.home.hero.howItWorks": "Cómo funciona",
 
   "page.home.cta.title": "Conoce tu malla esta misma noche.",
   "page.home.cta.subtitle": "Inicia sesión en la consola, crea una malla y observa cómo llegan los primeros paquetes.",
