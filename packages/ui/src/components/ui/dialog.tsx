@@ -54,7 +54,7 @@ function DialogContent({
         <DialogPrimitive.Popup
           data-slot="dialog-content"
           className={cn(
-            "pointer-events-auto relative grid w-full max-w-md max-h-[min(90dvh,40rem)] gap-4 overflow-y-auto oa-squircle border border-separator-border bg-background-primary-default p-5 text-text-primary shadow-dropdown outline-none",
+            "pointer-events-auto relative grid w-full max-w-md max-h-[min(90dvh,45rem)] gap-4 overflow-y-auto oa-squircle border border-separator-border bg-background-primary-default p-5 text-text-primary shadow-dropdown outline-none",
             "focus-visible:ring-2 focus-visible:ring-border-focus-ring",
             "data-open:animate-[oa-dialog-in_0.42s_cubic-bezier(0.22,1.15,0.32,1)_both] data-closed:animate-[oa-dialog-out_0.28s_cubic-bezier(0.32,0.72,0.4,1)_both]",
             className
