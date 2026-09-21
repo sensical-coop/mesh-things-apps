@@ -147,17 +147,23 @@ export function SignupForm(): ReactElement {
           <Field orientation="horizontal">
             <Checkbox id="signup-terms" name="terms" required />
             <FieldLabel htmlFor="signup-terms" className="text-body-regular text-text-primary">
-              <FormattedMessage
-                id="page.signup.form.terms"
-                defaultMessage="I agree to the <link>Terms and Conditions</link>."
-                values={{
-                  link: (chunks: ReactNode) => (
-                    <Link to={routes.terms} target="_blank" className="underline underline-offset-2 text-accent-500">
-                      {chunks}
-                    </Link>
-                  ),
-                }}
-              />
+              <span>
+                <FormattedMessage
+                  id="page.signup.form.terms"
+                  defaultMessage="I agree to the <link>Terms and Conditions</link>."
+                  values={{
+                    link: (chunks: ReactNode) => (
+                      <Link
+                        to={routes.terms}
+                        target="_blank"
+                        className="underline underline-offset-2 text-accent-500"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                  }}
+                />
+              </span>
             </FieldLabel>
           </Field>
           {error ? <StatusCopy>{error}</StatusCopy> : null}
