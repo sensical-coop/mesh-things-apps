@@ -13,6 +13,7 @@ import { deviceDetailPage } from "@/pages/devices/detail/route";
 import { deviceListPage } from "@/pages/devices/list/route";
 import { meshDetailPage } from "@/pages/meshes/detail/route";
 import { meshListPage } from "@/pages/meshes/list/route";
+import { profilePage } from "@/pages/profile/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
 
@@ -94,6 +95,11 @@ const blueprintsRoute = createRoute({
   ...blueprintListPage,
 });
 
+const profileRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...profilePage,
+});
+
 const routeTree = rootRoute.addChildren([
   landingRoute,
   loginRoute,
@@ -109,6 +115,7 @@ const routeTree = rootRoute.addChildren([
     deviceDetailRoute,
     alarmsRoute,
     blueprintsRoute,
+    profileRoute,
   ]),
 ]);
 

@@ -1,9 +1,9 @@
 import { authRepository } from "@/features/auth/repository";
 import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
-import { Button } from "@mtt/ui/components/base/buttons/button";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils";
 import { getTheme, toggleTheme } from "@mtt/ui/theme";
-import { RiCloseLine, RiMenuLine, RiMoonLine, RiSunLine } from "@remixicon/react";
+import { RiCloseLine, RiMenuLine, RiMoonLine, RiSunLine, RiUserLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
@@ -113,6 +113,15 @@ export function Header(): ReactElement {
             {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
           </button>
           <LanguageSwitcher />
+          <ButtonLink
+            href={routes.profile}
+            variant="secondary"
+            size="small"
+            iconOnly
+            leadingIcon={RiUserLine}
+            aria-label={formatMessage({ id: "console.header.profile", defaultMessage: "Profile" })}
+            onClick={() => setMenuOpen(false)}
+          />
           <Button
             type="button"
             variant="secondary"

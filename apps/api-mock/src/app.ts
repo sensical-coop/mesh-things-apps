@@ -6,6 +6,7 @@ import {
   zMeshesUpdateData,
   zOwnersCreateData,
   zOwnersLoginCreateData,
+  zOwnersMeUpdateData,
   zPostprocessingBlueprintsCreateData,
   zTelemetryVariantsMeasurementsUpdateData,
 } from "@mtt/contracts/zod";
@@ -316,6 +317,51 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerProfileJson(actor, await devicesFor(db, actor), verification));
+  });
+
+  app.put("/owners/me", async (c) => {
+    const actor = c.get("actor");
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersMeUpdateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const patch = parsed.data.body ?? {};
+    if (patch.name !== undefined) actor.name = patch.name;
+    if (patch.email !== undefined && patch.email !== actor.email) {
+      const taken = [...db.actors.values()].some(
+        (other) => other.id !== actor.id && other.email === patch.email,
+      );
+      if (taken) return c.json({ detail: "That email address is already in use." }, 400);
+      actor.email = patch.email;
+      actor.isActive = false;
+      for (const [existingToken, ownerId] of db.verificationTokens) {
+        if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
+      }
+      const token = newId();
+      db.verificationTokens.set(token, actor.id);
+      db.verifications.set(actor.id, { emailVerifiedAt: null, emailVerificationSentAt: nowIso() });
+      console.info(`[mock] verification link for ${actor.email}: /verify-email?token=${token}`);
+    }
+    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    return c.json(ownerReadJson(actor, verification));
+  });
+
+  app.delete("/owners/me", async (c) => {
+    const actor = c.get("actor");
+    const ownedMeshes = (await db.meshes.list()).filter((mesh) => mesh.ownerId === actor.id);
+    for (const mesh of ownedMeshes) {
+      const devices = await db.devices.list({ meshId: mesh.id });
+      for (const device of devices) await db.devices.delete(device.uuid);
+      await db.meshes.delete(mesh.id);
+    }
+    db.blueprints = db.blueprints.filter((blueprint) => blueprint.ownerId !== actor.id);
+    for (const [existingToken, ownerId] of db.verificationTokens) {
+      if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
+    }
+    db.verifications.delete(actor.id);
+    db.actors.delete(actor.id);
+    const result = await auth.api.signOut({ headers: c.req.raw.headers, returnHeaders: true });
+    applySetCookie(c, result.headers);
+    return c.body(null, 204);
   });
 
   app.get("/owners", (c) => {
