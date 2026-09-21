@@ -5,7 +5,6 @@ import type {
   DeviceTelemetryVariant,
   LatestReading,
   MeasurementTypeRead,
-  TelemetryVariantMeasurementRead,
 } from "@mtt/contracts";
 import { Button, buttonStyles } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils/cx";
@@ -33,8 +32,10 @@ import { routes } from "@/router";
 import { Kpi } from "@/components/kpi/kpi";
 import { KpiPanel } from "@/components/kpi/kpi-panel";
 import { kpiIconFor } from "@/components/kpi/kpi-icon";
+import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { SeriesChart } from "@/components/series/series-chart";
 import { parseWindowMs } from "@/components/series/fill-gaps";
+import { isChartableMeasurement } from "@/lib/measurement";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRange } from "./chart-range";
@@ -89,36 +90,32 @@ export function DeviceDetailPage(): ReactElement {
 
   const chartChannels = useMemo(() => {
     const fromLatest = (latest.data?.readings ?? [])
-      .filter((reading) => reading.origin === "measured" || reading.origin === "derived")
+      .filter((reading) => isChartableMeasurement(reading))
       .map((reading) => reading.channel);
     const fromSeen = (seen.data ?? [])
-      .filter((row) => {
-        const origin = row.measurement_type.origin;
-        return origin === "measured" || origin === "derived";
-      })
+      .filter((row) => isChartableMeasurement(row.measurement_type))
       .map((row) => row.measurement_type.channel);
     return [...new Set([...fromLatest, ...fromSeen])];
   }, [latest.data, seen.data]);
 
   const latestKpis = useMemo(
-    () =>
-      (latest.data?.readings ?? []).filter(
-        (reading) => reading.origin === "measured" || reading.origin === "derived",
-      ),
+    () => (latest.data?.readings ?? []).filter((reading) => isChartableMeasurement(reading)),
     [latest.data],
   );
 
-  // Same grouping as the Status tab's telemetry-variant tables: each channel
-  // belongs to exactly one telemetry variant, discovered via `seen` (the
-  // per-device measurement list, which is the only place carrying
-  // telemetry_variant_id — LatestReading itself only has the bare channel).
+  // Shared by every grouping below: each channel belongs to exactly one
+  // telemetry variant, discovered via `seen` (the per-device measurement
+  // list, which is the only place carrying telemetry_variant_id).
+  const variantIdByChannel = useMemo(
+    () => new globalThis.Map((seen.data ?? []).map((row) => [row.measurement_type.channel, row.telemetry_variant_id])),
+    [seen.data],
+  );
+  const variantById = useMemo(
+    () => new globalThis.Map((variants.data ?? []).map((row) => [row.telemetry_variant.id, row.telemetry_variant])),
+    [variants.data],
+  );
+
   const latestGroups = useMemo<LatestKpiGroup[]>(() => {
-    const variantIdByChannel = new globalThis.Map(
-      (seen.data ?? []).map((row) => [row.measurement_type.channel, row.telemetry_variant_id]),
-    );
-    const variantById = new globalThis.Map(
-      (variants.data ?? []).map((row) => [row.telemetry_variant.id, row.telemetry_variant]),
-    );
     const groups = new globalThis.Map<string, LatestKpiGroup>();
     const order: string[] = [];
     for (const reading of latestKpis) {
@@ -141,7 +138,33 @@ export function DeviceDetailPage(): ReactElement {
       const group = groups.get(id);
       return group ? [group] : [];
     });
-  }, [latestKpis, seen.data, variants.data, formatMessage]);
+  }, [latestKpis, variantIdByChannel, variantById, formatMessage]);
+
+  // Same grouping, applied to the History section's chart channels.
+  const chartChannelGroups = useMemo<ChartChannelGroup[]>(() => {
+    const groups = new globalThis.Map<string, ChartChannelGroup>();
+    const order: string[] = [];
+    for (const channel of chartChannels) {
+      const variantId = variantIdByChannel.get(channel) ?? "";
+      if (!groups.has(variantId)) {
+        const tv = variantId ? variantById.get(variantId) : undefined;
+        groups.set(variantId, {
+          key: variantId || "other",
+          title:
+            tv?.name ??
+            tv?.payload_kind ??
+            formatMessage({ id: "page.devices.detail.dashboard.latest.other", defaultMessage: "Other" }),
+          channels: [],
+        });
+        order.push(variantId);
+      }
+      groups.get(variantId)?.channels.push(channel);
+    }
+    return order.flatMap((id) => {
+      const group = groups.get(id);
+      return group ? [group] : [];
+    });
+  }, [chartChannels, variantIdByChannel, variantById, formatMessage]);
 
   return (
     <>
@@ -224,6 +247,7 @@ export function DeviceDetailPage(): ReactElement {
             latestPending={latest.isPending}
             latestGroups={latestGroups}
             chartChannels={chartChannels}
+            chartChannelGroups={chartChannelGroups}
             names={names}
             scrollToChannel={scrollToChannel}
             onScrolled={() => setScrollToChannel(null)}
@@ -236,6 +260,7 @@ export function DeviceDetailPage(): ReactElement {
 
 type NamesByChannel = Map<string, MeasurementTypeRead>;
 type LatestKpiGroup = { key: string; title: string; readings: LatestReading[] };
+type ChartChannelGroup = { key: string; title: string; channels: string[] };
 
 function DeviceStatusTab({
   device,
@@ -254,14 +279,6 @@ function DeviceStatusTab({
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen, formatRatio, formatWhen } = useFormatters();
-  const rangeQueries = useQueries({
-    queries: (variants.data ?? []).map((variant) => ({
-      ...readingsRepository.variantMeasurements({
-        path: { telemetry_variant_id: variant.telemetry_variant.id },
-      }),
-      enabled: Boolean(variant.telemetry_variant.id),
-    })),
-  });
   const qualitySummary = quality.data ? qualityHeadlineKpis(quality.data, formatMessage, formatRatio) : [];
   const pointsIngested = quality.data?.points_ingested;
   return (
@@ -292,7 +309,7 @@ function DeviceStatusTab({
             {device.data ? (
               <dl className="oa-arrive grid gap-3 sm:grid-cols-2">
                 <Item
-                  label={formatMessage({ id: "page.devices.detail.identity.nodeId", defaultMessage: "Node id" })}
+                  label={formatMessage({ id: "page.devices.detail.identity.nodeId", defaultMessage: "Node ID" })}
                   value={String(device.data.node_id)}
                 />
                 {device.data.label && device.data.label.trim() !== deviceTitle(device.data) ? (
@@ -402,14 +419,14 @@ function DeviceStatusTab({
                 )
               : formatMessage({
                   id: "page.devices.detail.quality.descriptionDefault",
-                  defaultMessage: "Ingest, plausibility, and alarms for the last 24 hours.",
+                  defaultMessage: "Ingest, range, and alarms for the last 24 hours.",
                 })}
           </FrameDescription>
         </FrameHeader>
         <FramePanel>
           {quality.isPending ? (
             <div className="grid gap-3 sm:grid-cols-3" aria-hidden>
-              {["plausibility", "completeness", "alarms"].map((slot) => (
+              {["range", "completeness", "alarms"].map((slot) => (
                 <div key={slot} className="oa-squircle-inset h-24 bg-background-primary-default" />
               ))}
             </div>
@@ -496,25 +513,32 @@ function DeviceStatusTab({
           <FrameDescription>
             {formatMessage({
               id: "page.devices.detail.variants.description",
-              defaultMessage: "Payload families this device has sent, plus curated plausibility ranges.",
+              defaultMessage: "Payload families this device has sent, plus this device's own valid ranges.",
             })}
           </FrameDescription>
         </FrameHeader>
         <FramePanel className="flex flex-col gap-8">
           {variants.isPending ? <SkeletonRows rows={2} /> : null}
           {variants.data?.length
-            ? variants.data.map((variant, index) => (
-                <TelemetryVariantSection
-                  key={variant.id}
-                  variant={variant}
-                  device={device.data}
-                  measurements={(seen.data ?? []).filter(
-                    (row) => row.telemetry_variant_id === variant.telemetry_variant.id,
-                  )}
-                  ranges={rangeQueries[index]?.data ?? []}
-                  onViewChart={onViewChart}
-                />
-              ))
+            ? variants.data.map((variant) => {
+                const measurements = (seen.data ?? []).filter(
+                  (row) =>
+                    row.telemetry_variant_id === variant.telemetry_variant.id &&
+                    isChartableMeasurement(row.measurement_type),
+                );
+                // A variant whose only channels are quality diagnostics has
+                // nothing chartable to show, so skip the whole section.
+                if (!measurements.length) return null;
+                return (
+                  <TelemetryVariantSection
+                    key={variant.id}
+                    variant={variant}
+                    device={device.data}
+                    measurements={measurements}
+                    onViewChart={onViewChart}
+                  />
+                );
+              })
             : !variants.isPending && (
                 <StatusCopy>
                   {formatMessage({
@@ -533,19 +557,16 @@ function TelemetryVariantSection({
   variant,
   device,
   measurements,
-  ranges,
   onViewChart,
 }: {
   variant: DeviceTelemetryVariant;
   device: DeviceRead | undefined;
   measurements: DeviceMeasurement[];
-  ranges: TelemetryVariantMeasurementRead[];
   onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen, formatWhen } = useFormatters();
   const tv = variant.telemetry_variant;
-  const rangeByMeasurementTypeId = new globalThis.Map(ranges.map((row) => [row.measurement_type.id, row]));
   const deviceReading = device?.reading_interval_seconds;
   const devicePublish = device?.publish_interval_seconds;
 
@@ -586,70 +607,79 @@ function TelemetryVariantSection({
       </div>
       {measurements.length ? (
         <div className="oa-arrive overflow-x-auto">
-          <table className="w-full min-w-[36rem] caption-bottom text-left text-body-2-regular">
+          <table className="w-full min-w-[52rem] table-fixed caption-bottom text-left text-body-2-regular">
             <thead>
               <tr>
-                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                <th className="h-8 w-72 break-words px-3.5 text-left align-middle text-caption-1-medium text-text-secondary">
                   {formatMessage({
                     id: "page.devices.detail.variants.columns.measurement",
                     defaultMessage: "Measurement",
                   })}
                 </th>
-                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                <th className="h-8 w-16 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                   {formatMessage({ id: "page.devices.detail.variants.columns.unit", defaultMessage: "Unit" })}
                 </th>
-                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                <th className="h-8 w-32 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                   {formatMessage({
                     id: "page.devices.detail.variants.columns.range",
                     defaultMessage: "Valid range",
                   })}
                 </th>
-                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                <th className="h-8 w-64 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                   {formatMessage({
                     id: "page.devices.detail.variants.columns.lastSeen",
                     defaultMessage: "Last seen",
                   })}
                 </th>
-                <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                <th className="h-8 w-28 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                   {formatMessage({ id: "page.devices.detail.variants.columns.chart", defaultMessage: "Chart" })}
+                </th>
+                <th className="h-8 w-16 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                  {formatMessage({ id: "page.devices.detail.variants.columns.alarms", defaultMessage: "Alarms" })}
                 </th>
               </tr>
             </thead>
             <tbody>
               {measurements.map((row) => {
-                const range = rangeByMeasurementTypeId.get(row.measurement_type.id);
                 const channel = row.measurement_type.channel;
-                const chartable =
-                  row.measurement_type.origin === "measured" || row.measurement_type.origin === "derived";
                 return (
                   <tr key={row.id} className="text-text-primary hover:bg-background-primary-hover">
-                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
+                    <td className="h-8 w-72 break-words px-3.5 py-0 align-middle">
                       {row.measurement_type.display_name ?? channel}
                     </td>
                     <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
                       {row.measurement_type.native_unit ?? "—"}
                     </td>
                     <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
-                      {range ? `${range.valid_min ?? "—"} … ${range.valid_max ?? "—"}` : "—"}
+                      {row.valid_min != null || row.valid_max != null
+                        ? `${row.valid_min ?? "—"} … ${row.valid_max ?? "—"}`
+                        : "—"}
                     </td>
-                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
+                    <td className="h-8 break-words px-3.5 py-0 align-middle text-text-secondary">
                       {formatLastSeen(row.last_seen)}
                     </td>
+                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-left">
+                      <a
+                        href={`#${chartAnchorId(channel)}`}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          onViewChart(channel);
+                        }}
+                        className="rounded-full text-caption-1-medium text-accent-500 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                      >
+                        {formatMessage({
+                          id: "page.devices.detail.variants.viewChart",
+                          defaultMessage: "View chart",
+                        })}
+                      </a>
+                    </td>
                     <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
-                      {chartable ? (
-                        <a
-                          href={`#${chartAnchorId(channel)}`}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            onViewChart(channel);
-                          }}
-                          className="rounded-full text-caption-1-medium text-accent-500 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                        >
-                          {formatMessage({
-                            id: "page.devices.detail.variants.viewChart",
-                            defaultMessage: "View chart",
-                          })}
-                        </a>
+                      {device ? (
+                        <AlarmBellButton
+                          deviceUuid={device.uuid}
+                          channel={channel}
+                          label={row.measurement_type.display_name ?? channel}
+                        />
                       ) : null}
                     </td>
                   </tr>
@@ -676,6 +706,7 @@ function DeviceDashboardTab({
   latestPending,
   latestGroups,
   chartChannels,
+  chartChannelGroups,
   names,
   scrollToChannel,
   onScrolled,
@@ -685,6 +716,7 @@ function DeviceDashboardTab({
   latestPending: boolean;
   latestGroups: LatestKpiGroup[];
   chartChannels: string[];
+  chartChannelGroups: ChartChannelGroup[];
   names: NamesByChannel;
   scrollToChannel: string | null;
   onScrolled: () => void;
@@ -772,6 +804,9 @@ function DeviceDashboardTab({
                         label={reading.field_name}
                         value={`${formatValue(reading.value)}${unit ? ` ${unit}` : ""}`}
                         hint={formatWhen(reading.time)}
+                        action={
+                          <AlarmBellButton deviceUuid={deviceUuid} channel={reading.channel} label={reading.field_name} />
+                        }
                       />
                     );
                   })}
@@ -815,70 +850,80 @@ function DeviceDashboardTab({
             <DeviceChartRangePicker value={range} onChange={setRange} />
           </div>
         </div>
-        {chartChannels.length ? (
-          <div className="oa-arrive grid items-start gap-3 sm:grid-cols-2">
-            {chartChannels.map((channel, index) => {
-              const series = seriesQueries[index];
-              const type = names.get(channel);
-              const points = series?.data?.series[0]?.points;
-              const label = type?.display_name ?? channel;
-              // CHART_AGG_OPTIONS covers every ChartAgg value, so this always matches.
-              const aggOption = CHART_AGG_OPTIONS.find((option) => option.value === agg)!;
-              const aggLabel = formatMessage({ id: aggOption.messageId, defaultMessage: aggOption.label });
-              const hint = type?.native_unit
-                ? formatMessage(
-                    { id: "page.devices.detail.dashboard.history.aggHint", defaultMessage: "{agg} · {unit}" },
-                    { agg: aggLabel, unit: type.native_unit },
-                  )
-                : aggLabel;
-              const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
-              let content: ReactElement;
-              if (series?.isPending) {
-                content = (
-                  <KpiPanel label={label} hint={hint} icon={icon} className="min-h-52" aria-hidden>
-                    <SkeletonRows rows={5} />
-                  </KpiPanel>
-                );
-              } else if (series?.error) {
-                content = (
-                  <KpiPanel label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
-                    <StatusCopy>
-                      {formatMessage({
-                        id: "page.devices.detail.dashboard.history.seriesError",
-                        defaultMessage: "This series did not load.",
-                      })}
-                    </StatusCopy>
-                  </KpiPanel>
-                );
-              } else if (!points?.length) {
-                content = (
-                  <KpiPanel label={label} hint={hint} icon={icon} className="min-h-52 justify-center">
-                    <StatusCopy>
-                      {formatMessage({
-                        id: "page.devices.detail.dashboard.history.noPoints",
-                        defaultMessage: "No points in this range for this channel.",
-                      })}
-                    </StatusCopy>
-                  </KpiPanel>
-                );
-              } else {
-                content = (
-                  <SeriesChart
-                    label={label}
-                    hint={hint}
-                    icon={icon}
-                    points={points}
-                    windowMs={windowMs}
-                    className="min-h-52"
-                  />
-                );
-              }
-              return (
-                <div key={channel} id={chartAnchorId(channel)} className="scroll-mt-6">
-                  {content}
+        {chartChannelGroups.length ? (
+          <div className="oa-arrive flex flex-col gap-6">
+            {chartChannelGroups.map((group) => (
+              <div key={group.key} className="flex flex-col gap-2">
+                <h3 className="min-w-0 break-words text-body-medium text-text-primary">{group.title}</h3>
+                <div className="grid items-start gap-3 sm:grid-cols-2">
+                  {group.channels.map((channel) => {
+                    const index = chartChannels.indexOf(channel);
+                    const series = seriesQueries[index];
+                    const type = names.get(channel);
+                    const points = series?.data?.series[0]?.points;
+                    const label = type?.display_name ?? channel;
+                    // CHART_AGG_OPTIONS covers every ChartAgg value, so this always matches.
+                    const aggOption = CHART_AGG_OPTIONS.find((option) => option.value === agg)!;
+                    const aggLabel = formatMessage({ id: aggOption.messageId, defaultMessage: aggOption.label });
+                    const hint = type?.native_unit
+                      ? formatMessage(
+                          { id: "page.devices.detail.dashboard.history.aggHint", defaultMessage: "{agg} · {unit}" },
+                          { agg: aggLabel, unit: type.native_unit },
+                        )
+                      : aggLabel;
+                    const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
+                    const bell = <AlarmBellButton deviceUuid={deviceUuid} channel={channel} label={label} />;
+                    let content: ReactElement;
+                    if (series?.isPending) {
+                      content = (
+                        <KpiPanel label={label} hint={hint} icon={icon} action={bell} className="min-h-52" aria-hidden>
+                          <SkeletonRows rows={5} />
+                        </KpiPanel>
+                      );
+                    } else if (series?.error) {
+                      content = (
+                        <KpiPanel label={label} hint={hint} icon={icon} action={bell} className="min-h-52 justify-center">
+                          <StatusCopy>
+                            {formatMessage({
+                              id: "page.devices.detail.dashboard.history.seriesError",
+                              defaultMessage: "This series did not load.",
+                            })}
+                          </StatusCopy>
+                        </KpiPanel>
+                      );
+                    } else if (!points?.length) {
+                      content = (
+                        <KpiPanel label={label} hint={hint} icon={icon} action={bell} className="min-h-52 justify-center">
+                          <StatusCopy>
+                            {formatMessage({
+                              id: "page.devices.detail.dashboard.history.noPoints",
+                              defaultMessage: "No points in this range for this channel.",
+                            })}
+                          </StatusCopy>
+                        </KpiPanel>
+                      );
+                    } else {
+                      content = (
+                        <SeriesChart
+                          label={label}
+                          hint={hint}
+                          icon={icon}
+                          action={bell}
+                          points={points}
+                          windowMs={windowMs}
+                          className="min-h-52"
+                        />
+                      );
+                    }
+                    return (
+                      <div key={channel} id={chartAnchorId(channel)} className="scroll-mt-6">
+                        {content}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         ) : (
           !latestPending && (
@@ -949,11 +994,11 @@ function qualityHeadlineKpis(
   const completeness = ratios.length ? ratios.reduce((sum, n) => sum + n, 0) / ratios.length : null;
   return [
     {
-      label: formatMessage({ id: "page.devices.detail.quality.kpi.plausibility", defaultMessage: "Plausibility" }),
-      value: formatRatio(quality.plausibility_ratio),
+      label: formatMessage({ id: "page.devices.detail.quality.kpi.range", defaultMessage: "In range" }),
+      value: formatRatio(quality.range_ratio),
       hint: formatMessage({
-        id: "page.devices.detail.quality.kpi.plausibilityHint",
-        defaultMessage: "Readings inside expected range",
+        id: "page.devices.detail.quality.kpi.rangeHint",
+        defaultMessage: "Readings inside the configured range",
       }),
     },
     {
