@@ -18,17 +18,17 @@ const privacy = [
   {
     id: "page",
     labelId: "page.home.proof.privacy.page.label",
-    labelDefault: "This page",
+    labelDefault: "Raspberry Pi",
     valueId: "page.home.proof.privacy.page.value",
-    valueDefault: "No cookies",
+    valueDefault: "Lite version",
     color: "lime",
   },
   {
     id: "console",
     labelId: "page.home.proof.privacy.console.label",
-    labelDefault: "Console",
+    labelDefault: "Cloud solutions",
     valueId: "page.home.proof.privacy.console.value",
-    valueDefault: "Session after sign-in",
+    valueDefault: "All features enabled",
     color: "cyan",
   },
   {
@@ -36,7 +36,7 @@ const privacy = [
     labelId: "page.home.proof.privacy.radio.label",
     labelDefault: "Radio",
     valueId: "page.home.proof.privacy.radio.value",
-    valueDefault: "Stays LoRa",
+    valueDefault: "Meshtastic compatible",
     color: "soft",
   },
   {
@@ -44,7 +44,7 @@ const privacy = [
     labelId: "page.home.proof.privacy.packets.label",
     labelDefault: "Packets",
     valueId: "page.home.proof.privacy.packets.value",
-    valueDefault: "Stored here",
+    valueDefault: "Telemetry packets of all types",
     color: "soft",
   },
 ] as const;
@@ -58,7 +58,7 @@ export function LandingProof({ className }: { className?: string }): ReactElemen
           <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
             <FormattedMessage
               id="page.home.proof.heading"
-              defaultMessage="Three steps from a mesh to a chart, <secondary>and the first one is a name.</secondary>"
+              defaultMessage="Live data with no hassle, <secondary> get notifications when you need them.</secondary>"
               values={richTextValues}
             />
           </h2>
@@ -70,12 +70,12 @@ export function LandingProof({ className }: { className?: string }): ReactElemen
                 <FrameHeader>
                   <FrameTitle>
                     <RiPulseLine />
-                    {formatMessage({ id: "page.home.proof.packets.title", defaultMessage: "Packets" })}
+                    {formatMessage({ id: "page.home.proof.packets.title", defaultMessage: "Data packets" })}
                   </FrameTitle>
                   <FrameDescription>
                     {formatMessage({
                       id: "page.home.proof.packets.description",
-                      defaultMessage: "Telemetry as it lands, with nothing to refresh.",
+                      defaultMessage: "Get data from your nodes in real time.",
                     })}
                   </FrameDescription>
                 </FrameHeader>
@@ -89,12 +89,12 @@ export function LandingProof({ className }: { className?: string }): ReactElemen
                 <FrameHeader>
                   <FrameTitle>
                     <RiEarthLine />
-                    {formatMessage({ id: "page.home.proof.globe.title", defaultMessage: "Live globe" })}
+                    {formatMessage({ id: "page.home.proof.globe.title", defaultMessage: "Visualize your mesh" })}
                   </FrameTitle>
                   <FrameDescription>
                     {formatMessage({
                       id: "page.home.proof.globe.description",
-                      defaultMessage: "Sample mesh over the western Mediterranean.",
+                      defaultMessage: "Map your nodes automatically.",
                     })}
                   </FrameDescription>
                 </FrameHeader>
@@ -108,12 +108,12 @@ export function LandingProof({ className }: { className?: string }): ReactElemen
                 <FrameHeader>
                   <FrameTitle>
                     <RiLockLine />
-                    {formatMessage({ id: "page.home.proof.lora.title", defaultMessage: "The radio stays LoRa" })}
+                    {formatMessage({ id: "page.home.proof.lora.title", defaultMessage: "Deploy locally or on the cloud" })}
                   </FrameTitle>
                   <FrameDescription>
                     {formatMessage({
                       id: "page.home.proof.lora.description",
-                      defaultMessage: "Nowhere to click. Nothing to accept.",
+                      defaultMessage: "Easily deployable on a Raspberry Pi, with forwarding options.",
                     })}
                   </FrameDescription>
                 </FrameHeader>
