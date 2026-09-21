@@ -10,6 +10,7 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
+import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
 
 const MOCK_API_DISABLED = import.meta.env.VITE_DISABLE_MOCK_API === "true";
 
@@ -21,6 +22,7 @@ export function LoginForm(): ReactElement {
   const login = useMutation({
     ...authRepository.login(),
     onSuccess: async () => {
+      clearPendingOwnerKey();
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
       await navigate({ to: routes.meshes });
     },
@@ -50,10 +52,6 @@ export function LoginForm(): ReactElement {
 
   return (
     <Frame className="shadow-card w-full" spacing="lg">
-      <div className="flex items-center px-5 pt-5 pb-2">
-        <img src="/brand/snscl-b-t.svg" alt="" className="h-3 w-auto dark:hidden" aria-hidden />
-        <img src="/brand/snscl-w-t.svg" alt="" className="hidden h-3 w-auto dark:block" aria-hidden />
-      </div>
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
