@@ -83,12 +83,21 @@ export function MeshDetailPage(): ReactElement {
               <StatusCopy>
                 {formatMessage({
                   id: "page.meshes.detail.psk.error",
-                  defaultMessage: "This mesh is not in the inventory, or the mock is not running.",
+                  defaultMessage: "This mesh is not in the inventory, or the API is unreachable.",
                 })}
               </StatusCopy>
             ) : null}
             {mesh.data ? (
-              <PskReveal value={mesh.data.psk_b64} />
+              mesh.data.psk_b64 ? (
+                <PskReveal value={mesh.data.psk_b64} />
+              ) : (
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.meshes.detail.psk.notVisible",
+                    defaultMessage: "The pre-shared key isn't visible for this mesh.",
+                  })}
+                </StatusCopy>
+              )
             ) : null}
           </FramePanel>
         </Frame>

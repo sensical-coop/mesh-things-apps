@@ -201,11 +201,23 @@ export type Mesh = {
     /**
      * Base64-encoded channel PSK
      */
-    psk_b64: string;
+    psk_b64?: string;
     label?: string | null;
     readonly owner_id: string;
     readonly created_at: string;
     readonly updated_at: string;
+};
+
+/**
+ * POST /meshes input
+ */
+export type MeshCreate = {
+    channel_id: string;
+    /**
+     * Base64-encoded channel PSK
+     */
+    psk_b64: string;
+    label?: string | null;
 };
 
 /**
@@ -488,7 +500,7 @@ export type MeshWritable = {
     /**
      * Base64-encoded channel PSK
      */
-    psk_b64: string;
+    psk_b64?: string;
     label?: string | null;
 };
 
@@ -814,7 +826,7 @@ export type MeshesListResponses = {
 export type MeshesListResponse = MeshesListResponses[keyof MeshesListResponses];
 
 export type MeshesCreateData = {
-    body: MeshWritable;
+    body: MeshCreate;
     path?: never;
     query?: never;
     url: '/meshes';

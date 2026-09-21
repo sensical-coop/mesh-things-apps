@@ -1,6 +1,6 @@
 import { client } from "@mtt/contracts/client";
 import { attachCsrfHeader } from "@mtt/contracts/runtime";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { TooltipProvider } from "@mtt/ui/components/ui/tooltip";
@@ -18,7 +18,15 @@ client.interceptors.request.use(attachCsrfHeader);
 // csrftoken cookie for a returning user with valid session
 void authRepository.csrf().catch(() => {});
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => console.error(`Query failed: ${query.queryKey.join("/")}`, error),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) =>
+      console.error(`Mutation failed: ${mutation.options.mutationKey?.join("/") ?? "unnamed"}`, error),
+  }),
+});
 const root = document.getElementById("root");
 if (!root) throw new Error("missing #root");
 
