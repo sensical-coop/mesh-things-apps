@@ -32,3 +32,12 @@ export function attachCsrfHeader(request: Request): Request {
   request.headers.set(CSRF_HEADER_NAME, token);
   return request;
 }
+
+/** The generated client throws the parsed error body but drops the HTTP status; put it back on. */
+export function attachErrorStatus(error: unknown, response?: Response): unknown {
+  const status = response?.status;
+  if (typeof error === "object" && error !== null) {
+    return status === undefined ? error : { ...error, status };
+  }
+  return { detail: typeof error === "string" ? error : "Request failed", status };
+}
