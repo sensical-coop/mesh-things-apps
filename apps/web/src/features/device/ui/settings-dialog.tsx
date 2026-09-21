@@ -91,7 +91,7 @@ export function DeviceSettingsDialog({
       body: {
         is_allowed: form.get("is_allowed") === "on",
         is_gateway: form.get("is_gateway") === "on",
-        alarms_enabled: form.get("alarms_enabled") === "on",
+        absence_detection_enabled: form.get("absence_detection_enabled") === "on",
         reading_interval_seconds: Number(form.get("reading_interval_seconds")) || null,
         publish_interval_seconds: Number(form.get("publish_interval_seconds")) || null,
         postprocessing_blueprint_id: blueprintId || null,
@@ -131,15 +131,24 @@ export function DeviceSettingsDialog({
             })}
             defaultChecked={device.is_gateway}
           />
-          <FormCheckbox
-            id="device-alarms"
-            name="alarms_enabled"
-            label={formatMessage({
-              id: "feature.device.settingsDialog.alarms",
-              defaultMessage: "Enable alarms",
-            })}
-            defaultChecked={device.alarms_enabled}
-          />
+          <div className="flex flex-col gap-1">
+            <FormCheckbox
+              id="device-alarms"
+              name="absence_detection_enabled"
+              label={formatMessage({
+                id: "feature.device.settingsDialog.alarms",
+                defaultMessage: "Enable absence detection",
+              })}
+              defaultChecked={device.absence_detection_enabled}
+            />
+            <p className="pl-7 text-caption-1-regular text-text-tertiary">
+              {formatMessage({
+                id: "feature.device.settingsDialog.alarmsHint",
+                defaultMessage:
+                  "Fires when this device stops publishing. Per-channel detectors an be configured independently.",
+              })}
+            </p>
+          </div>
           <IntervalSecondsField
             id="device-reading"
             name="reading_interval_seconds"

@@ -8,7 +8,7 @@ export type DeviceProps = {
   label: string | null;
   isGateway: boolean;
   isAllowed: boolean;
-  alarmsEnabled: boolean;
+  absenceDetectionEnabled: boolean;
   adminKeysB64: string[];
   latitude: number | null;
   longitude: number | null;
@@ -52,7 +52,7 @@ export class Device implements DeviceProps {
   label: string | null;
   isGateway: boolean;
   isAllowed: boolean;
-  alarmsEnabled: boolean;
+  absenceDetectionEnabled: boolean;
   adminKeysB64: string[];
   latitude: number | null;
   longitude: number | null;
@@ -86,7 +86,7 @@ export class Device implements DeviceProps {
     this.label = props.label;
     this.isGateway = props.isGateway;
     this.isAllowed = props.isAllowed;
-    this.alarmsEnabled = props.alarmsEnabled;
+    this.absenceDetectionEnabled = props.absenceDetectionEnabled;
     this.adminKeysB64 = props.adminKeysB64;
     this.latitude = props.latitude;
     this.longitude = props.longitude;

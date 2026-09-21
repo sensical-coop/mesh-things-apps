@@ -411,7 +411,7 @@ function RegisterDeviceDialog({
           </FormField>
           <FormField
             id="device-node"
-            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node id" })}
+            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node ID" })}
             hint={formatMessage({
               id: "page.meshes.detail.registerGatewayDialog.nodeIdHint",
               defaultMessage:
@@ -426,7 +426,7 @@ function RegisterDeviceDialog({
           <StatusCopy>
             {formatMessage({
               id: "page.meshes.detail.registerGatewayDialog.error",
-              defaultMessage: "Registration failed. Check node id and try again.",
+              defaultMessage: "Registration failed. Check node ID and try again.",
             })}
           </StatusCopy>
         ) : null}

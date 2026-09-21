@@ -198,13 +198,37 @@ paths:
       responses:
         '204':
           description: Deleted.
+  /detectors:
+    get:
+      operationId: detectors_list
+      description: |-
+        List the catalog of alarm detector kinds.
+
+        "measurement" scoped ones go in a channel's enabled_detectors, "device"
+        scoped ones (currently only absence) in the device's own
+        absence_detection_enabled.
+      tags:
+      - detectors
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Detector'
+          description: ''
   /devices/{device_uuid}/measurements:
     get:
       operationId: devices_measurements_list
       description: |-
         List the measurement channels this device produces, measured and computed alike.
 
-        Entries appear on their own as telemetry arrives and cannot be edited here.
+        Entries appear on their own as telemetry arrives; only enabled_detectors
+        can be edited, on the per-channel detail route.
       parameters:
       - in: path
         name: device_uuid
@@ -225,6 +249,78 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DeviceMeasurement'
+          description: ''
+  /devices/{device_uuid}/measurements/{measurement_id}:
+    get:
+      operationId: devices_measurements_retrieve
+      description: Return one measurement channel for this device.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: measurement_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceMeasurement'
+          description: ''
+    put:
+      operationId: devices_measurements_update
+      description: |-
+        Set which alarm detectors run for this device's channel.
+
+        A null enabled_detectors inherits the telemetry variant's catalog
+        default; an explicit list (empty or not) overrides it for this device.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: measurement_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceMeasurementUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceMeasurementUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceMeasurementUpdate'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceMeasurement'
           description: ''
   /devices/{device_uuid}/telemetry-variants:
     get:
@@ -1578,7 +1674,8 @@ paths:
   /telemetry-variants/{telemetry_variant_id}/measurements/{link_id}:
     get:
       operationId: telemetry_variants_measurements_retrieve
-      description: Return one measurement channel, including its plausible value range.
+      description: Return one measurement channel and its catalog-wide default
+        detector list.
       parameters:
       - in: path
         name: link_id
@@ -1607,9 +1704,10 @@ paths:
     put:
       operationId: telemetry_variants_measurements_update
       description: |-
-        Set the plausible value range for a channel. Superusers only.
-
-        Readings outside the range are flagged by the quality checks.
+        Set the catalog-wide default detector list for a channel. Superusers
+        only. The range detector's valid_min/valid_max have no catalog
+        default — set them per device instead, via PUT
+        /devices/{device_uuid}/measurements/{measurement_id}.
       parameters:
       - in: path
         name: link_id
@@ -1727,6 +1825,32 @@ components:
           type: string
       required:
       - detail
+    Detector:
+      type: object
+      description: GET /detectors - the static catalog of alarm detector kinds.
+      properties:
+        name:
+          type: string
+          readOnly: true
+        scope:
+          type: string
+          readOnly: true
+          enum:
+          - measurement
+          - device
+        requires:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+      required:
+      - description
+      - name
+      - requires
+      - scope
     DeviceCreate:
       type: object
       description: POST /devices input
@@ -1789,6 +1913,30 @@ components:
           allOf:
           - $ref: '#/components/schemas/MeasurementTypeRead'
           readOnly: true
+        enabled_detectors:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Per-device override. Null inherits the telemetry variant's
+            default_enabled_detectors.
+        effective_detectors:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: The resolved, sorted list actually running for this device's
+            channel (enabled_detectors if set, else the catalog default).
+        valid_min:
+          type: number
+          format: double
+          nullable: true
+          description: Plausible range for the range detector. Purely per-device
+            — there is no catalog default. Set and cleared together with valid_max.
+        valid_max:
+          type: number
+          format: double
+          nullable: true
         first_seen:
           type: string
           format: date-time
@@ -1799,11 +1947,31 @@ components:
           readOnly: true
           nullable: true
       required:
+      - effective_detectors
       - first_seen
       - id
       - last_seen
       - measurement_type
       - telemetry_variant_id
+    DeviceMeasurementUpdate:
+      type: object
+      description: 'PUT /devices/{device_uuid}/measurements/{measurement_id}: enabled_detectors,
+        valid_min, and valid_max are editable. valid_min/valid_max must be set
+        or cleared together.'
+      properties:
+        enabled_detectors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        valid_min:
+          type: number
+          format: double
+          nullable: true
+        valid_max:
+          type: number
+          format: double
+          nullable: true
     DeviceQualityResponse:
       type: object
       properties:
@@ -1818,7 +1986,7 @@ components:
         points_ingested:
           type: number
           format: double
-        plausibility_ratio:
+        range_ratio:
           type: number
           format: double
           nullable: true
@@ -1835,7 +2003,7 @@ components:
       - channels
       - mesh_id
       - node_id
-      - plausibility_ratio
+      - range_ratio
       - points_ingested
       - start
       - stop
@@ -1868,9 +2036,11 @@ components:
         is_allowed:
           type: boolean
           readOnly: true
-        alarms_enabled:
+        absence_detection_enabled:
           type: boolean
           readOnly: true
+          description: Gates only the absence detector (device stopped publishing).
+            Per-channel detectors are unaffected.
         admin_keys_b64:
           type: array
           items:
@@ -1935,7 +2105,7 @@ components:
           format: date-time
           readOnly: true
       required:
-      - alarms_enabled
+      - absence_detection_enabled
       - created_at
       - hardware_type
       - is_allowed
@@ -2003,8 +2173,10 @@ components:
           type: boolean
         is_gateway:
           type: boolean
-        alarms_enabled:
+        absence_detection_enabled:
           type: boolean
+          description: Gates only the absence detector (device stopped publishing).
+            Per-channel detectors are unaffected.
         latitude:
           type: number
           format: double
@@ -2721,16 +2893,13 @@ components:
           allOf:
           - $ref: '#/components/schemas/MeasurementTypeRead'
           readOnly: true
-        valid_min:
-          type: number
-          format: double
+        default_enabled_detectors:
+          type: array
+          items:
+            type: string
           readOnly: true
-          nullable: true
-        valid_max:
-          type: number
-          format: double
-          readOnly: true
-          nullable: true
+          description: Catalog-wide default detector list for every device reporting
+            this channel, unless a device overrides it.
         created_at:
           type: string
           format: date-time
@@ -2741,25 +2910,22 @@ components:
           readOnly: true
       required:
       - created_at
+      - default_enabled_detectors
       - id
       - measurement_type
       - updated_at
-      - valid_max
-      - valid_min
     TelemetryVariantMeasurementUpdate:
       type: object
       description: |-
-        PUT /telemetry-variants/{id}/measurements/{link_id}. Only the curated
-        plausibility range is editable
+        PUT /telemetry-variants/{id}/measurements/{link_id}. Only the
+        catalog-wide default detector list is editable. Superusers only —
+        the range detector's valid_min/valid_max live per-device on
+        DeviceMeasurementUpdate instead, with no catalog default.
       properties:
-        valid_min:
-          type: number
-          format: double
-          nullable: true
-        valid_max:
-          type: number
-          format: double
-          nullable: true
+        default_enabled_detectors:
+          type: array
+          items:
+            type: string
     TelemetryVariantRead:
       type: object
       properties:

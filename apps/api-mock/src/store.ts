@@ -45,6 +45,59 @@ export type OwnerVerification = {
   emailVerificationSentAt: string | null;
 };
 
+// Mirrors meshtastic-things' common/detectors.py DETECTOR_SPECS exactly — a
+// fixed catalog. "measurement" scoped kinds go in a
+// channel's enabled_detectors; the one "device" scoped kind (absence) hangs
+// off Device.absence_detection_enabled instead and is deliberately excluded from the
+// settable list below.
+export type DetectorSpec = {
+  name: string;
+  scope: "measurement" | "device";
+  requires: string[];
+  description: string;
+};
+
+export const DETECTOR_CATALOG: DetectorSpec[] = [
+  {
+    name: "flat_value",
+    scope: "measurement",
+    requires: [],
+    description: "Fires when a channel reports the same value for a whole window.",
+  },
+  {
+    name: "range",
+    scope: "measurement",
+    requires: ["valid_min", "valid_max"],
+    description: "Fires when a reading falls outside the range configured for this device.",
+  },
+  {
+    name: "completeness",
+    scope: "measurement",
+    requires: ["reading_interval_seconds"],
+    description: "Fires when a channel's history has gaps against its expected reading interval.",
+  },
+  {
+    name: "absence",
+    scope: "device",
+    requires: ["publish_interval_seconds"],
+    description: "Fires when a device stops publishing for several of its publish intervals.",
+  },
+];
+
+export const MEASUREMENT_DETECTORS = ["completeness", "flat_value", "range"];
+
+// Catalog-wide state: only a default detector list. valid_min/valid_max are
+// purely per-device (see Store.deviceMeasurementRanges below) — there is no
+// catalog default to fall back to.
+export type TelemetryVariantMeasurementLink = {
+  defaultEnabledDetectors: string[];
+};
+
+export type DeviceMeasurementRange = {
+  validMin: number | null;
+  validMax: number | null;
+};
+
 export type Store = {
   meshes: MemoryMeshes;
   devices: MemoryDevices;
@@ -54,6 +107,13 @@ export type Store = {
   actors: Map<string, Actor>;
   verifications: Map<string, OwnerVerification>;
   verificationTokens: Map<string, string>;
+  // Per-device-measurement override: null = inherit the catalog default below.
+  detectorOverrides: Map<string, string[] | null>;
+  // Catalog-wide default per telemetry-variant/measurement link (VARIANT_LINK_ID).
+  telemetryVariantMeasurements: Map<string, TelemetryVariantMeasurementLink>;
+  // Per-device-measurement range for the "range" detector — purely per-device,
+  // no catalog fallback. Keyed by the same id as detectorOverrides.
+  deviceMeasurementRanges: Map<string, DeviceMeasurementRange>;
 };
 
 export type StoreOwners = {
@@ -154,7 +214,7 @@ export function createStore(owners: StoreOwners = {}): Store {
       label: "Gateway",
       isGateway: true,
       isAllowed: true,
-      alarmsEnabled: true,
+      absenceDetectionEnabled: true,
       adminKeysB64: [],
       latitude: 41.38,
       longitude: 2.17,
@@ -181,7 +241,7 @@ export function createStore(owners: StoreOwners = {}): Store {
       label: "Porch",
       isGateway: false,
       isAllowed: true,
-      alarmsEnabled: true,
+      absenceDetectionEnabled: true,
       adminKeysB64: [],
       latitude: 41.381,
       longitude: 2.171,
@@ -208,7 +268,7 @@ export function createStore(owners: StoreOwners = {}): Store {
       label: "River gateway",
       isGateway: true,
       isAllowed: true,
-      alarmsEnabled: true,
+      absenceDetectionEnabled: true,
       adminKeysB64: [],
       latitude: 41.39,
       longitude: 2.16,
@@ -235,6 +295,13 @@ export function createStore(owners: StoreOwners = {}): Store {
     actors,
     verifications,
     verificationTokens: new Map<string, string>(),
+    detectorOverrides: new Map<string, string[] | null>(),
+    telemetryVariantMeasurements: new Map<string, TelemetryVariantMeasurementLink>([
+      [VARIANT_LINK_ID, { defaultEnabledDetectors: ["range"] }],
+    ]),
+    deviceMeasurementRanges: new Map<string, DeviceMeasurementRange>([
+      [DEVICE_MEAS_ID, { validMin: -40, validMax: 85 }],
+    ]),
     blueprints: [
       {
         id: BLUEPRINT_ID,

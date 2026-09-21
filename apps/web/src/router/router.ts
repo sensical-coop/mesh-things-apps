@@ -10,6 +10,7 @@ export const routes = Object.freeze({
   mesh: "/console/meshes/$meshId",
   devices: "/console/devices",
   device: "/console/devices/$deviceUuid",
+  alarms: "/console/alarms",
   blueprints: "/console/blueprints",
   consoleChild: Object.freeze({
     index: "/",
@@ -17,6 +18,7 @@ export const routes = Object.freeze({
     mesh: "meshes/$meshId",
     devices: "devices",
     device: "devices/$deviceUuid",
+    alarms: "alarms",
     blueprints: "blueprints",
   }),
 } as const);

@@ -52,6 +52,16 @@ export const zDetail = z.object({
 });
 
 /**
+ * GET /detectors - the static catalog of alarm detector kinds.
+ */
+export const zDetector = z.object({
+    name: z.string().readonly(),
+    scope: z.enum(['measurement', 'device']),
+    requires: z.array(z.string()).readonly(),
+    description: z.string().readonly()
+});
+
+/**
  * POST /devices input
  */
 export const zDeviceCreate = z.object({
@@ -88,13 +98,31 @@ export const zDeviceCreate = z.object({
     ]))
 });
 
+/**
+ * PUT /devices/{device_uuid}/measurements/{measurement_id}: enabled_detectors, valid_min, and valid_max are editable. valid_min/valid_max must be set or cleared together.
+ */
+export const zDeviceMeasurementUpdate = z.object({
+    enabled_detectors: z.optional(z.union([
+        z.array(z.string()),
+        z.null()
+    ])),
+    valid_min: z.optional(z.union([
+        z.number(),
+        z.null()
+    ])),
+    valid_max: z.optional(z.union([
+        z.number(),
+        z.null()
+    ]))
+});
+
 export const zDeviceQualityResponse = z.object({
     mesh_id: z.string(),
     node_id: z.int(),
     start: z.string(),
     stop: z.string(),
     points_ingested: z.number(),
-    plausibility_ratio: z.union([
+    range_ratio: z.union([
         z.number(),
         z.null()
     ]),
@@ -118,7 +146,7 @@ export const zDeviceRead = z.object({
     ]).readonly(),
     is_gateway: z.boolean().readonly(),
     is_allowed: z.boolean().readonly(),
-    alarms_enabled: z.boolean().readonly(),
+    absence_detection_enabled: z.boolean().readonly(),
     admin_keys_b64: z.optional(z.array(z.string()).readonly()),
     latitude: z.union([
         z.number().readonly(),
@@ -176,7 +204,7 @@ export const zDeviceUpdate = z.object({
     ])),
     is_allowed: z.optional(z.boolean()),
     is_gateway: z.optional(z.boolean()),
-    alarms_enabled: z.optional(z.boolean()),
+    absence_detection_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -544,6 +572,19 @@ export const zDeviceMeasurement = z.object({
     id: z.uuid().readonly(),
     telemetry_variant_id: z.uuid().readonly(),
     measurement_type: zMeasurementTypeRead,
+    enabled_detectors: z.optional(z.union([
+        z.array(z.string()),
+        z.null()
+    ])),
+    effective_detectors: z.array(z.string()).readonly(),
+    valid_min: z.optional(z.union([
+        z.number(),
+        z.null()
+    ])),
+    valid_max: z.optional(z.union([
+        z.number(),
+        z.null()
+    ])),
     first_seen: z.iso.datetime().readonly(),
     last_seen: z.union([
         z.iso.datetime().readonly(),
@@ -598,31 +639,17 @@ export const zReadingsResponse = z.object({
 export const zTelemetryVariantMeasurementRead = z.object({
     id: z.uuid().readonly(),
     measurement_type: zMeasurementTypeRead,
-    valid_min: z.union([
-        z.number().readonly(),
-        z.null()
-    ]).readonly(),
-    valid_max: z.union([
-        z.number().readonly(),
-        z.null()
-    ]).readonly(),
+    default_enabled_detectors: z.array(z.string()).readonly(),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
 });
 
 /**
- * PUT /telemetry-variants/{id}/measurements/{link_id}. Only the curated
- * plausibility range is editable
+ * PUT /telemetry-variants/{id}/measurements/{link_id}. Only the
+ * catalog-wide default detector list is editable. Superusers only
  */
 export const zTelemetryVariantMeasurementUpdate = z.object({
-    valid_min: z.optional(z.union([
-        z.number(),
-        z.null()
-    ])),
-    valid_max: z.optional(z.union([
-        z.number(),
-        z.null()
-    ]))
+    default_enabled_detectors: z.optional(z.array(z.string()))
 });
 
 export const zTelemetryVariantRead = z.object({
@@ -715,6 +742,24 @@ export const zDeviceCreateWritable = z.object({
 });
 
 /**
+ * GET /devices/{uuid}/measurements - a flat list of the channels for this device
+ */
+export const zDeviceMeasurementWritable = z.object({
+    enabled_detectors: z.optional(z.union([
+        z.array(z.string()),
+        z.null()
+    ])),
+    valid_min: z.optional(z.union([
+        z.number(),
+        z.null()
+    ])),
+    valid_max: z.optional(z.union([
+        z.number(),
+        z.null()
+    ]))
+});
+
+/**
  * node_id/mesh are fixed at creation. Role is editable
  */
 export const zDeviceUpdateWritable = z.object({
@@ -725,7 +770,7 @@ export const zDeviceUpdateWritable = z.object({
     admin_keys_b64: z.optional(z.array(z.string())),
     is_allowed: z.optional(z.boolean()),
     is_gateway: z.optional(z.boolean()),
-    alarms_enabled: z.optional(z.boolean()),
+    absence_detection_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -893,6 +938,14 @@ export const zDevicesUpdateData = z.object({
 
 export const zDevicesUpdateResponse = zDeviceRead;
 
+export const zDetectorsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zDetectorsListResponse = z.array(zDetector);
+
 export const zDevicesMeasurementsListData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -902,6 +955,28 @@ export const zDevicesMeasurementsListData = z.object({
 });
 
 export const zDevicesMeasurementsListResponse = z.array(zDeviceMeasurement);
+
+export const zDevicesMeasurementsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        measurement_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesMeasurementsRetrieveResponse = zDeviceMeasurement;
+
+export const zDevicesMeasurementsUpdateData = z.object({
+    body: z.optional(zDeviceMeasurementUpdate),
+    path: z.object({
+        device_uuid: z.uuid(),
+        measurement_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesMeasurementsUpdateResponse = zDeviceMeasurement;
 
 export const zDevicesTelemetryVariantsListData = z.object({
     body: z.optional(z.never()),
