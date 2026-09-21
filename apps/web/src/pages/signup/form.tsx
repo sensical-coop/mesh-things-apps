@@ -112,7 +112,7 @@ export function SignupForm(): ReactElement {
           <p className="text-body-regular text-text-secondary">
             {formatMessage({
               id: "page.signup.form.subtitle",
-              defaultMessage: "Register an owner account for Meshtastic Things.",
+              defaultMessage: "Register an owner account for Mesh Things.",
             })}
           </p>
         </div>

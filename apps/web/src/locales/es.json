@@ -315,14 +315,14 @@
   "feature.alarm.detectorsDialog.saving": "Guardando",
   "feature.alarm.detectorsDialog.save": "Guardar alarmas",
   "feature.alarm.bellButton.label": "Alarmas de {label}",
-  
+
   "common.themeToggle.label": "Cambiar tema de color",
-  
+
   "console.header.signOut": "Cerrar sesión",
   "console.header.closeMenu": "Cerrar menú",
   "console.header.openMenu": "Abrir menú",
   "console.header.profile": "Perfil",
-  
+
   "console.footer.tagline": "Interfaz de almacenamiento y gestión para redes de sensores basadas en Meshtastic. Creado por Sensical SCCL en Barcelona.",
   "console.footer.product": "Producto",
   "console.footer.meshes": "Mallas",
@@ -331,16 +331,16 @@
   "console.footer.blueprints": "Plantillas",
   "console.footer.website": "Sitio web",
   "console.footer.contact": "Contacto",
-  
+
   "page.home.hero.title": "La primera <accent>solución de almacenamiento y datos para sensores Meshtastic</accent> del mundo",
   "page.home.hero.subtitle": "Recopila datos de sensores con <highlight>redes de sensores basadas en Meshtastic.</highlight> Despliega localmente o en la nube.",
   "page.home.hero.signIn": "Iniciar sesión",
   "page.home.hero.howItWorks": "Cómo funciona",
-  
+
   "page.home.cta.title": "Contáctanos para conocer las opciones",
   "page.home.cta.subtitle": "Échale un vistazo a la demo y contáctanos si tienes cualquier duda.",
   "page.home.cta.contactUs": "Contáctanos",
-  
+
   "page.home.header.howItWorks": "Cómo funciona",
   "page.home.header.features": "Funciones",
   "page.home.header.faq": "Preguntas frecuentes",
@@ -352,7 +352,7 @@
   "page.home.footer.product": "Producto",
   "page.home.footer.website": "Sitio web",
   "page.home.footer.contact": "Contacto",
-  
+
   "page.home.faq.heading": "Preguntas <secondary>frecuentes</secondary>",
   "page.home.faq.meshtastic.q": "¿Qué es Mesh Things?",
   "page.home.faq.meshtastic.a": "Una capa de almacenamiento y datos para redes Meshtastic y su telemetría. Los datos llegan por MQTT y se almacenan y procesan en Mesh Things. Mesh Things puede desplegarse localmente en una Raspberry Pi o en un servidor en la nube.",
@@ -362,7 +362,7 @@
   "page.home.faq.globe.a": "Sí, estamos trabajando en publicar la plataforma y su aplicación de front-end. Mantente atento a las novedades, y no dudes en contactarnos para más información.",
   "page.home.faq.signIn.q": "¿Quién puede iniciar sesión?",
   "page.home.faq.signIn.a": "Cualquiera puede registrar una cuenta de propietario en el servidor de demostración. Por ahora no se garantiza el almacenamiento de los datos en el servidor de demostración. No dudes en contactarnos para más información sobre las opciones de despliegue.",
-  
+
   "page.home.extras.heading": "Elige tu tipo de despliegue. <secondary>Para tus sensores y tu plataforma.</secondary>",
   "page.home.extras.storage.title": "Almacenamiento para la malla",
   "page.home.extras.storage.body": "Almacenamiento de series temporales para redes de sensores basadas en Meshtastic.",
@@ -382,7 +382,7 @@
   "page.home.extras.noBanner.body": "Activa alarmas en tiempo real para los datos de los sensores en cualquier dispositivo.",
   "page.home.extras.lora.title": "Accede a tus datos",
   "page.home.extras.lora.body": "Disponible tanto API REST como almacenamiento en buckets S3.",
-  
+
   "page.home.features.heading": "Controla tu malla, tus dispositivos y <secondary>los datos que envían.</secondary>",
   "page.home.features.inventory.title": "Inventario en tiempo real",
   "page.home.features.inventory.description": "Verifica que tus dispositivos funcionan correctamente.",
@@ -398,7 +398,7 @@
   "page.home.features.channels.title": "Canales y gráficos",
   "page.home.features.channels.description": "Muestra los datos en diferentes formatos.",
   "page.home.features.channels.sample": "temperatura · últimas 24 horas · media",
-  
+
   "page.home.steps.heading": "Empieza en solo tres pasos: <secondary>nombra tu red, añade tus dispositivos y visualiza tus datos. Así de sencillo.</secondary>",
   "page.home.steps.registerMesh.title": "Registra una malla",
   "page.home.steps.registerMesh.description": "Crea una malla, añade las PSK y tus pasarelas, y el resto de los nodos se descubren automáticamente.",
@@ -414,7 +414,7 @@
   "page.home.steps.channels.humidity": "humedad",
   "page.home.steps.channels.co2": "CO2",
   "page.home.steps.channels.battery": "batería",
-  
+
   "page.home.proof.heading": "Datos en vivo sin complicaciones, <secondary>despliega como lo necesites.</secondary>",
   "page.home.proof.packets.title": "Paquetes de datos",
   "page.home.proof.packets.description": "Obtén datos de tus nodos en tiempo real.",
@@ -430,7 +430,7 @@
   "page.home.proof.privacy.radio.value": "Compatible con Meshtastic",
   "page.home.proof.privacy.packets.label": "Paquetes",
   "page.home.proof.privacy.packets.value": "Paquetes de telemetría de todo tipo",
-  
+
   "page.login.form.title": "Bienvenido de nuevo",
   "page.login.form.subtitle": "Inicia sesión con el correo de tu cuenta de propietario.",
   "page.login.form.email": "Correo electrónico",
@@ -498,26 +498,62 @@
   "page.verifyEmail.requestNewLink": "Solicitar un nuevo enlace",
 
   "page.terms.title": "Términos y Condiciones",
-  "page.terms.lastUpdated": "Última actualización: 2026-09-19.",
-  "page.terms.acceptance.heading": "Aceptación de estos términos",
-  "page.terms.acceptance.body": "Al crear una cuenta, aceptas estos términos y el tratamiento de tus datos descrito a continuación.",
-  "page.terms.use.heading": "Uso del servicio",
-  "page.terms.use.body": "Meshtastic Things es una capa de almacenamiento y consola para redes Meshtastic. Eres responsable de las mallas, dispositivos y datos que registres en tu cuenta.",
-  "page.terms.accounts.heading": "Cuentas y verificación de correo",
-  "page.terms.accounts.body": "Una cuenta nueva permanece inactiva hasta que confirmas la dirección de correo con la que te registraste. Eres responsable de mantener en secreto tu contraseña y tus claves de API.",
-  "page.terms.data.heading": "Datos",
-  "page.terms.data.body": "La telemetría y configuración que envías se almacena para operar el servicio y no se vende a terceros.",
-  "page.terms.termination.heading": "Cancelación",
-  "page.terms.termination.body": "Puedes eliminar tu cuenta en cualquier momento desde la consola. Podemos suspender cuentas que abusen del servicio.",
-  "page.terms.changes.heading": "Cambios en estos términos",
-  "page.terms.changes.body": "Podemos actualizar estos términos a medida que el producto evoluciona. Seguir usando el servicio tras un cambio implica su aceptación.",
-  "page.terms.contact.heading": "Contacto",
-  "page.terms.contact.body": "Las preguntas sobre estos términos pueden enviarse a Sensical SCCL a través de la página de contacto enlazada en el pie de página.",
-  
+  "page.terms.lastUpdated": "Última actualización: 2026-09-21.",
+  "page.terms.toc.heading": "Contenido",
+  "page.terms.tou.heading": "Términos de Uso",
+  "page.terms.tou.relationship.heading": "1. Tu relación con Sensical",
+  "page.terms.tou.relationship.body": "El uso del sitio web y la consola de Mesh Things (la \"Plataforma\") se rige por un acuerdo legal entre tú y Sensical SCCL, una cooperativa con sede en Barcelona, España (\"Sensical\", \"nosotros\"). Al usar la Plataforma aceptas estos Términos de Uso y la Política de Privacidad que figura a continuación, en conjunto los \"Términos\".",
+  "page.terms.tou.accepting.heading": "2. Aceptación de estos Términos",
+  "page.terms.tou.accepting.body": "Estos Términos se aplican a cualquiera que cree una cuenta de propietario, registre una malla o dispositivo, o utilice la Plataforma de cualquier otra forma. Si no estás de acuerdo con ellos, deja de usar la Plataforma; seguir usándola tras crear una cuenta implica su aceptación.",
+  "page.terms.tou.changesTerms.heading": "3. Cambios en estos Términos",
+  "page.terms.tou.changesTerms.body": "Podemos actualizar estos Términos a medida que el producto evoluciona, por ejemplo para reflejar nuevas funciones o requisitos legales. Haremos lo posible por avisar de los cambios importantes, y la versión vigente siempre estará disponible en esta página. Seguir usando la Plataforma después de que un cambio entre en vigor implica la aceptación de los Términos revisados.",
+  "page.terms.tou.platform.heading": "4. La Plataforma Mesh Things",
+  "page.terms.tou.platform.body": "Mesh Things es una capa de almacenamiento y consola para redes Meshtastic: te permite registrar mallas y dispositivos, ingerir telemetría, y configurar alarmas y plantillas desde la consola. No fabricamos ni vendemos hardware — eres responsable de los dispositivos y redes Meshtastic que conectes a ella. api.sensical.es y things.sensical.es son una instancia de demostración de Mesh Things.",
+  "page.terms.tou.account.heading": "5. Creación de una cuenta de propietario",
+  "page.terms.tou.account.body": "Para usar la consola necesitas crear una cuenta de propietario con nombre, correo electrónico y contraseña. Una cuenta nueva permanece inactiva hasta que confirmas tu correo, y eres responsable de mantener en secreto tu contraseña y tus claves de API, así como de toda actividad realizada bajo tu cuenta. Si sospechas de un uso no autorizado de tu cuenta, cambia tu contraseña de inmediato y avísanos en info@sensical.es.",
+  "page.terms.tou.platformChanges.heading": "6. Cambios en la Plataforma",
+  "page.terms.tou.platformChanges.body": "Podemos añadir, modificar o eliminar funciones de la Plataforma en cualquier momento, incluyendo límites de almacenamiento, de frecuencia de peticiones o de uso de la API, con o sin previo aviso. No somos responsables de las pérdidas derivadas de dichos cambios.",
+  "page.terms.tou.termination.heading": "7. Cancelación",
+  "page.terms.tou.termination.body": "Puedes eliminar tu cuenta en cualquier momento desde la página de perfil de la consola, lo que elimina tu cuenta y su acceso. Podemos suspender o cerrar cuentas que incumplan estos Términos o abusen del servicio, e intentaremos avisarte por correo con antelación cuando sea posible.",
+  "page.terms.tou.thirdParty.heading": "8. Enlaces y servicios de terceros",
+  "page.terms.tou.thirdParty.body": "La Plataforma puede enlazar a sitios de terceros o depender de infraestructura de terceros, como nuestro proveedor de alojamiento. No somos responsables del contenido, la disponibilidad ni las prácticas de servicios que no controlamos.",
+  "page.terms.tou.highRisk.heading": "9. Usos de alto riesgo",
+  "page.terms.tou.highRisk.body": "La Plataforma no está diseñada, probada ni destinada para su uso en situaciones donde un fallo o retraso en la telemetría pueda causar muerte, lesiones personales, o daños graves a la propiedad o al medio ambiente. No la utilices como única salvaguarda para esos usos.",
+  "page.terms.tou.indemnity.heading": "10. Indemnización",
+  "page.terms.tou.indemnity.body": "Aceptas eximir de responsabilidad a Sensical frente a reclamaciones derivadas de un uso indebido de la Plataforma o de una infracción de estos Términos, incluyendo reclamaciones relacionadas con datos que registres o contenido que subas.",
+  "page.terms.tou.governingLaw.heading": "11. Ley aplicable",
+  "page.terms.tou.governingLaw.body": "Estos Términos se rigen por la legislación española. Las disputas derivadas de ellos se resolverán en los tribunales de Barcelona, España, salvo que la normativa de protección de consumidores exija lo contrario.",
+  "page.terms.tou.usingPlatform.heading": "12. Uso de la Plataforma y registro de datos de malla",
+  "page.terms.tou.usingPlatform.body": "Si registras mallas, dispositivos o telemetría en tu cuenta, eres responsable de la exactitud y legalidad de esos datos y de los dispositivos que conectes. No revisamos ni verificamos los datos de los dispositivos antes de almacenarlos, y almacenarlos no nos hace responsables de su contenido o exactitud.",
+  "page.terms.tou.accessingData.heading": "13. Acceso a los datos de malla y dispositivos",
+  "page.terms.tou.accessingData.body": "Las mallas y dispositivos que registres son privados en tu cuenta por defecto — solo tú, y otros propietarios a quienes concedas acceso explícitamente, podéis leer su configuración y telemetría. No publicamos tus datos de malla o dispositivos a terceros ni los hacemos buscables públicamente.",
+  "page.terms.privacy.heading": "Política de Privacidad",
+  "page.terms.privacy.intro": "Esta Política de Privacidad explica qué datos personales recopila Meshtastic Things sobre ti y por qué. Léela junto con los Términos de Uso anteriores.",
+  "page.terms.privacy.purpose.heading": "1. Objeto de esta Política de Privacidad",
+  "page.terms.privacy.purpose.body": "Esta Política de Privacidad se aplica a los datos personales que Sensical recopila a través de tu uso de la Plataforma. Los términos definidos en los Términos de Uso anteriores tienen el mismo significado aquí.",
+  "page.terms.privacy.changesPrivacy.heading": "2. Cambios en esta Política de Privacidad",
+  "page.terms.privacy.changesPrivacy.body": "Podemos actualizar esta Política de Privacidad a medida que la Plataforma evoluciona. Cualquier versión revisada, con su fecha de vigencia, se publicará en esta página. Si no estás de acuerdo con un cambio, puedes cerrar tu cuenta antes de que entre en vigor.",
+  "page.terms.privacy.dataProcessed.heading": "3. Datos personales que tratamos",
+  "page.terms.privacy.dataProcessed.body": "Para gestionar tu cuenta recopilamos tu nombre, correo electrónico y contraseña, que se almacena como hash con sal. También almacenamos las mallas, dispositivos y telemetría que registres, pero no tratamos esos datos para fines propios más allá de operar el servicio.",
+  "page.terms.privacy.processingPurposes.heading": "4. Finalidades del tratamiento",
+  "page.terms.privacy.processingPurposes.body": "Tratamos los datos de tu cuenta para crear y mantener tu cuenta, operar la consola, responder a solicitudes de soporte, y enviar correos relacionados con el servicio como los de verificación y restablecimiento de contraseña. El sitio de marketing no utiliza cookies de análisis, y la consola solo establece una cookie de sesión cuando inicias sesión, para que la API sepa quién eres.",
+  "page.terms.privacy.dataSharing.heading": "5. Comunicación de datos personales",
+  "page.terms.privacy.dataSharing.body": "No vendemos ni alquilamos tus datos personales. Solo los compartimos cuando nos lo has pedido, cuando sea necesario para investigar un abuso o hacer cumplir estos Términos, o cuando lo exija la ley.",
+  "page.terms.privacy.yourRights.heading": "6. Tus derechos",
+  "page.terms.privacy.yourRights.body": "Puedes solicitar acceder, corregir, exportar o eliminar tus datos personales en cualquier momento. Puedes eliminar tu propia cuenta y sus datos desde la página de perfil de la consola, o contactarnos a través de la página de contacto enlazada en el pie de página para todo lo que esta no cubra.",
+  "page.terms.privacy.dataStorage.heading": "7. Almacenamiento y transmisión de datos",
+  "page.terms.privacy.dataStorage.body": "Los datos de tu cuenta y de tus mallas se almacenan en servidores ubicados en la Unión Europea. Al usar la Plataforma aceptas que tus datos se alojen y procesen allí.",
+  "page.terms.privacy.security.heading": "8. Seguridad de tus datos",
+  "page.terms.privacy.security.body": "Tomamos medidas razonables para proteger tus datos, incluyendo cifrado en el transporte y controles de acceso, pero ninguna transmisión por internet es completamente segura. Si tenemos constancia de una brecha de seguridad que afecte a tus datos, te lo notificaremos por correo o mediante un aviso en la Plataforma.",
+  "page.terms.privacy.otherSites.heading": "9. Otros sitios web y aplicaciones",
+  "page.terms.privacy.otherSites.body": "La Plataforma puede enlazar a otros sitios web. No somos responsables de sus prácticas de privacidad — revisa sus propias políticas antes de compartir información con ellos.",
+  "page.terms.privacy.dataController.heading": "10. Responsable del tratamiento y contacto",
+  "page.terms.privacy.dataController.body": "El responsable del tratamiento de los datos personales descritos anteriormente es Sensical SCCL, Barcelona, España. Las preguntas sobre esta Política de Privacidad o los Términos de Uso pueden enviarse a través de la página de contacto enlazada en el pie de página, o directamente a info@sensical.es.",
+
   "common.dataTable.previousPage": "Página anterior",
   "common.dataTable.nextPage": "Página siguiente",
   "common.dataTable.of": "de",
-  
+
   "common.filters.addFilter": "Añadir filtro",
   "common.filters.advancedFilter": "Filtro avanzado",
   "common.filters.builderEmpty": "Todavía no hay filtros",

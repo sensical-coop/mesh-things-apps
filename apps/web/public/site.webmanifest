@@ -1,5 +1,5 @@
 {
-  "name": "Meshtastic Things",
+  "name": "Mesh Things",
   "short_name": "MTT",
   "icons": [
     { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },

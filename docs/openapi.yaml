@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Meshtastic Things API
+  title: Mesh Things API
   version: 1.0.0
 paths:
   /algorithms:

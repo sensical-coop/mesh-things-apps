@@ -1,4 +1,4 @@
-# Meshtastic Things apps
+# Mesh Things apps
 
 ## Local development
 

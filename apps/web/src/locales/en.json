@@ -315,14 +315,14 @@
   "feature.alarm.detectorsDialog.saving": "Saving",
   "feature.alarm.detectorsDialog.save": "Save alarms",
   "feature.alarm.bellButton.label": "Alarms for {label}",
-  
+
   "common.themeToggle.label": "Toggle color theme",
-  
+
   "console.header.signOut": "Sign out",
   "console.header.closeMenu": "Close menu",
   "console.header.openMenu": "Open menu",
   "console.header.profile": "Profile",
-  
+
   "console.footer.tagline": "Storage and management interface for Meshtastic-based sensor networks. Built by Sensical SCCL in Barcelona.",
   "console.footer.product": "Product",
   "console.footer.meshes": "Meshes",
@@ -331,12 +331,12 @@
   "console.footer.blueprints": "Blueprints",
   "console.footer.website": "Website",
   "console.footer.contact": "Contact",
-  
+
   "page.home.hero.title": "The world's first <accent>storage and data solution for Meshtastic sensors</accent>",
   "page.home.hero.subtitle": "Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud.",
   "page.home.hero.signIn": "Sign in",
   "page.home.hero.howItWorks": "How it works",
-  
+
   "page.home.cta.title": "Contact us for deployment options",
   "page.home.cta.subtitle": "Feel free to check the demo, and reach out to us with any questions.",
   "page.home.cta.contactUs": "Contact us",
@@ -351,7 +351,7 @@
   "page.home.footer.product": "Product",
   "page.home.footer.website": "Website",
   "page.home.footer.contact": "Contact",
-  
+
   "page.home.faq.heading": "Frequently asked <secondary>questions</secondary>",
   "page.home.faq.meshtastic.q": "What is Mesh Things?",
   "page.home.faq.meshtastic.a": "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQQT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
@@ -361,7 +361,7 @@
   "page.home.faq.globe.a": "Yes, we are working on releasing the platform and it's front-end application. Stay tuned for more news, and feel free to contact us for more information.",
   "page.home.faq.signIn.q": "Who can sign in?",
   "page.home.faq.signIn.a": "Anyone can register an owner account in the demo server. Storage of data in the demo server is not guaranteed yet. Feel free to contact us for more information and deployment options.",
-  
+
   "page.home.extras.heading": "Choose your deployment type. <secondary>For your sensors and your platform.</secondary>",
   "page.home.extras.storage.title": "Storage for the mesh",
   "page.home.extras.storage.body": "Timeseries storage for Meshtastic-based sensor networks.",
@@ -381,7 +381,7 @@
   "page.home.extras.noBanner.body": "Trigger alarms for sensor data in real time to any devices.",
   "page.home.extras.lora.title": "Access your data",
   "page.home.extras.lora.body": "REST API available as well as S3 bucket storage.",
-  
+
   "page.home.features.heading": "Control your mesh, your devices, and <secondary>the data they send.</secondary>",
   "page.home.features.inventory.title": "Real-time inventory",
   "page.home.features.inventory.description": "Verify that your devices are working properly.",
@@ -395,10 +395,10 @@
   "page.home.features.gateways.node": "Node",
   "page.home.features.gateways.blocked": "Blocked",
   "page.home.features.channels.title": "Channels and charts",
-  
+
   "page.home.features.channels.description": "Display data in different formats.",
   "page.home.features.channels.sample": "temperature · last 24 hours · avg",
-  
+
   "page.home.steps.heading": "Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>",
   "page.home.steps.registerMesh.title": "Register a mesh",
   "page.home.steps.registerMesh.description": "Create a mesh, add the PSKs and your gateways, and the rest of the nodes are auto-discovered.",
@@ -415,7 +415,7 @@
   "page.home.steps.channels.co2": "CO2",
   "page.home.steps.channels.battery": "battery",
   "page.home.proof.heading": "Live data in two clicks, <secondary>deploy as you need.</secondary>",
-  
+
   "page.home.proof.packets.title": "Data packets",
   "page.home.proof.packets.description": "Get data from your nodes in real time.",
   "page.home.proof.globe.title": "Visualize your mesh",
@@ -430,7 +430,7 @@
   "page.home.proof.privacy.radio.value": "Meshtastic compatible",
   "page.home.proof.privacy.packets.label": "Packets",
   "page.home.proof.privacy.packets.value": "Telemetry packets of all types",
-  
+
   "page.login.form.title": "Welcome back",
   "page.login.form.subtitle": "Sign in with the email on your owner account.",
   "page.login.form.email": "Email",
@@ -498,26 +498,62 @@
   "page.verifyEmail.requestNewLink": "Request a new link",
 
   "page.terms.title": "Terms and Conditions",
-  "page.terms.lastUpdated": "Last updated 2026-09-19.",
-  "page.terms.acceptance.heading": "Acceptance of these terms",
-  "page.terms.acceptance.body": "By creating an owner account you agree to these terms and to our handling of your data as described below.",
-  "page.terms.use.heading": "Use of the service",
-  "page.terms.use.body": "Meshtastic Things is a storage and console layer for Meshtastic networks. You are responsible for the meshes, devices and data you register under your account.",
-  "page.terms.accounts.heading": "Accounts and email verification",
-  "page.terms.accounts.body": "A new account stays inactive until you confirm the email address you registered with. You are responsible for keeping your password and API keys confidential.",
-  "page.terms.data.heading": "Data",
-  "page.terms.data.body": "Telemetry and configuration you submit is stored to operate the service and is not sold to third parties.",
-  "page.terms.termination.heading": "Termination",
-  "page.terms.termination.body": "You may delete your account at any time from the console. We may suspend accounts that abuse the service.",
-  "page.terms.changes.heading": "Changes to these terms",
-  "page.terms.changes.body": "We may update these terms as the product evolves. Continued use of the service after a change constitutes acceptance.",
-  "page.terms.contact.heading": "Contact",
-  "page.terms.contact.body": "Questions about these terms can be sent to Sensical SCCL through the contact page linked in the footer.",
-  
+  "page.terms.lastUpdated": "Last updated 2026-09-21.",
+  "page.terms.toc.heading": "Contents",
+  "page.terms.tou.heading": "Terms of Use",
+  "page.terms.tou.relationship.heading": "1. Your relationship with Sensical",
+  "page.terms.tou.relationship.body": "Your use of the Mesh Things website and console (the \"Platform\") is governed by a legal agreement between you and Sensical SCCL, a cooperative based in Barcelona, Spain (\"Sensical\", \"we\"). By using the Platform you accept these Terms of Use and the Privacy Policy below, together the \"Terms\".",
+  "page.terms.tou.accepting.heading": "2. Accepting these Terms",
+  "page.terms.tou.accepting.body": "These Terms apply to anyone who creates an owner account, registers a mesh or device, or otherwise uses the Platform. If you don't agree with them, stop using the Platform; continuing to use it after creating an account means you accept them.",
+  "page.terms.tou.changesTerms.heading": "3. Changes to these Terms",
+  "page.terms.tou.changesTerms.body": "We may update these Terms as the product evolves, for example to reflect new features or legal requirements. We'll do our best to give notice of material changes, and the current version is always available on this page. Continued use of the Platform after a change takes effect means you accept the revised Terms.",
+  "page.terms.tou.platform.heading": "4. The Mesh Things Platform",
+  "page.terms.tou.platform.body": "Mesh Things is a storage and console layer for Meshtastic networks: it lets you register meshes and devices, ingest telemetry, and configure alarms and blueprints through the console. We don't manufacture or sell hardware — you're responsible for the Meshtastic devices and networks you connect to it. api.sensical.es and things.sensical.es are a demo instance of Mesh Things.",
+  "page.terms.tou.account.heading": "5. Creating an owner account",
+  "page.terms.tou.account.body": "To use the console you need to create an owner account with a name, email address and password. A new account stays inactive until you confirm your email address, and you're responsible for keeping your password and API keys confidential and for all activity under your account. If you suspect unauthorized use of your account, change your password immediately and notify us at info@sensical.es.",
+  "page.terms.tou.platformChanges.heading": "6. Changes to the Platform",
+  "page.terms.tou.platformChanges.body": "We may add, change or remove features of the Platform at any time, including limits on storage, request rates or API usage, with or without notice. We aren't liable for loss resulting from such changes.",
+  "page.terms.tou.termination.heading": "7. Termination",
+  "page.terms.tou.termination.body": "You may delete your account at any time from the console profile page, which removes your account and its access. We may suspend or close accounts that violate these Terms or otherwise abuse the service, and will try to notify you by email beforehand where practical.",
+  "page.terms.tou.thirdParty.heading": "8. Third-party links and services",
+  "page.terms.tou.thirdParty.body": "The Platform may link to third-party sites or rely on third-party infrastructure, such as our hosting provider. We aren't responsible for the content, availability or practices of services we don't control.",
+  "page.terms.tou.highRisk.heading": "9. High-risk uses",
+  "page.terms.tou.highRisk.body": "The Platform is not designed, tested or intended for use in situations where a failure or delay in telemetry could cause death, personal injury, or severe property or environmental damage. Don't rely on it as the sole safeguard for such uses.",
+  "page.terms.tou.indemnity.heading": "10. Indemnity",
+  "page.terms.tou.indemnity.body": "You agree to hold Sensical harmless from claims arising out of your misuse of the Platform or a violation of these Terms, including claims related to data you register or content you upload.",
+  "page.terms.tou.governingLaw.heading": "11. Governing law",
+  "page.terms.tou.governingLaw.body": "These Terms are governed by Spanish law. Disputes arising from them will be handled by the courts of Barcelona, Spain, except where mandatory consumer-protection rules require otherwise.",
+  "page.terms.tou.usingPlatform.heading": "12. Using the Platform and registering mesh data",
+  "page.terms.tou.usingPlatform.body": "If you register meshes, devices or telemetry under your account, you're responsible for the accuracy and legality of that data and for the devices you connect. We don't screen or verify device data before storing it, and storing it doesn't make us liable for its content or accuracy.",
+  "page.terms.tou.accessingData.heading": "13. Accessing mesh and device data",
+  "page.terms.tou.accessingData.body": "Meshes and devices you register are private to your account by default — only you, and other owners you explicitly grant access to, can read their configuration and telemetry. We don't publish your mesh or device data to third parties or make it publicly searchable.",
+  "page.terms.privacy.heading": "Privacy Policy",
+  "page.terms.privacy.intro": "This Privacy Policy explains what personal data Mesh Things collects about you and why. Read it together with the Terms of Use above.",
+  "page.terms.privacy.purpose.heading": "1. Purpose of this Privacy Policy",
+  "page.terms.privacy.purpose.body": "This Privacy Policy applies to the personal data Sensical collects through your use of the Platform. Terms defined in the Terms of Use above have the same meaning here.",
+  "page.terms.privacy.changesPrivacy.heading": "2. Changes to this Privacy Policy",
+  "page.terms.privacy.changesPrivacy.body": "We may update this Privacy Policy as the Platform evolves. Any revised version, with its effective date, will be published on this page. If you disagree with a change, you can close your account before it takes effect.",
+  "page.terms.privacy.dataProcessed.heading": "3. Personal data we process",
+  "page.terms.privacy.dataProcessed.body": "To operate your account we collect your name, email address, and password, which is stored as a salted hash. We also store the meshes, devices and telemetry you register, but we don't process that data for our own purposes beyond operating the service.",
+  "page.terms.privacy.processingPurposes.heading": "4. Processing purposes",
+  "page.terms.privacy.processingPurposes.body": "We process your account data to create and maintain your account, operate the console, respond to support requests, and send service email such as verification and password-reset messages. The marketing site sets no analytics cookies, and the console only sets a session cookie once you sign in, so the API knows who you are.",
+  "page.terms.privacy.dataSharing.heading": "5. Personal data communication",
+  "page.terms.privacy.dataSharing.body": "We don't sell or rent your personal data. We only share it when you've asked us to, when needed to investigate abuse or enforce these Terms, or when required by law.",
+  "page.terms.privacy.yourRights.heading": "6. Your rights",
+  "page.terms.privacy.yourRights.body": "You can ask to access, correct, export or delete your personal data at any time. You can delete your own account and its data from the console profile page, or reach us through the contact page linked in the footer for anything it doesn't cover.",
+  "page.terms.privacy.dataStorage.heading": "7. Data storage and transmission",
+  "page.terms.privacy.dataStorage.body": "Your account and mesh data are stored on servers located in the European Union. By using the Platform you agree to your data being hosted and processed there.",
+  "page.terms.privacy.security.heading": "8. Security of your data",
+  "page.terms.privacy.security.body": "We take reasonable steps to protect your data, including transport encryption and access controls, but no transmission over the internet is completely secure. If we become aware of a security breach affecting your data, we'll notify you by email or through a notice on the Platform.",
+  "page.terms.privacy.otherSites.heading": "9. Other websites and applications",
+  "page.terms.privacy.otherSites.body": "The Platform may link to other websites. We aren't responsible for their privacy practices — review their own policies before sharing information with them.",
+  "page.terms.privacy.dataController.heading": "10. Data controller and contact",
+  "page.terms.privacy.dataController.body": "The data controller for the personal data described above is Sensical SCCL, Barcelona, Spain. Questions about this Privacy Policy or the Terms of Use can be sent through the contact page linked in the footer, or directly to info@sensical.es.",
+
   "common.dataTable.previousPage": "Previous page",
   "common.dataTable.nextPage": "Next page",
   "common.dataTable.of": "of",
-  
+
   "common.filters.addFilter": "Add filter",
   "common.filters.advancedFilter": "Advanced filter",
   "common.filters.builderEmpty": "No filters yet",
