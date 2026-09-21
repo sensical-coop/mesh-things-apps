@@ -38,6 +38,16 @@ export type Detail = {
 };
 
 /**
+ * GET /detectors - the static catalog of alarm detector kinds.
+ */
+export type Detector = {
+    readonly name: string;
+    scope: 'measurement' | 'device';
+    readonly requires: Array<string>;
+    readonly description: string;
+};
+
+/**
  * POST /devices input
  */
 export type DeviceCreate = {
@@ -60,8 +70,30 @@ export type DeviceMeasurement = {
     readonly id: string;
     readonly telemetry_variant_id: string;
     measurement_type: MeasurementTypeRead;
+    /**
+     * Per-device override. Null inherits the telemetry variant's default_enabled_detectors.
+     */
+    enabled_detectors?: Array<string> | null;
+    /**
+     * The resolved, sorted list actually running for this device's channel (enabled_detectors if set, else the catalog default).
+     */
+    readonly effective_detectors: Array<string>;
+    /**
+     * Plausible range for the range detector. Purely per-device — there is no catalog default. Set and cleared together with valid_max.
+     */
+    valid_min?: number | null;
+    valid_max?: number | null;
     readonly first_seen: string;
     readonly last_seen: string | null;
+};
+
+/**
+ * PUT /devices/{device_uuid}/measurements/{measurement_id}: enabled_detectors, valid_min, and valid_max are editable. valid_min/valid_max must be set or cleared together.
+ */
+export type DeviceMeasurementUpdate = {
+    enabled_detectors?: Array<string> | null;
+    valid_min?: number | null;
+    valid_max?: number | null;
 };
 
 export type DeviceQualityResponse = {
@@ -70,7 +102,7 @@ export type DeviceQualityResponse = {
     start: string;
     stop: string;
     points_ingested: number;
-    plausibility_ratio: number | null;
+    range_ratio: number | null;
     alarms_by_detector: {
         [key: string]: number;
     };
@@ -90,7 +122,10 @@ export type DeviceRead = {
     readonly label: string | null;
     readonly is_gateway: boolean;
     readonly is_allowed: boolean;
-    readonly alarms_enabled: boolean;
+    /**
+     * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
+     */
+    readonly absence_detection_enabled: boolean;
     readonly admin_keys_b64?: Array<string>;
     readonly latitude: number | null;
     readonly longitude: number | null;
@@ -126,7 +161,10 @@ export type DeviceUpdate = {
     label?: string | null;
     is_allowed?: boolean;
     is_gateway?: boolean;
-    alarms_enabled?: boolean;
+    /**
+     * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
+     */
+    absence_detection_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
@@ -424,19 +462,22 @@ export type Series = {
 export type TelemetryVariantMeasurementRead = {
     readonly id: string;
     measurement_type: MeasurementTypeRead;
-    readonly valid_min: number | null;
-    readonly valid_max: number | null;
+    /**
+     * Catalog-wide default detector list for every device reporting this channel, unless a device overrides it.
+     */
+    readonly default_enabled_detectors: Array<string>;
     readonly created_at: string;
     readonly updated_at: string;
 };
 
 /**
- * PUT /telemetry-variants/{id}/measurements/{link_id}. Only the curated
- * plausibility range is editable
+ * PUT /telemetry-variants/{id}/measurements/{link_id}. Only the
+ * catalog-wide default detector list is editable. Superusers only —
+ * the range detector's valid_min/valid_max live per-device on
+ * DeviceMeasurementUpdate instead, with no catalog default.
  */
 export type TelemetryVariantMeasurementUpdate = {
-    valid_min?: number | null;
-    valid_max?: number | null;
+    default_enabled_detectors?: Array<string>;
 };
 
 export type TelemetryVariantRead = {
@@ -479,6 +520,21 @@ export type DeviceCreateWritable = {
 };
 
 /**
+ * GET /devices/{uuid}/measurements - a flat list of the channels for this device
+ */
+export type DeviceMeasurementWritable = {
+    /**
+     * Per-device override. Null inherits the telemetry variant's default_enabled_detectors.
+     */
+    enabled_detectors?: Array<string> | null;
+    /**
+     * Plausible range for the range detector. Purely per-device — there is no catalog default. Set and cleared together with valid_max.
+     */
+    valid_min?: number | null;
+    valid_max?: number | null;
+};
+
+/**
  * node_id/mesh are fixed at creation. Role is editable
  */
 export type DeviceUpdateWritable = {
@@ -489,7 +545,10 @@ export type DeviceUpdateWritable = {
     admin_keys_b64?: Array<string>;
     is_allowed?: boolean;
     is_gateway?: boolean;
-    alarms_enabled?: boolean;
+    /**
+     * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
+     */
+    absence_detection_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
@@ -672,6 +731,19 @@ export type DevicesUpdateResponses = {
 
 export type DevicesUpdateResponse = DevicesUpdateResponses[keyof DevicesUpdateResponses];
 
+export type DetectorsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/detectors';
+};
+
+export type DetectorsListResponses = {
+    200: Array<Detector>;
+};
+
+export type DetectorsListResponse = DetectorsListResponses[keyof DetectorsListResponses];
+
 export type DevicesMeasurementsListData = {
     body?: never;
     path: {
@@ -686,6 +758,38 @@ export type DevicesMeasurementsListResponses = {
 };
 
 export type DevicesMeasurementsListResponse = DevicesMeasurementsListResponses[keyof DevicesMeasurementsListResponses];
+
+export type DevicesMeasurementsRetrieveData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        measurement_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/measurements/{measurement_id}';
+};
+
+export type DevicesMeasurementsRetrieveResponses = {
+    200: DeviceMeasurement;
+};
+
+export type DevicesMeasurementsRetrieveResponse = DevicesMeasurementsRetrieveResponses[keyof DevicesMeasurementsRetrieveResponses];
+
+export type DevicesMeasurementsUpdateData = {
+    body?: DeviceMeasurementUpdate;
+    path: {
+        device_uuid: string;
+        measurement_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/measurements/{measurement_id}';
+};
+
+export type DevicesMeasurementsUpdateResponses = {
+    200: DeviceMeasurement;
+};
+
+export type DevicesMeasurementsUpdateResponse = DevicesMeasurementsUpdateResponses[keyof DevicesMeasurementsUpdateResponses];
 
 export type DevicesTelemetryVariantsListData = {
     body?: never;

@@ -10,7 +10,7 @@ function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {})
     label: "gw",
     isGateway: true,
     isAllowed: true,
-    alarmsEnabled: true,
+    absenceDetectionEnabled: true,
     adminKeysB64: [],
     latitude: null,
     longitude: null,

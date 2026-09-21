@@ -62,6 +62,9 @@ export function Footer(): ReactElement {
               <Link to={routes.devices} className={footerLinkClass}>
                 {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
               </Link>
+              <Link to={routes.alarms} className={footerLinkClass}>
+                {formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" })}
+              </Link>
               <Link to={routes.blueprints} className={footerLinkClass}>
                 {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
               </Link>

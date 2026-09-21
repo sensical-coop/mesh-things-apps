@@ -7,6 +7,7 @@ import { authSignupPage } from "@/pages/signup/route";
 import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
+import { alarmListPage } from "@/pages/alarms/list/route";
 import { blueprintListPage } from "@/pages/blueprints/list/route";
 import { deviceDetailPage } from "@/pages/devices/detail/route";
 import { deviceListPage } from "@/pages/devices/list/route";
@@ -83,6 +84,11 @@ const deviceDetailRoute = createRoute({
   ...deviceDetailPage,
 });
 
+const alarmsRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...alarmListPage,
+});
+
 const blueprintsRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...blueprintListPage,
@@ -101,6 +107,7 @@ const routeTree = rootRoute.addChildren([
     meshDetailRoute,
     devicesRoute,
     deviceDetailRoute,
+    alarmsRoute,
     blueprintsRoute,
   ]),
 ]);

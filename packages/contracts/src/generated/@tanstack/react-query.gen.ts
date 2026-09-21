@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { algorithmsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesUpdate, metricsRetrieve, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate } from '../sdk.gen';
-import type { AlgorithmsListData, AlgorithmsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse } from '../types.gen';
+import { algorithmsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesUpdate, metricsRetrieve, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate } from '../sdk.gen';
+import type { AlgorithmsListData, AlgorithmsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -171,12 +171,35 @@ export const devicesUpdateMutation = (options?: Partial<Options<DevicesUpdateDat
     return mutationOptions;
 };
 
+export const detectorsListQueryKey = (options?: Options<DetectorsListData>) => createQueryKey('detectorsList', options);
+
+/**
+ * List the catalog of alarm detector kinds.
+ *
+ * "measurement" scoped ones go in a channel's enabled_detectors, "device"
+ * scoped ones (currently only absence) in the device's own
+ * absence_detection_enabled.
+ */
+export const detectorsListOptions = (options?: Options<DetectorsListData>) => queryOptions<DetectorsListResponse, DefaultError, DetectorsListResponse, ReturnType<typeof detectorsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await detectorsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: detectorsListQueryKey(options)
+});
+
 export const devicesMeasurementsListQueryKey = (options: Options<DevicesMeasurementsListData>) => createQueryKey('devicesMeasurementsList', options);
 
 /**
  * List the measurement channels this device produces, measured and computed alike.
  *
- * Entries appear on their own as telemetry arrives and cannot be edited here.
+ * Entries appear on their own as telemetry arrives; only enabled_detectors
+ * can be edited, on the per-channel detail route.
  */
 export const devicesMeasurementsListOptions = (options: Options<DevicesMeasurementsListData>) => queryOptions<DevicesMeasurementsListResponse, DefaultError, DevicesMeasurementsListResponse, ReturnType<typeof devicesMeasurementsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -190,6 +213,44 @@ export const devicesMeasurementsListOptions = (options: Options<DevicesMeasureme
     },
     queryKey: devicesMeasurementsListQueryKey(options)
 });
+
+export const devicesMeasurementsRetrieveQueryKey = (options: Options<DevicesMeasurementsRetrieveData>) => createQueryKey('devicesMeasurementsRetrieve', options);
+
+/**
+ * Return one measurement channel for this device.
+ */
+export const devicesMeasurementsRetrieveOptions = (options: Options<DevicesMeasurementsRetrieveData>) => queryOptions<DevicesMeasurementsRetrieveResponse, DefaultError, DevicesMeasurementsRetrieveResponse, ReturnType<typeof devicesMeasurementsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesMeasurementsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesMeasurementsRetrieveQueryKey(options)
+});
+
+/**
+ * Set which alarm detectors run for this device's channel.
+ *
+ * A null enabled_detectors inherits the telemetry variant's catalog
+ * default; an explicit list (empty or not) overrides it for this device.
+ */
+export const devicesMeasurementsUpdateMutation = (options?: Partial<Options<DevicesMeasurementsUpdateData>>): UseMutationOptions<DevicesMeasurementsUpdateResponse, DefaultError, Options<DevicesMeasurementsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesMeasurementsUpdateResponse, DefaultError, Options<DevicesMeasurementsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesMeasurementsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const devicesTelemetryVariantsListQueryKey = (options: Options<DevicesTelemetryVariantsListData>) => createQueryKey('devicesTelemetryVariantsList', options);
 
@@ -1269,7 +1330,7 @@ export const telemetryVariantsMeasurementsListOptions = (options: Options<Teleme
 export const telemetryVariantsMeasurementsRetrieveQueryKey = (options: Options<TelemetryVariantsMeasurementsRetrieveData>) => createQueryKey('telemetryVariantsMeasurementsRetrieve', options);
 
 /**
- * Return one measurement channel, including its plausible value range.
+ * Return one measurement channel and its catalog-wide default detector list.
  */
 export const telemetryVariantsMeasurementsRetrieveOptions = (options: Options<TelemetryVariantsMeasurementsRetrieveData>) => queryOptions<TelemetryVariantsMeasurementsRetrieveResponse, DefaultError, TelemetryVariantsMeasurementsRetrieveResponse, ReturnType<typeof telemetryVariantsMeasurementsRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -1285,9 +1346,10 @@ export const telemetryVariantsMeasurementsRetrieveOptions = (options: Options<Te
 });
 
 /**
- * Set the plausible value range for a channel. Superusers only.
- *
- * Readings outside the range are flagged by the quality checks.
+ * Set the catalog-wide default detector list for a channel. Superusers
+ * only. The range detector's valid_min/valid_max have no catalog
+ * default — set them per device instead, via PUT
+ * /devices/{device_uuid}/measurements/{measurement_id}.
  */
 export const telemetryVariantsMeasurementsUpdateMutation = (options?: Partial<Options<TelemetryVariantsMeasurementsUpdateData>>): UseMutationOptions<TelemetryVariantsMeasurementsUpdateResponse, DefaultError, Options<TelemetryVariantsMeasurementsUpdateData>> => {
     const mutationOptions: UseMutationOptions<TelemetryVariantsMeasurementsUpdateResponse, DefaultError, Options<TelemetryVariantsMeasurementsUpdateData>> = {
