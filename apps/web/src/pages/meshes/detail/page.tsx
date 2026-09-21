@@ -42,6 +42,7 @@ import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
+import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
@@ -54,6 +55,7 @@ export function MeshDetailPage(): ReactElement {
   const me = useQuery({ ...authRepository.me(), retry: false });
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [settingsDevice, setSettingsDevice] = useState<DeviceRead | null>(null);
   const canDelete =
     mesh.data != null && (me.data?.is_superuser === true || mesh.data.owner_id === me.data?.id);
@@ -92,6 +94,9 @@ export function MeshDetailPage(): ReactElement {
                 }
               />
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                  {formatMessage({ id: "page.meshes.detail.actions.edit", defaultMessage: "Edit mesh" })}
+                </DropdownMenuItem>
                 <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
                   {formatMessage({ id: "page.meshes.detail.actions.delete", defaultMessage: "Delete" })}
                 </DropdownMenuItem>
@@ -103,11 +108,18 @@ export function MeshDetailPage(): ReactElement {
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Pre-shared key" })}</FrameTitle>
+            <FrameTitle>
+              <span>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Channel ID" })}</span>
+              {mesh.data ? (
+                <code className="rounded-md bg-background-secondary-default px-1.5 py-0.5 font-mono text-body-2-regular text-text-primary">
+                  {mesh.data.channel_id}
+                </code>
+              ) : null}
+            </FrameTitle>
             <FrameDescription>
               {formatMessage({
                 id: "page.meshes.detail.psk.description",
-                defaultMessage: "Visible only on this mesh. Copy it; do not put it in a URL.",
+                defaultMessage: "Mesh PSK.",
               })}
             </FrameDescription>
           </FrameHeader>
@@ -234,7 +246,7 @@ export function MeshDetailPage(): ReactElement {
                           defaultMessage: "Last seen",
                         })}
                       </th>
-                      <th className="h-8 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                         {formatMessage({
                           id: "page.meshes.detail.devices.columns.actions",
                           defaultMessage: "Actions",
@@ -307,6 +319,9 @@ export function MeshDetailPage(): ReactElement {
       </div>
       {mesh.data ? (
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
+      ) : null}
+      {mesh.data ? (
+        <EditMeshDialog mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
       ) : null}
       <DeleteMeshDialog
         mesh={deleteOpen ? (mesh.data ?? null) : null}

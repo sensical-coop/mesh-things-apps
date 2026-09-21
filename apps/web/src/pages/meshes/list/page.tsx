@@ -33,6 +33,7 @@ import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
+import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 
 type MeshRow = Mesh & { devices: number };
 
@@ -53,7 +54,7 @@ export function MeshesPage(): ReactElement {
       {
         key: "channel_id",
         urlKey: "channel_id",
-        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel id" }),
+        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel ID" }),
         type: "text",
       },
     ],
@@ -65,6 +66,7 @@ export function MeshesPage(): ReactElement {
   const { isSuperuser, meId, ownerName } = useOwnerDirectory();
   const [open, setOpen] = useState(false);
   const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
+  const [meshToEdit, setMeshToEdit] = useState<MeshRow | null>(null);
   const counts = new Map<string, number>();
   for (const device of devices.data ?? []) {
     counts.set(device.mesh_id, (counts.get(device.mesh_id) ?? 0) + 1);
@@ -125,13 +127,23 @@ export function MeshesPage(): ReactElement {
         ),
         enableSorting: false,
         cell: ({ row }) => {
-          const canDelete = isSuperuser || row.original.owner_id === meId;
+          const canEdit = isSuperuser || row.original.owner_id === meId;
           return (
             <div className="flex justify-start gap-2">
               <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
                 {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
               </ButtonLink>
-              {canDelete ? (
+              {canEdit ? (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="secondary"
+                  onClick={() => setMeshToEdit(row.original)}
+                >
+                  {formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit" })}
+                </Button>
+              ) : null}
+              {canEdit ? (
                 <Button
                   type="button"
                   size="xs"
@@ -219,6 +231,9 @@ export function MeshesPage(): ReactElement {
         </Frame>
       </div>
       <CreateMeshDialog open={open} onClose={() => setOpen(false)} />
+      {meshToEdit ? (
+        <EditMeshDialog mesh={meshToEdit} open onClose={() => setMeshToEdit(null)} />
+      ) : null}
       <DeleteMeshDialog
         key={meshToDelete?.id ?? "none"}
         mesh={meshToDelete}
@@ -287,7 +302,7 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
           </FormField>
           <FormField
             id="mesh-channel"
-            label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel id" })}
+            label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" })}
             error={errors.channel_id}
           >
             <Input id="mesh-channel" name="channel_id" required autoComplete="off" />

@@ -2,6 +2,7 @@ import {
   zDevicesCreateData,
   zDevicesUpdateData,
   zMeshesCreateData,
+  zMeshesUpdateData,
   zOwnersCreateData,
   zOwnersLoginCreateData,
   zPostprocessingBlueprintsCreateData,
@@ -314,6 +315,26 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!mesh) return c.json({ detail: "Not found" }, 404);
     const devices = await db.devices.list({ meshId: mesh.id });
     return c.json(devices.map(deviceJson));
+  });
+
+  app.put("/meshes/:mesh_id", async (c) => {
+    const actor = c.get("actor");
+    const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
+    if (!mesh) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteMesh(actor, mesh)) {
+      return c.json({ detail: "You do not have permission to perform this action." }, 403);
+    }
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const patch = parsed.data.body ?? {};
+    const updated = await db.meshes.update(mesh.id, {
+      channelId: patch.channel_id,
+      pskB64: patch.psk_b64,
+      label: patch.label,
+    });
+    if (!updated) return c.json({ detail: "Not found" }, 404);
+    return c.json(meshJson(updated, canSeePsk(actor, updated)));
   });
 
   app.delete("/meshes/:mesh_id", async (c) => {
