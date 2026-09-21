@@ -2,6 +2,7 @@ import {
   zDevicesCreateData,
   zDevicesUpdateData,
   zMeshesCreateData,
+  zOwnersCreateData,
   zOwnersLoginCreateData,
   zPostprocessingBlueprintsCreateData,
 } from "@mtt/contracts/zod";
@@ -39,9 +40,14 @@ import {
   ownerProfileJson,
   ownerPublicJson,
   ownerReadJson,
+  ownerWithApiKeyJson,
 } from "./serialize";
 
 type Env = { Variables: { actor: Actor } };
+
+const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with apps/web resend-cooldown.ts
+const INACTIVE_ALLOWED_PATHS = new Set(["/owners/me", "/owners/me/resend-verification"]);
+const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
 
 const ALGORITHMS = [
   {
@@ -72,12 +78,14 @@ function queryFilters(c: { req: { query: (name: string) => string | undefined } 
   return parseListFilters(query);
 }
 
-function openPath(path: string): boolean {
+function openPath(method: string, path: string): boolean {
   return (
     path === "/owners/login" ||
     path === "/owners/csrf-cookie" ||
     path === "/health" ||
-    path.startsWith("/api/auth")
+    path.startsWith("/api/auth") ||
+    (method === "POST" && path === "/owners") ||
+    (method === "GET" && path === "/owners/verify-email")
   );
 }
 
@@ -128,11 +136,14 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
   app.use("*", async (c, next) => {
-    if (c.req.method === "OPTIONS" || openPath(c.req.path)) return next();
+    if (c.req.method === "OPTIONS" || openPath(c.req.method, c.req.path)) return next();
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
     const actor = session ? db.actors.get(session.user.id) : undefined;
-    if (!actor?.isActive) {
+    if (!actor) {
       return c.json({ detail: "Authentication credentials were not provided." }, 401);
+    }
+    if (!actor.isActive && !INACTIVE_ALLOWED_PATHS.has(c.req.path)) {
+      return c.json({ detail: "Your account is not active." }, 403);
     }
     c.set("actor", actor);
     await next();
@@ -155,10 +166,82 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       const actor = db.actors.get(result.response.user.id);
       if (!actor?.isActive) return c.json({ detail: "Invalid credentials" }, 400);
       stampLogin(actor);
-      return c.json(ownerProfileJson(actor, await devicesFor(db, actor)));
+      const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+      return c.json(ownerProfileJson(actor, await devicesFor(db, actor), verification));
     } catch {
       return c.json({ detail: "Invalid credentials" }, 400);
     }
+  });
+
+  app.post("/owners", async (c) => {
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersCreateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const { name, email, password } = parsed.data.body;
+    let result;
+    try {
+      result = await auth.api.signUpEmail({
+        body: { email, password, name },
+        headers: c.req.raw.headers,
+        returnHeaders: true,
+      });
+    } catch {
+      return c.json({ detail: "Could not create the account. Check the details and try again." }, 400);
+    }
+    applySetCookie(c, result.headers);
+    const now = nowIso();
+    const actor: Actor = {
+      id: result.response.user.id,
+      email,
+      name,
+      role: "owner",
+      isActive: false,
+      createdAt: now,
+      lastLogin: null,
+    };
+    db.actors.set(actor.id, actor);
+    const token = newId();
+    db.verificationTokens.set(token, actor.id);
+    const verification = { emailVerifiedAt: null, emailVerificationSentAt: now };
+    db.verifications.set(actor.id, verification);
+    console.info(`[mock] verification link for ${email}: /verify-email?token=${token}`);
+    return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${token}`), 201);
+  });
+
+  app.get("/owners/verify-email", (c) => {
+    const token = c.req.query("token") ?? "";
+    const ownerId = db.verificationTokens.get(token);
+    const actor = ownerId ? db.actors.get(ownerId) : undefined;
+    if (!ownerId || !actor) {
+      return c.json({ detail: "This verification link is invalid or has expired." }, 400);
+    }
+    db.verificationTokens.delete(token);
+    actor.isActive = true;
+    const now = nowIso();
+    const previous = db.verifications.get(ownerId) ?? NO_VERIFICATION;
+    db.verifications.set(ownerId, { ...previous, emailVerifiedAt: now });
+    return c.json({ detail: "Your email address has been verified." });
+  });
+
+  app.post("/owners/me/resend-verification", (c) => {
+    const actor = c.get("actor");
+    const info = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    if (info.emailVerificationSentAt) {
+      const elapsedSeconds = (Date.now() - Date.parse(info.emailVerificationSentAt)) / 1000;
+      if (elapsedSeconds < RESEND_COOLDOWN_SECONDS) {
+        const waitSeconds = Math.ceil(RESEND_COOLDOWN_SECONDS - elapsedSeconds);
+        return c.json({ detail: `Please wait ${waitSeconds}s before requesting another email.` }, 429);
+      }
+    }
+    for (const [existingToken, ownerId] of db.verificationTokens) {
+      if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
+    }
+    const token = newId();
+    db.verificationTokens.set(token, actor.id);
+    const now = nowIso();
+    db.verifications.set(actor.id, { ...info, emailVerificationSentAt: now });
+    console.info(`[mock] verification link for ${actor.email}: /verify-email?token=${token}`);
+    return c.json({ detail: "ok" });
   });
 
   app.post("/owners/logout", async (c) => {
@@ -172,13 +255,16 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.get("/owners/me", async (c) => {
     const actor = c.get("actor");
-    return c.json(ownerProfileJson(actor, await devicesFor(db, actor)));
+    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    return c.json(ownerProfileJson(actor, await devicesFor(db, actor), verification));
   });
 
   app.get("/owners", (c) => {
     const actor = c.get("actor");
     const rows = [...db.actors.values()];
-    if (actor.role === "superuser") return c.json(rows.map(ownerReadJson));
+    if (actor.role === "superuser") {
+      return c.json(rows.map((row) => ownerReadJson(row, db.verifications.get(row.id) ?? NO_VERIFICATION)));
+    }
     return c.json(rows.map(ownerPublicJson));
   });
 
@@ -186,7 +272,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const subject = db.actors.get(c.req.param("owner_id"));
     if (!subject) return c.json({ detail: "Not found" }, 404);
-    if (canReadOwnerEmail(actor, subject)) return c.json(ownerReadJson(subject));
+    if (canReadOwnerEmail(actor, subject)) {
+      return c.json(ownerReadJson(subject, db.verifications.get(subject.id) ?? NO_VERIFICATION));
+    }
     return c.json(ownerPublicJson(subject));
   });
 

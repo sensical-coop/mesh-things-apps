@@ -3,6 +3,10 @@ import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import type { ReactNode } from "react";
 import { landingHomePage } from "@/pages/home/route";
 import { authLoginPage } from "@/pages/login/route";
+import { authSignupPage } from "@/pages/signup/route";
+import { authVerifyPendingPage } from "@/pages/verify-pending/route";
+import { authVerifyEmailPage } from "@/pages/verify-email/route";
+import { legalTermsPage } from "@/pages/terms/route";
 import { blueprintListPage } from "@/pages/blueprints/list/route";
 import { deviceDetailPage } from "@/pages/devices/detail/route";
 import { deviceListPage } from "@/pages/devices/list/route";
@@ -23,6 +27,26 @@ const landingRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   ...authLoginPage,
+});
+
+const signupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authSignupPage,
+});
+
+const verifyPendingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authVerifyPendingPage,
+});
+
+const verifyEmailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authVerifyEmailPage,
+});
+
+const termsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...legalTermsPage,
 });
 
 const consoleRoute = createRoute({
@@ -67,6 +91,10 @@ const blueprintsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   landingRoute,
   loginRoute,
+  signupRoute,
+  verifyPendingRoute,
+  verifyEmailRoute,
+  termsRoute,
   consoleRoute.addChildren([
     consoleIndexRoute,
     meshesRoute,
