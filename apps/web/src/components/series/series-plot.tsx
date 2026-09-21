@@ -3,6 +3,7 @@ import { type ReactElement } from "react";
 import type { Point } from "@mtt/contracts";
 import { asNumber, formatClock, formatWhen } from "@/lib/format";
 import { StatusCopy } from "@/components/status-copy";
+import { fillTimeGaps } from "@/components/series/fill-gaps";
 
 function seriesConfig(label: string): ChartConfig {
   return {
@@ -13,12 +14,23 @@ function seriesConfig(label: string): ChartConfig {
   };
 }
 
-export function SeriesPlot({ points, seriesLabel }: { points: Point[]; seriesLabel: string }): ReactElement {
-  const data = points.flatMap((p) => {
-    const value = asNumber(p.value);
-    return value === null ? [] : [{ time: p.time, value }];
-  });
-  if (data.length < 2) {
+export function SeriesPlot({
+  points,
+  seriesLabel,
+  windowMs,
+}: {
+  points: Point[];
+  seriesLabel: string;
+  windowMs?: number | null;
+}): ReactElement {
+  // Keep null-valued buckets (missing data within the aggregation window) instead
+  // of dropping them, and reinsert buckets the API omitted entirely: the chart's
+  // x-axis spaces points by array index, so either one collapses real time gaps
+  // down to zero width.
+  const raw = points.map((p) => ({ time: p.time, value: asNumber(p.value) }));
+  const data = fillTimeGaps(raw, windowMs ?? null);
+  const numericCount = data.reduce((n, row) => n + (row.value === null ? 0 : 1), 0);
+  if (numericCount < 2) {
     return <StatusCopy>Need at least two numeric points to draw this channel.</StatusCopy>;
   }
 

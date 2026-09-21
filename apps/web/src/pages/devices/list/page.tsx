@@ -199,7 +199,7 @@ export function DevicesPage(): ReactElement {
           </span>
         ),
         cell: ({ row }) => (
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-start gap-2">
             <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
             </ButtonLink>

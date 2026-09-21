@@ -20,7 +20,7 @@ multi-step flows use `06-multi-step-dialog.md` instead.
 <Modal open={open} onClose={() => setOpen(false)}>
   <h2 className="text-sm font-medium text-foreground/80">Delete site</h2>
   <p className="mt-2 text-sm text-muted-foreground">This removes the site and its data.</p>
-  <div className="mt-4 flex justify-end gap-2">
+  <div className="mt-4 flex justify-start gap-2">
     <Button size="xs" variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
     <Button size="xs" variant="destructive" onClick={remove}>Delete site</Button>
   </div>
