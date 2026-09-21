@@ -1,7 +1,12 @@
 {
-  "extends": "@mtt/tsconfig/node.json",
+  "extends": "@mtt/tsconfig/base.json",
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
   "include": ["src", "openapi-ts.config.ts"]
