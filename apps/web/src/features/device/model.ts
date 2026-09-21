@@ -58,7 +58,7 @@ export function deviceRoleLabel(
 export function deviceSilent(
   device: Pick<DeviceRead, "last_seen" | "publish_interval_seconds">,
   nowMs = Date.now(),
-  missed = 3,
+  missed = 5,
 ): boolean {
   if (!device.last_seen) return true;
   const intervalMs =

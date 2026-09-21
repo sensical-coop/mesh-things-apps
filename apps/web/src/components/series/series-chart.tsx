@@ -1,5 +1,5 @@
 import { cx } from "@mtt/ui/utils/cx";
-import { type ReactElement } from "react";
+import { type ReactElement, type ReactNode } from "react";
 import type { Point } from "@mtt/contracts";
 import { type RemixiconComponentType } from "@remixicon/react";
 import { useIntl } from "react-intl";
@@ -15,6 +15,7 @@ export function SeriesChart({
   className,
   icon,
   windowMs,
+  action,
 }: {
   points: Point[];
   compareLabel?: string;
@@ -24,6 +25,7 @@ export function SeriesChart({
   className?: string;
   icon?: RemixiconComponentType;
   windowMs?: number | null;
+  action?: ReactNode;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const valueLabel = label ?? formatMessage({ id: "common.seriesChart.value", defaultMessage: "Value" });
@@ -45,7 +47,7 @@ export function SeriesChart({
   }
 
   return (
-    <KpiPanel label={label} hint={hint} icon={icon} className={className}>
+    <KpiPanel label={label} hint={hint} icon={icon} className={className} action={action}>
       <div className="flex min-w-0 flex-col gap-4">{body}</div>
     </KpiPanel>
   );

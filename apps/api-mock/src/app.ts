@@ -1,13 +1,16 @@
 import {
   zDevicesCreateData,
+  zDevicesMeasurementsUpdateData,
   zDevicesUpdateData,
   zMeshesCreateData,
   zMeshesUpdateData,
   zOwnersCreateData,
   zOwnersLoginCreateData,
   zPostprocessingBlueprintsCreateData,
+  zTelemetryVariantsMeasurementsUpdateData,
 } from "@mtt/contracts/zod";
-import { matchesDeviceFilter } from "@mtt/domain/device/Device";
+import { matchesDeviceFilter, type Device } from "@mtt/domain/device/Device";
+import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import {
   canReadMesh,
   canReadOwnerEmail,
@@ -22,10 +25,12 @@ import { NIL_BLUEPRINT_ID } from "@mtt/domain/shared/blueprint";
 import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import {
+  DETECTOR_CATALOG,
   DEVICE_MEAS_ID,
   DEVICE_NODE_ID,
   DEVICE_GW_ID,
   DEVICE_VARIANT_ID,
+  MEASUREMENT_DETECTORS,
   MEAS_TEMP_ID,
   VARIANT_ENV_ID,
   VARIANT_LINK_ID,
@@ -118,6 +123,59 @@ async function deviceForRead(store: Store, actor: Actor, uuid: string) {
   const mesh = await meshForRead(store, actor, device.meshId);
   if (!mesh) return null;
   return device;
+}
+
+function deviceMeasurementId(index: number): string {
+  return index === 0 ? DEVICE_MEAS_ID : `${DEVICE_MEAS_ID.slice(0, -1)}${index}`;
+}
+
+// Only the fixtured temperature channel is linked into a telemetry-variant
+// catalog entry (VARIANT_LINK_ID) in this mock; every other channel has no
+// configured catalog default, so it effectively inherits an empty list.
+function catalogDefaultDetectors(store: Store, measurementTypeId: string): string[] {
+  if (measurementTypeId !== MEAS_TEMP_ID) return [];
+  return store.telemetryVariantMeasurements.get(VARIANT_LINK_ID)?.defaultEnabledDetectors ?? [];
+}
+
+function deviceMeasurementJson(store: Store, device: Device, type: MeasurementType, index: number) {
+  const id = deviceMeasurementId(index);
+  const enabledDetectors = store.detectorOverrides.get(id) ?? null;
+  const effectiveDetectors = [...(enabledDetectors ?? catalogDefaultDetectors(store, type.id))].sort();
+  const range = store.deviceMeasurementRanges.get(id) ?? { validMin: null, validMax: null };
+  return {
+    id,
+    telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_BLUEPRINT_ID,
+    measurement_type: measurementJson(type),
+    enabled_detectors: enabledDetectors,
+    effective_detectors: effectiveDetectors,
+    valid_min: range.validMin,
+    valid_max: range.validMax,
+    first_seen: device.createdAt,
+    last_seen: device.lastSeen,
+  };
+}
+
+function telemetryVariantMeasurementJson(store: Store, type: MeasurementType, linkId: string) {
+  const link = store.telemetryVariantMeasurements.get(linkId) ?? { defaultEnabledDetectors: [] };
+  return {
+    id: linkId,
+    measurement_type: measurementJson(type),
+    default_enabled_detectors: [...link.defaultEnabledDetectors].sort(),
+    created_at: type.createdAt,
+    updated_at: type.updatedAt,
+  };
+}
+
+async function findDeviceMeasurement(
+  store: Store,
+  device: Device,
+  measurementId: string,
+): Promise<{ type: MeasurementType; index: number } | null> {
+  if (device.uuid !== DEVICE_NODE_ID) return null;
+  const types = await store.measurements.list();
+  const index = types.findIndex((_, i) => deviceMeasurementId(i) === measurementId);
+  if (index === -1) return null;
+  return { type: types[index]!, index };
 }
 
 export async function createApp(store?: Store, auth: MockAuth = createMockAuth()) {
@@ -415,7 +473,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       longitude: lon,
       isAllowed: patch.is_allowed,
       isGateway: patch.is_gateway,
-      alarmsEnabled: patch.alarms_enabled,
+      absenceDetectionEnabled: patch.absence_detection_enabled,
       postprocessingBlueprintId: patch.postprocessing_blueprint_id,
       readingIntervalSeconds: patch.reading_interval_seconds,
       publishIntervalSeconds: patch.publish_interval_seconds,
@@ -430,16 +488,61 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!device) return c.json({ detail: "Not found" }, 404);
     const types = await db.measurements.list();
     if (device.uuid !== DEVICE_NODE_ID) return c.json([]);
-    return c.json(
-      types.map((type, i) => ({
-        id: i === 0 ? DEVICE_MEAS_ID : `${DEVICE_MEAS_ID.slice(0, -1)}${i}`,
-        telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_BLUEPRINT_ID,
-        measurement_type: measurementJson(type),
-        first_seen: device.createdAt,
-        last_seen: device.lastSeen,
-      })),
-    );
+    return c.json(types.map((type, i) => deviceMeasurementJson(db, device, type, i)));
   });
+
+  app.get("/devices/:device_uuid/measurements/:measurement_id", async (c) => {
+    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    if (!device) return c.json({ detail: "Not found" }, 404);
+    const found = await findDeviceMeasurement(db, device, c.req.param("measurement_id"));
+    if (!found) return c.json({ detail: "Not found" }, 404);
+    return c.json(deviceMeasurementJson(db, device, found.type, found.index));
+  });
+
+  app.put("/devices/:device_uuid/measurements/:measurement_id", async (c) => {
+    const actor = c.get("actor");
+    const device = await deviceForRead(db, actor, c.req.param("device_uuid"));
+    if (!device) return c.json({ detail: "Not found" }, 404);
+    const mesh = await db.meshes.get(device.meshId);
+    if (!mesh || !canWriteMesh(actor, mesh)) {
+      return c.json({ detail: "You do not have permission to perform this action." }, 403);
+    }
+    const found = await findDeviceMeasurement(db, device, c.req.param("measurement_id"));
+    if (!found) return c.json({ detail: "Not found" }, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zDevicesMeasurementsUpdateData.safeParse({
+      path: { device_uuid: device.uuid, measurement_id: c.req.param("measurement_id") },
+      body,
+    });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const patch = parsed.data.body ?? {};
+    if ("enabled_detectors" in patch) {
+      const enabledDetectors = patch.enabled_detectors ?? null;
+      if (enabledDetectors) {
+        const unknownNames = enabledDetectors.filter((name) => !MEASUREMENT_DETECTORS.includes(name));
+        if (unknownNames.length) {
+          return c.json(
+            {
+              detail: `Unknown detector(s) ${unknownNames.join(", ")}. Valid: ${MEASUREMENT_DETECTORS.join(", ")}`,
+            },
+            400,
+          );
+        }
+      }
+      db.detectorOverrides.set(c.req.param("measurement_id"), enabledDetectors);
+    }
+    if ("valid_min" in patch || "valid_max" in patch) {
+      const validMin = patch.valid_min ?? null;
+      const validMax = patch.valid_max ?? null;
+      if ((validMin === null) !== (validMax === null)) {
+        return c.json({ detail: "valid_min and valid_max must be set or cleared together." }, 400);
+      }
+      db.deviceMeasurementRanges.set(c.req.param("measurement_id"), { validMin, validMax });
+    }
+    return c.json(deviceMeasurementJson(db, device, found.type, found.index));
+  });
+
+  app.get("/detectors", (c) => c.json(DETECTOR_CATALOG));
 
   app.get("/devices/:device_uuid/telemetry-variants", async (c) => {
     const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
@@ -510,16 +613,53 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const types = await db.measurements.list();
     const temp = types.find((t) => t.id === MEAS_TEMP_ID);
     if (!temp) return c.json([]);
-    return c.json([
-      {
-        id: VARIANT_LINK_ID,
-        measurement_type: measurementJson(temp),
-        valid_min: -40,
-        valid_max: 85,
-        created_at: temp.createdAt,
-        updated_at: temp.updatedAt,
-      },
-    ]);
+    return c.json([telemetryVariantMeasurementJson(db, temp, VARIANT_LINK_ID)]);
+  });
+
+  app.get("/telemetry-variants/:telemetry_variant_id/measurements/:link_id", async (c) => {
+    if (c.req.param("telemetry_variant_id") !== VARIANT_ENV_ID || c.req.param("link_id") !== VARIANT_LINK_ID) {
+      return c.json({ detail: "Not found" }, 404);
+    }
+    const types = await db.measurements.list();
+    const temp = types.find((t) => t.id === MEAS_TEMP_ID);
+    if (!temp) return c.json({ detail: "Not found" }, 404);
+    return c.json(telemetryVariantMeasurementJson(db, temp, VARIANT_LINK_ID));
+  });
+
+  app.put("/telemetry-variants/:telemetry_variant_id/measurements/:link_id", async (c) => {
+    const actor = c.get("actor");
+    if (actor.role !== "superuser") {
+      return c.json({ detail: "You do not have permission to perform this action." }, 403);
+    }
+    if (c.req.param("telemetry_variant_id") !== VARIANT_ENV_ID || c.req.param("link_id") !== VARIANT_LINK_ID) {
+      return c.json({ detail: "Not found" }, 404);
+    }
+    const types = await db.measurements.list();
+    const temp = types.find((t) => t.id === MEAS_TEMP_ID);
+    if (!temp) return c.json({ detail: "Not found" }, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zTelemetryVariantsMeasurementsUpdateData.safeParse({
+      path: { telemetry_variant_id: c.req.param("telemetry_variant_id"), link_id: c.req.param("link_id") },
+      body,
+    });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const patch = parsed.data.body ?? {};
+    if (patch.default_enabled_detectors) {
+      const unknownNames = patch.default_enabled_detectors.filter((name) => !MEASUREMENT_DETECTORS.includes(name));
+      if (unknownNames.length) {
+        return c.json(
+          {
+            detail: `Unknown detector(s) ${unknownNames.join(", ")}. Valid: ${MEASUREMENT_DETECTORS.join(", ")}`,
+          },
+          400,
+        );
+      }
+    }
+    const current = db.telemetryVariantMeasurements.get(VARIANT_LINK_ID) ?? { defaultEnabledDetectors: [] };
+    db.telemetryVariantMeasurements.set(VARIANT_LINK_ID, {
+      defaultEnabledDetectors: patch.default_enabled_detectors ?? current.defaultEnabledDetectors,
+    });
+    return c.json(telemetryVariantMeasurementJson(db, temp, VARIANT_LINK_ID));
   });
 
   app.get("/readings/devices/:device_uuid/latest", async (c) => {
@@ -541,7 +681,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
         start,
         stop,
         points_ingested: 0,
-        plausibility_ratio: null,
+        range_ratio: null,
         alarms_by_detector: {},
         channels: [],
       });
@@ -552,8 +692,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       start,
       stop,
       points_ingested: 190,
-      plausibility_ratio: 0.97,
-      alarms_by_detector: { completeness: 1, range_check: 0, stuck_value: 0, absence: 0 },
+      range_ratio: 0.97,
+      alarms_by_detector: { completeness: 1, range: 0, flat_value: 0, absence: 0 },
       channels: [
         {
           channel: "environmentmetrics.temperature",

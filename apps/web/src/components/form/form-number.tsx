@@ -15,6 +15,7 @@ export function FormNumber({
   max,
   step,
   required,
+  disabled,
   onValueChange,
 }: {
   id: string;
@@ -24,6 +25,7 @@ export function FormNumber({
   max?: number;
   step?: number | "any";
   required?: boolean;
+  disabled?: boolean;
   onValueChange?: (value: number | null) => void;
 }): ReactElement {
   return (
@@ -35,6 +37,7 @@ export function FormNumber({
       max={max}
       step={step}
       required={required}
+      disabled={disabled}
       onValueChange={onValueChange}
     >
       <NumberFieldGroup>

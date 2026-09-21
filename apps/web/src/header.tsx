@@ -52,6 +52,14 @@ function NavLinks({
         {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
       </Link>
       <Link
+        to={routes.alarms}
+        className={linkClass}
+        activeProps={{ className: activeClass }}
+        onClick={onNavigate}
+      >
+        {formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" })}
+      </Link>
+      <Link
         to={routes.blueprints}
         className={linkClass}
         activeProps={{ className: activeClass }}
