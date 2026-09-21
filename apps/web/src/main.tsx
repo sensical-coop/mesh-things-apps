@@ -1,5 +1,5 @@
 import { client } from "@mtt/contracts/client";
-import { attachCsrfHeader } from "@mtt/contracts/runtime";
+import { attachCsrfHeader, attachErrorStatus } from "@mtt/contracts/runtime";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -7,6 +7,7 @@ import { TooltipProvider } from "@mtt/ui/components/ui/tooltip";
 import { AppProviders } from "./app-providers";
 import { Layout } from "./layout";
 import { authRepository } from "@/features/auth/repository";
+import { getPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { router } from "@/router/app-router";
 import "./styles.css";
 
@@ -15,6 +16,12 @@ client.setConfig({
   credentials: "include",
 });
 client.interceptors.request.use(attachCsrfHeader);
+client.interceptors.request.use((request) => {
+  const key = getPendingOwnerKey();
+  if (key) request.headers.set("Authorization", `Bearer ${key}`);
+  return request;
+});
+client.interceptors.error.use(attachErrorStatus);
 // csrftoken cookie for a returning user with valid session
 void authRepository.csrf().catch(() => {});
 

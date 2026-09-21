@@ -8,6 +8,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
+import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { isOwnerSession } from "@/features/auth/session";
 import { routes } from "@/router";
 import { ResendButton } from "./resend-button";
@@ -20,6 +21,7 @@ export function VerifyPendingPage(): ReactElement {
   const logout = useMutation({
     ...authRepository.logout(),
     onSuccess: async () => {
+      clearPendingOwnerKey();
       queryClient.clear();
       await navigate({ to: routes.login });
     },
