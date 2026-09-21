@@ -8,6 +8,7 @@
   "common.format.secondUnit": "s",
   "common.languageSwitcher.label": "Cambiar idioma",
   "common.ownerColumn.me": "{name} (yo)",
+
   "page.devices.list.title": "Dispositivos",
   "page.devices.list.inventory.title": "Inventario",
   "page.devices.list.inventory.loading": "Cargando dispositivos.",
@@ -35,6 +36,7 @@
   "page.devices.list.open": "Abrir",
   "page.devices.list.empty.filtered": "Ningún dispositivo coincide con estos filtros.",
   "page.devices.list.empty.default": "Todavía no hay dispositivos. Registra uno desde una malla.",
+
   "page.devices.detail.back": "Volver a dispositivos",
   "page.devices.detail.fallbackTitle": "Dispositivo",
   "page.devices.detail.editSettings": "Editar ajustes",
@@ -145,6 +147,7 @@
   "feature.device.silentBadge.silent": "Silencioso",
   "common.seriesChart.value": "Valor",
   "common.seriesChart.compare": "Comparar",
+
   "page.meshes.list.title": "Mallas",
   "page.meshes.list.createMesh": "Crear malla",
   "page.meshes.list.filters.label": "Etiqueta",
@@ -188,6 +191,7 @@
   "page.meshes.list.createDialog.error": "No se pudo crear la malla. Revisa los campos e inténtalo de nuevo.",
   "page.meshes.list.createDialog.cancel": "Cancelar",
   "page.meshes.list.createDialog.creating": "Creando malla",
+
   "page.meshes.detail.breadcrumb": "Mallas",
   "page.meshes.detail.fallbackTitle": "Malla",
   "page.meshes.detail.registerGateway": "Registrar pasarela",
@@ -225,6 +229,7 @@
   "page.meshes.detail.registerGatewayDialog.error": "El registro falló. Comprueba el id. de nodo e inténtalo de nuevo.",
   "page.meshes.detail.registerGatewayDialog.cancel": "Cancelar",
   "page.meshes.detail.registerGatewayDialog.registering": "Registrando pasarela",
+
   "page.alarms.list.title": "Alarmas",
   "page.alarms.list.panel.title": "Alarmas configuradas",
   "page.alarms.list.panel.description": "Alarmas configurables por métrica.",
@@ -238,6 +243,7 @@
   "page.alarms.list.columns.measurement": "Métrica",
   "page.alarms.list.columns.detectors": "Detectores activos",
   "page.alarms.list.columns.actions": "Acciones",
+
   "page.blueprints.list.title": "Plantillas",
   "page.blueprints.list.newBlueprint": "Nueva plantilla",
   "page.blueprints.list.panel.title": "Recetas",
@@ -255,6 +261,7 @@
   "page.blueprints.list.createDialog.cancel": "Cancelar",
   "page.blueprints.list.createDialog.saving": "Guardando",
   "page.blueprints.list.createDialog.create": "Crear plantilla",
+
   "feature.device.role.client": "Cliente",
   "feature.device.role.clientMute": "Cliente silenciado",
   "feature.device.role.clientHidden": "Cliente oculto",
@@ -269,6 +276,7 @@
   "feature.device.role.lostAndFound": "Objetos perdidos",
   "feature.device.role.gateway": "Pasarela",
   "feature.device.role.node": "Nodo",
+
   "feature.alarm.detectorsDialog.title": "Alarmas — {label}",
   "feature.alarm.detectorsDialog.description": "Elige qué detectores vigilan este canal y disparan una alarma.",
   "feature.alarm.detectorsDialog.independenceNote": "Estos funcionan independientemente de la opción \"Activar detección de ausencia\" del dispositivo, que solo cubre que el dispositivo deje de publicar.",
@@ -286,7 +294,9 @@
   "feature.alarm.detectorsDialog.saving": "Guardando",
   "feature.alarm.detectorsDialog.save": "Guardar alarmas",
   "feature.alarm.bellButton.label": "Alarmas de {label}",
+  
   "common.themeToggle.label": "Cambiar tema de color",
+  
   "console.header.signOut": "Cerrar sesión",
   "console.header.closeMenu": "Cerrar menú",
   "console.header.openMenu": "Abrir menú",
@@ -298,23 +308,28 @@
   "console.footer.blueprints": "Plantillas",
   "console.footer.website": "Sitio web",
   "console.footer.contact": "Contacto",
+  
   "page.home.hero.title": "La primera <accent>solución de almacenamiento y datos para sensores Meshtastic</accent> del mundo",
   "page.home.hero.subtitle": "Recopila datos de sensores con <highlight>redes de sensores basadas en Meshtastic.</highlight> Despliega localmente o en la nube.",
   "page.home.hero.signIn": "Iniciar sesión",
   "page.home.hero.howItWorks": "Cómo funciona",
+  
   "page.home.cta.title": "Contáctanos para conocer las opciones",
   "page.home.cta.subtitle": "Échale un vistazo a la demo y contáctanos si tienes cualquier duda.",
   "page.home.cta.contactUs": "Contáctanos",
+  
   "page.home.header.howItWorks": "Cómo funciona",
   "page.home.header.features": "Funciones",
   "page.home.header.faq": "Preguntas frecuentes",
   "page.home.header.signIn": "Iniciar sesión",
   "page.home.header.signUp": "Registrarse",
   "page.home.header.terms": "Términos",
+
   "page.home.footer.tagline": "Almacenamiento y una consola para redes Meshtastic. Creado por Sensical SCCL en Barcelona.",
   "page.home.footer.product": "Producto",
   "page.home.footer.website": "Sitio web",
   "page.home.footer.contact": "Contacto",
+  
   "page.home.faq.heading": "Preguntas <secondary>frecuentes</secondary>",
   "page.home.faq.meshtastic.q": "¿Qué es Mesh Things?",
   "page.home.faq.meshtastic.a": "Una capa de almacenamiento y datos para redes Meshtastic y su telemetría. Los datos llegan por MQTT y se almacenan y procesan en Mesh Things. Mesh Things puede desplegarse localmente en una Raspberry Pi o en un servidor en la nube.",
@@ -324,6 +339,7 @@
   "page.home.faq.globe.a": "Sí, estamos trabajando en publicar la plataforma y su aplicación de front-end. Mantente atento a las novedades, y no dudes en contactarnos para más información.",
   "page.home.faq.signIn.q": "¿Quién puede iniciar sesión?",
   "page.home.faq.signIn.a": "Cualquiera puede registrar una cuenta de propietario en el servidor de demostración. Por ahora no se garantiza el almacenamiento de los datos en el servidor de demostración. No dudes en contactarnos para más información sobre las opciones de despliegue.",
+  
   "page.home.extras.heading": "Elige tu tipo de despliegue. <secondary>Para tus sensores y tu plataforma.</secondary>",
   "page.home.extras.storage.title": "Almacenamiento para la malla",
   "page.home.extras.storage.body": "Almacenamiento de series temporales para redes de sensores basadas en Meshtastic.",
@@ -343,6 +359,7 @@
   "page.home.extras.noBanner.body": "Activa alarmas en tiempo real para los datos de los sensores en cualquier dispositivo.",
   "page.home.extras.lora.title": "Accede a tus datos",
   "page.home.extras.lora.body": "Disponible tanto API REST como almacenamiento en buckets S3.",
+  
   "page.home.features.heading": "Controla tu malla, tus dispositivos y <secondary>los datos que envían.</secondary>",
   "page.home.features.inventory.title": "Inventario en tiempo real",
   "page.home.features.inventory.description": "Verifica que tus dispositivos funcionan correctamente.",
@@ -358,6 +375,7 @@
   "page.home.features.channels.title": "Canales y gráficos",
   "page.home.features.channels.description": "Muestra los datos en diferentes formatos.",
   "page.home.features.channels.sample": "temperatura · últimas 24 horas · media",
+  
   "page.home.steps.heading": "Empieza en solo tres pasos: <secondary>nombra tu red, añade tus dispositivos y visualiza tus datos. Así de sencillo.</secondary>",
   "page.home.steps.registerMesh.title": "Registra una malla",
   "page.home.steps.registerMesh.description": "Crea una malla, añade las PSK y tus pasarelas, y el resto de los nodos se descubren automáticamente.",
@@ -373,6 +391,7 @@
   "page.home.steps.channels.humidity": "humedad",
   "page.home.steps.channels.co2": "CO2",
   "page.home.steps.channels.battery": "batería",
+  
   "page.home.proof.heading": "Datos en vivo sin complicaciones, <secondary>despliega como lo necesites.</secondary>",
   "page.home.proof.packets.title": "Paquetes de datos",
   "page.home.proof.packets.description": "Obtén datos de tus nodos en tiempo real.",
@@ -388,6 +407,7 @@
   "page.home.proof.privacy.radio.value": "Compatible con Meshtastic",
   "page.home.proof.privacy.packets.label": "Paquetes",
   "page.home.proof.privacy.packets.value": "Paquetes de telemetría de todo tipo",
+  
   "page.login.form.title": "Bienvenido de nuevo",
   "page.login.form.subtitle": "Inicia sesión con el correo de tu cuenta de propietario.",
   "page.login.form.email": "Correo electrónico",
@@ -397,6 +417,7 @@
   "page.login.form.error": "Esas credenciales no fueron aceptadas. Comprueba el correo y la contraseña e inténtalo de nuevo.",
   "page.login.form.mockAccounts": "Cuentas de prueba: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (todas las mallas), staff@sensical.test (solo lectura, sin PSK). Contraseña mesh-owner-12, excepto admin mesh-admin-12 y staff mesh-staff-12.",
   "page.login.form.noAccount": "¿No tienes cuenta? <link>Regístrate</link>.",
+
   "page.signup.form.title": "Crea tu cuenta",
   "page.signup.form.subtitle": "Registra una cuenta de para Meshtastic Things.",
   "page.signup.form.name": "Nombre",
@@ -410,6 +431,7 @@
   "page.signup.form.creating": "Creando cuenta",
   "page.signup.form.submit": "Crear cuenta",
   "page.signup.form.haveAccount": "¿Ya tienes cuenta? <link>Inicia sesión</link>.",
+
   "page.verifyPending.title": "Revisa tu correo",
   "page.verifyPending.body": "Te hemos enviado un enlace de confirmación a <strong>{email}</strong>. Haz clic en él para activar tu cuenta.",
   "page.verifyPending.signOut": "¿No eres tú? Cerrar sesión",
@@ -417,12 +439,14 @@
   "page.verifyPending.resend.sending": "Enviando",
   "page.verifyPending.resend.countdown": "Podrás reenviar en {seconds}s",
   "page.verifyPending.resend.error": "No hemos podido reenviar el correo. Vuelve a intentarlo en un momento.",
+
   "page.verifyEmail.title": "Verificación de correo",
   "page.verifyEmail.confirming": "Confirmando tu dirección de correo…",
   "page.verifyEmail.success": "Tu dirección de correo ha sido verificada. Ya puedes iniciar sesión.",
   "page.verifyEmail.goToSignIn": "Ir a iniciar sesión",
   "page.verifyEmail.failure": "Este enlace de verificación no es válido o ha caducado.",
   "page.verifyEmail.requestNewLink": "Solicitar un nuevo enlace",
+
   "page.terms.title": "Términos y Condiciones",
   "page.terms.lastUpdated": "Última actualización: 2026-09-19.",
   "page.terms.acceptance.heading": "Aceptación de estos términos",
@@ -439,9 +463,11 @@
   "page.terms.changes.body": "Podemos actualizar estos términos a medida que el producto evoluciona. Seguir usando el servicio tras un cambio implica su aceptación.",
   "page.terms.contact.heading": "Contacto",
   "page.terms.contact.body": "Las preguntas sobre estos términos pueden enviarse a Sensical SCCL a través de la página de contacto enlazada en el pie de página.",
+  
   "common.dataTable.previousPage": "Página anterior",
   "common.dataTable.nextPage": "Página siguiente",
   "common.dataTable.of": "de",
+  
   "common.filters.addFilter": "Añadir filtro",
   "common.filters.advancedFilter": "Filtro avanzado",
   "common.filters.builderEmpty": "Todavía no hay filtros",
@@ -515,6 +541,7 @@
   "common.filters.issueEmptyGroup": "Este grupo todavía no tiene condiciones",
   "common.filters.issueSummary.one": "1 fila necesita atención",
   "common.filters.issueSummary.other": "{count} filas necesitan atención",
+
   "common.filterOperators.contains": "contiene",
   "common.filterOperators.notContains": "no contiene",
   "common.filterOperators.startsWith": "empieza por",

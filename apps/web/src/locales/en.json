@@ -8,6 +8,7 @@
   "common.format.secondUnit": "s",
   "common.languageSwitcher.label": "Change language",
   "common.ownerColumn.me": "{name} (me)",
+
   "page.devices.list.title": "Devices",
   "page.devices.list.inventory.title": "Inventory",
   "page.devices.list.inventory.loading": "Loading devices.",
@@ -35,6 +36,7 @@
   "page.devices.list.open": "Open",
   "page.devices.list.empty.filtered": "No devices match these filters.",
   "page.devices.list.empty.default": "No devices yet. Register a device from a mesh.",
+
   "page.devices.detail.back": "Back to devices",
   "page.devices.detail.fallbackTitle": "Device",
   "page.devices.detail.editSettings": "Edit settings",
@@ -145,6 +147,7 @@
   "feature.device.silentBadge.silent": "Silent",
   "common.seriesChart.value": "Value",
   "common.seriesChart.compare": "Compare",
+
   "page.meshes.list.title": "Meshes",
   "page.meshes.list.createMesh": "Create mesh",
   "page.meshes.list.filters.label": "Label",
@@ -188,6 +191,7 @@
   "page.meshes.list.createDialog.error": "The mesh was not created. Check the fields and try again.",
   "page.meshes.list.createDialog.cancel": "Cancel",
   "page.meshes.list.createDialog.creating": "Creating mesh",
+
   "page.meshes.detail.breadcrumb": "Meshes",
   "page.meshes.detail.fallbackTitle": "Mesh",
   "page.meshes.detail.registerGateway": "Register gateway",
@@ -225,6 +229,7 @@
   "page.meshes.detail.registerGatewayDialog.error": "Registration failed. Check node ID and try again.",
   "page.meshes.detail.registerGatewayDialog.cancel": "Cancel",
   "page.meshes.detail.registerGatewayDialog.registering": "Registering gateway",
+
   "page.alarms.list.title": "Alarms",
   "page.alarms.list.panel.title": "Configured alarms",
   "page.alarms.list.panel.description": "Alarms can be configured per channel.",
@@ -238,6 +243,7 @@
   "page.alarms.list.columns.measurement": "Measurement",
   "page.alarms.list.columns.detectors": "Active detectors",
   "page.alarms.list.columns.actions": "Actions",
+
   "page.blueprints.list.title": "Blueprints",
   "page.blueprints.list.newBlueprint": "New blueprint",
   "page.blueprints.list.panel.title": "Recipes",
@@ -255,6 +261,7 @@
   "page.blueprints.list.createDialog.cancel": "Cancel",
   "page.blueprints.list.createDialog.saving": "Saving",
   "page.blueprints.list.createDialog.create": "Create blueprint",
+
   "feature.device.role.client": "Client",
   "feature.device.role.clientMute": "Client mute",
   "feature.device.role.clientHidden": "Client hidden",
@@ -269,6 +276,7 @@
   "feature.device.role.lostAndFound": "Lost and found",
   "feature.device.role.gateway": "Gateway",
   "feature.device.role.node": "Node",
+
   "feature.alarm.detectorsDialog.title": "Alarms — {label}",
   "feature.alarm.detectorsDialog.description": "Choose which detectors watch this channel and trigger an alarm.",
   "feature.alarm.detectorsDialog.independenceNote": "These run regardless of the device's own \"Enable absence detection\" setting, which only covers the device going silent.",
@@ -286,7 +294,9 @@
   "feature.alarm.detectorsDialog.saving": "Saving",
   "feature.alarm.detectorsDialog.save": "Save alarms",
   "feature.alarm.bellButton.label": "Alarms for {label}",
+  
   "common.themeToggle.label": "Toggle color theme",
+  
   "console.header.signOut": "Sign out",
   "console.header.closeMenu": "Close menu",
   "console.header.openMenu": "Open menu",
@@ -298,10 +308,12 @@
   "console.footer.blueprints": "Blueprints",
   "console.footer.website": "Website",
   "console.footer.contact": "Contact",
+  
   "page.home.hero.title": "The world's first <accent>storage and data solution for Meshtastic sensors</accent>",
   "page.home.hero.subtitle": "Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud.",
   "page.home.hero.signIn": "Sign in",
   "page.home.hero.howItWorks": "How it works",
+  
   "page.home.cta.title": "Contact us for deployment options",
   "page.home.cta.subtitle": "Feel free to check the demo, and reach out to us with any questions.",
   "page.home.cta.contactUs": "Contact us",
@@ -311,10 +323,12 @@
   "page.home.header.signIn": "Sign in",
   "page.home.header.signUp": "Sign up",
   "page.home.header.terms": "Terms",
+
   "page.home.footer.tagline": "Storage and a console for Meshtastic networks. Built by Sensical SCCL in Barcelona.",
   "page.home.footer.product": "Product",
   "page.home.footer.website": "Website",
   "page.home.footer.contact": "Contact",
+  
   "page.home.faq.heading": "Frequently asked <secondary>questions</secondary>",
   "page.home.faq.meshtastic.q": "What is Mesh Things?",
   "page.home.faq.meshtastic.a": "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQQT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
@@ -324,6 +338,7 @@
   "page.home.faq.globe.a": "Yes, we are working on releasing the platform and it's front-end application. Stay tuned for more news, and feel free to contact us for more information.",
   "page.home.faq.signIn.q": "Who can sign in?",
   "page.home.faq.signIn.a": "Anyone can register an owner account in the demo server. Storage of data in the demo server is not guaranteed yet. Feel free to contact us for more information and deployment options.",
+  
   "page.home.extras.heading": "Choose your deployment type. <secondary>For your sensors and your platform.</secondary>",
   "page.home.extras.storage.title": "Storage for the mesh",
   "page.home.extras.storage.body": "Timeseries storage for Meshtastic-based sensor networks.",
@@ -343,6 +358,7 @@
   "page.home.extras.noBanner.body": "Trigger alarms for sensor data in real time to any devices.",
   "page.home.extras.lora.title": "Access your data",
   "page.home.extras.lora.body": "REST API available as well as S3 bucket storage.",
+  
   "page.home.features.heading": "Control your mesh, your devices, and <secondary>the data they send.</secondary>",
   "page.home.features.inventory.title": "Real-time inventory",
   "page.home.features.inventory.description": "Verify that your devices are working properly.",
@@ -356,8 +372,10 @@
   "page.home.features.gateways.node": "Node",
   "page.home.features.gateways.blocked": "Blocked",
   "page.home.features.channels.title": "Channels and charts",
+  
   "page.home.features.channels.description": "Display data in different formats.",
   "page.home.features.channels.sample": "temperature · last 24 hours · avg",
+  
   "page.home.steps.heading": "Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>",
   "page.home.steps.registerMesh.title": "Register a mesh",
   "page.home.steps.registerMesh.description": "Create a mesh, add the PSKs and your gateways, and the rest of the nodes are auto-discovered.",
@@ -374,6 +392,7 @@
   "page.home.steps.channels.co2": "CO2",
   "page.home.steps.channels.battery": "battery",
   "page.home.proof.heading": "Live data in two clicks, <secondary>deploy as you need.</secondary>",
+  
   "page.home.proof.packets.title": "Data packets",
   "page.home.proof.packets.description": "Get data from your nodes in real time.",
   "page.home.proof.globe.title": "Visualize your mesh",
@@ -388,6 +407,7 @@
   "page.home.proof.privacy.radio.value": "Meshtastic compatible",
   "page.home.proof.privacy.packets.label": "Packets",
   "page.home.proof.privacy.packets.value": "Telemetry packets of all types",
+  
   "page.login.form.title": "Welcome back",
   "page.login.form.subtitle": "Sign in with the email on your owner account.",
   "page.login.form.email": "Email",
@@ -397,6 +417,7 @@
   "page.login.form.error": "Those credentials were not accepted. Check the email and password and try again.",
   "page.login.form.mockAccounts": "Mock accounts: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (all meshes), staff@sensical.test (read, no PSK). Password mesh-owner-12, except admin mesh-admin-12 and staff mesh-staff-12.",
   "page.login.form.noAccount": "Don't have an account? <link>Sign up</link>.",
+
   "page.signup.form.title": "Create your account",
   "page.signup.form.subtitle": "Register an owner account for Meshtastic Things.",
   "page.signup.form.name": "Name",
@@ -410,6 +431,7 @@
   "page.signup.form.creating": "Creating account",
   "page.signup.form.submit": "Create account",
   "page.signup.form.haveAccount": "Already have an account? <link>Sign in</link>.",
+
   "page.verifyPending.title": "Check your email",
   "page.verifyPending.body": "We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.",
   "page.verifyPending.signOut": "Not you? Sign out",
@@ -417,12 +439,14 @@
   "page.verifyPending.resend.sending": "Sending",
   "page.verifyPending.resend.countdown": "Resend available in {seconds}s",
   "page.verifyPending.resend.error": "We couldn't resend the email. Check back in a moment.",
+
   "page.verifyEmail.title": "Email verification",
   "page.verifyEmail.confirming": "Confirming your email address…",
   "page.verifyEmail.success": "Your email address has been verified. You can now sign in.",
   "page.verifyEmail.goToSignIn": "Go to sign in",
   "page.verifyEmail.failure": "This verification link is invalid or has expired.",
   "page.verifyEmail.requestNewLink": "Request a new link",
+
   "page.terms.title": "Terms and Conditions",
   "page.terms.lastUpdated": "Last updated 2026-09-19.",
   "page.terms.acceptance.heading": "Acceptance of these terms",
@@ -439,9 +463,11 @@
   "page.terms.changes.body": "We may update these terms as the product evolves. Continued use of the service after a change constitutes acceptance.",
   "page.terms.contact.heading": "Contact",
   "page.terms.contact.body": "Questions about these terms can be sent to Sensical SCCL through the contact page linked in the footer.",
+  
   "common.dataTable.previousPage": "Previous page",
   "common.dataTable.nextPage": "Next page",
   "common.dataTable.of": "of",
+  
   "common.filters.addFilter": "Add filter",
   "common.filters.advancedFilter": "Advanced filter",
   "common.filters.builderEmpty": "No filters yet",
@@ -515,6 +541,7 @@
   "common.filters.issueEmptyGroup": "This group has no conditions yet",
   "common.filters.issueSummary.one": "1 row needs attention",
   "common.filters.issueSummary.other": "{count} rows need attention",
+
   "common.filterOperators.contains": "contains",
   "common.filterOperators.notContains": "does not contain",
   "common.filterOperators.startsWith": "starts with",
