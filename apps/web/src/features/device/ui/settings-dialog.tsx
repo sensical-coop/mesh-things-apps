@@ -45,10 +45,12 @@ export function DeviceSettingsDialog({
   device,
   open,
   onClose,
+  onSaved,
 }: {
   device: DeviceRead;
   open: boolean;
   onClose: () => void;
+  onSaved?: () => void | Promise<void>;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -61,6 +63,7 @@ export function DeviceSettingsDialog({
       await queryClient.invalidateQueries({
         queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }),
       });
+      await onSaved?.();
       onClose();
     },
   });

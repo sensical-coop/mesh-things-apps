@@ -19,7 +19,7 @@ import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/co
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
-import { authRepository } from "@/features/auth/repository";
+import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
@@ -62,7 +62,7 @@ export function MeshesPage(): ReactElement {
   const filters = useSmartFilters({ specs });
   const meshes = useQuery(meshRepository.list({ query: listQuery(filters.queryString) }));
   const devices = useQuery(deviceRepository.list());
-  const me = useQuery({ ...authRepository.me(), retry: false });
+  const { isSuperuser, meId, ownerName } = useOwnerDirectory();
   const [open, setOpen] = useState(false);
   const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
   const counts = new Map<string, number>();
@@ -98,6 +98,24 @@ export function MeshesPage(): ReactElement {
         header: formatMessage({ id: "page.meshes.list.columns.devices", defaultMessage: "Devices" }),
         cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
       }),
+      ...(isSuperuser
+        ? [
+            col.accessor("owner_id", {
+              id: "owner",
+              header: formatMessage({ id: "page.meshes.list.columns.owner", defaultMessage: "Owner" }),
+              cell: (info) => (
+                <span className="text-text-secondary">
+                  {info.getValue() === meId
+                    ? formatMessage(
+                        { id: "common.ownerColumn.me", defaultMessage: "{name} (me)" },
+                        { name: ownerName(info.getValue()) },
+                      )
+                    : ownerName(info.getValue())}
+                </span>
+              ),
+            }),
+          ]
+        : []),
       col.display({
         id: "open",
         header: () => (
@@ -107,7 +125,7 @@ export function MeshesPage(): ReactElement {
         ),
         enableSorting: false,
         cell: ({ row }) => {
-          const canDelete = me.data?.is_superuser === true || row.original.owner_id === me.data?.id;
+          const canDelete = isSuperuser || row.original.owner_id === meId;
           return (
             <div className="flex justify-end gap-2">
               <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
@@ -132,7 +150,7 @@ export function MeshesPage(): ReactElement {
         },
       }),
     ],
-    [formatMessage, me.data?.id, me.data?.is_superuser],
+    [formatMessage, isSuperuser, meId, ownerName],
   );
 
   return (

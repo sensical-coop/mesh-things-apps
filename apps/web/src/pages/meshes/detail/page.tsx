@@ -1,5 +1,6 @@
+import type { DeviceRead } from "@mtt/contracts";
 import { zDevicesCreateData } from "@mtt/contracts/zod";
-import { Button } from "@mtt/ui/components/base/buttons/button";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -21,7 +22,6 @@ import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
 import { Input } from "@mtt/ui/components/ui/input";
@@ -31,8 +31,9 @@ import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
+import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { useFormatters } from "@/hooks/use-formatters";
-import { routes } from "@/router";
+import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
@@ -46,12 +47,14 @@ export function MeshDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen } = useFormatters();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
   const me = useQuery({ ...authRepository.me(), retry: false });
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [settingsDevice, setSettingsDevice] = useState<DeviceRead | null>(null);
   const canDelete =
     mesh.data != null && (me.data?.is_superuser === true || mesh.data.owner_id === me.data?.id);
 
@@ -77,7 +80,7 @@ export function MeshDetailPage(): ReactElement {
         </div>
         <div className="flex items-center gap-2">
           <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-            {formatMessage({ id: "page.meshes.detail.registerDevice", defaultMessage: "Register device" })}
+            {formatMessage({ id: "page.meshes.detail.registerGateway", defaultMessage: "Register gateway" })}
           </Button>
           {canDelete ? (
             <DropdownMenu>
@@ -231,6 +234,12 @@ export function MeshDetailPage(): ReactElement {
                           defaultMessage: "Last seen",
                         })}
                       </th>
+                      <th className="h-8 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                        {formatMessage({
+                          id: "page.meshes.detail.devices.columns.actions",
+                          defaultMessage: "Actions",
+                        })}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -260,6 +269,25 @@ export function MeshDetailPage(): ReactElement {
                         <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap tabular-nums text-text-secondary">
                           {formatLastSeen(device.last_seen)}
                         </td>
+                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
+                          <div className="flex justify-end gap-2">
+                            <ButtonLink
+                              href={href(routes.device, { deviceUuid: device.uuid })}
+                              size="xs"
+                              variant="secondary"
+                            >
+                              {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
+                            </ButtonLink>
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="secondary"
+                              onClick={() => setSettingsDevice(device)}
+                            >
+                              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -285,6 +313,16 @@ export function MeshDetailPage(): ReactElement {
         onClose={() => setDeleteOpen(false)}
         onDeleted={() => void navigate({ to: routes.meshes })}
       />
+      {settingsDevice ? (
+        <DeviceSettingsDialog
+          device={settingsDevice}
+          open
+          onClose={() => setSettingsDevice(null)}
+          onSaved={() =>
+            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: meshId } }) })
+          }
+        />
+      ) : null}
     </>
   );
 }
@@ -320,7 +358,7 @@ function RegisterDeviceDialog({
       body: {
         mesh_id: meshId,
         node_id: Number(form.get("node_id")),
-        is_gateway: form.get("is_gateway") === "on",
+        is_gateway: true,
         label: label === "" ? null : label,
       },
     });
@@ -340,9 +378,9 @@ function RegisterDeviceDialog({
   return (
     <Modal
       open={open}
-      title={formatMessage({ id: "page.meshes.detail.registerDialog.title", defaultMessage: "Register device" })}
+      title={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.title", defaultMessage: "Register gateway" })}
       description={formatMessage({
-        id: "page.meshes.detail.registerDialog.description",
+        id: "page.meshes.detail.registerGatewayDialog.description",
         defaultMessage: "A registered gateway authorizes its traffic to be decoded.",
       })}
       onClose={onClose}
@@ -351,46 +389,46 @@ function RegisterDeviceDialog({
         <FieldGroup>
           <FormField
             id="device-label"
-            label={formatMessage({ id: "page.meshes.detail.registerDialog.label", defaultMessage: "Label" })}
+            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" })}
             error={errors.label}
           >
             <Input id="device-label" name="label" autoComplete="off" />
           </FormField>
           <FormField
             id="device-node"
-            label={formatMessage({ id: "page.meshes.detail.registerDialog.nodeId", defaultMessage: "Node id" })}
+            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node id" })}
+            hint={formatMessage({
+              id: "page.meshes.detail.registerGatewayDialog.nodeIdHint",
+              defaultMessage:
+                "The decimal node number (i.e. the version without '!'). Example: 2130636288.",
+            })}
             error={errors.node_id}
           >
-            <FormNumber id="device-node" name="node_id" min={0} required />
+            <FormNumber id="device-node" name="node_id" min={0} max={4294967295} step={1} required />
           </FormField>
-          <FormCheckbox
-            id="device-gateway"
-            name="is_gateway"
-            label={formatMessage({
-              id: "page.meshes.detail.registerDialog.isGateway",
-              defaultMessage: "This device is a gateway",
-            })}
-          />
         </FieldGroup>
         {create.error ? (
           <StatusCopy>
             {formatMessage({
-              id: "page.meshes.detail.registerDialog.error",
+              id: "page.meshes.detail.registerGatewayDialog.error",
               defaultMessage: "Registration failed. Check node id and try again.",
             })}
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
           <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.meshes.detail.registerDialog.cancel", defaultMessage: "Cancel" })}
+            {formatMessage({ id: "page.meshes.detail.registerGatewayDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={create.isPending}>
             {create.isPending
               ? formatMessage({
-                  id: "page.meshes.detail.registerDialog.registering",
-                  defaultMessage: "Registering device",
+                  id: "page.meshes.detail.registerGatewayDialog.registering",
+                  defaultMessage: "Registering gateway",
                 })
-              : formatMessage({ id: "page.meshes.detail.registerDialog.title", defaultMessage: "Register device" })}
+              : formatMessage({
+                  id: "page.meshes.detail.registerGatewayDialog.title",
+                  defaultMessage: "Register gateway",
+                })}
           </Button>
         </div>
       </form>

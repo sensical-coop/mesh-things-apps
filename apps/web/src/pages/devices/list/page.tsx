@@ -21,6 +21,7 @@ import { listQuery } from "@mtt/ui/lib/filter-url";
 import { href, routes } from "@/router";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { SkeletonRows } from "@/components/skeleton-rows";
+import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
@@ -30,7 +31,7 @@ import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 
-type DeviceRow = DeviceRead & { meshLabel: string };
+type DeviceRow = DeviceRead & { meshLabel: string; ownerId: string };
 
 const col = legacyCreateColumnHelper<DeviceRow>();
 
@@ -120,12 +121,15 @@ export function DevicesPage(): ReactElement {
   const filters = useSmartFilters({ specs });
   const devices = useQuery(deviceRepository.list({ query: listQuery(filters.queryString) }));
   const meshNames = new Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)]));
+  const meshOwners = new Map((meshes.data ?? []).map((m) => [m.id, m.owner_id]));
+  const { isSuperuser, meId, ownerName } = useOwnerDirectory();
 
   const rows = useMemo<DeviceRow[]>(
     () =>
       (devices.data ?? []).map((device) => ({
         ...device,
         meshLabel: meshNames.get(device.mesh_id) ?? device.mesh_id,
+        ownerId: meshOwners.get(device.mesh_id) ?? "",
       })),
     [devices.data, meshes.data],
   );
@@ -162,6 +166,24 @@ export function DevicesPage(): ReactElement {
         header: formatMessage({ id: "page.devices.list.columns.radio", defaultMessage: "Radio" }),
         cell: (info) => <DeviceSilentBadge device={info.row.original} />,
       }),
+      ...(isSuperuser
+        ? [
+            col.accessor("ownerId", {
+              id: "owner",
+              header: formatMessage({ id: "page.devices.list.columns.owner", defaultMessage: "Owner" }),
+              cell: (info) => (
+                <span className="text-text-secondary">
+                  {info.getValue() === meId
+                    ? formatMessage(
+                        { id: "common.ownerColumn.me", defaultMessage: "{name} (me)" },
+                        { name: ownerName(info.getValue()) },
+                      )
+                    : ownerName(info.getValue())}
+                </span>
+              ),
+            }),
+          ]
+        : []),
       col.accessor("last_seen", {
         header: formatMessage({ id: "page.devices.list.columns.lastSeen", defaultMessage: "Last seen" }),
         cell: (info) => (
@@ -188,7 +210,7 @@ export function DevicesPage(): ReactElement {
         ),
       }),
     ],
-    [formatMessage, formatLastSeen],
+    [formatMessage, formatLastSeen, isSuperuser, meId, ownerName],
   );
 
   return (
