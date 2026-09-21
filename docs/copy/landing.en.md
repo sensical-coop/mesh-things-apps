@@ -4,12 +4,12 @@ Note: Keep the `##` id headings and the code fences exactly as they are, or leav
 
 ## page.home.hero.title
 ```text
-The world's first <accent>storage and data solution for Meshtastic</accent>
+The world's first <accent>storage and data solution for Meshtastic sensors</accent>
 ```
 
 ## page.home.hero.subtitle
 ```text
-Keep mesh inventory, gateway permission and channel history in one place, <highlight>without a spreadsheet export.</highlight>
+Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud.
 ```
 
 ## page.home.hero.signIn
@@ -19,22 +19,22 @@ Sign in
 
 ## page.home.hero.seeProduct
 ```text
-See the product
+How it works
 ```
 
 ## page.home.cta.title
 ```text
-Know the mesh by tonight.
+Contact us for deployment options
 ```
 
 ## page.home.cta.subtitle
 ```text
-Sign in to the console, create a mesh, and watch the first packets land.
+Feel free to check the demo, and reach out to us with any questions.
 ```
 
-## page.home.cta.signIn
+## page.home.cta.contactUs
 ```text
-Sign in
+Contact us
 ```
 
 ## page.home.header.howItWorks
@@ -89,37 +89,37 @@ Contact
 
 ## page.home.faq.heading
 ```text
-Fair questions, <secondary>straight answers.</secondary>
+Frequently asked <secondary>questions</secondary>
 ```
 
 ## page.home.faq.meshtastic.q
 ```text
-What is Meshtastic Things?
+What is Mesh Things?
 ```
 
 ## page.home.faq.meshtastic.a
 ```text
-A storage and data layer for Meshtastic networks: meshes, gateways, nodes and the telemetry they produce.
+A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQQT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.
 ```
 
-## page.home.faq.cookies.q
+## page.home.faq.federated.q
 ```text
-Do I need a cookie banner to use the product?
+Can data be shared across instances?
 ```
 
-## page.home.faq.cookies.a
+## page.home.faq.federated.a
 ```text
-This marketing page sets no analytics cookies. The console uses a session cookie after you sign in, so that the API knows who you are.
+Yes, you can keep data local or send it to a cloud server. 
 ```
 
 ## page.home.faq.globe.q
 ```text
-Is the globe live traffic?
+Is the platform open source?
 ```
 
 ## page.home.faq.globe.a
 ```text
-No. It is a sample mesh over the western Mediterranean, drawn so you can see hops between gateways and nodes.
+Yes, we are working on releasing the platform and it's front-end application. Stay tuned for more news, and feel free to contact us for more information. 
 ```
 
 ## page.home.faq.signIn.q
@@ -129,12 +129,12 @@ Who can sign in?
 
 ## page.home.faq.signIn.a
 ```text
-Anyone can register an owner account. A new account stays inactive until you confirm the email address you signed up with.
+Anyone can register an owner account in the demo server. Storage of data in the demo server is not guaranteed yet. Feel free to contact us for more information and deployment options.
 ```
 
 ## page.home.extras.heading
 ```text
-The radio stays LoRa. <secondary>The history lives here.</secondary>
+Choose your deployment type. <secondary>For your sensors and your platform.</secondary>
 ```
 
 ## page.home.extras.storage.title
@@ -144,112 +144,112 @@ Storage for the mesh
 
 ## page.home.extras.storage.body
 ```text
-Keep node identity, last seen, and readings next to the mesh they belong to.
+Timeseries storage for Meshtastic-based sensor networks.
 ```
 
 ## page.home.extras.gateways.title
 ```text
-Gateways you allow
+Choose the data publishers
 ```
 
 ## page.home.extras.gateways.body
 ```text
-A registered gateway is permission to decode. Disallow it and that traffic stops being stored.
+A registered gateway allows data ingestion. Disallow it and that traffic stops being stored.
 ```
 
 ## page.home.extras.channels.title
 ```text
-Channels and charts
+Visualize your data
 ```
 
 ## page.home.extras.channels.body
 ```text
-Latest values as cards, then a series when you pick a channel, a window and an aggregation.
+Check latest values and historic readings.
 ```
 
 ## page.home.extras.operators.title
 ```text
-Built for operators
+Built for everyone
 ```
 
 ## page.home.extras.operators.body
 ```text
-One owner login. Meshes, devices and blueprints in a single console.
+Deployment is simple, and data is easily accessible.
 ```
 
 ## page.home.extras.identity.title
 ```text
-Node identity
+Control your nodes
 ```
 
 ## page.home.extras.identity.body
 ```text
-Short name, role and last packet, without turning the radio into a user profile.
+Enable or disable data ingestion per node.
 ```
 
 ## page.home.extras.position.title
 ```text
-Position when you want it
+Location as an option
 ```
 
 ## page.home.extras.position.body
 ```text
-Store location packets with the device they came from. The globe on this page is a sample, not live traffic.
+Store location packets directly or choose to keep location private.
 ```
 
 ## page.home.extras.blueprints.title
 ```text
-Blueprints
+Data processing
 ```
 
 ## page.home.extras.blueprints.body
 ```text
-Attach post-processing to a device when the raw channel is not the number you read.
+Attach post-processing to a device when the raw channel needs algorithms. 
 ```
 
 ## page.home.extras.noBanner.title
 ```text
-No banner on this page
+Trigger alarms
 ```
 
 ## page.home.extras.noBanner.body
 ```text
-The marketing page sets no analytics cookies. The console uses a session cookie after you sign in.
+Trigger alarms for sensor data in real time to any devices.
 ```
 
 ## page.home.extras.lora.title
 ```text
-The radio stays LoRa
+Access your data
 ```
 
 ## page.home.extras.lora.body
 ```text
-This is storage and a console. The mesh keeps running the way you already run it.
+REST API available as well as S3 bucket storage.
 ```
 
 ## page.home.features.heading
 ```text
-Know the mesh, the gateways, <secondary>and the channels they carry.</secondary>
+Control your mesh, your devices, and <secondary>the data they send.</secondary>
 ```
 
 ## page.home.features.inventory.title
 ```text
-Realtime inventory
+Real-time inventory
 ```
 
 ## page.home.features.inventory.description
 ```text
-Last seen, role and readings next to the mesh they belong to.
+Verify that your devices are working properly.
 ```
 
 ## page.home.features.gateways.title
 ```text
-Gateways you allow
+Control your data
 ```
 
 ## page.home.features.gateways.description
 ```text
-A registered gateway is permission to decode.
+Add uplinks and control what get stored.
 ```
 
 ## page.home.features.gateways.barcelona
@@ -294,7 +294,7 @@ Channels and charts
 
 ## page.home.features.channels.description
 ```text
-Pick a channel, a window and an aggregation.
+Display data in different formats.
 ```
 
 ## page.home.features.channels.sample
@@ -304,7 +304,7 @@ temperature · last 24 hours · avg
 
 ## page.home.steps.heading
 ```text
-Three steps from a mesh to a chart, <secondary>and the first one is a name.</secondary>
+Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>
 ```
 
 ## page.home.steps.registerMesh.title
@@ -314,7 +314,12 @@ Register a mesh
 
 ## page.home.steps.registerMesh.description
 ```text
-Create a mesh, keep the PSK on the gateways, and the rest of the nodes join that radio network.
+Create a mesh, add the PSKs and your gateways, and the rest of the nodes are auto-discovered.
+```
+
+## page.home.steps.registerMesh.create
+```text
+$ create mesh west-med
 ```
 
 ## page.home.steps.registerMesh.created
@@ -324,27 +329,31 @@ created west-med
 
 ## page.home.steps.registerMesh.pskHint
 ```text
-psk stays on the gateway
+$ create psk and gateway
+```
+## page.home.steps.registerMesh.pskCreated
+```text
+created psk and gateway
 ```
 
 ## page.home.steps.packetsLand.title
 ```text
-Packets land in storage
+Start receiving data
 ```
 
 ## page.home.steps.packetsLand.description
 ```text
-Allowed gateways decode traffic. Telemetry, position and nodeinfo are stored as they arrive.
+Your gateways decode the traffic. Telemetry, position and nodeinfo packets are stored as they arrive.
 ```
 
 ## page.home.steps.readBack.title
 ```text
-Read it back
+Access your data and act on it
 ```
 
 ## page.home.steps.readBack.description
 ```text
-Open a mesh, a device, or a channel series. The inventory is the live picture of the radio.
+Access your data in real time, process it, and enable alarms if needed.
 ```
 
 ## page.home.steps.channels.temperature
@@ -357,64 +366,68 @@ temperature
 humidity
 ```
 
-## page.home.steps.channels.position
+## page.home.steps.channels.co2
 ```text
-position
+CO2
 ```
 
 ## page.home.steps.channels.battery
 ```text
 battery
 ```
+## page.home.proof.heading
+```text
+Live data with no hassle, <secondary> get notifications when you need them.</secondary>
+```
 
 ## page.home.proof.packets.title
 ```text
-Packets
+Data packets
 ```
 
 ## page.home.proof.packets.description
 ```text
-Telemetry as it lands, with nothing to refresh.
+Get data from your nodes in real time.
 ```
 
 ## page.home.proof.globe.title
 ```text
-Live globe
+Visualize your mesh
 ```
 
 ## page.home.proof.globe.description
 ```text
-Sample mesh over the western Mediterranean.
+Map your nodes automatically.
 ```
 
 ## page.home.proof.lora.title
 ```text
-The radio stays LoRa
+Deploy locally or on the cloud
 ```
 
 ## page.home.proof.lora.description
 ```text
-Nowhere to click. Nothing to accept.
+Easily deployable on a Raspberry Pi, with forwarding options.
 ```
 
 ## page.home.proof.privacy.page.label
 ```text
-This page
+Raspberry Pi
 ```
 
 ## page.home.proof.privacy.page.value
 ```text
-No cookies
+Lite version
 ```
 
 ## page.home.proof.privacy.console.label
 ```text
-Console
+Cloud solutions
 ```
 
 ## page.home.proof.privacy.console.value
 ```text
-Session after sign-in
+All features enabled
 ```
 
 ## page.home.proof.privacy.radio.label
@@ -424,7 +437,7 @@ Radio
 
 ## page.home.proof.privacy.radio.value
 ```text
-Stays LoRa
+Meshtastic compatible
 ```
 
 ## page.home.proof.privacy.packets.label
@@ -434,5 +447,5 @@ Packets
 
 ## page.home.proof.privacy.packets.value
 ```text
-Stored here
+Telemetry packets of all types
 ```

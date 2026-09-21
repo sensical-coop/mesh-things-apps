@@ -27,7 +27,7 @@ export function LandingCta(): ReactElement {
         </LandingReveal>
         <LandingReveal className="mt-8">
           <ButtonLink href={routes.login} size="medium">
-            {formatMessage({ id: "page.home.cta.signIn", defaultMessage: "Sign in" })}
+            {formatMessage({ id: "page.home.cta.contactUs", defaultMessage: "Sign in" })}
           </ButtonLink>
         </LandingReveal>
       </div>

@@ -32,7 +32,7 @@ Conoce tu malla esta misma noche.
 Inicia sesión en la consola, crea una malla y observa cómo llegan los primeros paquetes.
 ```
 
-## page.home.cta.signIn
+## page.home.cta.contactUs
 ```text
 Iniciar sesión
 ```

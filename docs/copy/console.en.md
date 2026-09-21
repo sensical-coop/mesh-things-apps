@@ -19,7 +19,7 @@ Open menu
 
 ## console.footer.tagline
 ```text
-Mesh telemetry for operators. Built by Sensical SCCL in Barcelona.
+Storage and management interface for Meshtastic-based sensor networks. Built by Sensical SCCL in Barcelona.
 ```
 
 ## console.footer.product
