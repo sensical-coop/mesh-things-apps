@@ -15,7 +15,7 @@ export function LandingHero(): ReactElement {
           <h1 className="text-balance text-display-3-medium tracking-tight text-text-primary sm:text-display-2-medium">
             <FormattedMessage
               id="page.home.hero.title"
-              defaultMessage="The world's first <accent>storage and data solution for Meshtastic</accent>"
+              defaultMessage="The world's first <accent>storage and data solution for Meshtastic sensors</accent>"
               values={richTextValues}
             />
           </h1>
@@ -24,7 +24,7 @@ export function LandingHero(): ReactElement {
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-title-3-regular text-text-secondary sm:text-title-1-regular">
             <FormattedMessage
               id="page.home.hero.subtitle"
-              defaultMessage="Keep mesh inventory, gateway permission and channel history in one place, <highlight>without a spreadsheet export.</highlight>"
+              defaultMessage="Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud."
               values={richTextValues}
             />
           </p>
@@ -32,8 +32,8 @@ export function LandingHero(): ReactElement {
             <ButtonLink href={routes.login} size="medium">
               {formatMessage({ id: "page.home.hero.signIn", defaultMessage: "Sign in" })}
             </ButtonLink>
-            <ButtonLink href={routes.login} variant="secondary" size="medium">
-              {formatMessage({ id: "page.home.hero.seeProduct", defaultMessage: "See the product" })}
+            <ButtonLink href="#proof" variant="secondary" size="medium">
+              {formatMessage({ id: "page.home.hero.howItWorks", defaultMessage: "How it works" })}
             </ButtonLink>
           </div>
         </LandingReveal>

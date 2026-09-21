@@ -32,13 +32,13 @@ export function LandingFooter(): ReactElement {
             <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">
               {formatMessage({ id: "page.home.footer.product", defaultMessage: "Product" })}
             </p>
-            <a href="#why" className={linkClass}>
+            <a href="/#why" className={linkClass}>
               {formatMessage({ id: "page.home.header.howItWorks", defaultMessage: "How it works" })}
             </a>
-            <a href="#features" className={linkClass}>
+            <a href="/#features" className={linkClass}>
               {formatMessage({ id: "page.home.header.features", defaultMessage: "Features" })}
             </a>
-            <a href="#faq" className={linkClass}>
+            <a href="/#faq" className={linkClass}>
               {formatMessage({ id: "page.home.header.faq", defaultMessage: "FAQ" })}
             </a>
             <Link to={routes.login} className={linkClass}>
