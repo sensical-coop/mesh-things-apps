@@ -1,4 +1,4 @@
-# UI stories — Meshtastic Things (dashboard)
+# UI stories — Mesh Things (dashboard)
 
 Historias para **implementar interfaces**. El contrato HTTP es `docs/openapi.yaml`. Fase 1 no incluye cuenta, login ni API keys.
 
@@ -14,7 +14,7 @@ Shell autenticado bajo `/console`: cookie Better Auth contra `api-mock`. `/login
 
 ### Mallas
 
-**US-10 · Ver mis mallas**  
+**US-10 · Ver mis mallas**
 Como owner, veo mis mallas (etiqueta, identificador, recuento de devices) para elegir dónde trabajar.
 
 - **Ruta:** `/console/meshes`
@@ -22,7 +22,7 @@ Como owner, veo mis mallas (etiqueta, identificador, recuento de devices) para e
 - **Secretos:** no mostrar `psk_b64` en la lista
 - **Contrato:** `GET /meshes` → schema de respuesta generado
 
-**US-11 · Crear una malla**  
+**US-11 · Crear una malla**
 Como owner, creo una malla con etiqueta y PSK para que los gateways se unan a esa red.
 
 - **Ruta:** diálogo o `/console/meshes/new` desde la lista
@@ -31,7 +31,7 @@ Como owner, creo una malla con etiqueta y PSK para que los gateways se unan a es
 - **Tras éxito:** ir al detalle de la malla creada
 - **Contrato:** `POST /meshes`
 
-**US-12 · Detalle de malla**  
+**US-12 · Detalle de malla**
 Como owner, abro una malla y veo nodos y gateways juntos.
 
 - **Ruta:** `/console/meshes/$meshId`
@@ -42,7 +42,7 @@ Como owner, abro una malla y veo nodos y gateways juntos.
 
 ### Dispositivos
 
-**US-20 · Registrar nodo o gateway**  
+**US-20 · Registrar nodo o gateway**
 Como owner, registro `node_id` + `mesh_id` y marco si es gateway.
 
 - **Ruta:** acción desde el detalle de malla
@@ -51,14 +51,14 @@ Como owner, registro `node_id` + `mesh_id` y marco si es gateway.
 - **Copy:** un gateway registrado autoriza que se decodifique su tráfico
 - **Contrato:** `POST /devices`
 
-**US-21 · Inventario filtrable**  
+**US-21 · Inventario filtrable**
 Como owner, listo todos mis devices y filtro por malla, gateway, permitido, con/sin blueprint.
 
 - **Ruta:** `/console/devices`
 - **Tabla:** label/name, mesh, gateway, allowed, last_seen → click a ficha
 - **Contrato:** `GET /devices` (`mesh_id`, `is_gateway`, `is_allowed`, `has_postprocessing`)
 
-**US-22 · Ficha de dispositivo**  
+**US-22 · Ficha de dispositivo**
 Como owner, veo identidad, rol de gateway, `last_seen`, coords y si ubicación/nodeinfo están overridden.
 
 - **Ruta:** `/console/devices/$deviceUuid`
@@ -68,14 +68,14 @@ Como owner, veo identidad, rol de gateway, `last_seen`, coords y si ubicación/n
 
 ### Lecturas
 
-**US-30 · Últimos valores**  
+**US-30 · Últimos valores**
 Como owner, en la ficha veo KPIs de todos los canales (valor, unidad, `quantity_kind`, hora).
 
 - **UI:** cards, no chart
 - **Vacío:** “Sin lecturas en el lookback”
 - **Contrato:** `GET /readings/devices/{device_uuid}/latest` · parsear con Zod de respuesta
 
-**US-31 · Serie de un canal**  
+**US-31 · Serie de un canal**
 Como owner, elijo canal, rango y agregación y veo la serie.
 
 - **Defaults:** canal sugerido si existe `environmentmetrics.temperature`; si no, el primer canal de latest; `start=-24h`; `window=1h`; `agg=mean`

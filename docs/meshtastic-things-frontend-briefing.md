@@ -1,6 +1,6 @@
-# Meshtastic Things — briefing frontend
+# Mesh Things — briefing frontend
 
-Documento de trabajo para el dashboard web sobre **Meshtastic Things API 1.0.0** (OpenAPI 3.0.3).
+Documento de trabajo para el dashboard web sobre **Mesh Things API 1.0.0** (OpenAPI 3.0.3).
 
 Contrato: `Meshtastic-Things-API-3.yaml` (~51 operaciones). No reescribir tipos a mano.
 

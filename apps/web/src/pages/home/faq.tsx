@@ -8,7 +8,7 @@ const faqs = [
   {
     id: "meshtastic",
     qId: "page.home.faq.meshtastic.q",
-    qDefault: "What is Meshtastic Things?",
+    qDefault: "What is Mesh Things?",
     aId: "page.home.faq.meshtastic.a",
     aDefault:
       "A storage and data layer for Meshtastic networks: meshes, gateways, nodes and the telemetry they produce.",

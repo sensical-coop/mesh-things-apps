@@ -1,6 +1,6 @@
-# Arquitectura — Meshtastic Things apps
+# Arquitectura — Mesh Things apps
 
-Monorepo (Turborepo + pnpm) para un dashboard Vite sobre **Meshtastic Things API 1.0.0**. El YAML es la fuente de verdad del hilo HTTP. La lógica de negocio no vive en React.
+Monorepo (Turborepo + pnpm) para un dashboard Vite sobre **Mesh Things API 1.0.0**. El YAML es la fuente de verdad del hilo HTTP. La lógica de negocio no vive en React.
 
 Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mock comparten schemas Zod **generados** por Hey API.
 
