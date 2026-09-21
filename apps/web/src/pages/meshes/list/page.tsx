@@ -8,17 +8,18 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import { RiAddLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
+import { authRepository } from "@/features/auth/repository";
 import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
@@ -31,6 +32,7 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
+import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 
 type MeshRow = Mesh & { devices: number };
 
@@ -60,7 +62,9 @@ export function MeshesPage(): ReactElement {
   const filters = useSmartFilters({ specs });
   const meshes = useQuery(meshRepository.list({ query: listQuery(filters.queryString) }));
   const devices = useQuery(deviceRepository.list());
+  const me = useQuery({ ...authRepository.me(), retry: false });
   const [open, setOpen] = useState(false);
+  const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
   const counts = new Map<string, number>();
   for (const device of devices.data ?? []) {
     counts.set(device.mesh_id, (counts.get(device.mesh_id) ?? 0) + 1);
@@ -76,7 +80,15 @@ export function MeshesPage(): ReactElement {
       col.accessor((row) => meshTitle(row), {
         id: "label",
         header: formatMessage({ id: "page.meshes.list.columns.mesh", defaultMessage: "Mesh" }),
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <Link
+            to={routes.mesh}
+            params={{ meshId: info.row.original.id }}
+            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            {info.getValue()}
+          </Link>
+        ),
       }),
       col.accessor("channel_id", {
         header: formatMessage({ id: "page.meshes.list.columns.channel", defaultMessage: "Channel" }),
@@ -94,16 +106,33 @@ export function MeshesPage(): ReactElement {
           </span>
         ),
         enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex justify-end">
-            <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
-              {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
-            </ButtonLink>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const canDelete = me.data?.is_superuser === true || row.original.owner_id === me.data?.id;
+          return (
+            <div className="flex justify-end gap-2">
+              <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
+                {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
+              </ButtonLink>
+              {canDelete ? (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="danger"
+                  iconOnly
+                  leadingIcon={RiDeleteBinLine}
+                  aria-label={formatMessage({
+                    id: "page.meshes.list.delete",
+                    defaultMessage: "Delete mesh",
+                  })}
+                  onClick={() => setMeshToDelete(row.original)}
+                />
+              ) : null}
+            </div>
+          );
+        },
       }),
     ],
-    [formatMessage],
+    [formatMessage, me.data?.id, me.data?.is_superuser],
   );
 
   return (
@@ -172,6 +201,11 @@ export function MeshesPage(): ReactElement {
         </Frame>
       </div>
       <CreateMeshDialog open={open} onClose={() => setOpen(false)} />
+      <DeleteMeshDialog
+        key={meshToDelete?.id ?? "none"}
+        mesh={meshToDelete}
+        onClose={() => setMeshToDelete(null)}
+      />
     </>
   );
 }

@@ -2,7 +2,6 @@ import type { Device } from "@mtt/domain/device/Device";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { LatestReading } from "@mtt/domain/readings/Readings";
-import { NIL_BLUEPRINT_ID } from "@mtt/domain/shared/blueprint";
 import { flagsForRole, type Actor } from "@mtt/domain/authz/authz";
 
 export function meshJson(mesh: Mesh, includePsk: boolean) {
@@ -26,6 +25,7 @@ export function deviceJson(device: Device) {
     label: device.label,
     is_gateway: device.isGateway,
     is_allowed: device.isAllowed,
+    alarms_enabled: device.alarmsEnabled,
     admin_keys_b64: device.adminKeysB64,
     latitude: device.latitude,
     longitude: device.longitude,
@@ -35,7 +35,7 @@ export function deviceJson(device: Device) {
     hardware_type: device.hardwareType,
     role: device.role,
     nodeinfo_overridden: device.nodeinfoOverridden,
-    postprocessing_blueprint_id: device.postprocessingBlueprintId ?? NIL_BLUEPRINT_ID,
+    postprocessing_blueprint_id: device.postprocessingBlueprintId,
     reading_interval_seconds: device.readingIntervalSeconds,
     publish_interval_seconds: device.publishIntervalSeconds,
     last_seen: device.lastSeen,

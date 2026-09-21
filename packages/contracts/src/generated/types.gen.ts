@@ -90,6 +90,7 @@ export type DeviceRead = {
     readonly label: string | null;
     readonly is_gateway: boolean;
     readonly is_allowed: boolean;
+    readonly alarms_enabled: boolean;
     readonly admin_keys_b64?: Array<string>;
     readonly latitude: number | null;
     readonly longitude: number | null;
@@ -124,6 +125,8 @@ export type DeviceTelemetryVariant = {
 export type DeviceUpdate = {
     label?: string | null;
     is_allowed?: boolean;
+    is_gateway?: boolean;
+    alarms_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
@@ -484,6 +487,8 @@ export type DeviceUpdateWritable = {
      */
     admin_keys_b64?: Array<string>;
     is_allowed?: boolean;
+    is_gateway?: boolean;
+    alarms_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;

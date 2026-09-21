@@ -22,6 +22,7 @@ export class MemoryDevices implements IDeviceRepository {
       label: input.label ?? null,
       isGateway: input.isGateway,
       isAllowed: true,
+      alarmsEnabled: true,
       adminKeysB64: [],
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
@@ -46,6 +47,7 @@ export class MemoryDevices implements IDeviceRepository {
     uuid: string,
     patch: Partial<DeviceCreate> & {
       isAllowed?: boolean;
+      alarmsEnabled?: boolean;
       postprocessingBlueprintId?: string | null;
       readingIntervalSeconds?: number | null;
       publishIntervalSeconds?: number | null;
@@ -60,6 +62,8 @@ export class MemoryDevices implements IDeviceRepository {
     if (patch.latitude !== undefined) device.latitude = patch.latitude ?? null;
     if (patch.longitude !== undefined) device.longitude = patch.longitude ?? null;
     if (patch.isAllowed !== undefined) device.isAllowed = patch.isAllowed;
+    if (patch.isGateway !== undefined) device.isGateway = patch.isGateway;
+    if (patch.alarmsEnabled !== undefined) device.alarmsEnabled = patch.alarmsEnabled;
     if (patch.postprocessingBlueprintId !== undefined) {
       device.postprocessingBlueprintId = patch.postprocessingBlueprintId;
     }
@@ -72,5 +76,9 @@ export class MemoryDevices implements IDeviceRepository {
     if (patch.locationOverridden !== undefined) device.locationOverridden = patch.locationOverridden;
     device.updatedAt = nowIso();
     return device;
+  }
+
+  async delete(uuid: string): Promise<boolean> {
+    return this.items.delete(uuid);
   }
 }
