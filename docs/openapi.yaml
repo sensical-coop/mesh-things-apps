@@ -1043,7 +1043,7 @@ paths:
               $ref: '#/components/schemas/OwnerResetPassword'
         required: true
       security:
-      - {}
+      - resetTokenBearerAuth: []
       responses:
         '200':
           content:
@@ -2688,14 +2688,11 @@ components:
       type: object
       description: POST /owners/reset-password input
       properties:
-        token:
-          type: string
         new_password:
           type: string
           writeOnly: true
       required:
       - new_password
-      - token
     OwnerUpdate:
       type: object
       properties:
@@ -2985,6 +2982,10 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API key
+    resetTokenBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Password reset token
     cookieAuth:
       type: apiKey
       in: cookie

@@ -2,6 +2,8 @@ export const routes = Object.freeze({
   home: "/",
   login: "/login",
   signup: "/signup",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   verifyPending: "/verify-pending",
   verifyEmail: "/verify-email",
   terms: "/terms",

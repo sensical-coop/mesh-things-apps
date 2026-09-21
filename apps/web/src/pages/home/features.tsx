@@ -58,7 +58,7 @@ export function LandingFeatures(): ReactElement {
         <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
           <FormattedMessage
             id="page.home.features.heading"
-            defaultMessage="Know the mesh, the gateways, <secondary>and the channels they carry.</secondary>"
+            defaultMessage="Control your mesh, your devices, and <secondary>the data they send.</secondary>"
             values={richTextValues}
           />
         </h2>
@@ -70,12 +70,12 @@ export function LandingFeatures(): ReactElement {
               <FrameHeader>
                 <FrameTitle>
                   <RiListCheck3 />
-                  {formatMessage({ id: "page.home.features.inventory.title", defaultMessage: "Realtime inventory" })}
+                  {formatMessage({ id: "page.home.features.inventory.title", defaultMessage: "Real-time inventory" })}
                 </FrameTitle>
                 <FrameDescription>
                   {formatMessage({
                     id: "page.home.features.inventory.description",
-                    defaultMessage: "Last seen, role and readings next to the mesh they belong to.",
+                    defaultMessage: "Verify that your devices are working properly.",
                   })}
                 </FrameDescription>
               </FrameHeader>
@@ -89,12 +89,12 @@ export function LandingFeatures(): ReactElement {
               <FrameHeader>
                 <FrameTitle>
                   <RiRouterLine />
-                  {formatMessage({ id: "page.home.features.gateways.title", defaultMessage: "Gateways you allow" })}
+                  {formatMessage({ id: "page.home.features.gateways.title", defaultMessage: "Control your data" })}
                 </FrameTitle>
                 <FrameDescription>
                   {formatMessage({
                     id: "page.home.features.gateways.description",
-                    defaultMessage: "A registered gateway is permission to decode.",
+                    defaultMessage: "Add uplinks and control what get stored.",
                   })}
                 </FrameDescription>
               </FrameHeader>
@@ -124,7 +124,7 @@ export function LandingFeatures(): ReactElement {
                 <FrameDescription>
                   {formatMessage({
                     id: "page.home.features.channels.description",
-                    defaultMessage: "Pick a channel, a window and an aggregation.",
+                    defaultMessage: "Display data in different formats.",
                   })}
                 </FrameDescription>
               </FrameHeader>

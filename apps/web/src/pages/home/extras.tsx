@@ -9,64 +9,63 @@ const extras = [
     titleId: "page.home.extras.storage.title",
     titleDefault: "Storage for the mesh",
     bodyId: "page.home.extras.storage.body",
-    bodyDefault: "Keep node identity, last seen, and readings next to the mesh they belong to.",
+    bodyDefault: "Timeseries storage for Meshtastic-based sensor networks.",
   },
   {
     id: "gateways",
     titleId: "page.home.extras.gateways.title",
-    titleDefault: "Gateways you allow",
+    titleDefault: "Choose the data publishers",
     bodyId: "page.home.extras.gateways.body",
-    bodyDefault: "A registered gateway is permission to decode. Disallow it and that traffic stops being stored.",
+    bodyDefault: "A registered gateway allows data ingestion. Disallow it and that traffic stops being stored.",
   },
   {
     id: "channels",
     titleId: "page.home.extras.channels.title",
-    titleDefault: "Channels and charts",
+    titleDefault: "Visualize your data",
     bodyId: "page.home.extras.channels.body",
-    bodyDefault: "Latest values as cards, then a series when you pick a channel, a window and an aggregation.",
+    bodyDefault: "Check latest values and historic readings.",
   },
   {
     id: "operators",
     titleId: "page.home.extras.operators.title",
-    titleDefault: "Built for operators",
+    titleDefault: "Built for everyone",
     bodyId: "page.home.extras.operators.body",
-    bodyDefault: "One owner login. Meshes, devices and blueprints in a single console.",
+    bodyDefault: "Deployment is simple, and data is easily accessible.",
   },
   {
     id: "identity",
     titleId: "page.home.extras.identity.title",
-    titleDefault: "Node identity",
+    titleDefault: "Control your nodes",
     bodyId: "page.home.extras.identity.body",
-    bodyDefault: "Short name, role and last packet, without turning the radio into a user profile.",
+    bodyDefault: "Enable or disable data ingestion per node.",
   },
   {
     id: "position",
     titleId: "page.home.extras.position.title",
-    titleDefault: "Position when you want it",
+    titleDefault: "Location as an option",
     bodyId: "page.home.extras.position.body",
-    bodyDefault:
-      "Store location packets with the device they came from. The globe on this page is a sample, not live traffic.",
+    bodyDefault: "Store location packets directly or choose to keep location private.",
   },
   {
     id: "blueprints",
     titleId: "page.home.extras.blueprints.title",
-    titleDefault: "Blueprints",
+    titleDefault: "Data processing",
     bodyId: "page.home.extras.blueprints.body",
-    bodyDefault: "Attach post-processing to a device when the raw channel is not the number you read.",
+    bodyDefault: "Attach post-processing to a device when the raw channel needs algorithms.",
   },
   {
     id: "noBanner",
     titleId: "page.home.extras.noBanner.title",
-    titleDefault: "No banner on this page",
+    titleDefault: "Trigger alarms",
     bodyId: "page.home.extras.noBanner.body",
-    bodyDefault: "The marketing page sets no analytics cookies. The console uses a session cookie after you sign in.",
+    bodyDefault: "Trigger alarms for sensor data in real time to any devices.",
   },
   {
     id: "lora",
     titleId: "page.home.extras.lora.title",
-    titleDefault: "The radio stays LoRa",
+    titleDefault: "Access your data",
     bodyId: "page.home.extras.lora.body",
-    bodyDefault: "This is storage and a console. The mesh keeps running the way you already run it.",
+    bodyDefault: "REST API available as well as S3 bucket storage.",
   },
 ] as const;
 
@@ -78,7 +77,7 @@ export function LandingExtras(): ReactElement {
         <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
           <FormattedMessage
             id="page.home.extras.heading"
-            defaultMessage="The radio stays LoRa. <secondary>The history lives here.</secondary>"
+            defaultMessage="Choose your deployment type. <secondary>For your sensors and your platform.</secondary>"
             values={richTextValues}
           />
         </h2>

@@ -7,6 +7,8 @@ import {
   zOwnersCreateData,
   zOwnersLoginCreateData,
   zOwnersMeUpdateData,
+  zOwnersRequestPasswordResetCreateData,
+  zOwnersResetPasswordCreateData,
   zPostprocessingBlueprintsCreateData,
   zTelemetryVariantsMeasurementsUpdateData,
 } from "@mtt/contracts/zod";
@@ -37,7 +39,7 @@ import {
   VARIANT_LINK_ID,
   type Store,
 } from "./store";
-import { createMockAuth, seedStore, stampLogin, type MockAuth } from "./auth";
+import { createMockAuth, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
 import {
   blueprintJson,
   deviceJson,
@@ -53,6 +55,7 @@ import {
 type Env = { Variables: { actor: Actor } };
 
 const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with apps/web resend-cooldown.ts
+const PASSWORD_RESET_TTL_HOURS = 1; // keep in sync with meshtastic-things REGISTRY__PASSWORD_RESET_TTL_HOURS
 const INACTIVE_ALLOWED_PATHS = new Set(["/owners/me", "/owners/me/resend-verification"]);
 const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
 
@@ -92,6 +95,8 @@ function openPath(method: string, path: string): boolean {
     path === "/health" ||
     path.startsWith("/api/auth") ||
     (method === "POST" && path === "/owners") ||
+    (method === "POST" && path === "/owners/request-password-reset") ||
+    (method === "POST" && path === "/owners/reset-password") ||
     (method === "GET" && path === "/owners/verify-email")
   );
 }
@@ -231,6 +236,45 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     } catch {
       return c.json({ detail: "Invalid credentials" }, 400);
     }
+  });
+
+  app.post("/owners/request-password-reset", async (c) => {
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersRequestPasswordResetCreateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const actor = [...db.actors.values()].find((candidate) => candidate.email === parsed.data.body.email);
+    if (actor) {
+      for (const [existingToken, entry] of db.passwordResetTokens) {
+        if (entry.ownerId === actor.id) db.passwordResetTokens.delete(existingToken);
+      }
+      const token = newId();
+      db.passwordResetTokens.set(token, { ownerId: actor.id, sentAt: nowIso() });
+      console.info(`[mock] password reset link for ${actor.email}: /reset-password?token=${token}`);
+    }
+    return c.json({ detail: "If an account exists for that email, a reset link has been sent." });
+  });
+
+  app.post("/owners/reset-password", async (c) => {
+    const authHeader = c.req.header("Authorization") ?? "";
+    const [scheme, token] = authHeader.split(" ");
+    if (scheme?.toLowerCase() !== "bearer" || !token) {
+      return c.json({ detail: "Authentication credentials were not provided." }, 401);
+    }
+    const entry = db.passwordResetTokens.get(token);
+    const expired =
+      !entry || Date.now() > Date.parse(entry.sentAt) + PASSWORD_RESET_TTL_HOURS * 60 * 60 * 1000;
+    if (expired) {
+      return c.json(
+        { detail: "Invalid or expired reset link - request a new one via POST /owners/request-password-reset" },
+        401,
+      );
+    }
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersResetPasswordCreateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    await setOwnerPassword(auth, entry.ownerId, parsed.data.body.new_password);
+    db.passwordResetTokens.delete(token);
+    return c.json({ detail: "Password reset" });
   });
 
   app.post("/owners", async (c) => {

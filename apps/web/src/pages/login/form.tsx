@@ -93,6 +93,12 @@ export function LoginForm(): ReactElement {
               />
             </FormField>
           </FieldGroup>
+          <Link
+            to={routes.forgotPassword}
+            className="self-end text-caption-1-regular text-text-secondary underline underline-offset-2"
+          >
+            {formatMessage({ id: "page.login.form.forgotPassword", defaultMessage: "Forgot password?" })}
+          </Link>
           {error ? <StatusCopy>{error}</StatusCopy> : null}
           <Button type="submit" size="small" disabled={login.isPending} className="mt-1">
             {login.isPending

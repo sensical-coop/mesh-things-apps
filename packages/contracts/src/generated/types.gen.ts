@@ -374,7 +374,7 @@ export type OwnerRequestPasswordReset = {
  * POST /owners/reset-password input
  */
 export type OwnerResetPassword = {
-    token: string;
+    new_password: string;
 };
 
 export type OwnerUpdate = {
@@ -593,14 +593,6 @@ export type OwnerCreateWritable = {
 export type OwnerLoginWritable = {
     email: string;
     password: string;
-};
-
-/**
- * POST /owners/reset-password input
- */
-export type OwnerResetPasswordWritable = {
-    token: string;
-    new_password: string;
 };
 
 /**
@@ -1219,7 +1211,7 @@ export type OwnersRequestPasswordResetCreateResponses = {
 export type OwnersRequestPasswordResetCreateResponse = OwnersRequestPasswordResetCreateResponses[keyof OwnersRequestPasswordResetCreateResponses];
 
 export type OwnersResetPasswordCreateData = {
-    body: OwnerResetPasswordWritable;
+    body: OwnerResetPassword;
     path?: never;
     query?: never;
     url: '/owners/reset-password';

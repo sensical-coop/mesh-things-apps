@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
+import { hashPassword } from "better-auth/crypto";
 import type { Actor, Role } from "@mtt/domain/authz/authz";
 import { nowIso } from "@mtt/domain/shared/ids";
 import { createStore, type Store } from "./store";
@@ -34,8 +35,8 @@ export function createMockAuth() {
     account: [],
     verification: [],
   };
-  return betterAuth({
-    appName: "Meshtastic Things",
+  const instance = betterAuth({
+    appName: "Mesh Things",
     secret: "mtt-mock-better-auth-secret-not-for-prod",
     baseURL: process.env.AUTH_BASE_URL ?? "http://localhost:8787",
     basePath: "/api/auth",
@@ -66,6 +67,7 @@ export function createMockAuth() {
       updateAge: 60 * 60 * 24,
     },
   });
+  return Object.assign(instance, { _memory: memory });
 }
 
 export async function seedStore(auth: MockAuth): Promise<Store> {
@@ -93,4 +95,13 @@ export async function seedStore(auth: MockAuth): Promise<Store> {
 export function stampLogin(actor: Actor): Actor {
   actor.lastLogin = nowIso();
   return actor;
+}
+
+/** Overwrites the credential-provider password hash for an owner, bypassing better-auth's
+ * own session/reset-token flow (this mock uses its own reset-token scheme, see app.ts). */
+export async function setOwnerPassword(auth: MockAuth, ownerId: string, newPassword: string): Promise<void> {
+  const accounts = auth._memory.account as Array<Record<string, unknown>>;
+  const account = accounts.find((row) => row.providerId === "credential" && row.userId === ownerId);
+  if (!account) return;
+  account.password = await hashPassword(newPassword);
 }
