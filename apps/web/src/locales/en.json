@@ -433,6 +433,7 @@
 
   "page.login.form.title": "Welcome back",
   "page.login.form.subtitle": "Sign in with the email on your owner account.",
+  "page.login.form.accountDeleted": "Your account has been deleted.",
   "page.login.form.email": "Email",
   "page.login.form.password": "Password",
   "page.login.form.signingIn": "Signing in",

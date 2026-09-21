@@ -1,7 +1,7 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FramePanel } from "@mtt/ui/reui/frame";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
@@ -18,6 +18,7 @@ export function LoginForm(): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { accountDeleted } = useSearch({ from: routes.login });
   const [error, setError] = useState<string | null>(null);
   const login = useMutation({
     ...authRepository.login(),
@@ -64,6 +65,14 @@ export function LoginForm(): ReactElement {
             })}
           </p>
         </div>
+        {accountDeleted ? (
+          <StatusCopy className="text-accent-500">
+            {formatMessage({
+              id: "page.login.form.accountDeleted",
+              defaultMessage: "Your account has been deleted.",
+            })}
+          </StatusCopy>
+        ) : null}
         <form className="flex flex-col gap-5" onSubmit={(e) => void onSubmit(e)}>
           <FieldGroup>
             <FormField

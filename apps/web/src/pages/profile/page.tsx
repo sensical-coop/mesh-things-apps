@@ -156,7 +156,7 @@ export function ProfilePage(): ReactElement {
       <DeleteAccountDialog
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
-        onDeleted={() => navigate({ to: routes.login })}
+        onDeleted={() => navigate({ to: routes.login, search: { accountDeleted: true } })}
       />
     </>
   );

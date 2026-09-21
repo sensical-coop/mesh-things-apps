@@ -433,6 +433,7 @@
 
   "page.login.form.title": "Bienvenido de nuevo",
   "page.login.form.subtitle": "Inicia sesión con el correo de tu cuenta de propietario.",
+  "page.login.form.accountDeleted": "Tu cuenta ha sido eliminada.",
   "page.login.form.email": "Correo electrónico",
   "page.login.form.password": "Contraseña",
   "page.login.form.signingIn": "Iniciando sesión",
