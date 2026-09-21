@@ -1,7 +1,7 @@
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { LandingFooter } from "@/pages/home/footer";
-import { LandingHeader } from "@/pages/home/header";
+import { SiteHeader } from "@/components/site-header";
 
 const termsOfUse = [
   {
@@ -198,7 +198,7 @@ export function TermsPage(): ReactElement {
 
   return (
     <div className="flex min-h-svh flex-col bg-background-full">
-      <LandingHeader />
+      <SiteHeader />
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-16">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-1-medium tracking-tight text-text-primary">
