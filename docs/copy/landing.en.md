@@ -17,7 +17,7 @@ Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight
 Sign in
 ```
 
-## page.home.hero.seeProduct
+## page.home.hero.howItWorks
 ```text
 How it works
 ```
@@ -109,7 +109,7 @@ Can data be shared across instances?
 
 ## page.home.faq.federated.a
 ```text
-Yes, you can keep data local or send it to a cloud server. 
+Yes, you can keep data local or send it to a cloud server.
 ```
 
 ## page.home.faq.globe.q
@@ -119,7 +119,7 @@ Is the platform open source?
 
 ## page.home.faq.globe.a
 ```text
-Yes, we are working on releasing the platform and it's front-end application. Stay tuned for more news, and feel free to contact us for more information. 
+Yes, we are working on releasing the platform and it's front-end application. Stay tuned for more news, and feel free to contact us for more information.
 ```
 
 ## page.home.faq.signIn.q
@@ -204,7 +204,7 @@ Data processing
 
 ## page.home.extras.blueprints.body
 ```text
-Attach post-processing to a device when the raw channel needs algorithms. 
+Attach post-processing to a device when the raw channel needs algorithms.
 ```
 
 ## page.home.extras.noBanner.title

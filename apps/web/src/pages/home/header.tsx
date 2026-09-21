@@ -41,13 +41,13 @@ export function LandingHeader(): ReactElement {
             <BrandMark />
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-7 md:flex">
-            <a href="#why" className={navLinkClass}>
+            <a href="/#why" className={navLinkClass}>
               {formatMessage({ id: "page.home.header.howItWorks", defaultMessage: "How it works" })}
             </a>
-            <a href="#features" className={navLinkClass}>
+            <a href="/#features" className={navLinkClass}>
               {formatMessage({ id: "page.home.header.features", defaultMessage: "Features" })}
             </a>
-            <a href="#faq" className={navLinkClass}>
+            <a href="/#faq" className={navLinkClass}>
               {formatMessage({ id: "page.home.header.faq", defaultMessage: "FAQ" })}
             </a>
           </nav>

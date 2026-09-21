@@ -49,7 +49,7 @@ export function Footer(): ReactElement {
           <p className="text-body-regular text-text-secondary">
             {formatMessage({
               id: "console.footer.tagline",
-              defaultMessage: "Mesh telemetry for operators. Built by Sensical SCCL in Barcelona.",
+              defaultMessage: "Storage and management interface for Meshtastic-based sensor networks. Built by Sensical SCCL in Barcelona.",
             })}
           </p>
         </div>

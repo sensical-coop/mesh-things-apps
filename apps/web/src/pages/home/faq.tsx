@@ -8,26 +8,25 @@ const faqs = [
   {
     id: "meshtastic",
     qId: "page.home.faq.meshtastic.q",
-    qDefault: "What is Meshtastic Things?",
+    qDefault: "What is Mesh Things?",
     aId: "page.home.faq.meshtastic.a",
     aDefault:
-      "A storage and data layer for Meshtastic networks: meshes, gateways, nodes and the telemetry they produce.",
+      "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQQT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
   },
   {
-    id: "cookies",
-    qId: "page.home.faq.cookies.q",
-    qDefault: "Do I need a cookie banner to use the product?",
-    aId: "page.home.faq.cookies.a",
-    aDefault:
-      "This marketing page sets no analytics cookies. The console uses a session cookie after you sign in, so that the API knows who you are.",
+    id: "federated",
+    qId: "page.home.faq.federated.q",
+    qDefault: "Can data be shared across instances?",
+    aId: "page.home.faq.federated.a",
+    aDefault: "Yes, you can keep data local or send it to a cloud server.",
   },
   {
     id: "globe",
     qId: "page.home.faq.globe.q",
-    qDefault: "Is the globe live traffic?",
+    qDefault: "Is the platform open source?",
     aId: "page.home.faq.globe.a",
     aDefault:
-      "No. It is a sample mesh over the western Mediterranean, drawn so you can see hops between gateways and nodes.",
+      "Yes, we are working on releasing the platform and it's front-end application. Stay tuned for more news, and feel free to contact us for more information.",
   },
   {
     id: "signIn",
@@ -35,7 +34,7 @@ const faqs = [
     qDefault: "Who can sign in?",
     aId: "page.home.faq.signIn.a",
     aDefault:
-      "Anyone can register an account. A new account stays inactive until you confirm the email address you signed up with.",
+      "Anyone can register an owner account in the demo server. Storage of data in the demo server is not guaranteed yet. Feel free to contact us for more information and deployment options.",
   },
 ] as const;
 
@@ -47,7 +46,7 @@ export function LandingFaq(): ReactElement {
         <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
           <FormattedMessage
             id="page.home.faq.heading"
-            defaultMessage="Fair questions, <secondary>straight answers.</secondary>"
+            defaultMessage="Frequently asked <secondary>questions</secondary>"
             values={richTextValues}
           />
         </h2>
