@@ -6,6 +6,9 @@ import {
   zMeshesUpdateData,
   zOwnersCreateData,
   zOwnersLoginCreateData,
+  zOwnersMeUpdateData,
+  zOwnersRequestPasswordResetCreateData,
+  zOwnersResetPasswordCreateData,
   zPostprocessingBlueprintsCreateData,
   zTelemetryVariantsMeasurementsUpdateData,
 } from "@mtt/contracts/zod";
@@ -36,7 +39,7 @@ import {
   VARIANT_LINK_ID,
   type Store,
 } from "./store";
-import { createMockAuth, seedStore, stampLogin, type MockAuth } from "./auth";
+import { createMockAuth, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
 import {
   blueprintJson,
   deviceJson,
@@ -52,6 +55,7 @@ import {
 type Env = { Variables: { actor: Actor } };
 
 const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with apps/web resend-cooldown.ts
+const PASSWORD_RESET_TTL_HOURS = 1; // keep in sync with meshtastic-things REGISTRY__PASSWORD_RESET_TTL_HOURS
 const INACTIVE_ALLOWED_PATHS = new Set(["/owners/me", "/owners/me/resend-verification"]);
 const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
 
@@ -91,6 +95,8 @@ function openPath(method: string, path: string): boolean {
     path === "/health" ||
     path.startsWith("/api/auth") ||
     (method === "POST" && path === "/owners") ||
+    (method === "POST" && path === "/owners/request-password-reset") ||
+    (method === "POST" && path === "/owners/reset-password") ||
     (method === "GET" && path === "/owners/verify-email")
   );
 }
@@ -232,6 +238,45 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     }
   });
 
+  app.post("/owners/request-password-reset", async (c) => {
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersRequestPasswordResetCreateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const actor = [...db.actors.values()].find((candidate) => candidate.email === parsed.data.body.email);
+    if (actor) {
+      for (const [existingToken, entry] of db.passwordResetTokens) {
+        if (entry.ownerId === actor.id) db.passwordResetTokens.delete(existingToken);
+      }
+      const token = newId();
+      db.passwordResetTokens.set(token, { ownerId: actor.id, sentAt: nowIso() });
+      console.info(`[mock] password reset link for ${actor.email}: /reset-password?token=${token}`);
+    }
+    return c.json({ detail: "If an account exists for that email, a reset link has been sent." });
+  });
+
+  app.post("/owners/reset-password", async (c) => {
+    const authHeader = c.req.header("Authorization") ?? "";
+    const [scheme, token] = authHeader.split(" ");
+    if (scheme?.toLowerCase() !== "bearer" || !token) {
+      return c.json({ detail: "Authentication credentials were not provided." }, 401);
+    }
+    const entry = db.passwordResetTokens.get(token);
+    const expired =
+      !entry || Date.now() > Date.parse(entry.sentAt) + PASSWORD_RESET_TTL_HOURS * 60 * 60 * 1000;
+    if (expired) {
+      return c.json(
+        { detail: "Invalid or expired reset link - request a new one via POST /owners/request-password-reset" },
+        401,
+      );
+    }
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersResetPasswordCreateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    await setOwnerPassword(auth, entry.ownerId, parsed.data.body.new_password);
+    db.passwordResetTokens.delete(token);
+    return c.json({ detail: "Password reset" });
+  });
+
   app.post("/owners", async (c) => {
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zOwnersCreateData.safeParse({ body });
@@ -316,6 +361,51 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerProfileJson(actor, await devicesFor(db, actor), verification));
+  });
+
+  app.put("/owners/me", async (c) => {
+    const actor = c.get("actor");
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersMeUpdateData.safeParse({ body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const patch = parsed.data.body ?? {};
+    if (patch.name !== undefined) actor.name = patch.name;
+    if (patch.email !== undefined && patch.email !== actor.email) {
+      const taken = [...db.actors.values()].some(
+        (other) => other.id !== actor.id && other.email === patch.email,
+      );
+      if (taken) return c.json({ detail: "That email address is already in use." }, 400);
+      actor.email = patch.email;
+      actor.isActive = false;
+      for (const [existingToken, ownerId] of db.verificationTokens) {
+        if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
+      }
+      const token = newId();
+      db.verificationTokens.set(token, actor.id);
+      db.verifications.set(actor.id, { emailVerifiedAt: null, emailVerificationSentAt: nowIso() });
+      console.info(`[mock] verification link for ${actor.email}: /verify-email?token=${token}`);
+    }
+    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    return c.json(ownerReadJson(actor, verification));
+  });
+
+  app.delete("/owners/me", async (c) => {
+    const actor = c.get("actor");
+    const ownedMeshes = (await db.meshes.list()).filter((mesh) => mesh.ownerId === actor.id);
+    for (const mesh of ownedMeshes) {
+      const devices = await db.devices.list({ meshId: mesh.id });
+      for (const device of devices) await db.devices.delete(device.uuid);
+      await db.meshes.delete(mesh.id);
+    }
+    db.blueprints = db.blueprints.filter((blueprint) => blueprint.ownerId !== actor.id);
+    for (const [existingToken, ownerId] of db.verificationTokens) {
+      if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
+    }
+    db.verifications.delete(actor.id);
+    db.actors.delete(actor.id);
+    const result = await auth.api.signOut({ headers: c.req.raw.headers, returnHeaders: true });
+    applySetCookie(c, result.headers);
+    return c.body(null, 204);
   });
 
   app.get("/owners", (c) => {

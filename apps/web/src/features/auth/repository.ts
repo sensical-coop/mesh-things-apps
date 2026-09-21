@@ -5,9 +5,13 @@ import {
   ownersListQueryKey,
   ownersLoginCreateMutation,
   ownersLogoutCreateMutation,
+  ownersMeDestroyMutation,
   ownersMeResendVerificationCreateMutation,
   ownersMeRetrieveOptions,
   ownersMeRetrieveQueryKey,
+  ownersMeUpdateMutation,
+  ownersRequestPasswordResetCreateMutation,
+  ownersResetPasswordCreateMutation,
   ownersVerifyEmailRetrieveOptions,
 } from "@mtt/contracts/query";
 
@@ -18,8 +22,12 @@ export const authRepository = {
   logout: ownersLogoutCreateMutation,
   me: ownersMeRetrieveOptions,
   meKey: ownersMeRetrieveQueryKey,
+  update: ownersMeUpdateMutation,
+  destroy: ownersMeDestroyMutation,
   list: ownersListOptions,
   listKey: ownersListQueryKey,
   resendVerification: ownersMeResendVerificationCreateMutation,
   verifyEmail: ownersVerifyEmailRetrieveOptions,
+  requestPasswordReset: ownersRequestPasswordResetCreateMutation,
+  resetPassword: ownersResetPasswordCreateMutation,
 };

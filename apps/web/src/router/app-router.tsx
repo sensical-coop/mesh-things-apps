@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { landingHomePage } from "@/pages/home/route";
 import { authLoginPage } from "@/pages/login/route";
 import { authSignupPage } from "@/pages/signup/route";
+import { authForgotPasswordPage } from "@/pages/forgot-password/route";
+import { authResetPasswordPage } from "@/pages/reset-password/route";
 import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
@@ -13,6 +15,7 @@ import { deviceDetailPage } from "@/pages/devices/detail/route";
 import { deviceListPage } from "@/pages/devices/list/route";
 import { meshDetailPage } from "@/pages/meshes/detail/route";
 import { meshListPage } from "@/pages/meshes/list/route";
+import { profilePage } from "@/pages/profile/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
 
@@ -33,6 +36,16 @@ const loginRoute = createRoute({
 const signupRoute = createRoute({
   getParentRoute: () => rootRoute,
   ...authSignupPage,
+});
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authForgotPasswordPage,
+});
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...authResetPasswordPage,
 });
 
 const verifyPendingRoute = createRoute({
@@ -94,10 +107,17 @@ const blueprintsRoute = createRoute({
   ...blueprintListPage,
 });
 
+const profileRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...profilePage,
+});
+
 const routeTree = rootRoute.addChildren([
   landingRoute,
   loginRoute,
   signupRoute,
+  forgotPasswordRoute,
+  resetPasswordRoute,
   verifyPendingRoute,
   verifyEmailRoute,
   termsRoute,
@@ -109,6 +129,7 @@ const routeTree = rootRoute.addChildren([
     deviceDetailRoute,
     alarmsRoute,
     blueprintsRoute,
+    profileRoute,
   ]),
 ]);
 

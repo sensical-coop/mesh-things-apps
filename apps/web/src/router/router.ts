@@ -2,6 +2,8 @@ export const routes = Object.freeze({
   home: "/",
   login: "/login",
   signup: "/signup",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   verifyPending: "/verify-pending",
   verifyEmail: "/verify-email",
   terms: "/terms",
@@ -12,6 +14,7 @@ export const routes = Object.freeze({
   device: "/console/devices/$deviceUuid",
   alarms: "/console/alarms",
   blueprints: "/console/blueprints",
+  profile: "/console/profile",
   consoleChild: Object.freeze({
     index: "/",
     meshes: "meshes",
@@ -20,6 +23,7 @@ export const routes = Object.freeze({
     device: "devices/$deviceUuid",
     alarms: "alarms",
     blueprints: "blueprints",
+    profile: "profile",
   }),
 } as const);
 
