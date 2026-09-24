@@ -105,6 +105,7 @@ export function ownerReadJson(
     email_verification_sent_at: verification.emailVerificationSentAt,
     last_login: actor.lastLogin,
     created_at: actor.createdAt,
+    alarm_email_cooldown_seconds: actor.alarmEmailCooldownSeconds,
   };
 }
 

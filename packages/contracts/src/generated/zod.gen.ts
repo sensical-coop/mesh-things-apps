@@ -368,6 +368,10 @@ export const zOwnerProfile = z.object({
         z.null()
     ]).readonly(),
     created_at: z.iso.datetime().readonly(),
+    alarm_email_cooldown_seconds: z.optional(z.union([
+        z.int().gte(0).lte(2592000).readonly(),
+        z.null()
+    ]).readonly()),
     devices: z.array(zDeviceRead).readonly()
 });
 
@@ -405,7 +409,11 @@ export const zOwnerRead = z.object({
         z.iso.datetime().readonly(),
         z.null()
     ]).readonly(),
-    created_at: z.iso.datetime().readonly()
+    created_at: z.iso.datetime().readonly(),
+    alarm_email_cooldown_seconds: z.optional(z.union([
+        z.int().gte(0).lte(2592000).readonly(),
+        z.null()
+    ]).readonly())
 });
 
 /**
@@ -424,7 +432,11 @@ export const zOwnerResetPassword = z.object({
 
 export const zOwnerUpdate = z.object({
     name: z.optional(z.string().max(255)),
-    email: z.optional(z.email())
+    email: z.optional(z.email()),
+    alarm_email_cooldown_seconds: z.optional(z.union([
+        z.int().gte(0).lte(2592000),
+        z.null()
+    ]))
 });
 
 /**
@@ -450,6 +462,10 @@ export const zOwnerWithApiKey = z.object({
         z.null()
     ]).readonly(),
     created_at: z.iso.datetime().readonly(),
+    alarm_email_cooldown_seconds: z.optional(z.union([
+        z.int().gte(0).lte(2592000).readonly(),
+        z.null()
+    ]).readonly()),
     api_key: z.string().readonly()
 });
 
