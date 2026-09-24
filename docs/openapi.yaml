@@ -2578,6 +2578,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        alarm_email_cooldown_seconds:
+          type: integer
+          minimum: 0
+          maximum: 2592000
+          nullable: true
+          readOnly: true
+          description: Minimum time between quality-alarm emails, in seconds
+            (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
+            Omitted on backends that don't yet support this setting.
         devices:
           type: array
           items:
@@ -2664,6 +2673,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        alarm_email_cooldown_seconds:
+          type: integer
+          minimum: 0
+          maximum: 2592000
+          nullable: true
+          readOnly: true
+          description: Minimum time between quality-alarm emails, in seconds
+            (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
+            Omitted on backends that don't yet support this setting.
       required:
       - created_at
       - email
@@ -2702,6 +2720,13 @@ components:
         email:
           type: string
           format: email
+        alarm_email_cooldown_seconds:
+          type: integer
+          minimum: 0
+          maximum: 2592000
+          nullable: true
+          description: Minimum time between quality-alarm emails, in seconds
+            (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
     OwnerWithApiKey:
       type: object
       description: In POST /owners and POST /owners/me/rotate-key
@@ -2748,6 +2773,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        alarm_email_cooldown_seconds:
+          type: integer
+          minimum: 0
+          maximum: 2592000
+          nullable: true
+          readOnly: true
+          description: Minimum time between quality-alarm emails, in seconds
+            (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
+            Omitted on backends that don't yet support this setting.
         api_key:
           type: string
           readOnly: true

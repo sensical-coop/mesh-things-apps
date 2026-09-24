@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Gives unauthenticated visitors a public home page that states what Meshtastic Things is, shows a decorative mesh globe, and sends them to sign in.
+Gives unauthenticated visitors a public home page that states what Mesh Things is, shows a decorative mesh globe, and sends them to sign in.
 
 ## ADDED Requirements
 

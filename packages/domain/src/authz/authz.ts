@@ -8,6 +8,7 @@ export type Actor = {
   isActive: boolean;
   createdAt: string;
   lastLogin: string | null;
+  alarmEmailCooldownSeconds: number | null;
 };
 
 export type Owned = { ownerId: string };

@@ -327,6 +327,10 @@ export type OwnerProfile = {
     readonly email_verification_sent_at: string | null;
     readonly last_login: string | null;
     readonly created_at: string;
+    /**
+     * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
+     */
+    readonly alarm_email_cooldown_seconds?: number | null;
     readonly devices: Array<DeviceRead>;
 };
 
@@ -361,6 +365,10 @@ export type OwnerRead = {
     readonly email_verification_sent_at: string | null;
     readonly last_login: string | null;
     readonly created_at: string;
+    /**
+     * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
+     */
+    readonly alarm_email_cooldown_seconds?: number | null;
 };
 
 /**
@@ -380,6 +388,10 @@ export type OwnerResetPassword = {
 export type OwnerUpdate = {
     name?: string;
     email?: string;
+    /**
+     * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
+     */
+    alarm_email_cooldown_seconds?: number | null;
 };
 
 /**
@@ -401,6 +413,10 @@ export type OwnerWithApiKey = {
     readonly email_verification_sent_at: string | null;
     readonly last_login: string | null;
     readonly created_at: string;
+    /**
+     * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
+     */
+    readonly alarm_email_cooldown_seconds?: number | null;
     readonly api_key: string;
 };
 

@@ -85,6 +85,7 @@ export async function seedStore(auth: MockAuth): Promise<Store> {
       isActive: true,
       createdAt: t0,
       lastLogin: null,
+      alarmEmailCooldownSeconds: null,
     };
     actors.set(actor.id, actor);
     ids[account.key] = actor.id;

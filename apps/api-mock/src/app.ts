@@ -302,6 +302,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       isActive: false,
       createdAt: now,
       lastLogin: null,
+      alarmEmailCooldownSeconds: null,
     };
     db.actors.set(actor.id, actor);
     const token = newId();
@@ -370,6 +371,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
     const patch = parsed.data.body ?? {};
     if (patch.name !== undefined) actor.name = patch.name;
+    if (patch.alarm_email_cooldown_seconds !== undefined) {
+      actor.alarmEmailCooldownSeconds = patch.alarm_email_cooldown_seconds;
+    }
     if (patch.email !== undefined && patch.email !== actor.email) {
       const taken = [...db.actors.values()].some(
         (other) => other.id !== actor.id && other.email === patch.email,

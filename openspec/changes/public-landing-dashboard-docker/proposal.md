@@ -2,7 +2,7 @@
 
 ## Why
 
-The Vite app treats `/` as a redirect into the authenticated inventory. There is no public marketing surface, so a visitor cannot understand Meshtastic Things before signing in, and the product cannot be shipped as a static frontend image. We need a public home, a nested dashboard, and a Docker build that serves only the web app.
+The Vite app treats `/` as a redirect into the authenticated inventory. There is no public marketing surface, so a visitor cannot understand Mesh Things before signing in, and the product cannot be shipped as a static frontend image. We need a public home, a nested dashboard, and a Docker build that serves only the web app.
 
 ## What Changes
 

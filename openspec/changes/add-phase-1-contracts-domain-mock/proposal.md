@@ -2,7 +2,7 @@
 
 ## Why
 
-The dashboard shell exists (`apps/web`, BoardUI/OA) but it cannot talk to Meshtastic Things: there is no generated HTTP client, no domain package for mesh/device/reading rules, and no in-memory API. Phase 1 stories (US-10–12, US-20–22, US-30–31) need that stack before more UI. Auth stays out.
+The dashboard shell exists (`apps/web`, BoardUI/OA) but it cannot talk to Mesh Things: there is no generated HTTP client, no domain package for mesh/device/reading rules, and no in-memory API. Phase 1 stories (US-10–12, US-20–22, US-30–31) need that stack before more UI. Auth stays out.
 
 ## What Changes
 

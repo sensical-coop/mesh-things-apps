@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Compiles the Meshtastic Things OpenAPI document into a shared typed client, Zod schemas, and query helpers so HTTP shapes are not duplicated by hand.
+Compiles the Mesh Things OpenAPI document into a shared typed client, Zod schemas, and query helpers so HTTP shapes are not duplicated by hand.
 
 ## ADDED Requirements
 
