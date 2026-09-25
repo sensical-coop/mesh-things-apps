@@ -6,12 +6,14 @@ import {
   canWriteCatalog,
   canWriteMesh,
   flagsForRole,
+  visibleMeshes,
   visibleOwned,
   type Actor,
 } from "../../src/authz/authz";
 
-const hill = { ownerId: "ada" };
-const river = { ownerId: "bo" };
+const hill = { ownerId: "ada", isPublic: false };
+const river = { ownerId: "bo", isPublic: false };
+const lake = { ownerId: "bo", isPublic: true };
 
 function actor(role: Actor["role"], id = "ada"): Actor {
   return {
@@ -58,5 +60,18 @@ describe("authz", () => {
   it("filters owned rows for a plain owner", () => {
     const ada = actor("owner");
     expect(visibleOwned(ada, [hill, river])).toEqual([hill]);
+  });
+
+  it("lets an owner read public meshes, without the PSK or writes", () => {
+    const ada = actor("owner");
+    expect(canReadMesh(ada, lake)).toBe(true);
+    expect(canSeePsk(ada, lake)).toBe(false);
+    expect(canWriteMesh(ada, lake)).toBe(false);
+    expect(visibleMeshes(ada, [hill, river, lake])).toEqual([hill, lake]);
+  });
+
+  it("hides every mesh from an inactive owner, public or not", () => {
+    const ada = { ...actor("owner"), isActive: false };
+    expect(visibleMeshes(ada, [hill, lake])).toEqual([]);
   });
 });

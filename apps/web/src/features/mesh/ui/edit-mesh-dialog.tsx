@@ -6,6 +6,7 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
+import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
@@ -19,7 +20,7 @@ export function EditMeshDialog({
   onClose,
   onSaved,
 }: {
-  mesh: Pick<Mesh, "id" | "label" | "channel_id">;
+  mesh: Pick<Mesh, "id" | "label" | "channel_id" | "is_public">;
   open: boolean;
   onClose: () => void;
   onSaved?: () => void | Promise<void>;
@@ -48,9 +49,10 @@ export function EditMeshDialog({
     // psk_b64 is only sent when the owner actually typed a new one — the
     // field starts blank (PSKs aren't echoed back to the client), and
     // MeshUpdate treats an absent key as "leave unchanged".
-    const body: { label: string | null; channel_id: string; psk_b64?: string } = {
+    const body: { label: string | null; channel_id: string; is_public: boolean; psk_b64?: string } = {
       label: label === "" ? null : label,
       channel_id: channelId,
+      is_public: form.get("is_public") === "on",
     };
     if (psk !== "") body.psk_b64 = psk;
     const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
@@ -76,7 +78,7 @@ export function EditMeshDialog({
       )}
       description={formatMessage({
         id: "feature.mesh.editDialog.description",
-        defaultMessage: "Label, channel id, and pre-shared key.",
+        defaultMessage: "Label, channel id, pre-shared key, and who can view it.",
       })}
       onClose={onClose}
     >
@@ -113,6 +115,21 @@ export function EditMeshDialog({
           >
             <Input id="mesh-edit-psk" name="psk_b64" type="password" autoComplete="new-password" />
           </FormField>
+          <div className="flex flex-col gap-1">
+            <FormCheckbox
+              id="mesh-edit-public"
+              name="is_public"
+              label={formatMessage({ id: "feature.mesh.editDialog.public", defaultMessage: "Make this mesh public" })}
+              defaultChecked={mesh.is_public ?? false}
+            />
+            <p className="pl-7 text-caption-1-regular text-text-tertiary">
+              {formatMessage({
+                id: "feature.mesh.editDialog.publicHint",
+                defaultMessage:
+                  "Anyone signed in can view its devices and readings. The pre-shared key stays private, and only you can change the mesh.",
+              })}
+            </p>
+          </div>
         </FieldGroup>
         {update.error ? (
           <StatusCopy>

@@ -201,6 +201,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       pskB64: "c2VjcmV0Uml2ZXI=",
       label: "River",
       ownerId: boId,
+      // Public so the read-only view of someone else's mesh shows up locally.
+      isPublic: true,
       createdAt: t0,
       updatedAt: t0,
     }),

@@ -279,6 +279,7 @@ export const zMesh = z.object({
         z.null()
     ])),
     owner_id: z.uuid().readonly(),
+    is_public: z.optional(z.boolean()),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
 });
@@ -296,14 +297,15 @@ export const zMeshCreate = z.object({
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
  */
 export const zMeshUpdate = z.object({
     channel_id: z.optional(z.string().max(255)),
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
-    ]))
+    ])),
+    is_public: z.optional(z.boolean())
 });
 
 export const zMetricsResponse = z.object({
@@ -833,11 +835,12 @@ export const zMeshWritable = z.object({
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
-    ]))
+    ])),
+    is_public: z.optional(z.boolean())
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
  */
 export const zMeshUpdateWritable = z.object({
     channel_id: z.optional(z.string().max(255)),
@@ -845,7 +848,8 @@ export const zMeshUpdateWritable = z.object({
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
-    ]))
+    ])),
+    is_public: z.optional(z.boolean())
 });
 
 export const zOwnerCreateWritable = z.object({
@@ -1066,7 +1070,8 @@ export const zMeshesListData = z.object({
     path: z.optional(z.never()),
     query: z.optional(z.object({
         label: z.optional(z.string()),
-        channel_id: z.optional(z.string())
+        channel_id: z.optional(z.string()),
+        owned: z.optional(z.boolean())
     }))
 });
 

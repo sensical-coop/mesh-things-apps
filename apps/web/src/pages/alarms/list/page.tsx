@@ -16,7 +16,8 @@ import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshTitle } from "@/features/mesh/model";
+import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { isChartableMeasurement } from "@/lib/measurement";
@@ -34,17 +35,23 @@ export function AlarmsPage(): ReactElement {
     () => new globalThis.Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)])),
     [meshes.data],
   );
+  const { me } = useOwnerDirectory();
+  // Alarms are configuration, so devices on public meshes don't belong here.
+  const editableDevices = useMemo(() => {
+    const editableMeshIds = new Set((meshes.data ?? []).filter((m) => canEditMesh(m, me)).map((m) => m.id));
+    return (devices.data ?? []).filter((device) => editableMeshIds.has(device.mesh_id));
+  }, [devices.data, meshes.data, me]);
 
   const measurementsQueries = useQueries({
-    queries: (devices.data ?? []).map((device) => deviceRepository.measurements({ path: { device_uuid: device.uuid } })),
+    queries: editableDevices.map((device) => deviceRepository.measurements({ path: { device_uuid: device.uuid } })),
   });
   const variantsQueries = useQueries({
-    queries: (devices.data ?? []).map((device) => deviceRepository.telemetryVariants({ path: { device_uuid: device.uuid } })),
+    queries: editableDevices.map((device) => deviceRepository.telemetryVariants({ path: { device_uuid: device.uuid } })),
   });
 
-  const loading = devices.isPending || measurementsQueries.some((q) => q.isPending);
+  const loading = devices.isPending || meshes.isPending || !me || measurementsQueries.some((q) => q.isPending);
 
-  const rows = (devices.data ?? []).map((device, index) => {
+  const rows = editableDevices.map((device, index) => {
     const measurements = measurementsQueries[index]?.data ?? [];
     const variants = variantsQueries[index]?.data ?? [];
     const variantById = new globalThis.Map(variants.map((v) => [v.telemetry_variant.id, v.telemetry_variant]));

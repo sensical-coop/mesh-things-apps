@@ -29,7 +29,7 @@ import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshTitle } from "@/features/mesh/model";
 
 type DeviceRow = DeviceRead & { meshLabel: string; ownerId: string };
 
@@ -122,7 +122,7 @@ export function DevicesPage(): ReactElement {
   const devices = useQuery(deviceRepository.list({ query: listQuery(filters.queryString) }));
   const meshNames = new Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)]));
   const meshOwners = new Map((meshes.data ?? []).map((m) => [m.id, m.owner_id]));
-  const { isSuperuser, meId, ownerName } = useOwnerDirectory();
+  const { me, isSuperuser, meId, ownerName } = useOwnerDirectory();
 
   const rows = useMemo<DeviceRow[]>(
     () =>
@@ -133,6 +133,8 @@ export function DevicesPage(): ReactElement {
       })),
     [devices.data, meshes.data],
   );
+  // Devices on public meshes can belong to someone else, so say whose.
+  const showOwner = isSuperuser || rows.some((row) => row.ownerId !== meId);
 
   const columns = useMemo(
     () => [
@@ -166,7 +168,7 @@ export function DevicesPage(): ReactElement {
         header: formatMessage({ id: "page.devices.list.columns.radio", defaultMessage: "Radio" }),
         cell: (info) => <DeviceSilentBadge device={info.row.original} />,
       }),
-      ...(isSuperuser
+      ...(showOwner
         ? [
             col.accessor("ownerId", {
               id: "owner",
@@ -203,14 +205,16 @@ export function DevicesPage(): ReactElement {
             <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
             </ButtonLink>
-            <Button type="button" size="xs" variant="secondary" onClick={() => setSettingsDevice(row.original)}>
-              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-            </Button>
+            {canEditMesh({ owner_id: row.original.ownerId }, me) ? (
+              <Button type="button" size="xs" variant="secondary" onClick={() => setSettingsDevice(row.original)}>
+                {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+              </Button>
+            ) : null}
           </div>
         ),
       }),
     ],
-    [formatMessage, formatLastSeen, isSuperuser, meId, ownerName],
+    [formatMessage, formatLastSeen, me, meId, ownerName, showOwner],
   );
 
   return (

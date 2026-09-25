@@ -518,9 +518,10 @@ paths:
     get:
       operationId: meshes_list
       description: |-
-        List the caller's meshes, or every mesh for a superuser.
+        List the meshes the caller may read, or every mesh for a superuser.
 
-        The pre-shared key is included only for meshes the caller owns.
+        Alongside their own, this includes public meshes. The pre-shared key is
+        included only for meshes the caller owns.
 
         List filters use `operator:value` or `operator:v1|v2` (same wire as the
         dashboard URL). Bare values are treated as `is:<value>`.
@@ -535,6 +536,11 @@ paths:
         schema:
           type: string
         description: List filter, e.g. `is:LongFast`.
+      - in: query
+        name: owned
+        schema:
+          type: boolean
+        description: Restrict to meshes the caller owns, excluding public ones.
       tags:
       - meshes
       security:
@@ -579,7 +585,11 @@ paths:
   /meshes/{mesh_id}:
     get:
       operationId: meshes_retrieve
-      description: Return one mesh.
+      description: |-
+        Return one mesh.
+
+        Readable by its owner, a superuser, and anyone when the mesh is public.
+        Anyone else gets 404.
       parameters:
       - in: path
         name: mesh_id
@@ -661,7 +671,10 @@ paths:
   /meshes/{mesh_id}/devices:
     get:
       operationId: meshes_devices_list
-      description: List every device registered on this mesh, gateways and nodes alike.
+      description: |-
+        List every device registered on this mesh, gateways and nodes alike.
+
+        Rejected registrations are shown only to the mesh's owner.
       parameters:
       - in: path
         name: mesh_id
@@ -2410,6 +2423,10 @@ components:
           type: string
           format: uuid
           readOnly: true
+        is_public:
+          type: boolean
+          description: When true, any verified owner may read this mesh, its devices
+            and their readings. Writes stay with the owner.
         created_at:
           type: string
           format: date-time
@@ -2443,7 +2460,8 @@ components:
       - psk_b64
     MeshUpdate:
       type: object
-      description: 'PUT /meshes/{id}: channel_id, psk_b64, and label are editable.'
+      description: 'PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are
+        editable.'
       properties:
         channel_id:
           type: string
@@ -2456,6 +2474,8 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        is_public:
+          type: boolean
     MetricsResponse:
       type: object
       properties:

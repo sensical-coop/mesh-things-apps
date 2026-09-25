@@ -31,9 +31,10 @@ import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
+import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 
 type MeshRow = Mesh & { devices: number };
 
@@ -63,7 +64,7 @@ export function MeshesPage(): ReactElement {
   const filters = useSmartFilters({ specs });
   const meshes = useQuery(meshRepository.list({ query: listQuery(filters.queryString) }));
   const devices = useQuery(deviceRepository.list());
-  const { isSuperuser, meId, ownerName } = useOwnerDirectory();
+  const { me, isSuperuser, meId, ownerName } = useOwnerDirectory();
   const [open, setOpen] = useState(false);
   const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
   const [meshToEdit, setMeshToEdit] = useState<MeshRow | null>(null);
@@ -76,6 +77,8 @@ export function MeshesPage(): ReactElement {
     () => (meshes.data ?? []).map((mesh) => ({ ...mesh, devices: counts.get(mesh.id) ?? 0 })),
     [meshes.data, devices.data],
   );
+  // Public meshes can belong to someone else, so say whose.
+  const showOwner = isSuperuser || rows.some((row) => row.owner_id !== meId);
 
   const columns = useMemo(
     () => [
@@ -83,13 +86,16 @@ export function MeshesPage(): ReactElement {
         id: "label",
         header: formatMessage({ id: "page.meshes.list.columns.mesh", defaultMessage: "Mesh" }),
         cell: (info) => (
-          <Link
-            to={routes.mesh}
-            params={{ meshId: info.row.original.id }}
-            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-          >
-            {info.getValue()}
-          </Link>
+          <span className="flex flex-wrap items-center gap-2">
+            <Link
+              to={routes.mesh}
+              params={{ meshId: info.row.original.id }}
+              className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              {info.getValue()}
+            </Link>
+            <MeshAccessBadge mesh={info.row.original} />
+          </span>
         ),
       }),
       col.accessor("channel_id", {
@@ -100,7 +106,7 @@ export function MeshesPage(): ReactElement {
         header: formatMessage({ id: "page.meshes.list.columns.devices", defaultMessage: "Devices" }),
         cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
       }),
-      ...(isSuperuser
+      ...(showOwner
         ? [
             col.accessor("owner_id", {
               id: "owner",
@@ -127,7 +133,7 @@ export function MeshesPage(): ReactElement {
         ),
         enableSorting: false,
         cell: ({ row }) => {
-          const canEdit = isSuperuser || row.original.owner_id === meId;
+          const canEdit = canEditMesh(row.original, me);
           return (
             <div className="flex justify-start gap-2">
               <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
@@ -162,7 +168,7 @@ export function MeshesPage(): ReactElement {
         },
       }),
     ],
-    [formatMessage, isSuperuser, meId, ownerName],
+    [formatMessage, me, meId, ownerName, showOwner],
   );
 
   return (
