@@ -281,7 +281,7 @@ Instalar (las primitivas **siempre** caen en `packages/ui`):
 ```bash
 cd packages/ui && npx boardui@latest add <name>
 
-# desde la raíz del monorepo (package.json → --cwd apps/web)
+# desde la raíz del monorepo (scripts/shadcn.mjs: CLI en apps/web + arregla `cn`)
 pnpm shadcn add button
 pnpm shadcn add @reui/<nombre>
 pnpm shadcn add @evilcharts/<nombre>

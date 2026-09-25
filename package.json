@@ -9,7 +9,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts",
-    "shadcn": "pnpm dlx shadcn@latest --cwd apps/web"
+    "shadcn": "node scripts/shadcn.mjs"
   },
   "devDependencies": {
     "turbo": "^2.5.4",
