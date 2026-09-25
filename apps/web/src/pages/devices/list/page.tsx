@@ -133,7 +133,7 @@ export function DevicesPage(): ReactElement {
       })),
     [devices.data, meshes.data],
   );
-  // Devices on public meshes can belong to someone else, so say whose.
+  // Devices on public and shared meshes belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.ownerId !== meId);
 
   const columns = useMemo(

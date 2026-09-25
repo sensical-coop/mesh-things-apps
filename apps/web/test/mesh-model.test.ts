@@ -9,7 +9,7 @@ test("canEditMesh lets the owner edit their mesh, public or not", () => {
   assert.equal(canEditMesh({ owner_id: "ada" }, mine), true);
 });
 
-test("canEditMesh keeps someone else's mesh read-only, even when public", () => {
+test("canEditMesh keeps someone else's mesh read-only, even when public or shared", () => {
   assert.equal(canEditMesh({ owner_id: "bo" }, mine), false);
 });
 

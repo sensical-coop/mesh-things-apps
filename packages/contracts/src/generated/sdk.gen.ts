@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlgorithmsListData, AlgorithmsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses } from './types.gen';
-import { zAlgorithmsListData, zAlgorithmsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse } from './zod.gen';
+import type { AlgorithmsListData, AlgorithmsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MeshesViewersCreateData, MeshesViewersCreateResponses, MeshesViewersDestroyData, MeshesViewersDestroyResponses, MeshesViewersListData, MeshesViewersListResponses, MetricsRetrieveData, MetricsRetrieveResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses } from './types.gen';
+import { zAlgorithmsListData, zAlgorithmsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMeshesViewersCreateData, zMeshesViewersCreateResponse, zMeshesViewersDestroyData, zMeshesViewersDestroyResponse, zMeshesViewersListData, zMeshesViewersListResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -340,8 +340,9 @@ export const measurementsUpdate = <ThrowOnError extends boolean = false>(options
 /**
  * List the meshes the caller may read, or every mesh for a superuser.
  *
- * Alongside their own, this includes public meshes. The pre-shared key is
- * included only for meshes the caller owns.
+ * Alongside their own, this includes public meshes and any they have been
+ * granted access to. The pre-shared key is included only for meshes the
+ * caller owns.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
  * dashboard URL). Bare values are treated as `is:<value>`.
@@ -398,8 +399,8 @@ export const meshesDestroy = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Return one mesh.
  *
- * Readable by its owner, a superuser, and anyone when the mesh is public.
- * Anyone else gets 404.
+ * Readable by its owner, a superuser, anyone when the mesh is public, and
+ * owners granted access. Anyone else gets 404.
  */
 export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Options<MeshesRetrieveData, ThrowOnError>) => (options.client ?? client).get<MeshesRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesRetrieveData.parseAsync(data),
@@ -449,6 +450,66 @@ export const meshesDevicesList = <ThrowOnError extends boolean = false>(options:
             type: 'apiKey'
         }],
     url: '/meshes/{mesh_id}/devices',
+    ...options
+});
+
+/**
+ * List the owners granted read access to this mesh.
+ *
+ * Only the mesh's owner may read this. Email addresses are not included.
+ */
+export const meshesViewersList = <ThrowOnError extends boolean = false>(options: Options<MeshesViewersListData, ThrowOnError>) => (options.client ?? client).get<MeshesViewersListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesViewersListData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesViewersListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/{mesh_id}/viewers',
+    ...options
+});
+
+/**
+ * Grant one owner read access to this mesh.
+ *
+ * Only the mesh's owner may grant access, and the grant is read-only: it
+ * never allows the recipient to change the mesh or its devices. The
+ * recipient is emailed unless their address is still unverified. Granting
+ * access that already exists returns the existing grant rather than
+ * failing.
+ */
+export const meshesViewersCreate = <ThrowOnError extends boolean = false>(options: Options<MeshesViewersCreateData, ThrowOnError>) => (options.client ?? client).post<MeshesViewersCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesViewersCreateData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesViewersCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/{mesh_id}/viewers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke one owner's read access to this mesh.
+ *
+ * Only the mesh's owner may revoke access. The recipient is emailed
+ * unless their address is still unverified.
+ */
+export const meshesViewersDestroy = <ThrowOnError extends boolean = false>(options: Options<MeshesViewersDestroyData, ThrowOnError>) => (options.client ?? client).delete<MeshesViewersDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesViewersDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesViewersDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/{mesh_id}/viewers/{owner_id}',
     ...options
 });
 

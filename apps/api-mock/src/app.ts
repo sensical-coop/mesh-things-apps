@@ -4,6 +4,7 @@ import {
   zDevicesUpdateData,
   zMeshesCreateData,
   zMeshesUpdateData,
+  zMeshesViewersCreateData,
   zOwnersCreateData,
   zOwnersLoginCreateData,
   zOwnersMeUpdateData,
@@ -47,6 +48,7 @@ import {
   latestJson,
   measurementJson,
   meshJson,
+  meshViewerJson,
   ownerProfileJson,
   ownerPublicJson,
   ownerReadJson,
@@ -113,7 +115,7 @@ function applySetCookie(c: Context, headers: Headers) {
 }
 
 async function visibleMeshes(store: Store, actor: Actor, filters?: Parameters<Store["meshes"]["list"]>[0]) {
-  return (await store.meshes.list(filters)).filter((mesh) => canReadMesh(actor, mesh));
+  return (await store.meshes.list(filters)).filter((mesh) => canReadMesh(actor, store.meshes.viewable(mesh)));
 }
 
 /** A rejected registration is the mesh owner's business, not a viewer's. */
@@ -131,7 +133,7 @@ async function devicesFor(store: Store, actor: Actor) {
 
 async function meshForRead(store: Store, actor: Actor, meshId: string) {
   const mesh = await store.meshes.get(meshId);
-  if (!mesh || !canReadMesh(actor, mesh)) return null;
+  if (!mesh || !canReadMesh(actor, store.meshes.viewable(mesh))) return null;
   return mesh;
 }
 
@@ -407,6 +409,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.delete("/owners/me", async (c) => {
     const actor = c.get("actor");
+    db.meshes.revokeViewerEverywhere(actor.id);
     const ownedMeshes = (await db.meshes.list()).filter((mesh) => mesh.ownerId === actor.id);
     for (const mesh of ownedMeshes) {
       const devices = await db.devices.list({ meshId: mesh.id });
@@ -482,6 +485,46 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!mesh) return c.json({ detail: "Not found" }, 404);
     const devices = await db.devices.list({ meshId: mesh.id });
     return c.json(devices.filter((device) => visibleToReader(actor, mesh, device)).map(deviceJson));
+  });
+
+  app.get("/meshes/:mesh_id/viewers", async (c) => {
+    const actor = c.get("actor");
+    const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
+    if (!mesh) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteMesh(actor, mesh)) return c.json({ detail: "You do not own this mesh" }, 403);
+    return c.json(
+      db.meshes.listViewers(mesh.id).flatMap((grant) => {
+        const viewer = db.actors.get(grant.viewerId);
+        return viewer ? [meshViewerJson(grant, viewer)] : [];
+      }),
+    );
+  });
+
+  app.post("/meshes/:mesh_id/viewers", async (c) => {
+    const actor = c.get("actor");
+    const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
+    if (!mesh) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteMesh(actor, mesh)) return c.json({ detail: "You do not own this mesh" }, 403);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zMeshesViewersCreateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    if (!parsed.success) return c.json({ detail: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+    const ownerId = parsed.data.body.owner_id;
+    if (ownerId === mesh.ownerId) return c.json({ owner_id: ["The mesh's owner already has access"] }, 400);
+    const viewer = db.actors.get(ownerId);
+    if (!viewer) return c.json({ owner_id: [`No owner with id ${ownerId}`] }, 400);
+    const { grant, created } = db.meshes.grant(mesh.id, viewer.id);
+    return c.json(meshViewerJson(grant, viewer), created ? 201 : 200);
+  });
+
+  app.delete("/meshes/:mesh_id/viewers/:owner_id", async (c) => {
+    const actor = c.get("actor");
+    const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
+    if (!mesh) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteMesh(actor, mesh)) return c.json({ detail: "You do not own this mesh" }, 403);
+    if (!db.meshes.revoke(mesh.id, c.req.param("owner_id"))) {
+      return c.json({ detail: "This owner has no access to this mesh" }, 404);
+    }
+    return c.body(null, 204);
   });
 
   app.put("/meshes/:mesh_id", async (c) => {

@@ -11,9 +11,10 @@ import {
   type Actor,
 } from "../../src/authz/authz";
 
-const hill = { ownerId: "ada", isPublic: false };
-const river = { ownerId: "bo", isPublic: false };
-const lake = { ownerId: "bo", isPublic: true };
+const hill = { ownerId: "ada", isPublic: false, viewerIds: new Set<string>() };
+const river = { ownerId: "bo", isPublic: false, viewerIds: new Set<string>() };
+const lake = { ownerId: "bo", isPublic: true, viewerIds: new Set<string>() };
+const delta = { ownerId: "bo", isPublic: false, viewerIds: new Set(["ada"]) };
 
 function actor(role: Actor["role"], id = "ada"): Actor {
   return {
@@ -62,16 +63,18 @@ describe("authz", () => {
     expect(visibleOwned(ada, [hill, river])).toEqual([hill]);
   });
 
-  it("lets an owner read public meshes, without the PSK or writes", () => {
+  it("lets an owner read public and granted meshes, without the PSK or writes", () => {
     const ada = actor("owner");
-    expect(canReadMesh(ada, lake)).toBe(true);
-    expect(canSeePsk(ada, lake)).toBe(false);
-    expect(canWriteMesh(ada, lake)).toBe(false);
-    expect(visibleMeshes(ada, [hill, river, lake])).toEqual([hill, lake]);
+    for (const mesh of [lake, delta]) {
+      expect(canReadMesh(ada, mesh)).toBe(true);
+      expect(canSeePsk(ada, mesh)).toBe(false);
+      expect(canWriteMesh(ada, mesh)).toBe(false);
+    }
+    expect(visibleMeshes(ada, [hill, river, lake, delta])).toEqual([hill, lake, delta]);
   });
 
   it("hides every mesh from an inactive owner, public or not", () => {
     const ada = { ...actor("owner"), isActive: false };
-    expect(visibleMeshes(ada, [hill, lake])).toEqual([]);
+    expect(visibleMeshes(ada, [hill, lake, delta])).toEqual([]);
   });
 });

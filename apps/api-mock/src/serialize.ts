@@ -18,6 +18,10 @@ export function meshJson(mesh: Mesh, includePsk: boolean) {
   return row;
 }
 
+export function meshViewerJson(grant: { id: string; createdAt: string }, viewer: Actor) {
+  return { id: grant.id, viewer: ownerPublicJson(viewer), created_at: grant.createdAt };
+}
+
 export function deviceJson(device: Device) {
   return {
     uuid: device.uuid,

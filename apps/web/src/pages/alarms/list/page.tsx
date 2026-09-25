@@ -36,7 +36,7 @@ export function AlarmsPage(): ReactElement {
     [meshes.data],
   );
   const { me } = useOwnerDirectory();
-  // Alarms are configuration, so devices on public meshes don't belong here.
+  // Alarms are configuration, so devices on public or shared meshes don't belong here.
   const editableDevices = useMemo(() => {
     const editableMeshIds = new Set((meshes.data ?? []).filter((m) => canEditMesh(m, me)).map((m) => m.id));
     return (devices.data ?? []).filter((device) => editableMeshIds.has(device.mesh_id));

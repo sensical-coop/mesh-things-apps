@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@mtt/ui/components/ui/dropdown-menu";
-import { RiAddLine, RiArrowDownSLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
+import { RiAddLine, RiArrowDownSLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine, RiShareLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
@@ -44,6 +44,8 @@ import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
+import { MeshViewersFrame } from "@/features/mesh/ui/mesh-viewers-frame";
+import { ShareMeshDialog } from "@/features/mesh/ui/share-mesh-dialog";
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
@@ -53,13 +55,15 @@ export function MeshDetailPage(): ReactElement {
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
-  const { me, ownerName } = useOwnerDirectory();
+  const { me, owners, ownerName } = useOwnerDirectory();
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [settingsDevice, setSettingsDevice] = useState<DeviceRead | null>(null);
-  // Someone else's public mesh is read-only: every write affordance hangs off this.
+  // Public and shared meshes are read-only: every write affordance hangs off this.
   const canEdit = mesh.data != null && canEditMesh(mesh.data, me);
+  const viewers = useQuery({ ...meshRepository.viewers({ path: { mesh_id: meshId } }), enabled: canEdit });
 
   const plotted = useMemo(
     () => (devices.data ?? []).filter((d) => d.latitude != null && d.longitude != null),
@@ -81,7 +85,7 @@ export function MeshDetailPage(): ReactElement {
                 ? meshTitle(mesh.data)
                 : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
             </h1>
-            {mesh.data ? <MeshAccessBadge mesh={mesh.data} /> : null}
+            {mesh.data ? <MeshAccessBadge mesh={mesh.data} canEdit={canEdit} /> : null}
           </div>
           {mesh.data && me && mesh.data.owner_id !== me.id ? (
             <p className="text-caption-1-regular text-text-secondary">
@@ -97,6 +101,18 @@ export function MeshDetailPage(): ReactElement {
             <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
               {formatMessage({ id: "page.meshes.detail.registerGateway", defaultMessage: "Register gateway" })}
             </Button>
+            {/* A public mesh is already readable by everyone, so there's nobody to invite. */}
+            {mesh.data?.is_public ? null : (
+              <Button
+                type="button"
+                variant="secondary"
+                size="small"
+                leadingIcon={RiShareLine}
+                onClick={() => setShareOpen(true)}
+              >
+                {formatMessage({ id: "page.meshes.detail.share", defaultMessage: "Share" })}
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -335,12 +351,22 @@ export function MeshDetailPage(): ReactElement {
             ) : null}
           </FramePanel>
         </Frame>
+        {mesh.data && canEdit ? <MeshViewersFrame mesh={mesh.data} /> : null}
       </div>
       {mesh.data && canEdit ? (
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
       ) : null}
       {mesh.data && canEdit ? (
         <EditMeshDialog mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
+      ) : null}
+      {mesh.data && canEdit ? (
+        <ShareMeshDialog
+          mesh={mesh.data}
+          owners={owners}
+          viewers={viewers.data ?? []}
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+        />
       ) : null}
       <DeleteMeshDialog
         mesh={deleteOpen ? (mesh.data ?? null) : null}

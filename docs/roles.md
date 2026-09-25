@@ -8,7 +8,7 @@ Tres roles. Un actor inactivo (`isActive: false`) no pasa ninguna comprobación.
 
 | Rol | Flags OpenAPI | Quién es |
 |---|---|---|
-| `owner` | `is_superuser: false`, `is_staff: false` | Dueño de mallas. Edita solo lo suyo; además lee mallas públicas. |
+| `owner` | `is_superuser: false`, `is_staff: false` | Dueño de mallas. Edita solo lo suyo; además lee mallas públicas y las que le han compartido. |
 | `staff` | `is_superuser: false`, `is_staff: true` | Operación interna. Lee el catálogo entero. No ve PSK. No escribe. |
 | `superuser` | `is_superuser: true`, `is_staff: true` | Admin. Lee y escribe todo, incluido el PSK y el email de cada owner. |
 
@@ -20,7 +20,7 @@ La unidad de pertenencia es `owner_id` en malla y blueprint. Un device hereda el
 
 | Capacidad | Función | owner | staff | superuser |
 |---|---|---|---|---|
-| Listar / leer mallas y devices | `canReadMesh` | las suyas y las públicas (`is_public`) | todas | todas |
+| Listar / leer mallas y devices | `canReadMesh` | las suyas, las públicas (`is_public`) y las compartidas con él | todas | todas |
 | Ver `psk_b64` | `canSeePsk` | la suya | no | sí |
 | Crear / editar malla o device | `canWriteMesh` | las suyas | no | sí |
 | Crear blueprint | `canWriteCatalog` | sí (queda a su nombre) | no | sí |
@@ -29,7 +29,7 @@ La unidad de pertenencia es `owner_id` en malla y blueprint. Un device hereda el
 
 `visibleMeshes` recorta la lista de mallas con `canReadMesh`. `visibleOwned` (blueprints) sigue siendo solo `ownerId === actor.id` para un owner.
 
-Leer no es editar: en una malla pública ajena el lector no ve PSK ni devices rechazados (`is_allowed: false`), y recibe 403 en cualquier write. En web, `canEditMesh` (`features/mesh/model.ts`) oculta toda acción de escritura (editar, borrar, registrar, ajustes de device, alarmas) cuando la malla no es suya.
+Leer no es editar: en una malla pública o compartida el lector no ve PSK ni devices rechazados (`is_allowed: false`), y recibe 403 en cualquier write. En web, `canEditMesh` (`features/mesh/model.ts`) oculta toda acción de escritura (editar, borrar, registrar, compartir, ajustes de device, alarmas) cuando la malla no es suya. Solo el dueño gestiona `GET/POST /meshes/{id}/viewers` y `DELETE /meshes/{id}/viewers/{owner_id}`; conceder o revocar envía un email al lector (lo hace el backend).
 
 404 vs 403: si el actor no puede **leer** el recurso, el mock responde 404 (no revela que existe). Si puede leer pero no escribir, 403.
 
@@ -40,6 +40,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 - `POST /owners/login`, `POST /owners/logout`, `GET /owners/me`: sesión. El perfil incluye solo devices visibles.
 - `GET /owners`, `GET /owners/{id}`: directorio público o registro completo según la tabla.
 - `GET/POST /meshes` (`?owned=true` para solo las propias), `GET /meshes/{id}`: filtro + PSK según rol. 404 si no se puede leer.
+- `GET/POST /meshes/{id}/viewers`, `DELETE /meshes/{id}/viewers/{owner_id}`: solo el dueño.
 - `GET/POST /devices`, `PUT /devices/{id}`: el write exige `canWriteMesh` sobre la malla del device.
 - `GET/POST /postprocessing-blueprints`: lista filtrada; staff no crea.
 - Lecturas, quality, catálogo de measurements y algorithms: cualquier sesión activa que ya pueda leer el device.

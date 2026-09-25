@@ -13,8 +13,8 @@ export type Actor = {
 
 export type Owned = { ownerId: string };
 
-/** A mesh as far as read access is concerned: its owner and the public flag. */
-export type Viewable = Owned & { isPublic: boolean };
+/** A mesh as far as read access is concerned: its owner, the public flag, and who holds a viewer grant. */
+export type Viewable = Owned & { isPublic: boolean; viewerIds: ReadonlySet<string> };
 
 export function flagsForRole(role: Role): { isSuperuser: boolean; isStaff: boolean } {
   return {
@@ -29,7 +29,8 @@ export function canReadMesh(actor: Actor, mesh: Viewable): boolean {
     actor.role === "superuser" ||
     actor.role === "staff" ||
     mesh.ownerId === actor.id ||
-    mesh.isPublic
+    mesh.isPublic ||
+    mesh.viewerIds.has(actor.id)
   );
 }
 
@@ -52,7 +53,7 @@ export function canReadOwnerEmail(actor: Actor, subject: Actor): boolean {
   return actor.role === "superuser" || actor.id === subject.id;
 }
 
-/** Meshes the actor may read: own or public — or every mesh for staff and superusers. */
+/** Meshes the actor may read: own, public, granted — or every mesh for staff and superusers. */
 export function visibleMeshes<T extends Viewable>(actor: Actor, rows: T[]): T[] {
   return rows.filter((row) => canReadMesh(actor, row));
 }
