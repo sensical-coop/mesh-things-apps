@@ -10,6 +10,7 @@ export function meshJson(mesh: Mesh, includePsk: boolean) {
     channel_id: mesh.channelId,
     label: mesh.label,
     owner_id: mesh.ownerId,
+    is_public: mesh.isPublic,
     created_at: mesh.createdAt,
     updated_at: mesh.updatedAt,
   };

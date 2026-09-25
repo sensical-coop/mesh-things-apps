@@ -245,6 +245,10 @@ export type Mesh = {
     psk_b64?: string;
     label?: string | null;
     readonly owner_id: string;
+    /**
+     * When true, any verified owner may read this mesh, its devices and their readings. Writes stay with the owner.
+     */
+    is_public?: boolean;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -262,11 +266,12 @@ export type MeshCreate = {
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
  */
 export type MeshUpdate = {
     channel_id?: string;
     label?: string | null;
+    is_public?: boolean;
 };
 
 export type MetricsResponse = {
@@ -583,10 +588,14 @@ export type MeshWritable = {
      */
     psk_b64?: string;
     label?: string | null;
+    /**
+     * When true, any verified owner may read this mesh, its devices and their readings. Writes stay with the owner.
+     */
+    is_public?: boolean;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, and label are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
  */
 export type MeshUpdateWritable = {
     channel_id?: string;
@@ -595,6 +604,7 @@ export type MeshUpdateWritable = {
      */
     psk_b64?: string;
     label?: string | null;
+    is_public?: boolean;
 };
 
 export type OwnerCreateWritable = {
@@ -934,6 +944,10 @@ export type MeshesListData = {
          * List filter, e.g. `is:LongFast`.
          */
         channel_id?: string;
+        /**
+         * Restrict to meshes the caller owns, excluding public ones.
+         */
+        owned?: boolean;
     };
     url: '/meshes';
 };

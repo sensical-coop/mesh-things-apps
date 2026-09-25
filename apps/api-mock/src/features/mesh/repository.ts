@@ -25,6 +25,7 @@ export class MemoryMeshes implements IMeshRepository {
       pskB64: input.pskB64,
       label: input.label ?? null,
       ownerId: input.ownerId,
+      isPublic: input.isPublic ?? false,
       createdAt: now,
       updatedAt: now,
     });
@@ -34,13 +35,14 @@ export class MemoryMeshes implements IMeshRepository {
 
   async update(
     id: string,
-    patch: { channelId?: string; pskB64?: string; label?: string | null },
+    patch: { channelId?: string; pskB64?: string; label?: string | null; isPublic?: boolean },
   ): Promise<Mesh | null> {
     const mesh = this.items.get(id);
     if (!mesh) return null;
     if (patch.channelId !== undefined) mesh.channelId = patch.channelId;
     if (patch.pskB64 !== undefined) mesh.pskB64 = patch.pskB64;
     if (patch.label !== undefined) mesh.label = patch.label;
+    if (patch.isPublic !== undefined) mesh.isPublic = patch.isPublic;
     mesh.updatedAt = nowIso();
     return mesh;
   }

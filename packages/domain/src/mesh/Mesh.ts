@@ -4,6 +4,7 @@ export type MeshProps = {
   pskB64: string;
   label: string | null;
   ownerId: string;
+  isPublic?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -13,10 +14,11 @@ export type MeshCreate = {
   pskB64: string;
   label?: string | null;
   ownerId: string;
+  isPublic?: boolean;
 };
 
 /** Public list row: PSK stays off this shape. */
-export type MeshListItem = Omit<MeshProps, "pskB64">;
+export type MeshListItem = Omit<MeshProps, "pskB64"> & { isPublic: boolean };
 
 export class Mesh implements MeshProps {
   readonly id: string;
@@ -24,6 +26,7 @@ export class Mesh implements MeshProps {
   pskB64: string;
   label: string | null;
   readonly ownerId: string;
+  isPublic: boolean;
   readonly createdAt: string;
   updatedAt: string;
 
@@ -35,6 +38,7 @@ export class Mesh implements MeshProps {
     this.pskB64 = props.pskB64;
     this.label = props.label;
     this.ownerId = props.ownerId;
+    this.isPublic = props.isPublic ?? false;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
@@ -45,6 +49,7 @@ export class Mesh implements MeshProps {
       channelId: this.channelId,
       label: this.label,
       ownerId: this.ownerId,
+      isPublic: this.isPublic,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

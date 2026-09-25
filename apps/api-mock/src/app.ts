@@ -14,6 +14,7 @@ import {
 } from "@mtt/contracts/zod";
 import { matchesDeviceFilter, type Device } from "@mtt/domain/device/Device";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
+import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import {
   canReadMesh,
   canReadOwnerEmail,
@@ -111,10 +112,21 @@ function applySetCookie(c: Context, headers: Headers) {
   if (single) c.header("Set-Cookie", single, { append: true });
 }
 
+async function visibleMeshes(store: Store, actor: Actor, filters?: Parameters<Store["meshes"]["list"]>[0]) {
+  return (await store.meshes.list(filters)).filter((mesh) => canReadMesh(actor, mesh));
+}
+
+/** A rejected registration is the mesh owner's business, not a viewer's. */
+function visibleToReader(actor: Actor, mesh: Mesh, device: Device): boolean {
+  return device.isAllowed || canWriteMesh(actor, mesh);
+}
+
 async function devicesFor(store: Store, actor: Actor) {
-  const meshes = visibleOwned(actor, await store.meshes.list());
-  const allowed = new Set(meshes.map((mesh) => mesh.id));
-  return (await store.devices.list()).filter((device) => allowed.has(device.meshId));
+  const meshes = new Map((await visibleMeshes(store, actor)).map((mesh) => [mesh.id, mesh]));
+  return (await store.devices.list()).filter((device) => {
+    const mesh = meshes.get(device.meshId);
+    return mesh != null && visibleToReader(actor, mesh, device);
+  });
 }
 
 async function meshForRead(store: Store, actor: Actor, meshId: string) {
@@ -127,7 +139,7 @@ async function deviceForRead(store: Store, actor: Actor, uuid: string) {
   const device = await store.devices.get(uuid);
   if (!device) return null;
   const mesh = await meshForRead(store, actor, device.meshId);
-  if (!mesh) return null;
+  if (!mesh || !visibleToReader(actor, mesh, device)) return null;
   return device;
 }
 
@@ -433,7 +445,10 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.get("/meshes", async (c) => {
     const actor = c.get("actor");
-    const meshes = visibleOwned(actor, await db.meshes.list(queryFilters(c, ["label", "channel_id"])));
+    const owned = ["true", "1"].includes((c.req.query("owned") ?? "").toLowerCase());
+    const meshes = (await visibleMeshes(db, actor, queryFilters(c, ["label", "channel_id"]))).filter(
+      (mesh) => !owned || mesh.ownerId === actor.id,
+    );
     return c.json(meshes.map((m) => meshJson(m, canSeePsk(actor, m))));
   });
 
@@ -466,7 +481,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
     if (!mesh) return c.json({ detail: "Not found" }, 404);
     const devices = await db.devices.list({ meshId: mesh.id });
-    return c.json(devices.map(deviceJson));
+    return c.json(devices.filter((device) => visibleToReader(actor, mesh, device)).map(deviceJson));
   });
 
   app.put("/meshes/:mesh_id", async (c) => {
@@ -484,6 +499,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       channelId: patch.channel_id,
       pskB64: patch.psk_b64,
       label: patch.label,
+      isPublic: patch.is_public,
     });
     if (!updated) return c.json({ detail: "Not found" }, 404);
     return c.json(meshJson(updated, canSeePsk(actor, updated)));
@@ -545,8 +561,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const existing = await db.devices.get(c.req.param("device_uuid"));
     if (!existing) return c.json({ detail: "Not found" }, 404);
-    const mesh = await db.meshes.get(existing.meshId);
-    if (!mesh || !canReadMesh(actor, mesh)) return c.json({ detail: "Not found" }, 404);
+    const mesh = await meshForRead(db, actor, existing.meshId);
+    if (!mesh) return c.json({ detail: "Not found" }, 404);
     if (!canWriteMesh(actor, mesh)) {
       return c.json({ detail: "You do not have permission to perform this action." }, 403);
     }

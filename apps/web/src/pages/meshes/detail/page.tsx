@@ -25,7 +25,7 @@ import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
 import { Input } from "@mtt/ui/components/ui/input";
-import { authRepository } from "@/features/auth/repository";
+import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
@@ -40,9 +40,10 @@ import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
+import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
@@ -52,13 +53,13 @@ export function MeshDetailPage(): ReactElement {
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
-  const me = useQuery({ ...authRepository.me(), retry: false });
+  const { me, ownerName } = useOwnerDirectory();
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [settingsDevice, setSettingsDevice] = useState<DeviceRead | null>(null);
-  const canDelete =
-    mesh.data != null && (me.data?.is_superuser === true || mesh.data.owner_id === me.data?.id);
+  // Someone else's public mesh is read-only: every write affordance hangs off this.
+  const canEdit = mesh.data != null && canEditMesh(mesh.data, me);
 
   const plotted = useMemo(
     () => (devices.data ?? []).filter((d) => d.latitude != null && d.longitude != null),
@@ -74,17 +75,28 @@ export function MeshDetailPage(): ReactElement {
               {formatMessage({ id: "page.meshes.detail.breadcrumb", defaultMessage: "Meshes" })}
             </Link>
           </p>
-          <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
-            {mesh.data
-              ? meshTitle(mesh.data)
-              : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
-          </h1>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
+              {mesh.data
+                ? meshTitle(mesh.data)
+                : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
+            </h1>
+            {mesh.data ? <MeshAccessBadge mesh={mesh.data} /> : null}
+          </div>
+          {mesh.data && me && mesh.data.owner_id !== me.id ? (
+            <p className="text-caption-1-regular text-text-secondary">
+              {formatMessage(
+                { id: "page.meshes.detail.ownedBy", defaultMessage: "Owned by {name}" },
+                { name: ownerName(mesh.data.owner_id) },
+              )}
+            </p>
+          ) : null}
         </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
-            {formatMessage({ id: "page.meshes.detail.registerGateway", defaultMessage: "Register gateway" })}
-          </Button>
-          {canDelete ? (
+        {canEdit ? (
+          <div className="flex items-center gap-2">
+            <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
+              {formatMessage({ id: "page.meshes.detail.registerGateway", defaultMessage: "Register gateway" })}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -102,8 +114,8 @@ export function MeshDetailPage(): ReactElement {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
@@ -290,14 +302,16 @@ export function MeshDetailPage(): ReactElement {
                             >
                               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
                             </ButtonLink>
-                            <Button
-                              type="button"
-                              size="xs"
-                              variant="secondary"
-                              onClick={() => setSettingsDevice(device)}
-                            >
-                              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-                            </Button>
+                            {canEdit ? (
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="secondary"
+                                onClick={() => setSettingsDevice(device)}
+                              >
+                                {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+                              </Button>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -308,19 +322,24 @@ export function MeshDetailPage(): ReactElement {
             ) : null}
             {devices.data && devices.data.length === 0 ? (
               <StatusCopy>
-                {formatMessage({
-                  id: "page.meshes.detail.devices.registerHint",
-                  defaultMessage: "Register a node or gateway to start decoding traffic.",
-                })}
+                {canEdit
+                  ? formatMessage({
+                      id: "page.meshes.detail.devices.registerHint",
+                      defaultMessage: "Register a node or gateway to start decoding traffic.",
+                    })
+                  : formatMessage({
+                      id: "page.meshes.detail.devices.empty",
+                      defaultMessage: "No devices on this mesh yet.",
+                    })}
               </StatusCopy>
             ) : null}
           </FramePanel>
         </Frame>
       </div>
-      {mesh.data ? (
+      {mesh.data && canEdit ? (
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
       ) : null}
-      {mesh.data ? (
+      {mesh.data && canEdit ? (
         <EditMeshDialog mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
       ) : null}
       <DeleteMeshDialog

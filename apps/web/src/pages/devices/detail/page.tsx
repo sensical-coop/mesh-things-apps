@@ -26,7 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/
 import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { useFormatters, type Formatters } from "@/hooks/use-formatters";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshTitle } from "@/features/mesh/model";
+import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { readingsRepository } from "@/features/readings/repository";
 import { routes } from "@/router";
 import { Kpi } from "@/components/kpi/kpi";
@@ -80,6 +81,10 @@ export function DeviceDetailPage(): ReactElement {
     () => new globalThis.Map((catalog.data ?? []).map((m: MeasurementTypeRead) => [m.channel, m])),
     [catalog.data],
   );
+  const { me } = useOwnerDirectory();
+  // A device on someone else's public mesh is read-only: no settings, no alarms.
+  // False until the mesh loads, so write chrome never flashes for a viewer.
+  const canEdit = mesh.data != null && canEditMesh(mesh.data, me);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scrollToChannel, setScrollToChannel] = useState<string | null>(null);
 
@@ -168,7 +173,7 @@ export function DeviceDetailPage(): ReactElement {
 
   return (
     <>
-      {device.data ? (
+      {device.data && canEdit ? (
         <DeviceSettingsDialog
           device={device.data}
           open={settingsOpen}
@@ -216,7 +221,7 @@ export function DeviceDetailPage(): ReactElement {
               </div>
             </div>
           </div>
-          {device.data ? (
+          {device.data && canEdit ? (
             <Button type="button" size="small" variant="secondary" onClick={() => setSettingsOpen(true)}>
               {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
             </Button>
@@ -237,6 +242,7 @@ export function DeviceDetailPage(): ReactElement {
             variants={variants}
             seen={seen}
             names={names}
+            canEdit={canEdit}
             onViewChart={handleViewChart}
           />
         </TabsContent>
@@ -249,6 +255,7 @@ export function DeviceDetailPage(): ReactElement {
             chartChannels={chartChannels}
             chartChannelGroups={chartChannelGroups}
             names={names}
+            canEdit={canEdit}
             scrollToChannel={scrollToChannel}
             onScrolled={() => setScrollToChannel(null)}
           />
@@ -268,6 +275,7 @@ function DeviceStatusTab({
   variants,
   seen,
   names,
+  canEdit,
   onViewChart,
 }: {
   device: UseQueryResult<DeviceRead>;
@@ -275,11 +283,16 @@ function DeviceStatusTab({
   variants: UseQueryResult<DeviceTelemetryVariant[]>;
   seen: UseQueryResult<DeviceMeasurement[]>;
   names: NamesByChannel;
+  canEdit: boolean;
   onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen, formatRatio, formatWhen } = useFormatters();
-  const qualitySummary = quality.data ? qualityHeadlineKpis(quality.data, formatMessage, formatRatio) : [];
+  const qualitySummary = quality.data
+    ? qualityHeadlineKpis(quality.data, formatMessage, formatRatio, { withAlarms: canEdit })
+    : [];
+  const qualitySlots = canEdit ? ["range", "completeness", "alarms"] : ["range", "completeness"];
+  const qualityCols = canEdit ? "sm:grid-cols-3" : "sm:grid-cols-2";
   const pointsIngested = quality.data?.points_ingested;
   return (
     <>
@@ -417,16 +430,21 @@ function DeviceStatusTab({
                   },
                   { count: pointsIngested },
                 )
-              : formatMessage({
-                  id: "page.devices.detail.quality.descriptionDefault",
-                  defaultMessage: "Ingest, range, and alarms for the last 24 hours.",
-                })}
+              : canEdit
+                ? formatMessage({
+                    id: "page.devices.detail.quality.descriptionDefault",
+                    defaultMessage: "Ingest, range, and alarms for the last 24 hours.",
+                  })
+                : formatMessage({
+                    id: "page.devices.detail.quality.descriptionReadOnly",
+                    defaultMessage: "Ingest and range for the last 24 hours.",
+                  })}
           </FrameDescription>
         </FrameHeader>
         <FramePanel>
           {quality.isPending ? (
-            <div className="grid gap-3 sm:grid-cols-3" aria-hidden>
-              {["range", "completeness", "alarms"].map((slot) => (
+            <div className={cx("grid gap-3", qualityCols)} aria-hidden>
+              {qualitySlots.map((slot) => (
                 <div key={slot} className="oa-squircle-inset h-24 bg-background-primary-default" />
               ))}
             </div>
@@ -441,7 +459,7 @@ function DeviceStatusTab({
           ) : null}
           {quality.data ? (
             <div className="flex flex-col gap-6">
-              <div className="oa-arrive grid gap-3 sm:grid-cols-3" role="group" aria-label="Quality summary">
+              <div className={cx("oa-arrive grid gap-3", qualityCols)} role="group" aria-label="Quality summary">
                 {qualitySummary.map((kpi) => (
                   <Kpi key={kpi.label} label={kpi.label} value={kpi.value} hint={kpi.hint} />
                 ))}
@@ -535,6 +553,7 @@ function DeviceStatusTab({
                     variant={variant}
                     device={device.data}
                     measurements={measurements}
+                    canEdit={canEdit}
                     onViewChart={onViewChart}
                   />
                 );
@@ -557,11 +576,13 @@ function TelemetryVariantSection({
   variant,
   device,
   measurements,
+  canEdit,
   onViewChart,
 }: {
   variant: DeviceTelemetryVariant;
   device: DeviceRead | undefined;
   measurements: DeviceMeasurement[];
+  canEdit: boolean;
   onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
@@ -634,9 +655,11 @@ function TelemetryVariantSection({
                 <th className="h-8 w-28 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                   {formatMessage({ id: "page.devices.detail.variants.columns.chart", defaultMessage: "Chart" })}
                 </th>
-                <th className="h-8 w-16 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                  {formatMessage({ id: "page.devices.detail.variants.columns.alarms", defaultMessage: "Alarms" })}
-                </th>
+                {canEdit ? (
+                  <th className="h-8 w-16 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                    {formatMessage({ id: "page.devices.detail.variants.columns.alarms", defaultMessage: "Alarms" })}
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
@@ -673,15 +696,17 @@ function TelemetryVariantSection({
                         })}
                       </a>
                     </td>
-                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
-                      {device ? (
-                        <AlarmBellButton
-                          deviceUuid={device.uuid}
-                          channel={channel}
-                          label={row.measurement_type.display_name ?? channel}
-                        />
-                      ) : null}
-                    </td>
+                    {canEdit ? (
+                      <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
+                        {device ? (
+                          <AlarmBellButton
+                            deviceUuid={device.uuid}
+                            channel={channel}
+                            label={row.measurement_type.display_name ?? channel}
+                          />
+                        ) : null}
+                      </td>
+                    ) : null}
                   </tr>
                 );
               })}
@@ -708,6 +733,7 @@ function DeviceDashboardTab({
   chartChannels,
   chartChannelGroups,
   names,
+  canEdit,
   scrollToChannel,
   onScrolled,
 }: {
@@ -718,6 +744,7 @@ function DeviceDashboardTab({
   chartChannels: string[];
   chartChannelGroups: ChartChannelGroup[];
   names: NamesByChannel;
+  canEdit: boolean;
   scrollToChannel: string | null;
   onScrolled: () => void;
 }): ReactElement {
@@ -805,7 +832,9 @@ function DeviceDashboardTab({
                         value={`${formatValue(reading.value)}${unit ? ` ${unit}` : ""}`}
                         hint={formatWhen(reading.time)}
                         action={
-                          <AlarmBellButton deviceUuid={deviceUuid} channel={reading.channel} label={reading.field_name} />
+                          canEdit ? (
+                            <AlarmBellButton deviceUuid={deviceUuid} channel={reading.channel} label={reading.field_name} />
+                          ) : undefined
                         }
                       />
                     );
@@ -872,7 +901,9 @@ function DeviceDashboardTab({
                         )
                       : aggLabel;
                     const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
-                    const bell = <AlarmBellButton deviceUuid={deviceUuid} channel={channel} label={label} />;
+                    const bell = canEdit ? (
+                      <AlarmBellButton deviceUuid={deviceUuid} channel={channel} label={label} />
+                    ) : undefined;
                     let content: ReactElement;
                     if (series?.isPending) {
                       content = (
@@ -978,6 +1009,7 @@ function qualityHeadlineKpis(
   quality: DeviceQualityResponse,
   formatMessage: IntlShape["formatMessage"],
   formatRatio: Formatters["formatRatio"],
+  { withAlarms }: { withAlarms: boolean },
 ): { label: string; value: string; hint: string }[] {
   const alarms = Object.entries(quality.alarms_by_detector);
   const alarmCount = alarms.reduce((sum, [, n]) => sum + n, 0);
@@ -1014,11 +1046,15 @@ function qualityHeadlineKpis(
           )
         : formatMessage({ id: "page.devices.detail.quality.kpi.noChannelsHint", defaultMessage: "No channels yet" }),
     },
-    {
-      label: formatMessage({ id: "page.devices.detail.quality.kpi.alarms", defaultMessage: "Alarms" }),
-      value: String(alarmCount),
-      hint: alarmHint,
-    },
+    ...(withAlarms
+      ? [
+          {
+            label: formatMessage({ id: "page.devices.detail.quality.kpi.alarms", defaultMessage: "Alarms" }),
+            value: String(alarmCount),
+            hint: alarmHint,
+          },
+        ]
+      : []),
   ];
 }
 

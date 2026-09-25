@@ -338,9 +338,10 @@ export const measurementsUpdate = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * List the caller's meshes, or every mesh for a superuser.
+ * List the meshes the caller may read, or every mesh for a superuser.
  *
- * The pre-shared key is included only for meshes the caller owns.
+ * Alongside their own, this includes public meshes. The pre-shared key is
+ * included only for meshes the caller owns.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
  * dashboard URL). Bare values are treated as `is:<value>`.
@@ -396,6 +397,9 @@ export const meshesDestroy = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Return one mesh.
+ *
+ * Readable by its owner, a superuser, and anyone when the mesh is public.
+ * Anyone else gets 404.
  */
 export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Options<MeshesRetrieveData, ThrowOnError>) => (options.client ?? client).get<MeshesRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesRetrieveData.parseAsync(data),
@@ -433,6 +437,8 @@ export const meshesUpdate = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * List every device registered on this mesh, gateways and nodes alike.
+ *
+ * Rejected registrations are shown only to the mesh's owner.
  */
 export const meshesDevicesList = <ThrowOnError extends boolean = false>(options: Options<MeshesDevicesListData, ThrowOnError>) => (options.client ?? client).get<MeshesDevicesListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesDevicesListData.parseAsync(data),
