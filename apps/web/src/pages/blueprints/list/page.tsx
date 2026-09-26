@@ -21,6 +21,7 @@ import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { formLevelMessage, readApiError } from "@/lib/api-errors";
 import { blueprintRepository } from "@/features/blueprint/repository";
 
 export function BlueprintsPage(): ReactElement {
@@ -81,12 +82,14 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
   const algorithms = useQuery(blueprintRepository.algorithms());
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const create = useMutation({
     ...blueprintRepository.create(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
       onClose();
     },
+    onError: (failure) => setFieldErrors(readApiError(failure).fields),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -115,6 +118,7 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
       return;
     }
     setError(null);
+    setFieldErrors({});
     create.mutate({ body: parsed.data.body });
   }
 
@@ -133,12 +137,14 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
           <FormField
             id="blueprint-name"
             label={formatMessage({ id: "page.blueprints.list.createDialog.name", defaultMessage: "Name" })}
+            error={fieldErrors.name}
           >
             <Input id="blueprint-name" name="name" required autoComplete="off" />
           </FormField>
           <FormField
             id="blueprint-algorithm"
             label={formatMessage({ id: "page.blueprints.list.createDialog.algorithm", defaultMessage: "Algorithm" })}
+            error={fieldErrors.function_name ?? fieldErrors.steps}
           >
             <FormSelect
               id="blueprint-algorithm"
@@ -157,6 +163,7 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
               id: "page.blueprints.list.createDialog.descriptionField",
               defaultMessage: "Description",
             })}
+            error={fieldErrors.description}
           >
             <Textarea id="blueprint-description" name="description" />
           </FormField>
@@ -168,6 +175,7 @@ function NewBlueprintDialog({ open, onClose }: { open: boolean; onClose: () => v
                 id: "page.blueprints.list.createDialog.error",
                 defaultMessage: "The blueprint was not saved. Check the fields and try again.",
               })}
+            {!error && formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>

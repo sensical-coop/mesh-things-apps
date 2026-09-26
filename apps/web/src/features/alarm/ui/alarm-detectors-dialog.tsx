@@ -9,6 +9,7 @@ import { FormNumber } from "@/components/form/form-number";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { formLevelMessage, readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { alarmRepository } from "@/features/alarm/repository";
 import { deviceRepository } from "@/features/device/repository";
@@ -35,6 +36,7 @@ export function AlarmDetectorsDialog({
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const updateMeasurement = useMutation(deviceRepository.measurementUpdate());
 
@@ -69,6 +71,7 @@ export function AlarmDetectorsDialog({
       return;
     }
     setError(null);
+    setFieldErrors({});
     try {
       await updateMeasurement.mutateAsync({
         path: { device_uuid: deviceUuid, measurement_id: row.id },
@@ -80,12 +83,15 @@ export function AlarmDetectorsDialog({
       });
       await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
       onClose();
-    } catch {
+    } catch (failure) {
+      const { fields } = readApiError(failure);
+      setFieldErrors(fields);
+      const extra = fields.enabled_detectors ?? formLevelMessage(failure);
       setError(
         formatMessage({
           id: "feature.alarm.detectorsDialog.error",
           defaultMessage: "The alarm settings were not saved. Try again.",
-        }),
+        }) + (extra ? ` ${extra}` : ""),
       );
     }
   }
@@ -141,6 +147,7 @@ export function AlarmDetectorsDialog({
                           id: "feature.alarm.detectorsDialog.validMin",
                           defaultMessage: "Min",
                         })}
+                        error={fieldErrors.valid_min}
                       >
                         <FormNumber
                           id="detector-valid-min"
@@ -155,6 +162,7 @@ export function AlarmDetectorsDialog({
                           id: "feature.alarm.detectorsDialog.validMax",
                           defaultMessage: "Max",
                         })}
+                        error={fieldErrors.valid_max}
                       >
                         <FormNumber
                           id="detector-valid-max"

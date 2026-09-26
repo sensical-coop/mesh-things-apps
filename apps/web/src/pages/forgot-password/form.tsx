@@ -9,6 +9,7 @@ import { FormField } from "@/components/form/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
+import { readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
 
 export function ForgotPasswordForm(): ReactElement {
@@ -28,12 +29,13 @@ export function ForgotPasswordForm(): ReactElement {
     try {
       await requestReset.mutateAsync({ body: { email } });
       setSubmittedEmail(email);
-    } catch {
+    } catch (failure) {
       setError(
-        formatMessage({
-          id: "page.forgotPassword.form.error",
-          defaultMessage: "We couldn't send the reset link. Try again in a moment.",
-        }),
+        readApiError(failure).fields.email ??
+          formatMessage({
+            id: "page.forgotPassword.form.error",
+            defaultMessage: "We couldn't send the reset link. Try again in a moment.",
+          }),
       );
     }
   }
