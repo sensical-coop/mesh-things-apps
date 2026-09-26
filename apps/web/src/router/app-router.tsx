@@ -19,6 +19,7 @@ import { profilePage } from "@/pages/profile/route";
 import { sourceListPage } from "@/pages/sources/list/route";
 import { operatorRequestDetailPage } from "@/pages/operator-requests/detail/route";
 import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
+import { dataDeletionListPage } from "@/pages/data-deletions/list/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
 
@@ -125,6 +126,11 @@ const operatorRequestRoute = createRoute({
   ...operatorRequestDetailPage,
 });
 
+const dataDeletionsRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...dataDeletionListPage,
+});
+
 const profileRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...profilePage,
@@ -150,6 +156,7 @@ const routeTree = rootRoute.addChildren([
     sourcesRoute,
     operatorRequestsRoute,
     operatorRequestRoute,
+    dataDeletionsRoute,
     profileRoute,
   ]),
 ]);
