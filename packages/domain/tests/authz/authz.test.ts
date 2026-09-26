@@ -4,10 +4,16 @@ import {
   canReadOwnerEmail,
   canSeePsk,
   canWriteCatalog,
+  canDecideOperatorRequests,
+  canManageSources,
+  canSeeDataDeletions,
+  canRequestOperator,
   canWriteMesh,
   flagsForRole,
+  roleFlag,
   visibleMeshes,
   visibleOwned,
+  visibleSources,
   type Actor,
 } from "../../src/authz/authz";
 
@@ -73,5 +79,42 @@ describe("authz", () => {
   it("hides every mesh from an inactive owner, public or not", () => {
     const ada = { ...actor("owner"), isActive: false };
     expect(visibleMeshes(ada, [hill, lake])).toEqual([]);
+  });
+
+  it("lets an operator manage only their own sources, and own meshes like any owner", () => {
+    const op = actor("operator", "op");
+    const mine = { createdById: "op" };
+    const theirs = { createdById: "other" };
+    expect(canManageSources(op)).toBe(true);
+    expect(visibleSources(op, [mine, theirs])).toEqual([mine]);
+    expect(canWriteCatalog(op)).toBe(true);
+    expect(canReadMesh(op, hill)).toBe(false);
+    expect(canWriteMesh(op, { ownerId: "op" })).toBe(true);
+    expect(flagsForRole("operator")).toEqual({ isSuperuser: false, isStaff: false });
+    expect(roleFlag("operator")).toBe("operator");
+  });
+
+  it("gives superusers every source and nobody else any", () => {
+    const rows = [{ createdById: "op" }, { createdById: null }];
+    expect(visibleSources(actor("superuser", "admin"), rows)).toEqual(rows);
+    expect(visibleSources(actor("owner"), rows)).toEqual([]);
+    expect(visibleSources(actor("staff", "pat"), rows)).toEqual([]);
+    expect(canManageSources({ ...actor("operator", "op"), isActive: false })).toBe(false);
+    expect(roleFlag("superuser")).toBe("member");
+  });
+
+  it("lets only a plain owner request the operator role, and only a superuser decide", () => {
+    expect(canRequestOperator(actor("owner"))).toBe(true);
+    expect(canRequestOperator(actor("operator", "op"))).toBe(false);
+    expect(canRequestOperator(actor("staff", "pat"))).toBe(false);
+    expect(canRequestOperator(actor("superuser", "admin"))).toBe(false);
+    expect(canDecideOperatorRequests(actor("superuser", "admin"))).toBe(true);
+    expect(canDecideOperatorRequests(actor("staff", "pat"))).toBe(false);
+  });
+
+  it("shows the deletion schedule to superusers only", () => {
+    expect(canSeeDataDeletions(actor("superuser", "admin"))).toBe(true);
+    expect(canSeeDataDeletions(actor("staff", "pat"))).toBe(false);
+    expect(canSeeDataDeletions(actor("operator", "op"))).toBe(false);
   });
 });

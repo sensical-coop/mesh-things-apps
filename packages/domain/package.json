@@ -9,7 +9,8 @@
     "./mesh/*": "./src/mesh/*.ts",
     "./device/*": "./src/device/*.ts",
     "./measurement/*": "./src/measurement/*.ts",
-    "./readings/*": "./src/readings/*.ts"
+    "./readings/*": "./src/readings/*.ts",
+    "./source/*": "./src/source/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
