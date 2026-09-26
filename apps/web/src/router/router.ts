@@ -14,6 +14,10 @@ export const routes = Object.freeze({
   device: "/console/devices/$deviceUuid",
   alarms: "/console/alarms",
   blueprints: "/console/blueprints",
+  sources: "/console/sources",
+  operatorRequests: "/console/operator-requests",
+  operatorRequest: "/console/operator-requests/$requestId",
+  dataDeletions: "/console/data-deletions",
   profile: "/console/profile",
   consoleChild: Object.freeze({
     index: "/",
@@ -23,6 +27,10 @@ export const routes = Object.freeze({
     device: "devices/$deviceUuid",
     alarms: "alarms",
     blueprints: "blueprints",
+    sources: "sources",
+    operatorRequests: "operator-requests",
+    operatorRequest: "operator-requests/$requestId",
+    dataDeletions: "data-deletions",
     profile: "profile",
   }),
 } as const);
