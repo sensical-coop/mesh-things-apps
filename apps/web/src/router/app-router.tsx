@@ -16,6 +16,9 @@ import { deviceListPage } from "@/pages/devices/list/route";
 import { meshDetailPage } from "@/pages/meshes/detail/route";
 import { meshListPage } from "@/pages/meshes/list/route";
 import { profilePage } from "@/pages/profile/route";
+import { sourceListPage } from "@/pages/sources/list/route";
+import { operatorRequestDetailPage } from "@/pages/operator-requests/detail/route";
+import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
 
@@ -107,6 +110,21 @@ const blueprintsRoute = createRoute({
   ...blueprintListPage,
 });
 
+const sourcesRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...sourceListPage,
+});
+
+const operatorRequestsRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...operatorRequestListPage,
+});
+
+const operatorRequestRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...operatorRequestDetailPage,
+});
+
 const profileRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...profilePage,
@@ -129,6 +147,9 @@ const routeTree = rootRoute.addChildren([
     deviceDetailRoute,
     alarmsRoute,
     blueprintsRoute,
+    sourcesRoute,
+    operatorRequestsRoute,
+    operatorRequestRoute,
     profileRoute,
   ]),
 ]);

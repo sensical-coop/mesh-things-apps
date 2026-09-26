@@ -19,6 +19,9 @@ import { pageHeadingClass } from "@/lib/page-heading";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { OperatorRolePanel } from "@/features/operator-request/ui/operator-role-panel";
+import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
+import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
 import { routes } from "@/router";
@@ -69,6 +72,7 @@ export function ProfilePage(): ReactElement {
       setErrors({});
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
     },
+    onError: (error) => setErrors(readApiError(error).fields),
   });
   const updateCooldown = useMutation({
     ...authRepository.update(),
@@ -76,6 +80,7 @@ export function ProfilePage(): ReactElement {
       setCooldownError(null);
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
     },
+    onError: (error) => setCooldownError(readApiError(error).fields.alarm_email_cooldown_seconds ?? null),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -88,12 +93,7 @@ export function ProfilePage(): ReactElement {
       },
     });
     if (!parsed.success) {
-      const next: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path.at(-1) ?? "form");
-        next[key] ??= issue.message;
-      }
-      setErrors(next);
+      setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
@@ -180,6 +180,7 @@ export function ProfilePage(): ReactElement {
                       id: "page.profile.error",
                       defaultMessage: "The profile was not saved. Check the fields and try again.",
                     })}
+                    {formLevelMessage(update.error) ? ` ${formLevelMessage(update.error)}` : ""}
                   </StatusCopy>
                 ) : null}
                 <div className={dialogActionsClass}>
@@ -193,6 +194,8 @@ export function ProfilePage(): ReactElement {
             )}
           </FramePanel>
         </Frame>
+        <AccountTermsPanel />
+        <OperatorRolePanel />
         <Frame className="shadow-card">
           <FrameHeader>
             <FrameTitle>{formatMessage({ id: "page.profile.alarms.title", defaultMessage: "Alarms" })}</FrameTitle>
@@ -215,7 +218,7 @@ export function ProfilePage(): ReactElement {
                 {updateCooldown.isSuccess ? (
                   <StatusCopy>{formatMessage({ id: "page.profile.saved", defaultMessage: "Saved." })}</StatusCopy>
                 ) : null}
-                {updateCooldown.error ? (
+                {updateCooldown.error && !cooldownError ? (
                   <StatusCopy>
                     {formatMessage({
                       id: "page.profile.error",
