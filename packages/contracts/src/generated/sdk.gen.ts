@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlgorithmsListData, AlgorithmsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses } from './types.gen';
-import { zAlgorithmsListData, zAlgorithmsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse } from './zod.gen';
+import type { AlgorithmsListData, AlgorithmsListResponses, DataDeletionsListData, DataDeletionsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponses, MeshesTermsRetrieveData, MeshesTermsRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OperatorRequestsListData, OperatorRequestsListResponses, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponses, OperatorRequestsUpdateData, OperatorRequestsUpdateResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersDestroyData, OwnersDestroyResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponses, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersUpdateData, OwnersUpdateResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, SourcesCreateData, SourcesCreateResponses, SourcesDestroyData, SourcesDestroyResponses, SourcesListData, SourcesListResponses, SourcesRetrieveData, SourcesRetrieveResponses, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponses, SourcesTermsRetrieveData, SourcesTermsRetrieveResponses, SourcesUpdateData, SourcesUpdateResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses, TermsRetrieveData, TermsRetrieveResponses } from './types.gen';
+import { zAlgorithmsListData, zAlgorithmsListResponse, zDataDeletionsListData, zDataDeletionsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesTermsAcceptanceCreateData, zMeshesTermsAcceptanceCreateResponse, zMeshesTermsRetrieveData, zMeshesTermsRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOperatorRequestsListData, zOperatorRequestsListResponse, zOperatorRequestsRetrieveData, zOperatorRequestsRetrieveResponse, zOperatorRequestsUpdateData, zOperatorRequestsUpdateResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersDestroyData, zOwnersDestroyResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeOperatorRequestCreateData, zOwnersMeOperatorRequestCreateResponse, zOwnersMeOperatorRequestRetrieveData, zOwnersMeOperatorRequestRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeTermsAcceptanceCreateData, zOwnersMeTermsAcceptanceCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersUpdateData, zOwnersUpdateResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zSourcesCreateData, zSourcesCreateResponse, zSourcesDestroyData, zSourcesDestroyResponse, zSourcesListData, zSourcesListResponse, zSourcesRetrieveData, zSourcesRetrieveResponse, zSourcesTermsAcceptanceCreateData, zSourcesTermsAcceptanceCreateResponse, zSourcesTermsRetrieveData, zSourcesTermsRetrieveResponse, zSourcesUpdateData, zSourcesUpdateResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse, zTermsRetrieveData, zTermsRetrieveResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -34,6 +34,30 @@ export const algorithmsList = <ThrowOnError extends boolean = false>(options?: O
             type: 'apiKey'
         }],
     url: '/algorithms',
+    ...options
+});
+
+/**
+ * List scheduled deletions of stored readings, newest first. Superusers only.
+ *
+ * A mesh's readings are scheduled for deletion when the mesh is deleted,
+ * moved off its source, or its source's terms lapse. They stay in place
+ * until `delete_after`, then are deleted from both the time-series store
+ * and the archive.
+ *
+ * Args:
+ * status: `pending`, the default, `cancelled`, `done`, or `all`.
+ * mesh_id: Restrict to one mesh.
+ */
+export const dataDeletionsList = <ThrowOnError extends boolean = false>(options?: Options<DataDeletionsListData, ThrowOnError>) => (options?.client ?? client).get<DataDeletionsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDataDeletionsListData.parseAsync(data),
+    responseValidator: async (data) => await zDataDeletionsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/data-deletions',
     ...options
 });
 
@@ -378,10 +402,35 @@ export const meshesCreate = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
+ * Return the terms an owner accepts to create a mesh on the default broker.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the mesh, or when moving a mesh from a
+ * source onto the default broker. The footnote states how long the mesh's
+ * data is kept.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const meshesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<MeshesTermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<MeshesTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/terms',
+    ...options
+});
+
+/**
  * Delete a mesh and every device registered on it.
  *
  * Its gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * removed if that fails. The mesh's stored readings are deleted after the
+ * grace period, so export them first if they are needed.
  */
 export const meshesDestroy = <ThrowOnError extends boolean = false>(options: Options<MeshesDestroyData, ThrowOnError>) => (options.client ?? client).delete<MeshesDestroyResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesDestroyData.parseAsync(data),
@@ -397,9 +446,6 @@ export const meshesDestroy = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Return one mesh.
- *
- * Readable by its owner, a superuser, and anyone when the mesh is public.
- * Anyone else gets 404.
  */
 export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Options<MeshesRetrieveData, ThrowOnError>) => (options.client ?? client).get<MeshesRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesRetrieveData.parseAsync(data),
@@ -416,8 +462,22 @@ export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Update a mesh.
  *
- * Changing the pre-shared key redistributes it to every allowed gateway
- * on the mesh, and the whole update is rolled back if that fails.
+ * Changing the channel_id, the pre-shared key or the source redistributes
+ * them to every allowed gateway on the mesh, and the whole update is
+ * rolled back if that fails. Once the source changes, the mesh's gateways
+ * are only accepted through the new one.
+ *
+ * Args:
+ * source_id: Source to bridge the mesh's traffic from, which must be one
+ * the caller created, or any source for a superuser, and not paused.
+ * Null moves it to the default broker. Moving a mesh off a source
+ * schedules the readings stored until then for deletion after the
+ * grace period; moving it back within that period cancels it.
+ * terms_version: The `version` of the mesh terms accepted. Required when
+ * moving the mesh onto the default broker unless it already holds a
+ * current acceptance; ignored otherwise.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const meshesUpdate = <ThrowOnError extends boolean = false>(options: Options<MeshesUpdateData, ThrowOnError>) => (options.client ?? client).put<MeshesUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesUpdateData.parseAsync(data),
@@ -428,6 +488,36 @@ export const meshesUpdate = <ThrowOnError extends boolean = false>(options: Opti
             type: 'apiKey'
         }],
     url: '/meshes/{mesh_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Accept the current mesh terms again, renewing the mesh. Its owner only.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the mesh is paused: its gateways are deregistered and its
+ * readings are scheduled for deletion. Renewing resumes it and cancels the
+ * deletion, as long as the grace period has not ended. A mesh on a source
+ * is covered by the source's terms and answers `409`.
+ *
+ * Args:
+ * terms_version: The `version` of the mesh terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const meshesTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<MeshesTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<MeshesTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/{mesh_id}/terms-acceptance',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -468,6 +558,65 @@ export const metricsRetrieve = <ThrowOnError extends boolean = false>(options?: 
 });
 
 /**
+ * List operator requests, newest first. Superusers only.
+ *
+ * Args:
+ * status: `pending`, the default, `approved`, `rejected`, or `all`.
+ */
+export const operatorRequestsList = <ThrowOnError extends boolean = false>(options?: Options<OperatorRequestsListData, ThrowOnError>) => (options?.client ?? client).get<OperatorRequestsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOperatorRequestsListData.parseAsync(data),
+    responseValidator: async (data) => await zOperatorRequestsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/operator-requests',
+    ...options
+});
+
+/**
+ * Return one operator request. Superusers only.
+ */
+export const operatorRequestsRetrieve = <ThrowOnError extends boolean = false>(options: Options<OperatorRequestsRetrieveData, ThrowOnError>) => (options.client ?? client).get<OperatorRequestsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOperatorRequestsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zOperatorRequestsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/operator-requests/{request_id}',
+    ...options
+});
+
+/**
+ * Approve or reject a pending operator request. Superusers only.
+ *
+ * Approving makes the requester an operator. The requester is emailed
+ * the decision, and the decision stands even if that email fails.
+ *
+ * Args:
+ * decision: `approve` or `reject`. Required.
+ * note: Message to the requester, included in the email. Optional.
+ */
+export const operatorRequestsUpdate = <ThrowOnError extends boolean = false>(options: Options<OperatorRequestsUpdateData, ThrowOnError>) => (options.client ?? client).put<OperatorRequestsUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOperatorRequestsUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zOperatorRequestsUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/operator-requests/{request_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List registered owners.
  *
  * A superuser sees the full record for every owner. Everyone else,
@@ -490,9 +639,16 @@ export const ownersList = <ThrowOnError extends boolean = false>(options?: Optio
 /**
  * Register an owner and return its API key.
  *
- * The only write on this API that needs no authentication. The key is
- * shown in this response and cannot be retrieved again afterwards. A new
- * owner stays inactive until its email address is verified.
+ * Signing up accepts the current account terms, which are recorded. The
+ * key is shown in this response and cannot be retrieved again afterwards.
+ * A new owner stays inactive until its email address is verified.
+ *
+ * Args:
+ * terms_version: The `version` of the account terms accepted, as
+ * served by the terms endpoint. Required, and refused once the
+ * terms have changed.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const ownersCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersCreateData.parseAsync(data),
@@ -511,11 +667,28 @@ export const ownersCreate = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
+ * Remove an owner, along with their meshes and devices. Superusers only.
+ *
+ * Their gateways are deregistered from the decoder first, and nothing is
+ * removed if that fails.
+ */
+export const ownersDestroy = <ThrowOnError extends boolean = false>(options: Options<OwnersDestroyData, ThrowOnError>) => (options.client ?? client).delete<OwnersDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/{owner_id}',
+    ...options
+});
+
+/**
  * Return one owner.
  *
  * The full record comes back when the caller is the owner being requested, or
- * a superuser: email address, verification state, Django admin access and the
- * last password login. Everyone else gets the public fields only.
+ * a superuser. Everyone else gets the public fields only.
  */
 export const ownersRetrieve = <ThrowOnError extends boolean = false>(options: Options<OwnersRetrieveData, ThrowOnError>) => (options.client ?? client).get<OwnersRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersRetrieveData.parseAsync(data),
@@ -527,6 +700,30 @@ export const ownersRetrieve = <ThrowOnError extends boolean = false>(options: Op
         }],
     url: '/owners/{owner_id}',
     ...options
+});
+
+/**
+ * Change an owner's role. Superusers only.
+ *
+ * Args:
+ * role: `member`, the default, or `operator`, which may also manage
+ * sources. Granting `operator` also approves any pending operator
+ * request from this owner, without emailing them.
+ */
+export const ownersUpdate = <ThrowOnError extends boolean = false>(options: Options<OwnersUpdateData, ThrowOnError>) => (options.client ?? client).put<OwnersUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/{owner_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -660,6 +857,47 @@ export const ownersMeDevicesRetrieve = <ThrowOnError extends boolean = false>(op
 });
 
 /**
+ * Return the caller's most recent operator request and its status.
+ */
+export const ownersMeOperatorRequestRetrieve = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeOperatorRequestRetrieveData, ThrowOnError>) => (options?.client ?? client).get<OwnersMeOperatorRequestRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersMeOperatorRequestRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersMeOperatorRequestRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/me/operator-request',
+    ...options
+});
+
+/**
+ * Ask for the operator role, which lets an owner create sources.
+ *
+ * Every superuser is emailed and one of them approves or rejects the
+ * request. Only one request can be pending at a time, and an owner who
+ * is already an operator cannot file one. Limited to 3 requests a day.
+ *
+ * Args:
+ * reason: Why the role is needed. Shown to superusers. Required.
+ */
+export const ownersMeOperatorRequestCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeOperatorRequestCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersMeOperatorRequestCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersMeOperatorRequestCreateData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersMeOperatorRequestCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/me/operator-request',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Send a fresh verification email to the authenticated owner.
  */
 export const ownersMeResendVerificationCreate = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeResendVerificationCreateData, ThrowOnError>) => (options?.client ?? client).post<OwnersMeResendVerificationCreateResponses, unknown, ThrowOnError>({
@@ -689,6 +927,32 @@ export const ownersMeRotateKeyCreate = <ThrowOnError extends boolean = false>(op
         }],
     url: '/owners/me/rotate-key',
     ...options
+});
+
+/**
+ * Accept the current account terms, when they have changed since signing up.
+ *
+ * Account terms never lapse, so this pauses and resumes nothing.
+ *
+ * Args:
+ * terms_version: The `version` of the account terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const ownersMeTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersMeTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersMeTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersMeTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/me/terms-acceptance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -953,6 +1217,174 @@ export const readingsMeshesNodesQualityRetrieve = <ThrowOnError extends boolean 
 });
 
 /**
+ * List the sources the caller created, or every source for a superuser. Operators only.
+ *
+ * Each carries its bridge's status, `unknown` for all of them when the
+ * broker cannot be asked. Remote passwords are never included.
+ */
+export const sourcesList = <ThrowOnError extends boolean = false>(options?: Options<SourcesListData, ThrowOnError>) => (options?.client ?? client).get<SourcesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesListData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources',
+    ...options
+});
+
+/**
+ * Create a source and start bridging its remote topic into this instance. Operators only.
+ *
+ * The caller must first accept the current source terms. The acceptance
+ * is recorded with the source. Nothing is kept if the bridge cannot be set
+ * up.
+ *
+ * Args:
+ * server: Remote broker as `host:port`. Cannot be this instance's own
+ * broker or one the server has blocked.
+ * ssl: Connect to the remote broker over TLS. Defaults to true.
+ * username: Remote broker username, if it requires one.
+ * password: Remote broker password. Accepted but never returned.
+ * topic: Remote topic filter, for example `msh/EU_868/2/e/MyChannel/#`.
+ * `$share`, `$SYS` and filters the server has blocked, such as `#`,
+ * are rejected.
+ * qos: 0 or 1. Defaults to 1.
+ * terms_version: The `version` of the source terms the caller accepted.
+ * Required, and refused once the terms have changed.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sourcesCreate = <ThrowOnError extends boolean = false>(options: Options<SourcesCreateData, ThrowOnError>) => (options.client ?? client).post<SourcesCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return the terms an operator must accept to add a source. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the source. The footnote states how long
+ * the source's data is kept.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sourcesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SourcesTermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<SourcesTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/terms',
+    ...options
+});
+
+/**
+ * Delete a source and stop bridging it. Operators only, on the sources they created.
+ *
+ * A source with meshes attached cannot be deleted. Nothing is removed if
+ * the bridge cannot be torn down. Its terms acceptances are kept.
+ */
+export const sourcesDestroy = <ThrowOnError extends boolean = false>(options: Options<SourcesDestroyData, ThrowOnError>) => (options.client ?? client).delete<SourcesDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}',
+    ...options
+});
+
+/**
+ * Return one source and the live status of its bridge. Operators only.
+ *
+ * An operator can read only the sources they created; a superuser can read
+ * any. The status is `unknown` when the broker cannot be reached to check
+ * it, and `paused` once its terms have lapsed.
+ */
+export const sourcesRetrieve = <ThrowOnError extends boolean = false>(options: Options<SourcesRetrieveData, ThrowOnError>) => (options.client ?? client).get<SourcesRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}',
+    ...options
+});
+
+/**
+ * Update a source and reconfigure its bridge. Operators only, on the sources they created.
+ *
+ * Any subset of the create fields may be sent. The update is rolled back
+ * if the bridge cannot be reconfigured. A paused source is updated
+ * without touching the broker. Send an empty `password` to remove it.
+ */
+export const sourcesUpdate = <ThrowOnError extends boolean = false>(options: Options<SourcesUpdateData, ThrowOnError>) => (options.client ?? client).put<SourcesUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Accept the current source terms again, renewing the source. Only the operator who created it.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the source is paused. Renewing a paused source restarts its
+ * bridge and cancels the deletion of its meshes' data, as long as the
+ * grace period has not ended.
+ *
+ * Args:
+ * terms_version: The `version` of the source terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sourcesTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<SourcesTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<SourcesTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}/terms-acceptance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List the known telemetry variants, such as device or environment metrics.
  *
  * Variants are registered automatically as devices report them, so there is
@@ -1072,4 +1504,28 @@ export const telemetryVariantsMeasurementsUpdate = <ThrowOnError extends boolean
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Return the account terms, which signing up accepts.
+ *
+ * They cover the account only (Terms of Use and Privacy Policy): signing up
+ * stores no mesh data. Creating a mesh on the default broker accepts the
+ * mesh terms instead. Every statement must be accepted. Send the returned
+ * `version` back as `terms_version` when signing up. They never lapse.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const termsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<TermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<TermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/terms',
+    ...options
 });
