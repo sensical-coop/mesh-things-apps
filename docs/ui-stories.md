@@ -40,6 +40,50 @@ Como owner, abro una malla y veo nodos y gateways juntos.
 - **Estados:** 404, loading, lista vacía de devices
 - **Contrato:** `GET /meshes/{mesh_id}`, `GET /meshes/{mesh_id}/devices`
 
+### Fuentes (operator)
+
+Una fuente es un broker MQTT remoto + filtro de topic que EMQX trae a esta instancia. Solo `operator` y `superuser` las gestionan; cada operator ve solo las suyas. Ver `docs/roles.md`.
+
+**US-14 · Añadir una fuente**
+Como operator, doy de alta un broker remoto para asociarle mallas.
+
+- **Ruta:** `/console/sources` (pestaña tras Blueprints, oculta para el resto; la URL directa redirige a mallas)
+- **Paso previo (condiciones):** antes del formulario, `SourceTermsDialog` muestra lo que devuelve `GET /sources/terms` (la API es dueña de la versión y del texto, en el idioma de la consola): una casilla por afirmación, todas obligatorias. El operator es responsable del tratamiento del tráfico traído y Sensical su encargado (RGPD art. 28); aceptar es un contrato con el operator, no consentimiento de los interesados. Sin aceptar todas no se abre el formulario. El `POST` lleva `terms_version`; la API rechaza una versión ausente o antigua y guarda la aceptación. Se acepta en cada alta, nunca al editar. El backend real aún no tiene este endpoint (ver `plans/sources.md` en meshtastic-things).
+- **Campos:** label, server (`host:port`), topic, TLS (por defecto sí), usuario, password (write-only, nunca vuelve), QoS 0/1 (por defecto 1)
+- **Validación:** Zod de `POST /sources` + reglas del backend sin configuración (`validateSourceFields`: `host:port`, sin `$share`/`$SYS`, QoS 0/1). Los 400 del servidor (broker propio, listas de bloqueo) se pintan en su campo.
+- **Tras éxito (201):** cerrar, refrescar la lista y mostrar el estado del puente devuelto (`status`). Un 502 significa que EMQX falló y no se guardó nada.
+- **Lista:** label, server, topic, TLS, QoS, nº de mallas; editar y borrar. Borrar lista las mallas que usan la fuente (`GET /meshes?source_id=`) con enlace a cada una y no deja borrar hasta que no quede ninguna.
+- **Editar:** mismo diálogo, precargado. El password nunca vuelve: la casilla “Keep password as is” (marcada) deshabilita el campo y no lo envía; desmarcada, un valor nuevo lo cambia y en blanco lo quita (se envía `""`). 502 = el puente no se reconfiguró y la fuente queda como estaba.
+- **Contrato:** `GET/POST /sources`, `PUT/DELETE /sources/{id}`
+
+**US-15 · Elegir la fuente de una malla**
+Como operator, elijo en *Edit mesh* si la malla llega por el broker por defecto o por una de mis fuentes.
+
+- **UI:** select “Source” en *Create mesh* (solo operators) y en `EditMeshDialog` (operator y dueño de la malla). Opciones: “Default broker” + sus fuentes.
+- **Envío:** `source_id` solo si cambia (`null` = broker por defecto). 400 en `source_id` se pinta en el campo; 502 = no se movieron las pasarelas y no cambió nada.
+- **Lista de mallas:** columna “Source” (“Default broker”, nombre de la fuente, o “—” si la malla no es tuya y la API no expone `source_id`). Visible para operators o si alguna fila tiene fuente. El detalle muestra la fuente en la cabecera si la hay.
+- **Contrato:** `PUT /meshes/{mesh_id}`, `GET /sources`
+
+**US-16 · Pedir y conceder el rol operator**
+Como member, pido el rol operator explicando para qué; como superuser, lo apruebo o rechazo.
+
+- **Member:** Perfil → “Operator role”: motivo obligatorio, estado de la última petición y nota del superuser. Rechazada → puede volver a pedirlo. 409/429 con su mensaje.
+- **Superuser:** pestaña “Requests” (`/console/operator-requests`, pendientes por defecto, filtro por estado) y detalle en `/console/operator-requests/$requestId` (enlace del email). Aprobar/rechazar con nota opcional.
+- **Contrato:** `GET/POST /owners/me/operator-request`, `GET /operator-requests`, `GET/PUT /operator-requests/{id}`
+
+**US-17 · Condiciones: cuenta, malla y fuente**
+Registrarse no crea mallas, así que las condiciones se aceptan donde empiezan los datos.
+
+- **Registro (cuenta):** `/signup` carga `GET /terms`: solo Condiciones de uso y Política de privacidad (dos casillas), en un bloque plegable cerrado hasta rellenar correo y contraseña, que se abre solo una vez. Envía `terms_version` y `terms_locale`. No caducan; Perfil (“Terms”) y un banner piden aceptarlas de nuevo solo si cambian.
+- **Crear malla (malla):** “Create mesh” abre antes `GET /meshes/terms` (responsable del tratamiento, base jurídica, datos sensibles, retención), como “Add source”. Un operator con fuentes elige primero el origen del tráfico: el broker por defecto lleva a las condiciones y luego al formulario; una fuente va directa al formulario con ella preseleccionada, sin condiciones de malla. Si luego cambia a broker por defecto en el formulario, se piden al guardar. El formulario envía `terms_version` y `terms_locale`; en una fuente se aplican las de la fuente. En *Edit mesh*, pasar una malla de una fuente al broker por defecto las pide si la malla no tiene una aceptación vigente.
+- **Estado de la malla:** columna “Status” en la lista (y chip en la cabecera de la malla), ordenable de más a menos urgente: *Scheduled for deletion* (rosa: condiciones caducadas, dejó de guardar datos), *Source paused* (rosa), *Source disconnected* (amarillo), *Terms changed* y *Renew soon* (amarillo), *Terms not accepted* (gris: sigue guardando datos), *Source status unknown* (gris), *Active* (lima). “—” para mallas ajenas. En una instancia lite todo es *Active* salvo problemas del puente.
+- **Renovar:** el aviso de la página de la malla lleva el botón de renovar para su dueño (`POST /meshes/{id}/terms-acceptance`). Un banner cuenta las mallas propias caducadas.
+- **Fuentes:** columnas “Status” y “Terms”; “Renew” para quien creó la fuente cuando está en pausa, caduca pronto o las condiciones cambiaron.
+- **Borrado de datos:** borrar una malla, o sacarla de su fuente, avisa de que sus lecturas se borran tras el periodo de gracia.
+- **Superuser:** pestaña “Deletions” (`/console/data-deletions`, `GET /data-deletions`): borrados programados por defecto, filtro por estado; los vencidos sin completar salen como “Overdue” con intentos y último error. La cabecera agrupa páginas en menús (`components/nav-menu.tsx`): “Automation” para todos (Alarms, “qué vigilar en cada medida”; Blueprints, “qué calcular a partir de las lecturas entrantes”) y, solo para superusers, “Management” (“Operator requests”, “Scheduled deletions”). Quedan: Meshes · Devices · Automation ▾ · Sources (operators) · Management ▾. En Management: el disparador muestra el total pendiente y cada elemento su contador (peticiones pendientes, borrados vencidos), ocultos si son cero. En móvil es un encabezado con sus dos enlaces.
+- **Instancia lite** (`REGISTRY__TERMS_ENFORCED=false`): la consola lo detecta sola (`GET /terms` responde 404) y oculta todo lo anterior: sin bloque en el registro, sin paso de condiciones al crear malla o fuente, sin paso de origen, sin columna, chips, avisos, banner ni panel. No envía `terms_version`. Si no sabe (cargando o error de red), actúa como si se aplicaran.
+- **Contrato:** `docs/openapi.yaml`, sincronizado con la API (ver `plans/sources.md`, “Terms per mesh”).
+
 ### Dispositivos
 
 **US-20 · Registrar nodo o gateway**
@@ -96,6 +140,9 @@ Como owner, elijo canal, rango y agregación y veo la serie.
 | `/console/devices` | US-21 |
 | `/console/devices/$deviceUuid` | US-22, US-30, US-31 |
 | `/console/blueprints` | US-42 (parcial) |
+| `/console/sources` | US-14, US-15 (operator) |
+| `/console/operator-requests`, `/console/operator-requests/$requestId` | US-16 (superuser) |
+| `/console/data-deletions` | US-17 (superuser) |
 
 Fuera de fase 1: `/register`, `/settings`, `/map`, catálogo superuser.
 
