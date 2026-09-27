@@ -16,6 +16,7 @@ export function SeriesChart({
   icon,
   windowMs,
   action,
+  badge,
 }: {
   points: Point[];
   compareLabel?: string;
@@ -26,6 +27,7 @@ export function SeriesChart({
   icon?: RemixiconComponentType;
   windowMs?: number | null;
   action?: ReactNode;
+  badge?: ReactNode;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const valueLabel = label ?? formatMessage({ id: "common.seriesChart.value", defaultMessage: "Value" });
@@ -47,7 +49,7 @@ export function SeriesChart({
   }
 
   return (
-    <KpiPanel label={label} hint={hint} icon={icon} className={className} action={action}>
+    <KpiPanel label={label} hint={hint} icon={icon} className={className} action={action} badge={badge}>
       <div className="flex min-w-0 flex-col gap-4">{body}</div>
     </KpiPanel>
   );

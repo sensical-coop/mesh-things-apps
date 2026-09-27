@@ -1058,5 +1058,8 @@
   "page.blueprints.list.columns.version": "Latest version",
   "page.blueprints.list.ownerGone": "Deleted account",
   "page.blueprints.list.ownerYou": "You",
-  "page.blueprints.list.panel.error": "Blueprints didn't load. Check your connection to the API and try again."
+  "page.blueprints.list.panel.error": "Blueprints didn't load. Check your connection to the API and try again.",
+  "common.computedFlag": "Computed",
+  "page.devices.detail.computedGroup": "Computed",
+  "page.devices.detail.variants.computedMeta": "derived by the blueprints attached below"
 }

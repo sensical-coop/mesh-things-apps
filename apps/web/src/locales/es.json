@@ -1058,5 +1058,8 @@
   "page.blueprints.list.columns.version": "Última versión",
   "page.blueprints.list.ownerGone": "Cuenta borrada",
   "page.blueprints.list.ownerYou": "Tú",
-  "page.blueprints.list.panel.error": "Las plantillas no se han cargado. Comprueba la conexión con la API y vuelve a intentarlo."
+  "page.blueprints.list.panel.error": "Las plantillas no se han cargado. Comprueba la conexión con la API y vuelve a intentarlo.",
+  "common.computedFlag": "Calculado",
+  "page.devices.detail.computedGroup": "Calculados",
+  "page.devices.detail.variants.computedMeta": "derivados por las plantillas vinculadas más abajo"
 }
