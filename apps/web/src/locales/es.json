@@ -107,6 +107,7 @@
   "feature.device.settingsDialog.title": "Editar ajustes — {name}",
   "feature.device.settingsDialog.description": "Permitido, pasarela, alarmas, intervalos y coordenadas. Las plantillas se vinculan desde el panel Postprocesado.",
   "feature.device.settingsDialog.latLonError": "La latitud y la longitud deben indicarse juntas.",
+  "feature.device.settingsDialog.coordinateInvalid": "Introduce grados decimales, p. ej. 41.3851.",
   "feature.device.settingsDialog.allowed": "Permitido",
   "feature.device.settingsDialog.gateway": "Este dispositivo es una pasarela",
   "feature.device.settingsDialog.alarms": "Activar detección de ausencia",

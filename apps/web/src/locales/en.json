@@ -107,6 +107,7 @@
   "feature.device.settingsDialog.title": "Edit settings — {name}",
   "feature.device.settingsDialog.description": "Allowed, gateway, alarms, intervals, and coordinates. Blueprints are attached from the Postprocessing panel.",
   "feature.device.settingsDialog.latLonError": "Latitude and longitude must be provided together.",
+  "feature.device.settingsDialog.coordinateInvalid": "Enter decimal degrees, e.g. 41.3851.",
   "feature.device.settingsDialog.allowed": "Allowed",
   "feature.device.settingsDialog.gateway": "This device is a gateway",
   "feature.device.settingsDialog.alarms": "Enable absence detection",
