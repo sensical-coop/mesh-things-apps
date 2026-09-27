@@ -21,9 +21,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useIntl, type IntlShape } from "react-intl";
-import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { useFormatters, type Formatters } from "@/hooks/use-formatters";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
@@ -48,6 +46,7 @@ import { deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceChartRangePicker } from "./chart-range-picker";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
+import { DeviceLocationFrame } from "@/features/device/ui/location-frame";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { PostprocessingsPanel } from "@/features/postprocessing/ui/postprocessings-panel";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
@@ -390,45 +389,7 @@ function DeviceStatusTab({
             ) : null}
           </FramePanel>
         </Frame>
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.devices.detail.location.title", defaultMessage: "Location" })}</FrameTitle>
-            <FrameDescription>
-              {device.data?.latitude != null && device.data.longitude != null
-                ? formatMessage({
-                    id: "page.devices.detail.location.hasCoords",
-                    defaultMessage: "Last reported coordinates on the map.",
-                  })
-                : formatMessage({
-                    id: "page.devices.detail.location.noCoords",
-                    defaultMessage: "This device has no coordinates yet.",
-                  })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel className="flex min-h-80 flex-1 flex-col">
-            {device.isPending ? (
-              <div className="min-h-80 flex-1">
-                <SkeletonRows rows={6} />
-              </div>
-            ) : null}
-            {device.data?.latitude != null && device.data.longitude != null ? (
-              <DeviceLocationMap
-                latitude={device.data.latitude}
-                longitude={device.data.longitude}
-                label={deviceTitle(device.data)}
-              />
-            ) : (
-              !device.isPending && (
-                <StatusCopy>
-                  {formatMessage({
-                    id: "page.devices.detail.location.noCoordsToPlot",
-                    defaultMessage: "No coordinates to plot.",
-                  })}
-                </StatusCopy>
-              )
-            )}
-          </FramePanel>
-        </Frame>
+        <DeviceLocationFrame device={device.data} pending={device.isPending} canEdit={canEdit} />
       </div>
       <Frame className="shadow-card">
         <FrameHeader>
@@ -1012,39 +973,6 @@ function DeviceDashboardTab({
           )
         )}
       </section>
-    </div>
-  );
-}
-
-function DeviceLocationMap({
-  latitude,
-  longitude,
-  label,
-}: {
-  latitude: number;
-  longitude: number;
-  label: string;
-}): ReactElement {
-  return (
-    <div className="oa-arrive oa-squircle-inset min-h-80 flex-1 overflow-hidden">
-      <Map center={[longitude, latitude]} zoom={14} className="h-full min-h-80 w-full">
-        <MapControls />
-        <MapMarker longitude={longitude} latitude={latitude}>
-          <MarkerContent>
-            <Tooltip>
-              <TooltipTrigger
-                delay={0}
-                aria-label={label}
-                className="relative flex size-5 items-center justify-center rounded-full bg-transparent p-0"
-              >
-                <span className="absolute size-5 animate-ping rounded-full bg-accent-500/40 motion-reduce:hidden" aria-hidden />
-                <span className="relative size-2.5 rounded-full bg-accent-500 ring-2 ring-background-primary-default" aria-hidden />
-              </TooltipTrigger>
-              <TooltipContent sideOffset={8}>{label}</TooltipContent>
-            </Tooltip>
-          </MarkerContent>
-        </MapMarker>
-      </Map>
     </div>
   );
 }
