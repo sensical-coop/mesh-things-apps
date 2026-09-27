@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { Device, matchesDeviceFilter } from "../../src/device/Device";
-import { NIL_BLUEPRINT_ID } from "../../src/shared/blueprint";
 
 function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {}): Device {
   return new Device({
@@ -20,7 +19,7 @@ function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {})
     hardwareType: "tbeam",
     role: "CLIENT",
     nodeinfoOverridden: false,
-    postprocessingBlueprintId: null,
+    postprocessingCount: 0,
     readingIntervalSeconds: null,
     publishIntervalSeconds: null,
     lastSeen: "2026-01-01T00:00:00.000Z",
@@ -61,7 +60,13 @@ describe("Device", () => {
     ).toBe(false);
   });
 
-  it("treats nil blueprint as no postprocessing", () => {
-    expect(makeDevice({ postprocessingBlueprintId: NIL_BLUEPRINT_ID }).hasPostprocessing()).toBe(false);
+  it("has postprocessing once a blueprint is attached", () => {
+    expect(makeDevice().hasPostprocessing()).toBe(false);
+    expect(makeDevice({ postprocessingCount: 2 }).hasPostprocessing()).toBe(true);
+    expect(
+      matchesDeviceFilter(makeDevice({ postprocessingCount: 1 }), {
+        extra: [{ field: "has_postprocessing", operator: "is", values: ["true"] }],
+      }),
+    ).toBe(true);
   });
 });

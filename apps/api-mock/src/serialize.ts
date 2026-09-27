@@ -5,6 +5,8 @@ import type { LatestReading } from "@mtt/domain/readings/Readings";
 import type { Source } from "@mtt/domain/source/Source";
 import type { OperatorRequestRow } from "./features/operator-request/repository";
 import type { DataDeletionRow } from "./features/data-deletion/repository";
+import { latestVersion, type BlueprintRow, type BlueprintVersionRow } from "./features/blueprint/repository";
+import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 
 import { flagsForRole, roleFlag, type Actor } from "@mtt/domain/authz/authz";
 
@@ -74,7 +76,6 @@ export function deviceJson(device: Device) {
     hardware_type: device.hardwareType,
     role: device.role,
     nodeinfo_overridden: device.nodeinfoOverridden,
-    postprocessing_blueprint_id: device.postprocessingBlueprintId,
     reading_interval_seconds: device.readingIntervalSeconds,
     publish_interval_seconds: device.publishIntervalSeconds,
     last_seen: device.lastSeen,
@@ -100,23 +101,88 @@ export function measurementJson(m: MeasurementType) {
   };
 }
 
-export function blueprintJson(row: {
-  id: string;
-  name: string;
-  description: string | null;
-  ownerId: string;
-  steps: unknown[];
-  createdAt: string;
-  updatedAt: string;
-}) {
+export function blueprintVersionJson(blueprintId: string, version: BlueprintVersionRow, deviceCount: number) {
+  return {
+    blueprint_id: blueprintId,
+    number: version.number,
+    inputs: version.inputs,
+    steps: version.steps,
+    notes: version.notes,
+    device_count: deviceCount,
+    created_at: version.createdAt,
+  };
+}
+
+export function blueprintJson(row: BlueprintRow, deviceCount: (number: number) => number) {
+  const latest = latestVersion(row);
   return {
     id: row.id,
     name: row.name,
     description: row.description,
+    is_public: row.isPublic,
     owner_id: row.ownerId,
-    steps: row.steps,
+    latest_version: blueprintVersionJson(row.id, latest, deviceCount(latest.number)),
     created_at: row.createdAt,
     updated_at: row.updatedAt,
+  };
+}
+
+export function postprocessingJson(
+  row: PostprocessingRow,
+  blueprint: BlueprintRow,
+  effectiveToleranceSeconds: number,
+  outputChannel: (output: PostprocessingRow["outputs"][number]) => string,
+  problems: string[],
+) {
+  return {
+    id: row.id,
+    device_uuid: row.deviceUuid,
+    blueprint_id: row.blueprintId,
+    blueprint_name: blueprint.name,
+    blueprint_version: row.versionNumber,
+    input_bindings: row.bindings,
+    output_prefix: row.outputPrefix,
+    tolerance_seconds: row.toleranceSeconds,
+    effective_tolerance_seconds: effectiveToleranceSeconds,
+    is_enabled: row.isEnabled,
+    outputs: [...row.outputs]
+      .sort((a, b) => a.fieldName.localeCompare(b.fieldName))
+      .map((output) => ({
+        field_name: output.fieldName,
+        channel: outputChannel(output),
+        measurement_id: output.measurementId,
+        unit: output.unit,
+      })),
+    problems,
+    created_at: row.createdAt,
+    updated_at: row.updatedAt,
+  };
+}
+
+export function calibrationJson(row: CalibrationRow) {
+  return {
+    id: row.id,
+    step_key: row.stepKey,
+    function_name: row.functionName,
+    params: row.params,
+    valid_from: row.validFrom,
+    created_at: row.createdAt,
+  };
+}
+
+export function backfillJson(row: BackfillRow) {
+  return {
+    id: row.id,
+    postprocessing_id: row.postprocessingId,
+    start: row.start,
+    stop: row.stop,
+    include_dependants: row.includeDependants,
+    status: row.status,
+    points_published: row.pointsPublished,
+    error: row.error,
+    created_at: row.createdAt,
+    started_at: row.startedAt,
+    finished_at: row.finishedAt,
   };
 }
 

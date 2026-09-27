@@ -10,7 +10,13 @@ import {
   zOwnersMeUpdateData,
   zOwnersRequestPasswordResetCreateData,
   zOwnersResetPasswordCreateData,
+  zDevicesPostprocessingsBackfillsCreateData,
+  zDevicesPostprocessingsCalibrationsCreateData,
+  zDevicesPostprocessingsCreateData,
+  zDevicesPostprocessingsUpdateData,
   zPostprocessingBlueprintsCreateData,
+  zPostprocessingBlueprintsUpdateData,
+  zPostprocessingBlueprintsVersionsCreateData,
   zOperatorRequestsUpdateData,
   zOwnersMeOperatorRequestCreateData,
   zOwnersMeTermsAcceptanceCreateData,
@@ -32,7 +38,10 @@ import {
   canReadOwnerEmail,
   canSeePsk,
   canWriteMesh,
-  visibleOwned,
+  canAttachBlueprint,
+  canReadBlueprint,
+  canWriteBlueprint,
+  visibleBlueprints,
   visibleSources,
   type Actor,
 } from "@mtt/domain/authz/authz";
@@ -49,13 +58,11 @@ import {
   type TermsLocale,
 } from "./features/terms/terms";
 import { parseListFilters } from "@mtt/domain/shared/list-filter";
-import { newId, nowIso } from "@mtt/domain/shared/ids";
-import { NIL_BLUEPRINT_ID } from "@mtt/domain/shared/blueprint";
+import { NIL_UUID, newId, nowIso } from "@mtt/domain/shared/ids";
 import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import {
   DETECTOR_CATALOG,
-  DEVICE_MEAS_ID,
   DEVICE_NODE_ID,
   DEVICE_GW_ID,
   DEVICE_VARIANT_ID,
@@ -63,11 +70,32 @@ import {
   MEAS_TEMP_ID,
   VARIANT_ENV_ID,
   VARIANT_LINK_ID,
+  deviceMeasurementId,
   type Store,
 } from "./store";
+import { ALGORITHMS } from "./features/algorithm/catalog";
+import {
+  latestVersion,
+  versionNumbered,
+  type BlueprintInputRow,
+  type BlueprintRow,
+  type BlueprintStepRow,
+  type BlueprintVersionRow,
+} from "./features/blueprint/repository";
+import { PREFIX_PATTERN, validateCalibration, versionErrors } from "./features/blueprint/validate";
+import {
+  MAX_BACKFILL_DAYS,
+  outputFieldNames,
+  problems,
+  toleranceFor,
+  type PostprocessingRow,
+} from "./features/postprocessing/repository";
 import { createMockAuth, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
 import {
+  backfillJson,
   blueprintJson,
+  blueprintVersionJson,
+  calibrationJson,
   deviceJson,
   latestJson,
   measurementJson,
@@ -76,6 +104,7 @@ import {
   ownerPublicJson,
   ownerReadJson,
   ownerWithApiKeyJson,
+  postprocessingJson,
   operatorRequestAdminJson,
   operatorRequestJson,
   dataDeletionJson,
@@ -88,29 +117,6 @@ const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with apps/web resend-cooldow
 const PASSWORD_RESET_TTL_HOURS = 1; // keep in sync with meshtastic-things REGISTRY__PASSWORD_RESET_TTL_HOURS
 const INACTIVE_ALLOWED_PATHS = new Set(["/owners/me", "/owners/me/resend-verification"]);
 const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
-
-const ALGORITHMS = [
-  {
-    name: "dew_point",
-    inputs: ["temperature", "relative_humidity"],
-    outputs: ["dew_point"],
-    params: [],
-    optional_params: [],
-    mode: "pointwise",
-    doc: "Dew point from temperature and RH.",
-    output_units: { dew_point: "degC" },
-  },
-  {
-    name: "absolute_humidity",
-    inputs: ["temperature", "relative_humidity"],
-    outputs: ["absolute_humidity"],
-    params: [],
-    optional_params: [],
-    mode: "pointwise",
-    doc: "Absolute humidity in g/m3.",
-    output_units: { absolute_humidity: "g/m3" },
-  },
-];
 
 function queryFilters(c: { req: { query: (name: string) => string | undefined } }, fields: readonly string[]) {
   const query: Record<string, string | undefined> = {};
@@ -227,10 +233,6 @@ async function deviceForRead(store: Store, actor: Actor, uuid: string) {
   return device;
 }
 
-function deviceMeasurementId(index: number): string {
-  return index === 0 ? DEVICE_MEAS_ID : `${DEVICE_MEAS_ID.slice(0, -1)}${index}`;
-}
-
 // Only the fixtured temperature channel is linked into a telemetry-variant
 // catalog entry (VARIANT_LINK_ID) in this mock; every other channel has no
 // configured catalog default, so it effectively inherits an empty list.
@@ -239,19 +241,41 @@ function catalogDefaultDetectors(store: Store, measurementTypeId: string): strin
   return store.telemetryVariantMeasurements.get(VARIANT_LINK_ID)?.defaultEnabledDetectors ?? [];
 }
 
-function deviceMeasurementJson(store: Store, device: Device, type: MeasurementType, index: number) {
-  const id = deviceMeasurementId(index);
+/** One of a device's channels: what it reports, and what its postprocessings derive. */
+type DeviceChannel = { id: string; type: MeasurementType; producedBy: string | null };
+
+async function deviceChannels(store: Store, device: Device): Promise<DeviceChannel[]> {
+  const types = await store.measurements.list();
+  // Only the Porch node reports telemetry in this mock.
+  const reported =
+    device.uuid === DEVICE_NODE_ID
+      ? types.flatMap((type, i) => (type.channel.startsWith("derived.") ? [] : [{ id: deviceMeasurementId(i), type, producedBy: null }]))
+      : [];
+  const derived = store.postprocessings
+    .filter((row) => row.deviceUuid === device.uuid)
+    .flatMap((row) =>
+      row.outputs.flatMap((output) => {
+        const type = types.find((candidate) => candidate.id === output.measurementTypeId);
+        return type ? [{ id: output.measurementId, type, producedBy: row.id }] : [];
+      }),
+    );
+  return [...reported, ...derived];
+}
+
+function deviceMeasurementJson(store: Store, device: Device, channel: DeviceChannel) {
+  const { id, type } = channel;
   const enabledDetectors = store.detectorOverrides.get(id) ?? null;
   const effectiveDetectors = [...(enabledDetectors ?? catalogDefaultDetectors(store, type.id))].sort();
   const range = store.deviceMeasurementRanges.get(id) ?? { validMin: null, validMax: null };
   return {
     id,
-    telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_BLUEPRINT_ID,
+    telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_UUID,
     measurement_type: measurementJson(type),
     enabled_detectors: enabledDetectors,
     effective_detectors: effectiveDetectors,
     valid_min: range.validMin,
     valid_max: range.validMax,
+    produced_by: channel.producedBy,
     first_seen: device.createdAt,
     last_seen: device.lastSeen,
   };
@@ -268,20 +292,65 @@ function telemetryVariantMeasurementJson(store: Store, type: MeasurementType, li
   };
 }
 
-async function findDeviceMeasurement(
-  store: Store,
-  device: Device,
-  measurementId: string,
-): Promise<{ type: MeasurementType; index: number } | null> {
-  if (device.uuid !== DEVICE_NODE_ID) return null;
-  const types = await store.measurements.list();
-  const index = types.findIndex((_, i) => deviceMeasurementId(i) === measurementId);
-  if (index === -1) return null;
-  return { type: types[index]!, index };
+async function findDeviceMeasurement(store: Store, device: Device, measurementId: string): Promise<DeviceChannel | null> {
+  return (await deviceChannels(store, device)).find((channel) => channel.id === measurementId) ?? null;
+}
+
+/** `{ key: string }` maps from a step body, or null when a value is not a string. */
+function stringRecord(value: unknown): Record<string, string> | null {
+  if (value === undefined || value === null) return {};
+  if (typeof value !== "object" || Array.isArray(value)) return null;
+  const entries = Object.entries(value);
+  if (!entries.every(([, entry]) => typeof entry === "string")) return null;
+  return Object.fromEntries(entries.map(([key, entry]) => [key, String(entry)]));
+}
+
+function plainRecord(value: unknown): Record<string, unknown> | null {
+  if (value === undefined || value === null) return {};
+  if (typeof value !== "object" || Array.isArray(value)) return null;
+  return { ...value };
+}
+
+type VersionBody = {
+  inputs: { slot: string; default_channel?: string | null }[];
+  steps: { key: string; order: number; function_name: string; inputs?: unknown; params?: unknown; outputs?: unknown }[];
+  notes?: string | null;
+};
+
+/** A version body as rows, or the 400 DRF would answer. */
+function versionFromBody(
+  body: VersionBody,
+  number: number,
+): { version: BlueprintVersionRow } | { errors: Record<string, unknown> } {
+  const inputs: BlueprintInputRow[] = body.inputs.map((entry) =>
+    entry.default_channel ? { slot: entry.slot, default_channel: entry.default_channel } : { slot: entry.slot },
+  );
+  const steps: BlueprintStepRow[] = [];
+  for (const step of body.steps) {
+    const stepInputs = stringRecord(step.inputs);
+    const params = plainRecord(step.params);
+    const outputs = stringRecord(step.outputs);
+    if (!stepInputs || !params || !outputs) {
+      return { errors: { steps: ["Step inputs and outputs map names to strings; params is an object"] } };
+    }
+    steps.push({ key: step.key, order: step.order, function_name: step.function_name, inputs: stepInputs, params, outputs });
+  }
+  const errors = versionErrors(inputs, steps);
+  if (errors) return { errors };
+  return { version: { number, inputs, steps: [...steps].sort((a, b) => a.order - b.order), notes: body.notes ?? null, createdAt: nowIso() } };
 }
 
 export async function createApp(store?: Store, auth: MockAuth = createMockAuth()) {
   const db = store ?? (await seedStore(auth));
+
+  /** A device and everything attached to it. */
+  async function deleteDevice(uuid: string) {
+    const attached = new Set(db.postprocessings.filter((row) => row.deviceUuid === uuid).map((row) => row.id));
+    db.postprocessings = db.postprocessings.filter((row) => !attached.has(row.id));
+    db.calibrations = db.calibrations.filter((row) => !attached.has(row.postprocessingId));
+    db.backfills = db.backfills.filter((row) => !attached.has(row.postprocessingId));
+    await db.devices.delete(uuid);
+  }
 
   /** A source the caller may see, or the mesh's current one, which resending always keeps. */
   async function canAttachSource(actor: Actor, sourceId: string, current: string | null): Promise<boolean> {
@@ -582,10 +651,14 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const ownedMeshes = (await db.meshes.list()).filter((mesh) => mesh.ownerId === actor.id);
     for (const mesh of ownedMeshes) {
       const devices = await db.devices.list({ meshId: mesh.id });
-      for (const device of devices) await db.devices.delete(device.uuid);
+      for (const device of devices) await deleteDevice(device.uuid);
       await db.meshes.delete(mesh.id);
     }
-    db.blueprints = db.blueprints.filter((blueprint) => blueprint.ownerId !== actor.id);
+    // Blueprints other owners' devices still run are kept, ownerless and left to superusers.
+    db.blueprints = db.blueprints.flatMap((blueprint) => {
+      if (blueprint.ownerId !== actor.id) return [blueprint];
+      return db.postprocessings.some((row) => row.blueprintId === blueprint.id) ? [{ ...blueprint, ownerId: null }] : [];
+    });
     for (const [existingToken, ownerId] of db.verificationTokens) {
       if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
     }
@@ -757,7 +830,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "You do not have permission to perform this action." }, 403);
     }
     const devices = await db.devices.list({ meshId: mesh.id });
-    for (const device of devices) await db.devices.delete(device.uuid);
+    for (const device of devices) await deleteDevice(device.uuid);
     await db.meshes.delete(mesh.id);
     scheduleMeshDeletion(mesh.id, "mesh_deleted", { sourceId: mesh.sourceId, requestedById: actor.id });
     return c.body(null, 204);
@@ -829,7 +902,6 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       isAllowed: patch.is_allowed,
       isGateway: patch.is_gateway,
       absenceDetectionEnabled: patch.absence_detection_enabled,
-      postprocessingBlueprintId: patch.postprocessing_blueprint_id,
       readingIntervalSeconds: patch.reading_interval_seconds,
       publishIntervalSeconds: patch.publish_interval_seconds,
       locationOverridden: lat != null && lon != null ? true : undefined,
@@ -841,9 +913,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.get("/devices/:device_uuid/measurements", async (c) => {
     const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
     if (!device) return c.json({ detail: "Not found" }, 404);
-    const types = await db.measurements.list();
-    if (device.uuid !== DEVICE_NODE_ID) return c.json([]);
-    return c.json(types.map((type, i) => deviceMeasurementJson(db, device, type, i)));
+    return c.json((await deviceChannels(db, device)).map((channel) => deviceMeasurementJson(db, device, channel)));
   });
 
   app.get("/devices/:device_uuid/measurements/:measurement_id", async (c) => {
@@ -851,7 +921,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!device) return c.json({ detail: "Not found" }, 404);
     const found = await findDeviceMeasurement(db, device, c.req.param("measurement_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
-    return c.json(deviceMeasurementJson(db, device, found.type, found.index));
+    return c.json(deviceMeasurementJson(db, device, found));
   });
 
   app.put("/devices/:device_uuid/measurements/:measurement_id", async (c) => {
@@ -894,7 +964,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       }
       db.deviceMeasurementRanges.set(c.req.param("measurement_id"), { validMin, validMax });
     }
-    return c.json(deviceMeasurementJson(db, device, found.type, found.index));
+    return c.json(deviceMeasurementJson(db, device, found));
   });
 
   app.get("/detectors", (c) => c.json(DETECTOR_CATALOG));
@@ -1167,39 +1237,479 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.json(operatorRequestAdminJson(row, requester));
   });
 
+  const NO_PERMISSION = { detail: "You do not have permission to perform this action." };
+
+  function blueprintDeviceCount(blueprintId: string, number: number): number {
+    return db.postprocessings.filter((row) => row.blueprintId === blueprintId && row.versionNumber === number).length;
+  }
+
+  function blueprintBody(row: BlueprintRow) {
+    return blueprintJson(row, (number) => blueprintDeviceCount(row.id, number));
+  }
+
+  function readableBlueprint(actor: Actor, blueprintId: string): BlueprintRow | null {
+    const row = db.blueprints.find((candidate) => candidate.id === blueprintId);
+    return row && canReadBlueprint(actor, row) ? row : null;
+  }
+
+  function nameTaken(actor: Actor, name: string, exceptId?: string): boolean {
+    return db.blueprints.some((row) => row.ownerId === actor.id && row.name === name && row.id !== exceptId);
+  }
+
   app.get("/postprocessing-blueprints", (c) => {
     const actor = c.get("actor");
-    const rows = visibleOwned(actor, db.blueprints);
-    return c.json(rows.map(blueprintJson));
+    const owned = ["true", "1"].includes(c.req.query("owned")?.toLowerCase() ?? "");
+    const rows = visibleBlueprints(actor, db.blueprints).filter((row) => !owned || row.ownerId === actor.id);
+    return c.json(rows.map(blueprintBody));
   });
 
   app.post("/postprocessing-blueprints", async (c) => {
     const actor = c.get("actor");
-    if (actor.role === "staff") {
-      return c.json({ detail: "You do not have permission to perform this action." }, 403);
-    }
+    if (actor.role === "staff") return c.json(NO_PERMISSION, 403);
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zPostprocessingBlueprintsCreateData.safeParse({ body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const result = versionFromBody(parsed.data.body, 1);
+    if ("errors" in result) return c.json(result.errors, 400);
+    if (nameTaken(actor, parsed.data.body.name)) {
+      return c.json({ detail: `You already have a blueprint named '${parsed.data.body.name}'` }, 409);
+    }
     const now = nowIso();
-    const row = {
+    const row: BlueprintRow = {
       id: newId(),
       name: parsed.data.body.name,
-      description: parsed.data.body.description ?? null,
+      description: parsed.data.body.description || null,
+      isPublic: parsed.data.body.is_public ?? false,
       ownerId: actor.id,
-      steps: parsed.data.body.steps.map((step) => ({
-        id: newId(),
-        order: step.order,
-        function_name: step.function_name,
-        inputs: step.inputs ?? {},
-        params: step.params ?? {},
-        outputs: step.outputs ?? {},
-      })),
+      versions: [result.version],
       createdAt: now,
       updatedAt: now,
     };
     db.blueprints.push(row);
-    return c.json(blueprintJson(row), 201);
+    return c.json(blueprintBody(row), 201);
+  });
+
+  app.get("/postprocessing-blueprints/:blueprint_id", (c) => {
+    const row = readableBlueprint(c.get("actor"), c.req.param("blueprint_id"));
+    if (!row) return c.json({ detail: "Not found" }, 404);
+    return c.json(blueprintBody(row));
+  });
+
+  app.put("/postprocessing-blueprints/:blueprint_id", async (c) => {
+    const actor = c.get("actor");
+    const row = readableBlueprint(actor, c.req.param("blueprint_id"));
+    if (!row) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteBlueprint(actor, row)) return c.json(NO_PERMISSION, 403);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zPostprocessingBlueprintsUpdateData.safeParse({ path: { blueprint_id: row.id }, body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const patch = parsed.data.body ?? {};
+    if (patch.name !== undefined && nameTaken(actor, patch.name, row.id)) {
+      return c.json({ detail: `You already have a blueprint named '${patch.name}'` }, 409);
+    }
+    if (patch.name !== undefined) row.name = patch.name;
+    if (patch.description !== undefined) row.description = patch.description || null;
+    if (patch.is_public !== undefined) row.isPublic = patch.is_public;
+    row.updatedAt = nowIso();
+    return c.json(blueprintBody(row));
+  });
+
+  app.delete("/postprocessing-blueprints/:blueprint_id", (c) => {
+    const actor = c.get("actor");
+    const row = readableBlueprint(actor, c.req.param("blueprint_id"));
+    if (!row) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteBlueprint(actor, row)) return c.json(NO_PERMISSION, 403);
+    if (db.postprocessings.some((attached) => attached.blueprintId === row.id)) {
+      return c.json({ detail: "Devices still use a version of this blueprint. Detach it from them first" }, 409);
+    }
+    db.blueprints = db.blueprints.filter((candidate) => candidate.id !== row.id);
+    return c.body(null, 204);
+  });
+
+  app.get("/postprocessing-blueprints/:blueprint_id/versions", (c) => {
+    const row = readableBlueprint(c.get("actor"), c.req.param("blueprint_id"));
+    if (!row) return c.json({ detail: "Not found" }, 404);
+    return c.json(row.versions.map((version) => blueprintVersionJson(row.id, version, blueprintDeviceCount(row.id, version.number))));
+  });
+
+  app.post("/postprocessing-blueprints/:blueprint_id/versions", async (c) => {
+    const actor = c.get("actor");
+    const row = readableBlueprint(actor, c.req.param("blueprint_id"));
+    if (!row) return c.json({ detail: "Not found" }, 404);
+    if (!canWriteBlueprint(actor, row)) return c.json(NO_PERMISSION, 403);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zPostprocessingBlueprintsVersionsCreateData.safeParse({ path: { blueprint_id: row.id }, body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const result = versionFromBody(parsed.data.body, latestVersion(row).number + 1);
+    if ("errors" in result) return c.json(result.errors, 400);
+    row.versions.push(result.version);
+    row.updatedAt = nowIso();
+    return c.json(blueprintVersionJson(row.id, result.version, 0), 201);
+  });
+
+  app.get("/postprocessing-blueprints/:blueprint_id/versions/:number", (c) => {
+    const row = readableBlueprint(c.get("actor"), c.req.param("blueprint_id"));
+    const version = row ? versionNumbered(row, Number(c.req.param("number"))) : undefined;
+    if (!row || !version) return c.json({ detail: "Blueprint version not found" }, 404);
+    return c.json(blueprintVersionJson(row.id, version, blueprintDeviceCount(row.id, version.number)));
+  });
+
+  // --- Device postprocessings: a blueprint version wired to one device ---
+
+  function versionOf(row: PostprocessingRow): { blueprint: BlueprintRow; version: BlueprintVersionRow } | null {
+    const blueprint = db.blueprints.find((candidate) => candidate.id === row.blueprintId);
+    const version = blueprint ? versionNumbered(blueprint, row.versionNumber) : undefined;
+    return blueprint && version ? { blueprint, version } : null;
+  }
+
+  async function problemsOf(row: PostprocessingRow, device: Device): Promise<string[]> {
+    const resolved = versionOf(row);
+    if (!resolved) return [];
+    const channels = await deviceChannels(db, device);
+    return problems(
+      row,
+      resolved.version,
+      db.calibrations.filter((calibration) => calibration.postprocessingId === row.id),
+      (measurementId) => {
+        const channel = channels.find((candidate) => candidate.id === measurementId);
+        const producer = channel?.producedBy ? db.postprocessings.find((other) => other.id === channel.producedBy) : undefined;
+        return channel && producer ? { channel: channel.type.channel, isEnabled: producer.isEnabled } : null;
+      },
+    );
+  }
+
+  async function postprocessingBody(row: PostprocessingRow, device: Device) {
+    const resolved = versionOf(row);
+    if (!resolved) throw new Error(`Postprocessing ${row.id} lost its blueprint version`);
+    const types = await db.measurements.list();
+    return postprocessingJson(
+      row,
+      resolved.blueprint,
+      toleranceFor(row, device.readingIntervalSeconds),
+      (output) => types.find((type) => type.id === output.measurementTypeId)?.channel ?? `derived.${output.fieldName}`,
+      await problemsOf(row, device),
+    );
+  }
+
+  /** The device, when the caller may change its postprocessings. */
+  async function deviceForWrite(actor: Actor, deviceUuid: string) {
+    const device = await deviceForRead(db, actor, deviceUuid);
+    if (!device) return { error: 404 as const };
+    const mesh = await db.meshes.get(device.meshId);
+    if (!mesh || !canWriteMesh(actor, mesh)) return { error: 403 as const };
+    return { device, mesh };
+  }
+
+  function attachedTo(device: Device, postprocessingId: string): PostprocessingRow | undefined {
+    return db.postprocessings.find((row) => row.id === postprocessingId && row.deviceUuid === device.uuid);
+  }
+
+  /**
+   * Apply `{slot: measurement id | null}` over the current bindings. Slots the version no longer
+   * declares are dropped, and a slot left unbound takes the channel its `default_channel` names.
+   */
+  async function rebind(row: PostprocessingRow, device: Device, version: BlueprintVersionRow, requested: Record<string, string | null>) {
+    const slots = version.inputs.map((entry) => entry.slot);
+    const unknown = Object.keys(requested).filter((slot) => !slots.includes(slot));
+    if (unknown.length) return [`No input slot(s) ${unknown.join(", ")} in this blueprint version`];
+    const channels = await deviceChannels(db, device);
+    const bindings: Record<string, string> = {};
+    for (const entry of version.inputs) {
+      const asked = entry.slot in requested ? requested[entry.slot] : row.bindings[entry.slot];
+      if (asked) {
+        const channel = channels.find((candidate) => candidate.id === asked);
+        if (!channel) return [`Measurement ${asked} is not a channel of this device`];
+        if (channel.producedBy === row.id) return ["These bindings would make this postprocessing depend on its own output"];
+        bindings[entry.slot] = asked;
+      } else if (!(entry.slot in requested) && entry.default_channel) {
+        const channel = channels.find((candidate) => candidate.type.channel === entry.default_channel && candidate.producedBy !== row.id);
+        if (channel) bindings[entry.slot] = channel.id;
+      }
+    }
+    row.bindings = bindings;
+    return [];
+  }
+
+  /** Create or drop the derived channels so they match what the version writes under the prefix. */
+  async function syncOutputs(row: PostprocessingRow, device: Device, version: BlueprintVersionRow): Promise<string[]> {
+    const fields = outputFieldNames(version, row.outputPrefix);
+    const taken = db.postprocessings
+      .filter((other) => other.deviceUuid === device.uuid && other.id !== row.id)
+      .flatMap((other) => other.outputs.map((output) => output.fieldName));
+    const clash = fields.filter((field) => taken.includes(field));
+    if (clash.length) {
+      return [`Derived channel(s) ${clash.map((f) => `derived.${f}`).join(", ")} already exist on this device. Set an output_prefix`];
+    }
+    const dropped = row.outputs.filter((output) => !fields.includes(output.fieldName));
+    const readers = db.postprocessings.filter(
+      (other) => other.id !== row.id && Object.values(other.bindings).some((id) => dropped.some((output) => output.measurementId === id)),
+    );
+    if (readers.length) return ["Another postprocessing on this device reads a channel this change would remove"];
+    const channels = await deviceChannels(db, device);
+    const now = nowIso();
+    row.outputs = fields.map((field) => {
+      const kept = row.outputs.find((output) => output.fieldName === field);
+      if (kept) return kept;
+      const step = version.steps.find((candidate) => Object.values(candidate.outputs).some((name) => `${row.outputPrefix}${name}` === field));
+      const output = step ? Object.entries(step.outputs).find(([, name]) => `${row.outputPrefix}${name}` === field)?.[0] : undefined;
+      const declared = step && output ? ALGORITHMS.find((a) => a.name === step.function_name)?.output_units[output] : undefined;
+      // "@<input>" preserves the unit of whatever channel feeds that input.
+      const ref = declared?.startsWith("@") && step ? step.inputs[declared.slice(1)] : undefined;
+      const boundId = ref?.startsWith("slot:") ? row.bindings[ref.slice(5)] : undefined;
+      const unit = declared?.startsWith("@") ? (channels.find((c) => c.id === boundId)?.type.nativeUnit ?? null) : (declared ?? null);
+      const type = db.measurements.ensure(
+        {
+          payloadKind: "computed:derived",
+          fieldName: field,
+          channel: `derived.${field}`,
+          origin: "computed",
+          displayName: null,
+          description: null,
+          nativeUnit: unit,
+          quantityKind: null,
+          vocabularyUri: null,
+        },
+        now,
+        newId(),
+      );
+      return { fieldName: field, measurementId: newId(), measurementTypeId: type.id, unit: type.nativeUnit };
+    });
+    return [];
+  }
+
+  function countAttached(device: Device) {
+    device.postprocessingCount = db.postprocessings.filter((row) => row.deviceUuid === device.uuid).length;
+  }
+
+  app.get("/devices/:device_uuid/postprocessings", async (c) => {
+    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    if (!device) return c.json({ detail: "Not found" }, 404);
+    const rows = db.postprocessings.filter((row) => row.deviceUuid === device.uuid);
+    return c.json(await Promise.all(rows.map((row) => postprocessingBody(row, device))));
+  });
+
+  app.post("/devices/:device_uuid/postprocessings", async (c) => {
+    const actor = c.get("actor");
+    const found = await deviceForWrite(actor, c.req.param("device_uuid"));
+    if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const { device, mesh } = found;
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zDevicesPostprocessingsCreateData.safeParse({ path: { device_uuid: device.uuid }, body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const data = parsed.data.body ?? {};
+    if (!data.blueprint_id) return c.json({ blueprint_id: ["This field is required."] }, 400);
+    if (data.output_prefix !== undefined && !PREFIX_PATTERN.test(data.output_prefix)) {
+      return c.json({ output_prefix: ["Use lowercase letters, digits and underscores"] }, 400);
+    }
+    const blueprint = readableBlueprint(actor, data.blueprint_id);
+    if (!blueprint) return c.json({ detail: "Not found" }, 404);
+    if (!canAttachBlueprint(actor, blueprint, mesh.ownerId)) {
+      return c.json({ detail: "This blueprint is neither public nor owned by the device's mesh owner" }, 403);
+    }
+    const version = data.blueprint_version ? versionNumbered(blueprint, data.blueprint_version) : latestVersion(blueprint);
+    if (!version) return c.json({ blueprint_version: ["No such version of this blueprint"] }, 400);
+    const now = nowIso();
+    const row: PostprocessingRow = {
+      id: newId(),
+      deviceUuid: device.uuid,
+      blueprintId: blueprint.id,
+      versionNumber: version.number,
+      bindings: {},
+      outputPrefix: data.output_prefix ?? "",
+      toleranceSeconds: data.tolerance_seconds ?? null,
+      isEnabled: false,
+      outputs: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    const errors = [...(await rebind(row, device, version, data.input_bindings ?? {})), ...(await syncOutputs(row, device, version))];
+    if (errors.length) return c.json(errors, 400);
+    db.postprocessings.push(row);
+    if (data.is_enabled) {
+      const found = await problemsOf(row, device);
+      if (found.length) {
+        db.postprocessings = db.postprocessings.filter((candidate) => candidate.id !== row.id);
+        return c.json({ is_enabled: found }, 400);
+      }
+      row.isEnabled = true;
+    }
+    countAttached(device);
+    return c.json(await postprocessingBody(row, device), 201);
+  });
+
+  app.get("/devices/:device_uuid/postprocessings/:postprocessing_id", async (c) => {
+    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    const row = device ? attachedTo(device, c.req.param("postprocessing_id")) : undefined;
+    if (!device || !row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    return c.json(await postprocessingBody(row, device));
+  });
+
+  app.put("/devices/:device_uuid/postprocessings/:postprocessing_id", async (c) => {
+    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
+    if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const { device } = found;
+    const row = attachedTo(device, c.req.param("postprocessing_id"));
+    const resolved = row ? versionOf(row) : null;
+    if (!row || !resolved) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zDevicesPostprocessingsUpdateData.safeParse({ path: { device_uuid: device.uuid, postprocessing_id: row.id }, body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const data = parsed.data.body ?? {};
+    if (data.blueprint_id && data.blueprint_id !== row.blueprintId) {
+      return c.json({ blueprint_id: ["Detach this postprocessing and attach the other blueprint instead"] }, 400);
+    }
+    if (data.output_prefix !== undefined && !PREFIX_PATTERN.test(data.output_prefix)) {
+      return c.json({ output_prefix: ["Use lowercase letters, digits and underscores"] }, 400);
+    }
+    // Work on a copy so a refused change leaves the row as it was.
+    const next: PostprocessingRow = { ...row, bindings: { ...row.bindings }, outputs: [...row.outputs] };
+    let version = resolved.version;
+    let rewired = data.input_bindings !== undefined || data.output_prefix !== undefined;
+    if (data.blueprint_version !== undefined && data.blueprint_version !== row.versionNumber) {
+      const moved = versionNumbered(resolved.blueprint, data.blueprint_version);
+      if (!moved) return c.json({ blueprint_version: ["No such version of this blueprint"] }, 400);
+      version = moved;
+      next.versionNumber = moved.number;
+      rewired = true;
+    }
+    if (data.output_prefix !== undefined) next.outputPrefix = data.output_prefix;
+    if (data.tolerance_seconds !== undefined) next.toleranceSeconds = data.tolerance_seconds;
+    if (rewired) {
+      const errors = [...(await rebind(next, device, version, data.input_bindings ?? {})), ...(await syncOutputs(next, device, version))];
+      if (errors.length) return c.json(errors, 400);
+    }
+    next.isEnabled = data.is_enabled ?? row.isEnabled;
+    if (next.isEnabled) {
+      const found = await problemsOf(next, device);
+      if (found.length) return c.json({ is_enabled: found }, 400);
+    }
+    next.updatedAt = nowIso();
+    Object.assign(row, next);
+    return c.json(await postprocessingBody(row, device));
+  });
+
+  app.delete("/devices/:device_uuid/postprocessings/:postprocessing_id", async (c) => {
+    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
+    if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const { device } = found;
+    const row = attachedTo(device, c.req.param("postprocessing_id"));
+    if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    const outputIds = new Set(row.outputs.map((output) => output.measurementId));
+    if (db.postprocessings.some((other) => other.id !== row.id && Object.values(other.bindings).some((id) => outputIds.has(id)))) {
+      return c.json(["Another postprocessing on this device reads a channel this change would remove"], 409);
+    }
+    db.postprocessings = db.postprocessings.filter((candidate) => candidate.id !== row.id);
+    db.calibrations = db.calibrations.filter((calibration) => calibration.postprocessingId !== row.id);
+    db.backfills = db.backfills.filter((backfill) => backfill.postprocessingId !== row.id);
+    countAttached(device);
+    return c.body(null, 204);
+  });
+
+  app.get("/devices/:device_uuid/postprocessings/:postprocessing_id/calibrations", async (c) => {
+    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    const row = device ? attachedTo(device, c.req.param("postprocessing_id")) : undefined;
+    if (!device || !row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    const history = db.calibrations
+      .filter((calibration) => calibration.postprocessingId === row.id)
+      .sort((a, b) => a.stepKey.localeCompare(b.stepKey) || a.validFrom.localeCompare(b.validFrom));
+    return c.json(history.map(calibrationJson));
+  });
+
+  app.post("/devices/:device_uuid/postprocessings/:postprocessing_id/calibrations", async (c) => {
+    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
+    if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const row = attachedTo(found.device, c.req.param("postprocessing_id"));
+    const resolved = row ? versionOf(row) : null;
+    if (!row || !resolved) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zDevicesPostprocessingsCalibrationsCreateData.safeParse({
+      path: { device_uuid: found.device.uuid, postprocessing_id: row.id },
+      body,
+    });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const { step_key: stepKey, valid_from: validFrom } = parsed.data.body;
+    const step = resolved.version.steps.find((candidate) => candidate.key === stepKey);
+    if (!step) {
+      const keys = resolved.version.steps.map((candidate) => `'${candidate.key}'`).join(", ");
+      return c.json({ step_key: [`No step '${stepKey}', expected one of [${keys}]`] }, 400);
+    }
+    const params = plainRecord(parsed.data.body.params);
+    if (!params) return c.json({ params: ["Must be an object"] }, 400);
+    const errors = validateCalibration(step.function_name, params);
+    if (errors.length) return c.json({ params: errors }, 400);
+    const now = nowIso();
+    const calibration = {
+      id: newId(),
+      postprocessingId: row.id,
+      stepKey,
+      functionName: step.function_name,
+      params,
+      validFrom: validFrom ?? now,
+      createdAt: now,
+    };
+    db.calibrations.push(calibration);
+    return c.json(calibrationJson(calibration), 201);
+  });
+
+  app.delete("/devices/:device_uuid/postprocessings/:postprocessing_id/calibrations/:calibration_id", async (c) => {
+    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
+    if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const row = attachedTo(found.device, c.req.param("postprocessing_id"));
+    const calibration = db.calibrations.find(
+      (candidate) => candidate.id === c.req.param("calibration_id") && candidate.postprocessingId === row?.id,
+    );
+    if (!row || !calibration) return c.json({ detail: "Not found" }, 404);
+    db.calibrations = db.calibrations.filter((candidate) => candidate.id !== calibration.id);
+    if (row.isEnabled && (await problemsOf(row, found.device)).length) {
+      db.calibrations.push(calibration);
+      return c.json({ detail: "This would leave an enabled postprocessing uncalibrated. Disable it first" }, 409);
+    }
+    return c.body(null, 204);
+  });
+
+  app.get("/devices/:device_uuid/postprocessings/:postprocessing_id/backfills", async (c) => {
+    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    const row = device ? attachedTo(device, c.req.param("postprocessing_id")) : undefined;
+    if (!device || !row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    const rows = db.backfills.filter((backfill) => backfill.postprocessingId === row.id);
+    return c.json([...rows].reverse().map(backfillJson));
+  });
+
+  app.post("/devices/:device_uuid/postprocessings/:postprocessing_id/backfills", async (c) => {
+    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
+    if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const row = attachedTo(found.device, c.req.param("postprocessing_id"));
+    if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zDevicesPostprocessingsBackfillsCreateData.safeParse({
+      path: { device_uuid: found.device.uuid, postprocessing_id: row.id },
+      body,
+    });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const now = nowIso();
+    const stop = parsed.data.body.stop ?? now;
+    const start = parsed.data.body.start;
+    if (Date.parse(start) >= Date.parse(stop)) return c.json({ start: ["Must be before stop"] }, 400);
+    if (Date.parse(stop) - Date.parse(start) > MAX_BACKFILL_DAYS * 86_400_000) {
+      return c.json({ start: [`A backfill covers at most ${MAX_BACKFILL_DAYS} days. Split it`] }, 400);
+    }
+    const blockers = await problemsOf(row, found.device);
+    if (blockers.length) return c.json(blockers, 400);
+    const backfill = {
+      id: newId(),
+      postprocessingId: row.id,
+      start,
+      stop,
+      includeDependants: parsed.data.body.include_dependants ?? false,
+      status: "pending" as const,
+      pointsPublished: 0,
+      error: null,
+      createdAt: now,
+      startedAt: null,
+      finishedAt: null,
+    };
+    db.backfills.push(backfill);
+    return c.json(backfillJson(backfill), 202);
   });
 
   app.get("/telemetry-variants/:telemetry_variant_id/measurements", async (c) => {
