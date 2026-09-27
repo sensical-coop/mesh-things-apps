@@ -1061,5 +1061,7 @@
   "page.blueprints.list.panel.error": "Blueprints didn't load. Check your connection to the API and try again.",
   "common.computedFlag": "Computed",
   "page.devices.detail.computedGroup": "Computed",
-  "page.devices.detail.variants.computedMeta": "derived by the blueprints attached below"
+  "page.devices.detail.variants.computedMeta": "derived by the blueprints attached below",
+  "console.header.connectors": "Connectors",
+  "console.header.connectors.sourcesDescription": "Remote brokers bridged into this instance"
 }

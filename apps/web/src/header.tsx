@@ -13,6 +13,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { AutomationMenu } from "@/components/automation-menu";
+import { ConnectorsMenu } from "@/components/connectors-menu";
 import { ManagementMenu } from "@/components/management-menu";
 
 const headerLinkClass =
@@ -58,14 +59,7 @@ function NavLinks({
       </Link>
       <AutomationMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
       {isOperator ? (
-        <Link
-          to={routes.sources}
-          className={linkClass}
-          activeProps={{ className: activeClass }}
-          onClick={onNavigate}
-        >
-          {formatMessage({ id: "console.footer.sources", defaultMessage: "Sources" })}
-        </Link>
+        <ConnectorsMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
       ) : null}
       {isSuperuser ? (
         <ManagementMenu

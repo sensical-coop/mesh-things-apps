@@ -1061,5 +1061,7 @@
   "page.blueprints.list.panel.error": "Las plantillas no se han cargado. Comprueba la conexión con la API y vuelve a intentarlo.",
   "common.computedFlag": "Calculado",
   "page.devices.detail.computedGroup": "Calculados",
-  "page.devices.detail.variants.computedMeta": "derivados por las plantillas vinculadas más abajo"
+  "page.devices.detail.variants.computedMeta": "derivados por las plantillas vinculadas más abajo",
+  "console.header.connectors": "Conectores",
+  "console.header.connectors.sourcesDescription": "Brokers remotos traídos a esta instancia"
 }
