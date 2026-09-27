@@ -290,6 +290,8 @@
    * in Figma (4139:7202, 4139:7240, 4139:7278, 4139:7315). */
   --color-status-lime-background:   var(--color-lime-200);
   --color-status-lime-text:         var(--color-lime-800);
+  --color-status-orange-background: var(--color-orange-200);
+  --color-status-orange-text:       var(--color-orange-800);
   --color-status-yellow-background: var(--color-yellow-200);
   --color-status-yellow-text:       var(--color-yellow-800);
   --color-status-rose-background:   var(--color-rose-200);
@@ -500,6 +502,8 @@
   /* Figma's dark table status pairs. */
   --color-status-lime-background:   color-mix(in srgb, var(--color-lime-950) 60%, transparent);
   --color-status-lime-text:         var(--color-lime-500);
+  --color-status-orange-background: color-mix(in srgb, var(--color-orange-950) 60%, transparent);
+  --color-status-orange-text:       var(--color-orange-400);
   --color-status-yellow-background: color-mix(in srgb, var(--color-yellow-950) 60%, transparent);
   --color-status-yellow-text:       var(--color-yellow-500);
   --color-status-rose-background:   color-mix(in srgb, var(--color-rose-950) 60%, transparent);
@@ -679,6 +683,10 @@
   --color-notification-center-background:      var(--color-notification-center-background);
   --color-status-lime-background:   var(--color-status-lime-background);
   --color-status-lime-text:         var(--color-status-lime-text);
+  --color-status-accent-background: var(--color-status-accent-background);
+  --color-status-accent-text:       var(--color-status-accent-text);
+  --color-status-orange-background: var(--color-status-orange-background);
+  --color-status-orange-text:       var(--color-status-orange-text);
   --color-status-yellow-background: var(--color-status-yellow-background);
   --color-status-yellow-text:       var(--color-status-yellow-text);
   --color-status-rose-background:   var(--color-status-rose-background);

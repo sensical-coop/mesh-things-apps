@@ -17,6 +17,8 @@ import { cx, sortCx } from "@mtt/ui/utils/cx";
  *   lime    light 200/800 · dark 950 @ 60% / 500
  *   rose    light 200/800 · dark 950 @ 60% / 500
  *   yellow  light 200/800 · dark 950 @ 60% / 500
+ *   accent  OA coral tint + deep coral text (oa.css; mesh nodes)
+ *   orange  light 200/800 · dark 950 @ 60% / 400 (manually set device location)
  *   cyan    light 200/800 · dark 950 @ 60% / 400
  *   blue    light 200/800 · dark 950 @ 60% / 300 (same dark status recipe;
  *           first needed by the medical template's "In treatment" status)
@@ -27,7 +29,7 @@ import { cx, sortCx } from "@mtt/ui/utils/cx";
  */
 
 type ChipVariant = "bold" | "subtle" | "caption";
-type ChipColor = "orange" | "lime" | "rose" | "yellow" | "cyan" | "blue" | "purple" | "neutral" | "gray" | "soft";
+type ChipColor = "accent" | "orange" | "lime" | "rose" | "yellow" | "cyan" | "blue" | "purple" | "neutral" | "gray" | "soft";
 
 export interface ChipProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: ChipVariant;
@@ -43,6 +45,7 @@ const styles = sortCx({
     caption: "py-1 text-caption-1-medium",
   },
   color: {
+    accent: "bg-status-accent-background text-status-accent-text",
     orange: "bg-status-orange-background text-status-orange-text",
     lime: "bg-status-lime-background text-status-lime-text",
     rose: "bg-status-rose-background text-status-rose-text",
