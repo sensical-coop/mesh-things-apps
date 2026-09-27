@@ -24,6 +24,14 @@ export function matchesListQuery(get: (field: string) => string | undefined, que
   });
 }
 
+/** A boolean filter reduced to the bare `true`/`false` the API takes, or undefined when it doesn't narrow. */
+export function listQueryBoolean(queryString: string, field: string): boolean | undefined {
+  const filter = parseListQuery(queryString).find((candidate) => candidate.field === field);
+  if (!filter) return undefined;
+  const passing = ["true", "false"].filter((value) => matchCell(value, filter));
+  return passing.length === 1 ? passing[0] === "true" : undefined;
+}
+
 function matchCell(value: string, filter: Filter): boolean {
   const cell = value.toLowerCase();
   const needles = filter.values.map((needle) => needle.toLowerCase());
