@@ -26,7 +26,7 @@ import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { listQuery } from "@mtt/ui/lib/filter-url";
+import { matchesListQuery } from "@/lib/list-filter";
 import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
@@ -58,25 +58,9 @@ export function MeshesPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
   const filterLabels = useTranslatedFilterLabels();
   const filterOperatorLabels = useTranslatedFilterOperatorLabels();
-  const specs = useMemo<FilterSpec[]>(
-    () => [
-      {
-        key: "label",
-        urlKey: "label",
-        label: formatMessage({ id: "page.meshes.list.filters.label", defaultMessage: "Label" }),
-        type: "text",
-      },
-      {
-        key: "channel_id",
-        urlKey: "channel_id",
-        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel ID" }),
-        type: "text",
-      },
-    ],
-    [formatMessage],
-  );
-  const filters = useSmartFilters({ specs });
-  const meshes = useQuery(meshRepository.list({ query: listQuery(filters.queryString) }));
+  // Every visible mesh loads at once and the filters run on the rows, so they can cover
+  // what the table derives (status, device count) as well as what the API returns.
+  const meshes = useQuery(meshRepository.list());
   const devices = useQuery(deviceRepository.list());
   const { me, isSuperuser, isOperator, meId, ownerName } = useOwnerDirectory();
   const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });
@@ -125,6 +109,143 @@ export function MeshesPage(): ReactElement {
       now: new Date(),
     });
   const sourceRows = sources.data ?? [];
+
+  const ownerIds = useMemo(() => [...new Set(rows.map((row) => row.owner_id))], [rows]);
+  const specs = useMemo<FilterSpec[]>(
+    () => [
+      {
+        key: "label",
+        urlKey: "label",
+        label: formatMessage({ id: "page.meshes.list.filters.label", defaultMessage: "Label" }),
+        type: "text",
+      },
+      {
+        key: "channel_id",
+        urlKey: "channel_id",
+        label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel ID" }),
+        type: "text",
+      },
+      ...(showSource
+        ? [
+            {
+              key: "source",
+              urlKey: "source",
+              label: formatMessage({ id: "page.meshes.list.filters.source", defaultMessage: "Source" }),
+              type: "select" as const,
+              options: [
+                {
+                  value: DEFAULT_BROKER,
+                  label: formatMessage({ id: "feature.mesh.sourceLabel.default", defaultMessage: "Default broker" }),
+                },
+                ...sourceRows.map((source) => ({ value: source.id, label: sourceTitle(source) })),
+              ],
+            },
+          ]
+        : []),
+      {
+        key: "status",
+        urlKey: "status",
+        label: formatMessage({ id: "page.meshes.list.filters.status", defaultMessage: "Status" }),
+        type: "select",
+        options: [
+          { value: "active", label: formatMessage({ id: "feature.mesh.status.active", defaultMessage: "Active" }) },
+          { value: "renewSoon", label: formatMessage({ id: "feature.mesh.status.renewSoon", defaultMessage: "Renew soon" }) },
+          {
+            value: "termsChanged",
+            label: formatMessage({ id: "feature.mesh.status.termsChanged", defaultMessage: "Terms changed" }),
+          },
+          {
+            value: "termsNotAccepted",
+            label: formatMessage({ id: "feature.mesh.status.termsNotAccepted", defaultMessage: "Terms not accepted" }),
+          },
+          {
+            value: "scheduledForDeletion",
+            label: formatMessage({ id: "feature.mesh.status.scheduledForDeletion", defaultMessage: "Scheduled for deletion" }),
+          },
+          {
+            value: "sourcePaused",
+            label: formatMessage({ id: "feature.mesh.status.sourcePaused", defaultMessage: "Source paused" }),
+          },
+          {
+            value: "sourceDisconnected",
+            label: formatMessage({ id: "feature.mesh.status.sourceDisconnected", defaultMessage: "Source disconnected" }),
+          },
+          {
+            value: "sourceUnknown",
+            label: formatMessage({ id: "feature.mesh.status.sourceUnknown", defaultMessage: "Source status unknown" }),
+          },
+        ],
+      },
+      {
+        key: "access",
+        urlKey: "access",
+        label: formatMessage({ id: "page.meshes.list.filters.access", defaultMessage: "Access" }),
+        type: "select",
+        options: [
+          { value: "public", label: formatMessage({ id: "feature.mesh.accessBadge.public", defaultMessage: "Public" }) },
+          { value: "private", label: formatMessage({ id: "page.meshes.list.filters.accessPrivate", defaultMessage: "Private" }) },
+        ],
+      },
+      {
+        key: "devices",
+        urlKey: "devices",
+        label: formatMessage({ id: "page.meshes.list.filters.devices", defaultMessage: "Devices" }),
+        type: "select",
+        options: [
+          {
+            value: "true",
+            label: formatMessage({ id: "page.meshes.list.filters.devicesTrue", defaultMessage: "With devices" }),
+          },
+          {
+            value: "false",
+            label: formatMessage({ id: "page.meshes.list.filters.devicesFalse", defaultMessage: "Without devices" }),
+          },
+        ],
+      },
+      ...(showOwner
+        ? [
+            {
+              key: "owner",
+              urlKey: "owner",
+              label: formatMessage({ id: "page.meshes.list.filters.owner", defaultMessage: "Owner" }),
+              type: "select" as const,
+              options: ownerIds.map((ownerId) => ({
+                value: ownerId,
+                label:
+                  ownerId === meId
+                    ? formatMessage({ id: "common.ownerColumn.me", defaultMessage: "{name} (me)" }, { name: ownerName(ownerId) })
+                    : ownerName(ownerId),
+              })),
+            },
+          ]
+        : []),
+    ],
+    // ownerName is rebuilt on every render; the owner ids are what change the options.
+    [formatMessage, showSource, showOwner, sourceRows, ownerIds, meId],
+  );
+  const filters = useSmartFilters({ specs });
+  const shownRows = rows.filter((row) =>
+    matchesListQuery((field) => {
+      switch (field) {
+        case "label":
+          return meshTitle(row);
+        case "channel_id":
+          return row.channel_id;
+        case "source":
+          return row.source_id ?? DEFAULT_BROKER;
+        case "status":
+          return statusOf(row).kind;
+        case "access":
+          return row.is_public ? "public" : "private";
+        case "devices":
+          return String(row.devices > 0);
+        case "owner":
+          return row.owner_id;
+        default:
+          return undefined;
+      }
+    }, filters.queryString),
+  );
 
   const columns = useMemo(
     () => [
@@ -273,7 +394,7 @@ export function MeshesPage(): ReactElement {
             {meshes.isPending ? <SkeletonRows /> : null}
             {meshes.error ? null : meshes.isPending ? null : (
               <DataTable
-                data={rows}
+                data={shownRows}
                 columns={columns}
                 getRowId={(row) => row.id}
                 previousPageLabel={formatMessage({
