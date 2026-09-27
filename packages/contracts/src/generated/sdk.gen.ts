@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlgorithmsListData, AlgorithmsListResponses, DataDeletionsListData, DataDeletionsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponses, MeshesTermsRetrieveData, MeshesTermsRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OperatorRequestsListData, OperatorRequestsListResponses, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponses, OperatorRequestsUpdateData, OperatorRequestsUpdateResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersDestroyData, OwnersDestroyResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponses, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersUpdateData, OwnersUpdateResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, SourcesCreateData, SourcesCreateResponses, SourcesDestroyData, SourcesDestroyResponses, SourcesListData, SourcesListResponses, SourcesRetrieveData, SourcesRetrieveResponses, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponses, SourcesTermsRetrieveData, SourcesTermsRetrieveResponses, SourcesUpdateData, SourcesUpdateResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses, TermsRetrieveData, TermsRetrieveResponses } from './types.gen';
-import { zAlgorithmsListData, zAlgorithmsListResponse, zDataDeletionsListData, zDataDeletionsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesTermsAcceptanceCreateData, zMeshesTermsAcceptanceCreateResponse, zMeshesTermsRetrieveData, zMeshesTermsRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOperatorRequestsListData, zOperatorRequestsListResponse, zOperatorRequestsRetrieveData, zOperatorRequestsRetrieveResponse, zOperatorRequestsUpdateData, zOperatorRequestsUpdateResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersDestroyData, zOwnersDestroyResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeOperatorRequestCreateData, zOwnersMeOperatorRequestCreateResponse, zOwnersMeOperatorRequestRetrieveData, zOwnersMeOperatorRequestRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeTermsAcceptanceCreateData, zOwnersMeTermsAcceptanceCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersUpdateData, zOwnersUpdateResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zSourcesCreateData, zSourcesCreateResponse, zSourcesDestroyData, zSourcesDestroyResponse, zSourcesListData, zSourcesListResponse, zSourcesRetrieveData, zSourcesRetrieveResponse, zSourcesTermsAcceptanceCreateData, zSourcesTermsAcceptanceCreateResponse, zSourcesTermsRetrieveData, zSourcesTermsRetrieveResponse, zSourcesUpdateData, zSourcesUpdateResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse, zTermsRetrieveData, zTermsRetrieveResponse } from './zod.gen';
+import type { AlgorithmsListData, AlgorithmsListResponses, DataDeletionsListData, DataDeletionsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponses, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponses, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponses, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponses, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponses, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponses, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponses, DevicesPostprocessingsListData, DevicesPostprocessingsListResponses, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponses, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponses, MeshesTermsRetrieveData, MeshesTermsRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OperatorRequestsListData, OperatorRequestsListResponses, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponses, OperatorRequestsUpdateData, OperatorRequestsUpdateResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersDestroyData, OwnersDestroyResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponses, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersUpdateData, OwnersUpdateResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponses, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponses, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, SourcesCreateData, SourcesCreateResponses, SourcesDestroyData, SourcesDestroyResponses, SourcesListData, SourcesListResponses, SourcesRetrieveData, SourcesRetrieveResponses, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponses, SourcesTermsRetrieveData, SourcesTermsRetrieveResponses, SourcesUpdateData, SourcesUpdateResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses, TermsRetrieveData, TermsRetrieveResponses } from './types.gen';
+import { zAlgorithmsListData, zAlgorithmsListResponse, zDataDeletionsListData, zDataDeletionsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesPostprocessingsBackfillsCreateData, zDevicesPostprocessingsBackfillsCreateResponse, zDevicesPostprocessingsBackfillsListData, zDevicesPostprocessingsBackfillsListResponse, zDevicesPostprocessingsCalibrationsCreateData, zDevicesPostprocessingsCalibrationsCreateResponse, zDevicesPostprocessingsCalibrationsDestroyData, zDevicesPostprocessingsCalibrationsDestroyResponse, zDevicesPostprocessingsCalibrationsListData, zDevicesPostprocessingsCalibrationsListResponse, zDevicesPostprocessingsCreateData, zDevicesPostprocessingsCreateResponse, zDevicesPostprocessingsDestroyData, zDevicesPostprocessingsDestroyResponse, zDevicesPostprocessingsListData, zDevicesPostprocessingsListResponse, zDevicesPostprocessingsRetrieveData, zDevicesPostprocessingsRetrieveResponse, zDevicesPostprocessingsUpdateData, zDevicesPostprocessingsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesTermsAcceptanceCreateData, zMeshesTermsAcceptanceCreateResponse, zMeshesTermsRetrieveData, zMeshesTermsRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOperatorRequestsListData, zOperatorRequestsListResponse, zOperatorRequestsRetrieveData, zOperatorRequestsRetrieveResponse, zOperatorRequestsUpdateData, zOperatorRequestsUpdateResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersDestroyData, zOwnersDestroyResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeOperatorRequestCreateData, zOwnersMeOperatorRequestCreateResponse, zOwnersMeOperatorRequestRetrieveData, zOwnersMeOperatorRequestRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeTermsAcceptanceCreateData, zOwnersMeTermsAcceptanceCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersUpdateData, zOwnersUpdateResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zPostprocessingBlueprintsVersionsCreateData, zPostprocessingBlueprintsVersionsCreateResponse, zPostprocessingBlueprintsVersionsListData, zPostprocessingBlueprintsVersionsListResponse, zPostprocessingBlueprintsVersionsRetrieveData, zPostprocessingBlueprintsVersionsRetrieveResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zSourcesCreateData, zSourcesCreateResponse, zSourcesDestroyData, zSourcesDestroyResponse, zSourcesListData, zSourcesListResponse, zSourcesRetrieveData, zSourcesRetrieveResponse, zSourcesTermsAcceptanceCreateData, zSourcesTermsAcceptanceCreateResponse, zSourcesTermsRetrieveData, zSourcesTermsRetrieveResponse, zSourcesUpdateData, zSourcesUpdateResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse, zTermsRetrieveData, zTermsRetrieveResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -69,8 +69,8 @@ export const dataDeletionsList = <ThrowOnError extends boolean = false>(options?
  * is_gateway: Restrict to gateways, or to plain nodes when false.
  * is_allowed: Restrict to allowed registrations, or to rejected ones
  * when false.
- * has_postprocessing: Restrict to devices with a blueprint attached,
- * or to those without one when false.
+ * has_postprocessing: Restrict to devices with a postprocessing
+ * attached, or to those without one when false.
  * label: Restrict by device label.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
@@ -240,6 +240,240 @@ export const devicesMeasurementsUpdate = <ThrowOnError extends boolean = false>(
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List the blueprints attached to a device, with their wiring, outputs and state.
+ *
+ * `problems` lists what keeps a postprocessing from being enabled, and is
+ * empty once it can run.
+ */
+export const devicesPostprocessingsList = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsListData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsListData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings',
+    ...options
+});
+
+/**
+ * Attach a blueprint to a device.
+ *
+ * Slots not given in `input_bindings` are bound to the device's channel
+ * named by their `default_channel` when it has one. The derived channels
+ * the blueprint produces are registered on the device straight away, so
+ * detectors and ranges can be configured on them before any data
+ * arrives. A postprocessing starts disabled unless `is_enabled` is set,
+ * and can only be enabled once every slot is bound and every step that
+ * needs one has a calibration. Changes are rolled back if the stream
+ * tier cannot be notified.
+ *
+ * Args:
+ * blueprint_id: Blueprint to attach, the caller's own or a public one. Required.
+ * blueprint_version: Version number. Defaults to the latest.
+ * input_bindings: {slot: measurement id of this device}.
+ * output_prefix: Prepended to every derived field name, so a blueprint can run twice on one device.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Defaults to half the device's
+ * reading interval.
+ * is_enabled: Start running straight away. Defaults to false.
+ */
+export const devicesPostprocessingsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCreateData, ThrowOnError>) => (options.client ?? client).post<DevicesPostprocessingsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Detach a blueprint from a device.
+ *
+ * Its derived channels are removed from the device, while readings
+ * already stored remain queryable. Refused while another postprocessing
+ * on the device reads one of those channels.
+ */
+export const devicesPostprocessingsDestroy = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsDestroyData, ThrowOnError>) => (options.client ?? client).delete<DevicesPostprocessingsDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}',
+    ...options
+});
+
+/**
+ * Return one blueprint attachment on a device.
+ */
+export const devicesPostprocessingsRetrieve = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsRetrieveData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}',
+    ...options
+});
+
+/**
+ * Rewire, move to another version, or enable or disable a postprocessing.
+ *
+ * Moving to another version keeps bindings for slots it still declares
+ * and calibrations for steps with the same key and algorithm. Derived
+ * channels the new wiring no longer produces are removed from the device,
+ * which is refused while another postprocessing reads them. Changes are
+ * rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * blueprint_version: Version number of the same blueprint.
+ * input_bindings: {slot: measurement id of this device}. Null unbinds a slot. Slots not given keep
+ * their binding.
+ * output_prefix: Prepended to every derived field name.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Null uses half the device's
+ * reading interval.
+ * is_enabled: Run or stop the postprocessing.
+ */
+export const devicesPostprocessingsUpdate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsUpdateData, ThrowOnError>) => (options.client ?? client).put<DevicesPostprocessingsUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the backfills requested for a postprocessing and how they went, oldest first.
+ */
+export const devicesPostprocessingsBackfillsList = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsBackfillsListData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsBackfillsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsBackfillsListData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsBackfillsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills',
+    ...options
+});
+
+/**
+ * Recompute a postprocessing's derived channels over stored history.
+ *
+ * Readings already stored between `start` and `stop` are run through the
+ * postprocessing with the calibration in force when each was taken, and
+ * the results replace any derived values stored for the same times.
+ * Backfilled values are stored and archived but never raise alarms. The
+ * request is queued and runs within about a minute; its progress is
+ * reported in `status`. The postprocessing must be runnable, although it
+ * does not need to be enabled.
+ *
+ * Args:
+ * start: Start of the range to recompute.
+ * stop: End of the range. Defaults to now. At most 90 days after `start`.
+ * include_dependants: Also recompute every enabled postprocessing that reads this one's outputs. Defaults
+ * to false.
+ */
+export const devicesPostprocessingsBackfillsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsBackfillsCreateData, ThrowOnError>) => (options.client ?? client).post<DevicesPostprocessingsBackfillsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsBackfillsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsBackfillsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the calibration history of a postprocessing, per step and oldest first.
+ */
+export const devicesPostprocessingsCalibrationsList = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsListData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsCalibrationsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsListData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCalibrationsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations',
+    ...options
+});
+
+/**
+ * Record a calibration for one step, in force from `valid_from` onwards.
+ *
+ * History is kept: readings are processed with the calibration in force
+ * when they were taken, so recalibrating a sensor never rewrites the
+ * past. Every required calibration parameter of the step's algorithm
+ * must be given. Rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * step_key: Step being calibrated.
+ * params: Calibration parameters of the step's algorithm.
+ * valid_from: When this calibration takes effect. Defaults to now.
+ */
+export const devicesPostprocessingsCalibrationsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsCreateData, ThrowOnError>) => (options.client ?? client).post<DevicesPostprocessingsCalibrationsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCalibrationsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a calibration recorded by mistake.
+ *
+ * Refused when it would leave an enabled postprocessing without a
+ * calibration it needs. To change a calibration from some point onwards,
+ * record a new one instead.
+ */
+export const devicesPostprocessingsCalibrationsDestroy = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsDestroyData, ThrowOnError>) => (options.client ?? client).delete<DevicesPostprocessingsCalibrationsDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCalibrationsDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations/{calibration_id}',
+    ...options
 });
 
 /**
@@ -998,7 +1232,12 @@ export const ownersVerifyEmailRetrieve = <ThrowOnError extends boolean = false>(
 });
 
 /**
- * List the caller's postprocessing blueprints, or every one for a superuser.
+ * List the postprocessing blueprints the caller may use: their own and public ones.
+ *
+ * A superuser sees every blueprint.
+ *
+ * Args:
+ * owned: Restrict to the caller's own blueprints, excluding public ones.
  */
 export const postprocessingBlueprintsList = <ThrowOnError extends boolean = false>(options?: Options<PostprocessingBlueprintsListData, ThrowOnError>) => (options?.client ?? client).get<PostprocessingBlueprintsListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsListData.parseAsync(data),
@@ -1013,8 +1252,21 @@ export const postprocessingBlueprintsList = <ThrowOnError extends boolean = fals
 });
 
 /**
- * Create a postprocessing blueprint, an ordered set of steps that compute
- * new channels from a device's readings.
+ * Create a postprocessing blueprint together with its first version.
+ *
+ * A version declares the input slots it reads and an ordered list of
+ * steps. Each step runs one algorithm, takes its inputs from a slot or
+ * from an earlier step's output, and names the derived channels its
+ * outputs are stored as. Calibration parameters are not set here: each
+ * device supplies its own when the blueprint is attached to it.
+ *
+ * Args:
+ * name: Unique among the caller's blueprints.
+ * description: Free text.
+ * is_public: Lets any owner attach the blueprint to their devices. Defaults to false.
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing this version.
  */
 export const postprocessingBlueprintsCreate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsCreateData, ThrowOnError>) => (options.client ?? client).post<PostprocessingBlueprintsCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsCreateData.parseAsync(data),
@@ -1033,10 +1285,9 @@ export const postprocessingBlueprintsCreate = <ThrowOnError extends boolean = fa
 });
 
 /**
- * Delete a postprocessing blueprint.
+ * Delete a blueprint and all of its versions.
  *
- * Devices using it keep recording telemetry and simply stop producing
- * computed channels.
+ * Refused while any device still uses one of its versions.
  */
 export const postprocessingBlueprintsDestroy = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsDestroyData, ThrowOnError>) => (options.client ?? client).delete<PostprocessingBlueprintsDestroyResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsDestroyData.parseAsync(data),
@@ -1051,7 +1302,7 @@ export const postprocessingBlueprintsDestroy = <ThrowOnError extends boolean = f
 });
 
 /**
- * Return one postprocessing blueprint and its steps.
+ * Return one postprocessing blueprint and its latest version.
  */
 export const postprocessingBlueprintsRetrieve = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsRetrieveData, ThrowOnError>) => (options.client ?? client).get<PostprocessingBlueprintsRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsRetrieveData.parseAsync(data),
@@ -1066,10 +1317,10 @@ export const postprocessingBlueprintsRetrieve = <ThrowOnError extends boolean = 
 });
 
 /**
- * Update a postprocessing blueprint.
+ * Rename or describe a blueprint, or change whether it is public.
  *
- * Supplying `steps` replaces the whole ordered list; omitting it leaves
- * the existing steps untouched.
+ * Steps cannot be changed here: create a new version instead. Making a
+ * blueprint private does not detach it from devices already using it.
  */
 export const postprocessingBlueprintsUpdate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsUpdateData, ThrowOnError>) => (options.client ?? client).put<PostprocessingBlueprintsUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsUpdateData.parseAsync(data),
@@ -1085,6 +1336,65 @@ export const postprocessingBlueprintsUpdate = <ThrowOnError extends boolean = fa
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List every version of a blueprint, oldest first.
+ */
+export const postprocessingBlueprintsVersionsList = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsVersionsListData, ThrowOnError>) => (options.client ?? client).get<PostprocessingBlueprintsVersionsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBlueprintsVersionsListData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBlueprintsVersionsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-blueprints/{blueprint_id}/versions',
+    ...options
+});
+
+/**
+ * Add a version of a blueprint.
+ *
+ * Versions are immutable, so this is how a blueprint's steps change.
+ * Devices keep running the version they use until they are moved to the
+ * new one. Keeping a step's `key` and algorithm lets a device keep its
+ * calibration when it moves.
+ *
+ * Args:
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing what changed.
+ */
+export const postprocessingBlueprintsVersionsCreate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsVersionsCreateData, ThrowOnError>) => (options.client ?? client).post<PostprocessingBlueprintsVersionsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBlueprintsVersionsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBlueprintsVersionsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-blueprints/{blueprint_id}/versions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return one version of a blueprint and its steps.
+ */
+export const postprocessingBlueprintsVersionsRetrieve = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsVersionsRetrieveData, ThrowOnError>) => (options.client ?? client).get<PostprocessingBlueprintsVersionsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBlueprintsVersionsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBlueprintsVersionsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-blueprints/{blueprint_id}/versions/{number}',
+    ...options
 });
 
 /**

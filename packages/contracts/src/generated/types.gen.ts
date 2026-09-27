@@ -28,8 +28,7 @@ export type Algorithm = {
     name: string;
     inputs: Array<string>;
     outputs: Array<string>;
-    params: Array<string>;
-    optional_params: Array<string>;
+    params: Array<AlgorithmParam>;
     mode: string;
     doc: string | null;
     output_units: {
@@ -37,7 +36,54 @@ export type Algorithm = {
     };
 };
 
+/**
+ * One keyword argument of an algorithm.
+ */
+export type AlgorithmParam = {
+    name: string;
+    /**
+     * Set per device rather than on the blueprint step, because it describes one physical sensor.
+     */
+    calibration: boolean;
+    required: boolean;
+    default: unknown;
+    unit: string | null;
+    doc: string;
+};
+
+/**
+ * * `pending` - Pending
+ * * `running` - Running
+ * * `done` - Done
+ * * `failed` - Failed
+ */
+export type BackfillStatusEnum = 'pending' | 'running' | 'done' | 'failed';
+
 export type BlankEnum = '';
+
+/**
+ * An input slot a blueprint version reads, bound to a channel by each device.
+ */
+export type BlueprintInput = {
+    slot: string;
+    /**
+     * Channel bound automatically when the device has it, such as `environment_metrics.temperature`.
+     */
+    default_channel?: string | null;
+};
+
+/**
+ * Immutable once created. Steps are nested in read and write.
+ */
+export type BlueprintVersion = {
+    readonly blueprint_id: string;
+    readonly number: number;
+    inputs: Array<BlueprintInput>;
+    steps: Array<PostprocessingStep>;
+    notes?: string | null;
+    readonly device_count: number;
+    readonly created_at: string;
+};
 
 export type ChannelQuality = {
     channel: string;
@@ -74,6 +120,13 @@ export type DataDeletionStatusEnum = 'pending' | 'cancelled' | 'done';
  * * `reject` - reject
  */
 export type DecisionEnum = 'approve' | 'reject';
+
+export type DerivedOutput = {
+    field_name: string;
+    channel: string;
+    measurement_id: string;
+    unit: string | null;
+};
 
 /**
  * The single-message body used by the routes that return no resource.
@@ -130,6 +183,10 @@ export type DeviceMeasurement = {
     valid_max?: number | null;
     readonly first_seen: string;
     readonly last_seen: string | null;
+    /**
+     * The device postprocessing computing this channel, null for a channel the device reports.
+     */
+    readonly produced_by: string | null;
 };
 
 /**
@@ -139,6 +196,45 @@ export type DeviceMeasurementUpdate = {
     enabled_detectors?: Array<string> | null;
     valid_min?: number | null;
     valid_max?: number | null;
+};
+
+export type DevicePostprocessing = {
+    readonly id: string;
+    readonly device_uuid: string;
+    readonly blueprint_id: string;
+    readonly blueprint_name: string;
+    readonly blueprint_version: number;
+    readonly input_bindings: {
+        [key: string]: string;
+    };
+    readonly output_prefix: string;
+    readonly tolerance_seconds: number | null;
+    readonly effective_tolerance_seconds: number;
+    readonly is_enabled: boolean;
+    readonly outputs: Array<DerivedOutput>;
+    readonly problems: Array<string>;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+export type DevicePostprocessingWrite = {
+    /**
+     * Required when attaching.
+     */
+    blueprint_id?: string;
+    /**
+     * Defaults to the latest version when attaching.
+     */
+    blueprint_version?: number;
+    /**
+     * {slot: measurement id of this device}. Null unbinds a slot.
+     */
+    input_bindings?: {
+        [key: string]: string | null;
+    };
+    output_prefix?: string;
+    tolerance_seconds?: number | null;
+    is_enabled?: boolean;
 };
 
 export type DeviceQualityResponse = {
@@ -180,7 +276,6 @@ export type DeviceRead = {
     readonly hardware_type: string | null;
     readonly role: string | null;
     readonly nodeinfo_overridden: boolean;
-    readonly postprocessing_blueprint_id: string | null;
     readonly reading_interval_seconds: number | null;
     readonly publish_interval_seconds: number | null;
     readonly last_seen: string | null;
@@ -216,7 +311,6 @@ export type DeviceUpdate = {
     short_name?: string | null;
     hardware_type?: string | null;
     role?: string | null;
-    postprocessing_blueprint_id?: string | null;
     reading_interval_seconds?: number | null;
     publish_interval_seconds?: number | null;
 };
@@ -569,24 +663,60 @@ export type Point = {
     value: unknown;
 };
 
-/**
- * Steps are nested in read and write
- */
+export type PostprocessingBackfill = {
+    readonly id: string;
+    readonly postprocessing_id: string;
+    start: string;
+    /**
+     * Defaults to now.
+     */
+    stop?: string;
+    include_dependants?: boolean;
+    status: BackfillStatusEnum;
+    readonly points_published: number;
+    readonly error: string | null;
+    readonly created_at: string;
+    readonly started_at: string | null;
+    readonly finished_at: string | null;
+};
+
 export type PostprocessingBlueprint = {
     readonly id: string;
-    name: string;
-    description?: string | null;
-    readonly owner_id: string;
-    steps: Array<PostprocessingStep>;
+    readonly name: string;
+    readonly description: string | null;
+    readonly is_public: boolean;
+    /**
+     * Null once its owner was deleted while devices still used it.
+     */
+    readonly owner_id: string | null;
+    latest_version: BlueprintVersion;
     readonly created_at: string;
     readonly updated_at: string;
+};
+
+/**
+ * A new blueprint together with its first version.
+ */
+export type PostprocessingBlueprintCreate = {
+    name: string;
+    description?: string | null;
+    is_public?: boolean;
+    inputs: Array<BlueprintInput>;
+    steps: Array<PostprocessingStep>;
+    notes?: string | null;
+};
+
+export type PostprocessingBlueprintUpdate = {
+    name?: string;
+    description?: string | null;
+    is_public?: boolean;
 };
 
 /**
  * Validates each step against common/algorithms
  */
 export type PostprocessingStep = {
-    readonly id: string;
+    key: string;
     order: number;
     function_name: string;
     inputs?: unknown;
@@ -747,6 +877,18 @@ export type SourceUpdate = {
     readonly updated_at: string;
 };
 
+export type StepCalibration = {
+    readonly id: string;
+    step_key: string;
+    readonly function_name: string;
+    params?: unknown;
+    /**
+     * Defaults to now.
+     */
+    valid_from?: string;
+    readonly created_at: string;
+};
+
 /**
  * GET /telemetry-variants/{id}/measurements. Readable by
  * any verified owner, same as MeasurementTypeReadSerializer.
@@ -815,6 +957,15 @@ export type TermsStatement = {
 };
 
 /**
+ * Immutable once created. Steps are nested in read and write.
+ */
+export type BlueprintVersionWritable = {
+    inputs: Array<BlueprintInput>;
+    steps: Array<PostprocessingStep>;
+    notes?: string | null;
+};
+
+/**
  * POST /devices input
  */
 export type DeviceCreateWritable = {
@@ -849,6 +1000,10 @@ export type DeviceMeasurementWritable = {
     valid_max?: number | null;
 };
 
+export type DevicePostprocessingWritable = {
+    [key: string]: unknown;
+};
+
 /**
  * node_id/mesh are fixed at creation. Role is editable
  */
@@ -870,7 +1025,6 @@ export type DeviceUpdateWritable = {
     short_name?: string | null;
     hardware_type?: string | null;
     role?: string | null;
-    postprocessing_blueprint_id?: string | null;
     reading_interval_seconds?: number | null;
     publish_interval_seconds?: number | null;
 };
@@ -976,24 +1130,17 @@ export type OwnerLoginWritable = {
     password: string;
 };
 
-/**
- * Steps are nested in read and write
- */
-export type PostprocessingBlueprintWritable = {
-    name: string;
-    description?: string | null;
-    steps: Array<PostprocessingStepWritable>;
+export type PostprocessingBackfillWritable = {
+    start: string;
+    /**
+     * Defaults to now.
+     */
+    stop?: string;
+    include_dependants?: boolean;
 };
 
-/**
- * Validates each step against common/algorithms
- */
-export type PostprocessingStepWritable = {
-    order: number;
-    function_name: string;
-    inputs?: unknown;
-    params?: unknown;
-    outputs?: unknown;
+export type PostprocessingBlueprintWritable = {
+    [key: string]: unknown;
 };
 
 /**
@@ -1071,6 +1218,15 @@ export type SourceUpdateWritable = {
      */
     topic?: string;
     qos?: QosEnum;
+};
+
+export type StepCalibrationWritable = {
+    step_key: string;
+    params?: unknown;
+    /**
+     * Defaults to now.
+     */
+    valid_from?: string;
 };
 
 export type AlgorithmsListData = {
@@ -1262,6 +1418,171 @@ export type DevicesMeasurementsUpdateResponses = {
 };
 
 export type DevicesMeasurementsUpdateResponse = DevicesMeasurementsUpdateResponses[keyof DevicesMeasurementsUpdateResponses];
+
+export type DevicesPostprocessingsListData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings';
+};
+
+export type DevicesPostprocessingsListResponses = {
+    200: Array<DevicePostprocessing>;
+};
+
+export type DevicesPostprocessingsListResponse = DevicesPostprocessingsListResponses[keyof DevicesPostprocessingsListResponses];
+
+export type DevicesPostprocessingsCreateData = {
+    body?: DevicePostprocessingWrite;
+    path: {
+        device_uuid: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings';
+};
+
+export type DevicesPostprocessingsCreateResponses = {
+    201: DevicePostprocessing;
+};
+
+export type DevicesPostprocessingsCreateResponse = DevicesPostprocessingsCreateResponses[keyof DevicesPostprocessingsCreateResponses];
+
+export type DevicesPostprocessingsDestroyData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}';
+};
+
+export type DevicesPostprocessingsDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DevicesPostprocessingsDestroyResponse = DevicesPostprocessingsDestroyResponses[keyof DevicesPostprocessingsDestroyResponses];
+
+export type DevicesPostprocessingsRetrieveData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}';
+};
+
+export type DevicesPostprocessingsRetrieveResponses = {
+    200: DevicePostprocessing;
+};
+
+export type DevicesPostprocessingsRetrieveResponse = DevicesPostprocessingsRetrieveResponses[keyof DevicesPostprocessingsRetrieveResponses];
+
+export type DevicesPostprocessingsUpdateData = {
+    body?: DevicePostprocessingWrite;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}';
+};
+
+export type DevicesPostprocessingsUpdateResponses = {
+    200: DevicePostprocessing;
+};
+
+export type DevicesPostprocessingsUpdateResponse = DevicesPostprocessingsUpdateResponses[keyof DevicesPostprocessingsUpdateResponses];
+
+export type DevicesPostprocessingsBackfillsListData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills';
+};
+
+export type DevicesPostprocessingsBackfillsListResponses = {
+    200: Array<PostprocessingBackfill>;
+};
+
+export type DevicesPostprocessingsBackfillsListResponse = DevicesPostprocessingsBackfillsListResponses[keyof DevicesPostprocessingsBackfillsListResponses];
+
+export type DevicesPostprocessingsBackfillsCreateData = {
+    body: PostprocessingBackfillWritable;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills';
+};
+
+export type DevicesPostprocessingsBackfillsCreateResponses = {
+    202: PostprocessingBackfill;
+};
+
+export type DevicesPostprocessingsBackfillsCreateResponse = DevicesPostprocessingsBackfillsCreateResponses[keyof DevicesPostprocessingsBackfillsCreateResponses];
+
+export type DevicesPostprocessingsCalibrationsListData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations';
+};
+
+export type DevicesPostprocessingsCalibrationsListResponses = {
+    200: Array<StepCalibration>;
+};
+
+export type DevicesPostprocessingsCalibrationsListResponse = DevicesPostprocessingsCalibrationsListResponses[keyof DevicesPostprocessingsCalibrationsListResponses];
+
+export type DevicesPostprocessingsCalibrationsCreateData = {
+    body: StepCalibrationWritable;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations';
+};
+
+export type DevicesPostprocessingsCalibrationsCreateResponses = {
+    201: StepCalibration;
+};
+
+export type DevicesPostprocessingsCalibrationsCreateResponse = DevicesPostprocessingsCalibrationsCreateResponses[keyof DevicesPostprocessingsCalibrationsCreateResponses];
+
+export type DevicesPostprocessingsCalibrationsDestroyData = {
+    body?: never;
+    path: {
+        calibration_id: string;
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations/{calibration_id}';
+};
+
+export type DevicesPostprocessingsCalibrationsDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DevicesPostprocessingsCalibrationsDestroyResponse = DevicesPostprocessingsCalibrationsDestroyResponses[keyof DevicesPostprocessingsCalibrationsDestroyResponses];
 
 export type DevicesTelemetryVariantsListData = {
     body?: never;
@@ -1885,7 +2206,12 @@ export type OwnersVerifyEmailRetrieveResponse = OwnersVerifyEmailRetrieveRespons
 export type PostprocessingBlueprintsListData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Restrict to the caller's own blueprints, excluding public ones.
+         */
+        owned?: boolean;
+    };
     url: '/postprocessing-blueprints';
 };
 
@@ -1896,7 +2222,7 @@ export type PostprocessingBlueprintsListResponses = {
 export type PostprocessingBlueprintsListResponse = PostprocessingBlueprintsListResponses[keyof PostprocessingBlueprintsListResponses];
 
 export type PostprocessingBlueprintsCreateData = {
-    body: PostprocessingBlueprintWritable;
+    body: PostprocessingBlueprintCreate;
     path?: never;
     query?: never;
     url: '/postprocessing-blueprints';
@@ -1942,7 +2268,7 @@ export type PostprocessingBlueprintsRetrieveResponses = {
 export type PostprocessingBlueprintsRetrieveResponse = PostprocessingBlueprintsRetrieveResponses[keyof PostprocessingBlueprintsRetrieveResponses];
 
 export type PostprocessingBlueprintsUpdateData = {
-    body: PostprocessingBlueprintWritable;
+    body?: PostprocessingBlueprintUpdate;
     path: {
         blueprint_id: string;
     };
@@ -1955,6 +2281,52 @@ export type PostprocessingBlueprintsUpdateResponses = {
 };
 
 export type PostprocessingBlueprintsUpdateResponse = PostprocessingBlueprintsUpdateResponses[keyof PostprocessingBlueprintsUpdateResponses];
+
+export type PostprocessingBlueprintsVersionsListData = {
+    body?: never;
+    path: {
+        blueprint_id: string;
+    };
+    query?: never;
+    url: '/postprocessing-blueprints/{blueprint_id}/versions';
+};
+
+export type PostprocessingBlueprintsVersionsListResponses = {
+    200: Array<BlueprintVersion>;
+};
+
+export type PostprocessingBlueprintsVersionsListResponse = PostprocessingBlueprintsVersionsListResponses[keyof PostprocessingBlueprintsVersionsListResponses];
+
+export type PostprocessingBlueprintsVersionsCreateData = {
+    body: BlueprintVersionWritable;
+    path: {
+        blueprint_id: string;
+    };
+    query?: never;
+    url: '/postprocessing-blueprints/{blueprint_id}/versions';
+};
+
+export type PostprocessingBlueprintsVersionsCreateResponses = {
+    201: BlueprintVersion;
+};
+
+export type PostprocessingBlueprintsVersionsCreateResponse = PostprocessingBlueprintsVersionsCreateResponses[keyof PostprocessingBlueprintsVersionsCreateResponses];
+
+export type PostprocessingBlueprintsVersionsRetrieveData = {
+    body?: never;
+    path: {
+        blueprint_id: string;
+        number: number;
+    };
+    query?: never;
+    url: '/postprocessing-blueprints/{blueprint_id}/versions/{number}';
+};
+
+export type PostprocessingBlueprintsVersionsRetrieveResponses = {
+    200: BlueprintVersion;
+};
+
+export type PostprocessingBlueprintsVersionsRetrieveResponse = PostprocessingBlueprintsVersionsRetrieveResponses[keyof PostprocessingBlueprintsVersionsRetrieveResponses];
 
 export type ReadingsDevicesRetrieveData = {
     body?: never;

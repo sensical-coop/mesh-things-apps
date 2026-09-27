@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, sourcesCreate, sourcesDestroy, sourcesList, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
-import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
+import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, sourcesCreate, sourcesDestroy, sourcesList, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
+import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -97,8 +97,8 @@ export const devicesListQueryKey = (options?: Options<DevicesListData>) => creat
  * is_gateway: Restrict to gateways, or to plain nodes when false.
  * is_allowed: Restrict to allowed registrations, or to rejected ones
  * when false.
- * has_postprocessing: Restrict to devices with a blueprint attached,
- * or to those without one when false.
+ * has_postprocessing: Restrict to devices with a postprocessing
+ * attached, or to those without one when false.
  * label: Restrict by device label.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
@@ -269,6 +269,248 @@ export const devicesMeasurementsUpdateMutation = (options?: Partial<Options<Devi
     const mutationOptions: UseMutationOptions<DevicesMeasurementsUpdateResponse, DefaultError, Options<DevicesMeasurementsUpdateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await devicesMeasurementsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsListQueryKey = (options: Options<DevicesPostprocessingsListData>) => createQueryKey('devicesPostprocessingsList', options);
+
+/**
+ * List the blueprints attached to a device, with their wiring, outputs and state.
+ *
+ * `problems` lists what keeps a postprocessing from being enabled, and is
+ * empty once it can run.
+ */
+export const devicesPostprocessingsListOptions = (options: Options<DevicesPostprocessingsListData>) => queryOptions<DevicesPostprocessingsListResponse, DefaultError, DevicesPostprocessingsListResponse, ReturnType<typeof devicesPostprocessingsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsListQueryKey(options)
+});
+
+/**
+ * Attach a blueprint to a device.
+ *
+ * Slots not given in `input_bindings` are bound to the device's channel
+ * named by their `default_channel` when it has one. The derived channels
+ * the blueprint produces are registered on the device straight away, so
+ * detectors and ranges can be configured on them before any data
+ * arrives. A postprocessing starts disabled unless `is_enabled` is set,
+ * and can only be enabled once every slot is bound and every step that
+ * needs one has a calibration. Changes are rolled back if the stream
+ * tier cannot be notified.
+ *
+ * Args:
+ * blueprint_id: Blueprint to attach, the caller's own or a public one. Required.
+ * blueprint_version: Version number. Defaults to the latest.
+ * input_bindings: {slot: measurement id of this device}.
+ * output_prefix: Prepended to every derived field name, so a blueprint can run twice on one device.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Defaults to half the device's
+ * reading interval.
+ * is_enabled: Start running straight away. Defaults to false.
+ */
+export const devicesPostprocessingsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsCreateData>>): UseMutationOptions<DevicesPostprocessingsCreateResponse, DefaultError, Options<DevicesPostprocessingsCreateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsCreateResponse, DefaultError, Options<DevicesPostprocessingsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Detach a blueprint from a device.
+ *
+ * Its derived channels are removed from the device, while readings
+ * already stored remain queryable. Refused while another postprocessing
+ * on the device reads one of those channels.
+ */
+export const devicesPostprocessingsDestroyMutation = (options?: Partial<Options<DevicesPostprocessingsDestroyData>>): UseMutationOptions<DevicesPostprocessingsDestroyResponse, DefaultError, Options<DevicesPostprocessingsDestroyData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsDestroyResponse, DefaultError, Options<DevicesPostprocessingsDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsDestroy({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsRetrieveQueryKey = (options: Options<DevicesPostprocessingsRetrieveData>) => createQueryKey('devicesPostprocessingsRetrieve', options);
+
+/**
+ * Return one blueprint attachment on a device.
+ */
+export const devicesPostprocessingsRetrieveOptions = (options: Options<DevicesPostprocessingsRetrieveData>) => queryOptions<DevicesPostprocessingsRetrieveResponse, DefaultError, DevicesPostprocessingsRetrieveResponse, ReturnType<typeof devicesPostprocessingsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsRetrieveQueryKey(options)
+});
+
+/**
+ * Rewire, move to another version, or enable or disable a postprocessing.
+ *
+ * Moving to another version keeps bindings for slots it still declares
+ * and calibrations for steps with the same key and algorithm. Derived
+ * channels the new wiring no longer produces are removed from the device,
+ * which is refused while another postprocessing reads them. Changes are
+ * rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * blueprint_version: Version number of the same blueprint.
+ * input_bindings: {slot: measurement id of this device}. Null unbinds a slot. Slots not given keep
+ * their binding.
+ * output_prefix: Prepended to every derived field name.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Null uses half the device's
+ * reading interval.
+ * is_enabled: Run or stop the postprocessing.
+ */
+export const devicesPostprocessingsUpdateMutation = (options?: Partial<Options<DevicesPostprocessingsUpdateData>>): UseMutationOptions<DevicesPostprocessingsUpdateResponse, DefaultError, Options<DevicesPostprocessingsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsUpdateResponse, DefaultError, Options<DevicesPostprocessingsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsBackfillsListQueryKey = (options: Options<DevicesPostprocessingsBackfillsListData>) => createQueryKey('devicesPostprocessingsBackfillsList', options);
+
+/**
+ * List the backfills requested for a postprocessing and how they went, oldest first.
+ */
+export const devicesPostprocessingsBackfillsListOptions = (options: Options<DevicesPostprocessingsBackfillsListData>) => queryOptions<DevicesPostprocessingsBackfillsListResponse, DefaultError, DevicesPostprocessingsBackfillsListResponse, ReturnType<typeof devicesPostprocessingsBackfillsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsBackfillsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsBackfillsListQueryKey(options)
+});
+
+/**
+ * Recompute a postprocessing's derived channels over stored history.
+ *
+ * Readings already stored between `start` and `stop` are run through the
+ * postprocessing with the calibration in force when each was taken, and
+ * the results replace any derived values stored for the same times.
+ * Backfilled values are stored and archived but never raise alarms. The
+ * request is queued and runs within about a minute; its progress is
+ * reported in `status`. The postprocessing must be runnable, although it
+ * does not need to be enabled.
+ *
+ * Args:
+ * start: Start of the range to recompute.
+ * stop: End of the range. Defaults to now. At most 90 days after `start`.
+ * include_dependants: Also recompute every enabled postprocessing that reads this one's outputs. Defaults
+ * to false.
+ */
+export const devicesPostprocessingsBackfillsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsBackfillsCreateData>>): UseMutationOptions<DevicesPostprocessingsBackfillsCreateResponse, DefaultError, Options<DevicesPostprocessingsBackfillsCreateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsBackfillsCreateResponse, DefaultError, Options<DevicesPostprocessingsBackfillsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsBackfillsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsCalibrationsListQueryKey = (options: Options<DevicesPostprocessingsCalibrationsListData>) => createQueryKey('devicesPostprocessingsCalibrationsList', options);
+
+/**
+ * List the calibration history of a postprocessing, per step and oldest first.
+ */
+export const devicesPostprocessingsCalibrationsListOptions = (options: Options<DevicesPostprocessingsCalibrationsListData>) => queryOptions<DevicesPostprocessingsCalibrationsListResponse, DefaultError, DevicesPostprocessingsCalibrationsListResponse, ReturnType<typeof devicesPostprocessingsCalibrationsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsCalibrationsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsCalibrationsListQueryKey(options)
+});
+
+/**
+ * Record a calibration for one step, in force from `valid_from` onwards.
+ *
+ * History is kept: readings are processed with the calibration in force
+ * when they were taken, so recalibrating a sensor never rewrites the
+ * past. Every required calibration parameter of the step's algorithm
+ * must be given. Rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * step_key: Step being calibrated.
+ * params: Calibration parameters of the step's algorithm.
+ * valid_from: When this calibration takes effect. Defaults to now.
+ */
+export const devicesPostprocessingsCalibrationsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsCalibrationsCreateData>>): UseMutationOptions<DevicesPostprocessingsCalibrationsCreateResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsCreateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsCalibrationsCreateResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsCalibrationsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a calibration recorded by mistake.
+ *
+ * Refused when it would leave an enabled postprocessing without a
+ * calibration it needs. To change a calibration from some point onwards,
+ * record a new one instead.
+ */
+export const devicesPostprocessingsCalibrationsDestroyMutation = (options?: Partial<Options<DevicesPostprocessingsCalibrationsDestroyData>>): UseMutationOptions<DevicesPostprocessingsCalibrationsDestroyResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsDestroyData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsCalibrationsDestroyResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsCalibrationsDestroy({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1105,7 +1347,12 @@ export const ownersVerifyEmailRetrieveOptions = (options: Options<OwnersVerifyEm
 export const postprocessingBlueprintsListQueryKey = (options?: Options<PostprocessingBlueprintsListData>) => createQueryKey('postprocessingBlueprintsList', options);
 
 /**
- * List the caller's postprocessing blueprints, or every one for a superuser.
+ * List the postprocessing blueprints the caller may use: their own and public ones.
+ *
+ * A superuser sees every blueprint.
+ *
+ * Args:
+ * owned: Restrict to the caller's own blueprints, excluding public ones.
  */
 export const postprocessingBlueprintsListOptions = (options?: Options<PostprocessingBlueprintsListData>) => queryOptions<PostprocessingBlueprintsListResponse, DefaultError, PostprocessingBlueprintsListResponse, ReturnType<typeof postprocessingBlueprintsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -1121,8 +1368,21 @@ export const postprocessingBlueprintsListOptions = (options?: Options<Postproces
 });
 
 /**
- * Create a postprocessing blueprint, an ordered set of steps that compute
- * new channels from a device's readings.
+ * Create a postprocessing blueprint together with its first version.
+ *
+ * A version declares the input slots it reads and an ordered list of
+ * steps. Each step runs one algorithm, takes its inputs from a slot or
+ * from an earlier step's output, and names the derived channels its
+ * outputs are stored as. Calibration parameters are not set here: each
+ * device supplies its own when the blueprint is attached to it.
+ *
+ * Args:
+ * name: Unique among the caller's blueprints.
+ * description: Free text.
+ * is_public: Lets any owner attach the blueprint to their devices. Defaults to false.
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing this version.
  */
 export const postprocessingBlueprintsCreateMutation = (options?: Partial<Options<PostprocessingBlueprintsCreateData>>): UseMutationOptions<PostprocessingBlueprintsCreateResponse, DefaultError, Options<PostprocessingBlueprintsCreateData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBlueprintsCreateResponse, DefaultError, Options<PostprocessingBlueprintsCreateData>> = {
@@ -1139,10 +1399,9 @@ export const postprocessingBlueprintsCreateMutation = (options?: Partial<Options
 };
 
 /**
- * Delete a postprocessing blueprint.
+ * Delete a blueprint and all of its versions.
  *
- * Devices using it keep recording telemetry and simply stop producing
- * computed channels.
+ * Refused while any device still uses one of its versions.
  */
 export const postprocessingBlueprintsDestroyMutation = (options?: Partial<Options<PostprocessingBlueprintsDestroyData>>): UseMutationOptions<PostprocessingBlueprintsDestroyResponse, DefaultError, Options<PostprocessingBlueprintsDestroyData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBlueprintsDestroyResponse, DefaultError, Options<PostprocessingBlueprintsDestroyData>> = {
@@ -1161,7 +1420,7 @@ export const postprocessingBlueprintsDestroyMutation = (options?: Partial<Option
 export const postprocessingBlueprintsRetrieveQueryKey = (options: Options<PostprocessingBlueprintsRetrieveData>) => createQueryKey('postprocessingBlueprintsRetrieve', options);
 
 /**
- * Return one postprocessing blueprint and its steps.
+ * Return one postprocessing blueprint and its latest version.
  */
 export const postprocessingBlueprintsRetrieveOptions = (options: Options<PostprocessingBlueprintsRetrieveData>) => queryOptions<PostprocessingBlueprintsRetrieveResponse, DefaultError, PostprocessingBlueprintsRetrieveResponse, ReturnType<typeof postprocessingBlueprintsRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -1177,10 +1436,10 @@ export const postprocessingBlueprintsRetrieveOptions = (options: Options<Postpro
 });
 
 /**
- * Update a postprocessing blueprint.
+ * Rename or describe a blueprint, or change whether it is public.
  *
- * Supplying `steps` replaces the whole ordered list; omitting it leaves
- * the existing steps untouched.
+ * Steps cannot be changed here: create a new version instead. Making a
+ * blueprint private does not detach it from devices already using it.
  */
 export const postprocessingBlueprintsUpdateMutation = (options?: Partial<Options<PostprocessingBlueprintsUpdateData>>): UseMutationOptions<PostprocessingBlueprintsUpdateResponse, DefaultError, Options<PostprocessingBlueprintsUpdateData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBlueprintsUpdateResponse, DefaultError, Options<PostprocessingBlueprintsUpdateData>> = {
@@ -1195,6 +1454,69 @@ export const postprocessingBlueprintsUpdateMutation = (options?: Partial<Options
     };
     return mutationOptions;
 };
+
+export const postprocessingBlueprintsVersionsListQueryKey = (options: Options<PostprocessingBlueprintsVersionsListData>) => createQueryKey('postprocessingBlueprintsVersionsList', options);
+
+/**
+ * List every version of a blueprint, oldest first.
+ */
+export const postprocessingBlueprintsVersionsListOptions = (options: Options<PostprocessingBlueprintsVersionsListData>) => queryOptions<PostprocessingBlueprintsVersionsListResponse, DefaultError, PostprocessingBlueprintsVersionsListResponse, ReturnType<typeof postprocessingBlueprintsVersionsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await postprocessingBlueprintsVersionsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: postprocessingBlueprintsVersionsListQueryKey(options)
+});
+
+/**
+ * Add a version of a blueprint.
+ *
+ * Versions are immutable, so this is how a blueprint's steps change.
+ * Devices keep running the version they use until they are moved to the
+ * new one. Keeping a step's `key` and algorithm lets a device keep its
+ * calibration when it moves.
+ *
+ * Args:
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing what changed.
+ */
+export const postprocessingBlueprintsVersionsCreateMutation = (options?: Partial<Options<PostprocessingBlueprintsVersionsCreateData>>): UseMutationOptions<PostprocessingBlueprintsVersionsCreateResponse, DefaultError, Options<PostprocessingBlueprintsVersionsCreateData>> => {
+    const mutationOptions: UseMutationOptions<PostprocessingBlueprintsVersionsCreateResponse, DefaultError, Options<PostprocessingBlueprintsVersionsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postprocessingBlueprintsVersionsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const postprocessingBlueprintsVersionsRetrieveQueryKey = (options: Options<PostprocessingBlueprintsVersionsRetrieveData>) => createQueryKey('postprocessingBlueprintsVersionsRetrieve', options);
+
+/**
+ * Return one version of a blueprint and its steps.
+ */
+export const postprocessingBlueprintsVersionsRetrieveOptions = (options: Options<PostprocessingBlueprintsVersionsRetrieveData>) => queryOptions<PostprocessingBlueprintsVersionsRetrieveResponse, DefaultError, PostprocessingBlueprintsVersionsRetrieveResponse, ReturnType<typeof postprocessingBlueprintsVersionsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await postprocessingBlueprintsVersionsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: postprocessingBlueprintsVersionsRetrieveQueryKey(options)
+});
 
 export const readingsDevicesRetrieveQueryKey = (options: Options<ReadingsDevicesRetrieveData>) => createQueryKey('readingsDevicesRetrieve', options);
 

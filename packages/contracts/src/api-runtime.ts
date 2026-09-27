@@ -36,6 +36,8 @@ export function attachCsrfHeader(request: Request): Request {
 /** The generated client throws the parsed error body but drops the HTTP status; put it back on. */
 export function attachErrorStatus(error: unknown, response?: Response): unknown {
   const status = response?.status;
+  // DRF answers some refusals with a bare list of messages: those belong to no field.
+  if (Array.isArray(error)) return { non_field_errors: error, status };
   if (typeof error === "object" && error !== null) {
     return status === undefined ? error : { ...error, status };
   }
