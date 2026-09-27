@@ -106,9 +106,18 @@ Como owner, listo todos mis devices y filtro por malla, gateway, permitido, con/
 Como owner, veo identidad, rol de gateway, `last_seen`, coords y si ubicación/nodeinfo están overridden.
 
 - **Ruta:** `/console/devices/$deviceUuid`
-- **Bloques:** identidad (`DeviceRead`) · canales vistos (`GET .../measurements`) · variantes de telemetría (`GET .../telemetry-variants`)
+- **Bloques:** identidad (`DeviceRead`) · canales vistos (`GET .../measurements`) · variantes de telemetría (`GET .../telemetry-variants`) · postprocesado (`GET .../postprocessings`: vincular plantilla, conexiones, calibración, arrancar/detener, recalcular histórico)
 - **Unidades y nombres de canal:** `GET /measurements` (no hardcodear °C)
 - **Contrato:** `GET /devices/{device_uuid}` y nested lists
+
+**US-42 · Plantillas de postprocesado**
+Como owner, defino recetas que calculan canales nuevos y las ejecuto en mis devices, cada uno con su calibración.
+
+- **Rutas:** `/console/blueprints` (propias + públicas) y `/console/blueprints/$blueprintId` (versiones, de la más nueva a la más antigua)
+- **Editor:** entradas (`slot` + canal por defecto) y pasos ordenados; cada paso elige algoritmo de `GET /algorithms`, qué alimenta cada entrada (`slot:` o `step:<clave>.<salida>`), parámetros de configuración y nombres de salida. Los parámetros `calibration: true` no se piden aquí. Renombrar una entrada o un paso reescribe sus referencias. `draftProblems` replica la validación del backend antes de enviar.
+- **Versiones inmutables:** editar solo cambia nombre, descripción y visibilidad; cambiar pasos es “New version”, que parte de la última.
+- **En el device (US-22):** vincular (versión, asociación de entradas, prefijo, tolerancia), `problems` a la vista, arrancar/detener, calibración con historial (`valid_from`) y recalcular histórico.
+- **Contrato:** ver *Postprocessing blueprints* en el briefing.
 
 ### Lecturas
 
@@ -139,7 +148,7 @@ Como owner, elijo canal, rango y agregación y veo la serie.
 | `/console/meshes/$meshId` | US-12, US-20 |
 | `/console/devices` | US-21 |
 | `/console/devices/$deviceUuid` | US-22, US-30, US-31 |
-| `/console/blueprints` | US-42 (parcial) |
+| `/console/blueprints`, `/console/blueprints/$blueprintId` | US-42 |
 | `/console/sources` | US-14, US-15 (operator) |
 | `/console/operator-requests`, `/console/operator-requests/$requestId` | US-16 (superuser) |
 | `/console/data-deletions` | US-17 (superuser) |
@@ -158,7 +167,6 @@ Fuera de fase 1: `/register`, `/settings`, `/map`, catálogo superuser.
 | US-24 | Override ubicación / identidad | Flags `location_overridden` / `nodeinfo_overridden` |
 | US-40 | Mapa | Solo puntos con coords |
 | US-41 | Calidad | Barras completeness / gaps |
-| US-42 | Blueprints | Steps + `GET /algorithms` |
 | US-43 | Cuenta y rotate-key | Key una sola vez en pantalla |
 | US-44 | Borrar mesh/device | No borrar si el deregister del decoder falla |
 | US-50–52 | Superuser | Catálogo measurements / telemetry-variants / metrics |

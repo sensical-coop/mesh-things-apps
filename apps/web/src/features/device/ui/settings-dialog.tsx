@@ -1,23 +1,19 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
-import { FormSelect } from "@/components/form/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, readApiError } from "@/lib/api-errors";
-import { blueprintRepository } from "@/features/blueprint/repository";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useFormatters } from "@/hooks/use-formatters";
-
-const NIL_BLUEPRINT_ID = "00000000-0000-4000-8000-000000000000";
 
 type IntervalSecondsFieldProps = {
   id: string;
@@ -57,7 +53,6 @@ export function DeviceSettingsDialog({
 }): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
-  const blueprints = useQuery(blueprintRepository.list());
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const update = useMutation({
@@ -89,8 +84,6 @@ export function DeviceSettingsDialog({
     }
     setError(null);
     setFieldErrors({});
-    const blueprint = String(form.get("postprocessing_blueprint_id") ?? "");
-    const blueprintId = blueprint === "__none__" ? "" : blueprint;
     update.mutate({
       path: { device_uuid: device.uuid },
       body: {
@@ -99,7 +92,6 @@ export function DeviceSettingsDialog({
         absence_detection_enabled: form.get("absence_detection_enabled") === "on",
         reading_interval_seconds: Number(form.get("reading_interval_seconds")) || null,
         publish_interval_seconds: Number(form.get("publish_interval_seconds")) || null,
-        postprocessing_blueprint_id: blueprintId || null,
         latitude: lat === "" ? null : Number(lat),
         longitude: lon === "" ? null : Number(lon),
       },
@@ -115,7 +107,7 @@ export function DeviceSettingsDialog({
       )}
       description={formatMessage({
         id: "feature.device.settingsDialog.description",
-        defaultMessage: "Allowed, gateway, alarms, intervals, blueprint, and coordinates.",
+        defaultMessage: "Allowed, gateway, alarms, intervals, and coordinates. Blueprints are attached from the Postprocessing panel.",
       })}
       onClose={onClose}
     >
@@ -174,32 +166,6 @@ export function DeviceSettingsDialog({
             defaultValue={device.publish_interval_seconds}
             error={fieldErrors.publish_interval_seconds}
           />
-          <FormField
-            id="device-blueprint"
-            label={formatMessage({ id: "feature.device.settingsDialog.blueprint", defaultMessage: "Blueprint" })}
-            error={fieldErrors.postprocessing_blueprint_id}
-          >
-            <FormSelect
-              id="device-blueprint"
-              name="postprocessing_blueprint_id"
-              defaultValue={
-                device.postprocessing_blueprint_id === NIL_BLUEPRINT_ID ||
-                device.postprocessing_blueprint_id === null
-                  ? "__none__"
-                  : device.postprocessing_blueprint_id
-              }
-              items={[
-                {
-                  label: formatMessage({
-                    id: "feature.device.settingsDialog.blueprintNone",
-                    defaultMessage: "None",
-                  }),
-                  value: "__none__",
-                },
-                ...(blueprints.data ?? []).map((bp) => ({ label: bp.name, value: bp.id })),
-              ]}
-            />
-          </FormField>
           <FormField
             id="device-lat"
             label={formatMessage({ id: "feature.device.settingsDialog.latitude", defaultMessage: "Latitude" })}

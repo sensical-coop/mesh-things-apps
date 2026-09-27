@@ -52,7 +52,9 @@ Cada entidad de negocio vive en `features/<name>/` en el lado que la necesita. L
 | `mesh` | `repository` + `model` | `repository.ts` |
 | `device` | `repository` + `model` + `ui/` badges | `repository.ts` |
 | `readings` | solo `repository.ts` (lo consume device) | `repository.ts` |
-| `blueprint` | `repository` | `repository.ts` (sin puerto de domain) |
+| `blueprint` | `repository` + `model` + `ui/` (editor de versiones) | `repository.ts` + `validate.ts` (sin puerto de domain) |
+| `postprocessing` | `repository` + `model` + `ui/` (panel del device) | `repository.ts` (filas, `problems`) |
+| `algorithm` | — (vía `blueprint/repository`) | `catalog.ts`, copia de `GET /algorithms` |
 | `measurement` | — | `repository.ts` |
 
 ### Cliente (`apps/web`) — mapa de ficheros
@@ -94,7 +96,7 @@ apps/web/
       login/
       meshes/list|detail
       devices/list|detail
-      blueprints/list
+      blueprints/list|detail
         # cada carpeta de ruta: route.ts + page.tsx
   test/                    # *.test.ts — node:test
 ```
@@ -129,7 +131,7 @@ Excepción: `layout.tsx` exporta `Layout` y `Shell` (eran `app.tsx` + `shell.tsx
 
 ### Servidor (`apps/api-mock/src`)
 
-`features/<name>/repository.ts` implementa el puerto de domain (`MemoryMeshes` → `IMeshRepository`, etc.). `store.ts` solo siembra IDs y llama a esas clases. Blueprints de fase 1 no tienen puerto de domain: el tipo `BlueprintRow` vive en la feature.
+`features/<name>/repository.ts` implementa el puerto de domain (`MemoryMeshes` → `IMeshRepository`, etc.). `store.ts` solo siembra IDs y llama a esas clases. Blueprints y postprocesados no tienen puerto de domain: `BlueprintRow` / `PostprocessingRow` viven en sus features; la validación replica `postprocessing.py` y `common/algorithms` del backend.
 
 Controllers (`app.ts`) siguen mapeando HTTP → repo → JSON OpenAPI.
 

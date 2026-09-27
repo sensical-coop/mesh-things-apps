@@ -48,6 +48,7 @@ import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceChartRangePicker } from "./chart-range-picker";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
+import { PostprocessingsPanel } from "@/features/postprocessing/ui/postprocessings-panel";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
@@ -243,6 +244,7 @@ export function DeviceDetailPage(): ReactElement {
             seen={seen}
             names={names}
             canEdit={canEdit}
+            meshOwnerId={mesh.data?.owner_id}
             onViewChart={handleViewChart}
           />
         </TabsContent>
@@ -276,6 +278,7 @@ function DeviceStatusTab({
   seen,
   names,
   canEdit,
+  meshOwnerId,
   onViewChart,
 }: {
   device: UseQueryResult<DeviceRead>;
@@ -284,6 +287,7 @@ function DeviceStatusTab({
   seen: UseQueryResult<DeviceMeasurement[]>;
   names: NamesByChannel;
   canEdit: boolean;
+  meshOwnerId: string | undefined;
   onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
@@ -568,6 +572,14 @@ function DeviceStatusTab({
               )}
         </FramePanel>
       </Frame>
+      {device.data && meshOwnerId ? (
+        <PostprocessingsPanel
+          deviceUuid={device.data.uuid}
+          meshOwnerId={meshOwnerId}
+          measurements={seen.data ?? []}
+          canEdit={canEdit}
+        />
+      ) : null}
     </>
   );
 }
