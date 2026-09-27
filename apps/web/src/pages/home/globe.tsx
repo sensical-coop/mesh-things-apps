@@ -1,6 +1,7 @@
 import { cx } from "@mtt/ui/utils";
 import { useMemo, type ReactElement } from "react";
 import { Map, MapArc, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
+import { DeviceDot } from "@/features/device/ui/device-dot";
 import { landingHops, landingNodes } from "./mesh";
 
 const OPEN_FREE_MAP = {
@@ -60,14 +61,7 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
         {landingNodes.map((node) => (
           <MapMarker key={node.id} longitude={node.lng} latitude={node.lat}>
             <MarkerContent>
-              <span
-                className={cx(
-                  "block rounded-full",
-                  node.gateway
-                    ? "size-2.5 bg-accent-500 shadow-[0_0_0_4px_color-mix(in_srgb,var(--oa-primary)_28%,transparent)]"
-                    : "size-1.5 bg-text-primary/80",
-                )}
-              />
+              <DeviceDot isGateway={node.gateway} />
             </MarkerContent>
           </MapMarker>
         ))}
@@ -75,11 +69,11 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-background-primary-default/90 to-transparent px-3 pb-2.5 pt-8">
         <ul className="flex items-center gap-3">
           <li className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-accent-500" />
+            <DeviceDot isGateway />
             <span className="text-caption-1-medium text-text-primary">Gateway</span>
           </li>
           <li className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-text-primary/80" />
+            <DeviceDot isGateway={false} />
             <span className="text-caption-1-medium text-text-primary">Node</span>
           </li>
         </ul>
