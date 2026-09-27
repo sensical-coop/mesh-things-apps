@@ -347,6 +347,7 @@
   "console.footer.blueprints": "Blueprints",
   "console.footer.website": "Website",
   "console.footer.contact": "Contact",
+  "console.footer.api": "API",
 
   "page.home.hero.title": "The world's first <accent>storage and data solution for Meshtastic sensors</accent>",
   "page.home.hero.subtitle": "Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud.",

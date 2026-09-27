@@ -347,6 +347,7 @@
   "console.footer.blueprints": "Plantillas",
   "console.footer.website": "Sitio web",
   "console.footer.contact": "Contacto",
+  "console.footer.api": "API",
 
   "page.home.hero.title": "La primera <accent>solución de datos para sensores Meshtastic</accent> del mundo",
   "page.home.hero.subtitle": "Recopila datos de sensores con <highlight>redes de sensores basadas en Meshtastic.</highlight> Despliega localmente o en la nube.",

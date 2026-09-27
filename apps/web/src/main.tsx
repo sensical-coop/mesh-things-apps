@@ -9,10 +9,11 @@ import { Layout } from "./layout";
 import { authRepository } from "@/features/auth/repository";
 import { getPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { router } from "@/router/app-router";
+import { API_URL } from "@/lib/api-url";
 import "./styles.css";
 
 client.setConfig({
-  baseUrl: import.meta.env.VITE_API_URL ?? "http://localhost:8787",
+  baseUrl: API_URL,
   credentials: "include",
 });
 client.interceptors.request.use(attachCsrfHeader);
