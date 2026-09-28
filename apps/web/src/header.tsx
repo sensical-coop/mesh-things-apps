@@ -13,7 +13,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { AutomationMenu } from "@/components/automation-menu";
-import { ConnectorsMenu } from "@/components/connectors-menu";
+import { DataMenu } from "@/components/data-menu";
 import { ManagementMenu } from "@/components/management-menu";
 
 const headerLinkClass =
@@ -59,7 +59,7 @@ function NavLinks({
       </Link>
       <AutomationMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
       {isOperator ? (
-        <ConnectorsMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
+        <DataMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
       ) : null}
       {isSuperuser ? (
         <ManagementMenu
