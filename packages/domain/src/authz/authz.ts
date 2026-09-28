@@ -106,6 +106,26 @@ export function canManageSources(actor: Actor): boolean {
   return actor.isActive && (actor.role === "operator" || actor.role === "superuser");
 }
 
+/**
+ * Devices are archived only on a mesh whose owner is an operator; a superuser counts as
+ * one. Taking the role away stops archiving but keeps each device's setting.
+ */
+export function archivesFor(meshOwner: Pick<Actor, "role">): boolean {
+  return meshOwner.role === "operator" || meshOwner.role === "superuser";
+}
+
+/** A device's archive setting, like its admin keys, is for the mesh's owner and superusers. */
+export function canSeeArchiveSetting(actor: Actor, mesh: Owned): boolean {
+  if (!actor.isActive) return false;
+  return actor.role === "superuser" || mesh.ownerId === actor.id;
+}
+
+/** The archive itself: superusers, or the mesh's owner while an operator. */
+export function canReadArchive(actor: Actor, mesh: Owned): boolean {
+  if (!actor.isActive) return false;
+  return actor.role === "superuser" || (actor.role === "operator" && mesh.ownerId === actor.id);
+}
+
 /** Every source for a superuser, their own for an operator, none for anyone else. */
 export function visibleSources<T extends Created>(actor: Actor, rows: T[]): T[] {
   if (!canManageSources(actor)) return [];
