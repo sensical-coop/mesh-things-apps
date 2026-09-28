@@ -8,6 +8,7 @@ import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { Navigate } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
@@ -145,9 +146,10 @@ export function SourcesPage(): ReactElement {
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex justify-start gap-2">
-            <Button type="button" size="xs" variant="secondary" onClick={() => setSourceToEdit(row.original)}>
-              {formatMessage({ id: "page.sources.list.edit", defaultMessage: "Edit" })}
-            </Button>
+            <SettingsButton
+              label={formatMessage({ id: "page.sources.list.edit", defaultMessage: "Edit source" })}
+              onClick={() => setSourceToEdit(row.original)}
+            />
             <Button
               type="button"
               size="xs"
