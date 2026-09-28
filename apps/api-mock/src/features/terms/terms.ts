@@ -1,9 +1,8 @@
 /**
  * The terms owners accept, as the API serves them: the account terms at signup, the mesh
- * terms per mesh on the default broker, and the source terms per source. The source copy
- * is meshtastic-things `registry/terms.py`; the account and mesh copies are the proposed
- * split of its platform terms (plans/sources.md, "Terms per mesh"). The console shows
- * what these routes return and keeps no copy of its own.
+ * terms per mesh on the default broker, and the source terms per source. A copy of
+ * meshtastic-things `registry/terms.py`, word for word, and kept in step with it. The
+ * console shows what these routes return and keeps no copy of its own.
  */
 export type TermsKind = "account" | "mesh" | "source";
 export type TermsLocale = "en" | "es";
@@ -91,11 +90,15 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
       statements: [
         {
           id: "controller",
-          text: "I act as data controller for the traffic this mesh brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Mesh Things Terms.",
+          text: "I act as data controller for the traffic this mesh brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Mesh Things Terms. If I'm an operator, this includes keeping the devices I choose in a long-term archive that I can download.",
         },
         {
           id: "lawfulBasis",
           text: "I have a lawful basis for this processing, such as legitimate interest, and I tell the people whose nodes appear on this mesh how their data is used.",
+        },
+        {
+          id: "minimisation",
+          text: "I'll store only what this mesh needs: I'll register only its own gateways and, if I archive devices, only those I need and only while I need them.",
         },
         {
           id: "sensitive",
@@ -105,9 +108,9 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
       footnote:
         "You can withdraw at any time by deleting the mesh. Questions or data requests: info@sensical.es.",
       retention_limited:
-        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the mesh stops storing new data, and the data it stored is deleted {grace} days later unless you renew in the meantime.",
+        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the mesh stops storing new data, and the data it stored, including any archive, is deleted {grace} days later unless you renew in the meantime.",
       retention_unlimited:
-        "The mesh's data is kept while the mesh is in use. When you delete it, its data is deleted {grace} days later.",
+        "The mesh's data is kept while the mesh is in use. When you delete it, its data, including any archive, is deleted {grace} days later.",
     },
     es: {
       title: "Antes de crear una malla",
@@ -116,11 +119,15 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
       statements: [
         {
           id: "controller",
-          text: "Actúo como responsable del tratamiento del tráfico que trae esta malla. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según las Condiciones de Mesh Things.",
+          text: "Actúo como responsable del tratamiento del tráfico que trae esta malla. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según las Condiciones de Mesh Things. Si soy operador, esto incluye conservar los dispositivos que elija en un archivo a largo plazo que puedo descargar.",
         },
         {
           id: "lawfulBasis",
           text: "Tengo una base jurídica para este tratamiento, como el interés legítimo, e informo a las personas cuyos nodos aparecen en esta malla de cómo se usan sus datos.",
+        },
+        {
+          id: "minimisation",
+          text: "Guardaré solo lo que esta malla necesite: registraré solo sus propias pasarelas y, si archivo dispositivos, solo los que necesite y solo mientras los necesite.",
         },
         {
           id: "sensitive",
@@ -130,9 +137,9 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
       footnote:
         "Puedes retirarte cuando quieras eliminando la malla. Dudas o solicitudes sobre datos: info@sensical.es.",
       retention_limited:
-        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, la malla deja de guardar datos nuevos, y los datos guardados se borran {grace} días después salvo que renueves antes.",
+        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, la malla deja de guardar datos nuevos, y los datos guardados, incluido cualquier archivo, se borran {grace} días después salvo que renueves antes.",
       retention_unlimited:
-        "Los datos de la malla se conservan mientras la malla esté en uso. Cuando la eliminas, sus datos se borran {grace} días después.",
+        "Los datos de la malla se conservan mientras la malla esté en uso. Cuando la eliminas, sus datos, incluido cualquier archivo, se borran {grace} días después.",
     },
   },
   source: {
@@ -143,13 +150,13 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
       footnote:
         "You can withdraw at any time: delete the source's meshes, then the source, and the bridge stops. Questions or data requests: info@sensical.es.",
       retention_limited:
-        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the source is paused, and the data of its meshes is deleted {grace} days later unless you renew in the meantime.",
+        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the source is paused, and the data of its meshes, including any archive, is deleted {grace} days later unless you renew in the meantime.",
       retention_unlimited:
-        "Data from this source is kept while the source is in use. When a mesh is deleted or moved off the source, its data is deleted {grace} days later.",
+        "Data from this source is kept while the source is in use. When a mesh is deleted or moved off the source, its data, including any archive, is deleted {grace} days later.",
       statements: [
         {
           id: "controller",
-          text: "I act as data controller for the traffic this source brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Mesh Things Terms.",
+          text: "I act as data controller for the traffic this source brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Mesh Things Terms. This includes keeping the devices I choose in a long-term archive that I can download.",
         },
         {
           id: "authority",
@@ -161,7 +168,7 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
         },
         {
           id: "minimisation",
-          text: "I'll use the narrowest topic filter that covers my mesh, and I won't bridge traffic I don't need.",
+          text: "I'll use the narrowest topic filter that covers my mesh, I won't bridge traffic I don't need, and I'll archive only the devices I need and only while I need them.",
         },
         {
           id: "sensitive",
@@ -176,13 +183,13 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
       footnote:
         "Puedes retirarte cuando quieras: elimina las mallas de la fuente y después la fuente, y el puente se detiene. Dudas o solicitudes sobre datos: info@sensical.es.",
       retention_limited:
-        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, la fuente se pausa y los datos de sus mallas se borran {grace} días después salvo que renueves antes.",
+        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, la fuente se pausa y los datos de sus mallas, incluido cualquier archivo, se borran {grace} días después salvo que renueves antes.",
       retention_unlimited:
-        "Los datos de esta fuente se conservan mientras la fuente esté en uso. Cuando una malla se elimina o deja la fuente, sus datos se borran {grace} días después.",
+        "Los datos de esta fuente se conservan mientras la fuente esté en uso. Cuando una malla se elimina o deja la fuente, sus datos, incluido cualquier archivo, se borran {grace} días después.",
       statements: [
         {
           id: "controller",
-          text: "Actúo como responsable del tratamiento del tráfico que trae esta fuente. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según las Condiciones de Mesh Things.",
+          text: "Actúo como responsable del tratamiento del tráfico que trae esta fuente. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según las Condiciones de Mesh Things. Esto incluye conservar los dispositivos que elija en un archivo a largo plazo que puedo descargar.",
         },
         {
           id: "authority",
@@ -194,7 +201,7 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
         },
         {
           id: "minimisation",
-          text: "Usaré el filtro de tema más estrecho que cubra mi malla y no traeré tráfico que no necesite.",
+          text: "Usaré el filtro de tema más estrecho que cubra mi malla, no traeré tráfico que no necesite y archivaré solo los dispositivos que necesite y solo mientras los necesite.",
         },
         {
           id: "sensitive",
