@@ -51,6 +51,37 @@ export type AlgorithmParam = {
     doc: string;
 };
 
+export type ArchiveCredentials = {
+    access_key_id: string;
+    secret_access_key: string;
+    session_token: string;
+    expires_at: string;
+    /**
+     * S3 endpoint to connect to. Null means the provider's default (AWS).
+     */
+    endpoint: string | null;
+    region: string;
+    bucket: string;
+    prefix: string;
+    s3_path: string;
+};
+
+export type ArchiveManifest = {
+    mesh_id: string;
+    prefix: string;
+    partitions: Array<ArchivePartition>;
+};
+
+export type ArchivePartition = {
+    dt: string;
+    hour: number;
+    /**
+     * Object size in bytes.
+     */
+    size: number;
+    last_modified: string;
+};
+
 /**
  * * `pending` - Pending
  * * `running` - Running
@@ -263,10 +294,16 @@ export type DeviceRead = {
     readonly label: string | null;
     readonly is_gateway: boolean;
     readonly is_allowed: boolean;
+    readonly absence_detection_enabled: boolean;
+    /**
+     * Shown only to the mesh's owner and superusers.
+     */
+    readonly archive_enabled?: boolean;
+    readonly archive_enabled_at?: string | null;
     /**
      * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
      */
-    readonly absence_detection_enabled: boolean;
+    readonly archive_enabled_by?: string | null;
     readonly admin_keys_b64?: Array<string>;
     readonly latitude: number | null;
     readonly longitude: number | null;
@@ -305,6 +342,10 @@ export type DeviceUpdate = {
      * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
      */
     absence_detection_enabled?: boolean;
+    /**
+     * Store this device's readings in the Parquet archive from now on. Only on a mesh owned by an operator, and only on instances that run the archive. Turning it off keeps what was stored.
+     */
+    archive_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
@@ -1019,6 +1060,10 @@ export type DeviceUpdateWritable = {
      * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
      */
     absence_detection_enabled?: boolean;
+    /**
+     * Store this device's readings in the Parquet archive from now on. Only on a mesh owned by an operator, and only on instances that run the archive. Turning it off keeps what was stored.
+     */
+    archive_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
@@ -2327,6 +2372,97 @@ export type PostprocessingBlueprintsVersionsRetrieveResponses = {
 };
 
 export type PostprocessingBlueprintsVersionsRetrieveResponse = PostprocessingBlueprintsVersionsRetrieveResponses[keyof PostprocessingBlueprintsVersionsRetrieveResponses];
+
+export type ReadingsArchiveMeshesRetrieveData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Earliest day, as `YYYY-MM-DD`.
+         */
+        start?: string;
+        /**
+         * Latest day, as `YYYY-MM-DD`.
+         */
+        stop?: string;
+    };
+    url: '/readings/archive/meshes/{mesh_id}';
+};
+
+export type ReadingsArchiveMeshesRetrieveResponses = {
+    200: ArchiveManifest;
+};
+
+export type ReadingsArchiveMeshesRetrieveResponse = ReadingsArchiveMeshesRetrieveResponses[keyof ReadingsArchiveMeshesRetrieveResponses];
+
+export type ReadingsArchiveMeshesCredentialsCreateData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/archive/meshes/{mesh_id}/credentials';
+};
+
+export type ReadingsArchiveMeshesCredentialsCreateResponses = {
+    201: ArchiveCredentials;
+};
+
+export type ReadingsArchiveMeshesCredentialsCreateResponse = ReadingsArchiveMeshesCredentialsCreateResponses[keyof ReadingsArchiveMeshesCredentialsCreateResponses];
+
+export type ReadingsArchiveMeshesPartitionsRetrieveData = {
+    body?: never;
+    path: {
+        day: string;
+        hour: number;
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/archive/meshes/{mesh_id}/partitions/{day}/{hour}';
+};
+
+export type ReadingsArchiveMeshesPartitionsRetrieveErrors = {
+    /**
+     * No such mesh, or nothing archived for that hour.
+     */
+    404: unknown;
+};
+
+export type ReadingsArchiveMeshesZipRetrieveData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Earliest day, as `YYYY-MM-DD`.
+         */
+        start?: string;
+        /**
+         * Latest day, as `YYYY-MM-DD`.
+         */
+        stop?: string;
+    };
+    url: '/readings/archive/meshes/{mesh_id}/zip';
+};
+
+export type ReadingsArchiveMeshesZipRetrieveErrors = {
+    /**
+     * No such mesh, or nothing archived in the range.
+     */
+    404: unknown;
+};
+
+export type ReadingsArchiveMeshesZipRetrieveResponses = {
+    /**
+     * The hourly Parquet files of the range, as one zip.
+     */
+    200: Blob | File;
+};
+
+export type ReadingsArchiveMeshesZipRetrieveResponse = ReadingsArchiveMeshesZipRetrieveResponses[keyof ReadingsArchiveMeshesZipRetrieveResponses];
 
 export type ReadingsDevicesRetrieveData = {
     body?: never;

@@ -186,6 +186,12 @@ paths:
         Position and identity fields are filled in from what the device reports
         until they are set here, after which the values given take precedence.
         Disallowing a gateway stops its traffic being decoded.
+
+        `archive_enabled` stores the device's readings in the Parquet archive from
+        then on. It is accepted only on a mesh owned by an operator and on
+        instances that run the archive. Turning it off stops storing new readings
+        and keeps those already stored. The setting is rolled back if the
+        pipeline cannot be told about it.
       parameters:
       - in: path
         name: device_uuid
@@ -1447,8 +1453,10 @@ paths:
 
         Args:
             role: `member`, the default, or `operator`, which may also manage
-                sources. Granting `operator` also approves any pending operator
-                request from this owner, without emailing them.
+                sources and archive devices. Granting `operator` also approves any
+                pending operator request from this owner, without emailing them.
+                Taking it away stops archiving the owner's devices, and the role
+                is kept if the pipeline cannot be told.
       parameters:
       - in: path
         name: owner_id
@@ -2126,6 +2134,166 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlueprintVersion'
           description: ''
+  /readings/archive/meshes/{mesh_id}:
+    get:
+      operationId: readings_archive_meshes_retrieve
+      description: "List the hourly Parquet files archived for a mesh, oldest first.\n\nOnly\
+        \ devices whose archive is switched on are stored, from the moment it\nwas switched\
+        \ on, so the list stays empty until one of them reports.\nAvailable to the mesh's\
+        \ owner while they are an operator, and to\nsuperusers.\n\nArgs:\n    start: Earliest\
+        \ day to include, as `YYYY-MM-DD`. Defaults to the first archived day.\n    stop:\
+        \ Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day."
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+        description: Earliest day, as `YYYY-MM-DD`.
+      - in: query
+        name: stop
+        schema:
+          type: string
+          format: date
+        description: Latest day, as `YYYY-MM-DD`.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveManifest'
+          description: ''
+  /readings/archive/meshes/{mesh_id}/credentials:
+    post:
+      operationId: readings_archive_meshes_credentials_create
+      description: 'Issue temporary S3 credentials that can read this mesh''s archive and
+        nothing else.
+
+
+        Use them with DuckDB, pandas or any S3 client to query the archive as a
+
+        partitioned dataset. The secret is shown in this response only. The
+
+        credentials cannot be revoked and stay valid until `expires_at`, even if
+
+        the caller loses access to the mesh in the meantime. Available to the
+
+        mesh''s owner while they are an operator, and to superusers.'
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveCredentials'
+          description: ''
+  /readings/archive/meshes/{mesh_id}/partitions/{day}/{hour}:
+    get:
+      operationId: readings_archive_meshes_partitions_retrieve
+      description: 'Download one hour of a mesh''s archive as a Parquet file.
+
+
+        Answers with a redirect to a temporary link, valid for the same time as
+
+        issued credentials, that any HTTP client can follow. The file does not
+
+        carry `mesh_id` as a column. Available to the mesh''s owner while they are
+
+        an operator, and to superusers.'
+      parameters:
+      - in: path
+        name: day
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: hour
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '302':
+          description: Redirect to a temporary download link for the Parquet file.
+        '404':
+          description: No such mesh, or nothing archived for that hour.
+  /readings/archive/meshes/{mesh_id}/zip:
+    get:
+      operationId: readings_archive_meshes_zip_retrieve
+      description: "Download a range of a mesh's archive as one zip, a folder per day.\n\n\
+        Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole\narchive\
+        \ is one download. The zip streams as the files are read, and holds\nwhat the file\
+        \ list shows at the time of the request. For querying in place,\nissue credentials\
+        \ instead. Available to the mesh's owner while they are an\noperator, and to superusers.\n\
+        \nArgs:\n    start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first\
+        \ archived day.\n    stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the\
+        \ last archived day."
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+        description: Earliest day, as `YYYY-MM-DD`.
+      - in: query
+        name: stop
+        schema:
+          type: string
+          format: date
+        description: Latest day, as `YYYY-MM-DD`.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+          description: The hourly Parquet files of the range, as one zip.
+        '404':
+          description: No such mesh, or nothing archived in the range.
   /readings/devices/{device_uuid}:
     get:
       operationId: readings_devices_retrieve
@@ -3018,6 +3186,77 @@ components:
       - name
       - required
       - unit
+    ArchiveCredentials:
+      type: object
+      properties:
+        access_key_id:
+          type: string
+        secret_access_key:
+          type: string
+        session_token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        endpoint:
+          type: string
+          nullable: true
+          description: S3 endpoint to connect to. Null means the provider's default (AWS).
+        region:
+          type: string
+        bucket:
+          type: string
+        prefix:
+          type: string
+        s3_path:
+          type: string
+      required:
+      - access_key_id
+      - bucket
+      - endpoint
+      - expires_at
+      - prefix
+      - region
+      - s3_path
+      - secret_access_key
+      - session_token
+    ArchiveManifest:
+      type: object
+      properties:
+        mesh_id:
+          type: string
+          format: uuid
+        prefix:
+          type: string
+        partitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivePartition'
+      required:
+      - mesh_id
+      - partitions
+      - prefix
+    ArchivePartition:
+      type: object
+      properties:
+        dt:
+          type: string
+          format: date
+        hour:
+          type: integer
+          maximum: 23
+          minimum: 0
+        size:
+          type: integer
+          description: Object size in bytes.
+        last_modified:
+          type: string
+          format: date-time
+      required:
+      - dt
+      - hour
+      - last_modified
+      - size
     BackfillStatusEnum:
       enum:
       - pending
@@ -3543,6 +3782,20 @@ components:
         absence_detection_enabled:
           type: boolean
           readOnly: true
+        archive_enabled:
+          type: boolean
+          readOnly: true
+          description: Shown only to the mesh's owner and superusers.
+        archive_enabled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        archive_enabled_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
           description: Gates only the absence detector (device stopped publishing).
             Per-channel detectors are unaffected.
         admin_keys_b64:
@@ -3675,6 +3928,11 @@ components:
           type: boolean
           description: Gates only the absence detector (device stopped publishing).
             Per-channel detectors are unaffected.
+        archive_enabled:
+          type: boolean
+          description: Store this device's readings in the Parquet archive from now
+            on. Only on a mesh owned by an operator, and only on instances that run
+            the archive. Turning it off keeps what was stored.
         latitude:
           type: number
           format: double
