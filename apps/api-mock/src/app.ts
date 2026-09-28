@@ -33,6 +33,9 @@ import {
   canManageSources,
   canRequestOperator,
   canSeeDataDeletions,
+  archivesFor,
+  canReadArchive,
+  canSeeArchiveSetting,
   canSeeMeshSource,
   canReadMesh,
   canReadOwnerEmail,
@@ -74,6 +77,17 @@ import {
   type Store,
 } from "./store";
 import { ALGORITHMS } from "./features/algorithm/catalog";
+import {
+  ARCHIVE_BUCKET,
+  ARCHIVE_CREDENTIAL_TTL_S,
+  ARCHIVE_ENABLED,
+  ARCHIVE_ISSUES_CREDENTIALS,
+  ARCHIVE_PUBLIC_ENDPOINT,
+  ARCHIVE_REGION,
+  meshPrefix,
+  partitionKey,
+} from "./features/archive/repository";
+import { storedZip } from "./features/archive/zip";
 import {
   latestVersion,
   versionNumbered,
@@ -188,9 +202,15 @@ function openPath(method: string, path: string): boolean {
     (method === "POST" && path === "/owners/request-password-reset") ||
     (method === "POST" && path === "/owners/reset-password") ||
     (method === "GET" && path === "/owners/verify-email") ||
-    (method === "GET" && path === "/terms")
+    (method === "GET" && path === "/terms") ||
+    // Presigned: the signature in the link is the authorisation.
+    (method === "GET" && path.startsWith(MOCK_S3_PATH))
   );
 }
+
+/** Where the mock's presigned links point, standing in for the S3 endpoint. */
+const MOCK_S3_PATH = "/mock-s3/";
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function applySetCookie(c: Context, headers: Headers) {
   const cookies = typeof headers.getSetCookie === "function" ? headers.getSetCookie() : [];
@@ -343,8 +363,21 @@ function versionFromBody(
 export async function createApp(store?: Store, auth: MockAuth = createMockAuth()) {
   const db = store ?? (await seedStore(auth));
 
+  /**
+   * Starts or stops a device's archive hours, as registry publishes to mesh.sink_config.v1:
+   * archived while switched on, allowed, and on a mesh whose owner is an operator.
+   */
+  function syncArchive(device: Device, mesh: Mesh) {
+    const owner = db.actors.get(mesh.ownerId);
+    const archived = device.archiveEnabled && device.isAllowed && owner != null && archivesFor(owner);
+    if (archived) db.archive.start(mesh.id, device.nodeId, nowIso());
+    else db.archive.stop(mesh.id, device.nodeId, nowIso());
+  }
+
   /** A device and everything attached to it. */
   async function deleteDevice(uuid: string) {
+    const device = await db.devices.get(uuid);
+    if (device) db.archive.stop(device.meshId, device.nodeId, nowIso());
     const attached = new Set(db.postprocessings.filter((row) => row.deviceUuid === uuid).map((row) => row.id));
     db.postprocessings = db.postprocessings.filter((row) => !attached.has(row.id));
     db.calibrations = db.calibrations.filter((row) => !attached.has(row.postprocessingId));
@@ -353,6 +386,19 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   }
 
   /** A source the caller may see, or the mesh's current one, which resending always keeps. */
+  /** Devices as the API returns them, with the archive setting where the viewer may see it. */
+  async function devicesJson(actor: Actor, devices: Device[]) {
+    const owners = new Map((await db.meshes.list()).map((mesh) => [mesh.id, mesh.ownerId]));
+    return devices.map((device) =>
+      deviceJson(device, { archive: canSeeArchiveSetting(actor, { ownerId: owners.get(device.meshId) ?? "" }) }),
+    );
+  }
+
+  async function deviceOut(actor: Actor, device: Device) {
+    const [json] = await devicesJson(actor, [device]);
+    return json;
+  }
+
   async function canAttachSource(actor: Actor, sourceId: string, current: string | null): Promise<boolean> {
     if (sourceId === current) return true;
     const source = await db.sources.get(sourceId);
@@ -480,7 +526,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       if (!actor?.isActive) return c.json({ detail: "Invalid credentials" }, 400);
       stampLogin(actor);
       const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-      return c.json(ownerProfileJson(actor, await devicesFor(db, actor), verification, ownerTerms(actor.id)));
+      return c.json(ownerProfileJson(actor, await devicesJson(actor, await devicesFor(db, actor)), verification, ownerTerms(actor.id)));
     } catch {
       return c.json({ detail: "Invalid credentials" }, 400);
     }
@@ -614,7 +660,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.get("/owners/me", async (c) => {
     const actor = c.get("actor");
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-    return c.json(ownerProfileJson(actor, await devicesFor(db, actor), verification, ownerTerms(actor.id)));
+    return c.json(ownerProfileJson(actor, await devicesJson(actor, await devicesFor(db, actor)), verification, ownerTerms(actor.id)));
   });
 
   app.put("/owners/me", async (c) => {
@@ -769,7 +815,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
     if (!mesh) return c.json({ detail: "Not found" }, 404);
     const devices = await db.devices.list({ meshId: mesh.id });
-    return c.json(devices.filter((device) => visibleToReader(actor, mesh, device)).map(deviceJson));
+    return c.json(await devicesJson(actor, devices.filter((device) => visibleToReader(actor, mesh, device))));
   });
 
   app.put("/meshes/:mesh_id", async (c) => {
@@ -843,7 +889,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
         extra: queryFilters(c, ["mesh_id", "is_gateway", "is_allowed", "has_postprocessing", "label"]),
       }),
     );
-    return c.json(devices.map(deviceJson));
+    return c.json(await devicesJson(actor, devices));
   });
 
   app.post("/devices", async (c) => {
@@ -866,13 +912,14 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       latitude: parsed.data.body.latitude ?? null,
       longitude: parsed.data.body.longitude ?? null,
     });
-    return c.json(deviceJson(device), 201);
+    return c.json(await deviceOut(actor, device), 201);
   });
 
   app.get("/devices/:device_uuid", async (c) => {
-    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    const actor = c.get("actor");
+    const device = await deviceForRead(db, actor, c.req.param("device_uuid"));
     if (!device) return c.json({ detail: "Not found" }, 404);
-    return c.json(deviceJson(device));
+    return c.json(await deviceOut(actor, device));
   });
 
   app.put("/devices/:device_uuid", async (c) => {
@@ -891,8 +938,16 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     const patch = parsed.data.body ?? {};
+    if (patch.archive_enabled && !existing.archiveEnabled) {
+      const owner = db.actors.get(mesh.ownerId);
+      if (!ARCHIVE_ENABLED) return c.json({ archive_enabled: ["This instance has no archive."] }, 400);
+      if (!owner || !archivesFor(owner)) {
+        return c.json({ archive_enabled: ["Only devices on a mesh owned by an operator can be archived."] }, 400);
+      }
+    }
     const lat = patch.latitude;
     const lon = patch.longitude;
+    if (patch.archive_enabled !== undefined) existing.setArchive(patch.archive_enabled, actor.id, nowIso());
     const device = await db.devices.update(c.req.param("device_uuid"), {
       label: patch.label,
       name: patch.name,
@@ -909,7 +964,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       locationOverridden: lat !== undefined && lon !== undefined ? lat != null || lon != null : undefined,
     });
     if (!device) return c.json({ detail: "Not found" }, 404);
-    return c.json(deviceJson(device));
+    syncArchive(device, mesh);
+    return c.json(await deviceOut(actor, device));
   });
 
   app.get("/devices/:device_uuid/measurements", async (c) => {
@@ -1234,7 +1290,14 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     row.decidedById = actor.id;
     row.decidedAt = nowIso();
     const requester = db.actors.get(row.ownerId);
-    if (approve && requester?.role === "owner") requester.role = "operator";
+    if (approve && requester?.role === "owner") {
+      requester.role = "operator";
+      // Archives the owner switched on before are archived again.
+      for (const mesh of await db.meshes.list()) {
+        if (mesh.ownerId !== requester.id) continue;
+        for (const device of await db.devices.list({ meshId: mesh.id })) syncArchive(device, mesh);
+      }
+    }
     console.info(`[mock] operator request ${row.status} for ${requester?.email ?? row.ownerId}`);
     return c.json(operatorRequestAdminJson(row, requester));
   });
@@ -1767,6 +1830,99 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     });
     return c.json(telemetryVariantMeasurementJson(db, temp, VARIANT_LINK_ID));
   });
+
+  /**
+   * Superusers, or the mesh's owner while an operator; everyone else is told the mesh
+   * doesn't exist. Null where the caller may read the archive.
+   */
+  async function archiveRefusal(actor: Actor, meshId: string, credentials = false) {
+    if (!(credentials ? ARCHIVE_ISSUES_CREDENTIALS : ARCHIVE_ENABLED)) return { detail: "Not found" };
+    const mesh = await db.meshes.get(meshId);
+    if (!mesh || !canReadArchive(actor, mesh)) return { detail: "Mesh not found" };
+    return null;
+  }
+
+  app.get("/readings/archive/meshes/:mesh_id", async (c) => {
+    const meshId = c.req.param("mesh_id");
+    const refusal = await archiveRefusal(c.get("actor"), meshId);
+    if (refusal) return c.json(refusal, 404);
+    const [start, stop] = [c.req.query("start"), c.req.query("stop")];
+    for (const [name, value] of [["start", start], ["stop", stop]] as const) {
+      if (value && !DAY_PATTERN.test(value)) return c.json({ [name]: ["Expected a date as YYYY-MM-DD."] }, 400);
+    }
+    return c.json({ mesh_id: meshId, prefix: meshPrefix(meshId), partitions: db.archive.partitions(meshId, start, stop) });
+  });
+
+  app.post("/readings/archive/meshes/:mesh_id/credentials", async (c) => {
+    const actor = c.get("actor");
+    const meshId = c.req.param("mesh_id");
+    const refusal = await archiveRefusal(actor, meshId, true);
+    if (refusal) return c.json(refusal, 404);
+    const token = () => newId().replaceAll("-", "");
+    console.info(`[mock] archive credentials issued to ${actor.email} for mesh ${meshId}`);
+    return c.json(
+      {
+        access_key_id: `MOCK${token().slice(0, 16).toUpperCase()}`,
+        secret_access_key: token() + token().slice(0, 8),
+        session_token: token() + token() + token(),
+        expires_at: new Date(Date.now() + ARCHIVE_CREDENTIAL_TTL_S * 1000).toISOString(),
+        endpoint: ARCHIVE_PUBLIC_ENDPOINT,
+        region: ARCHIVE_REGION,
+        bucket: ARCHIVE_BUCKET,
+        prefix: meshPrefix(meshId),
+        s3_path: `s3://${ARCHIVE_BUCKET}/${meshPrefix(meshId)}`,
+      },
+      201,
+    );
+  });
+
+  app.get("/readings/archive/meshes/:mesh_id/partitions/:day/:hour", async (c) => {
+    const meshId = c.req.param("mesh_id");
+    const refusal = await archiveRefusal(c.get("actor"), meshId);
+    if (refusal) return c.json(refusal, 404);
+    const day = c.req.param("day");
+    const hour = Number(c.req.param("hour"));
+    const found = db.archive.partitions(meshId, day, day).some((p) => p.hour === hour);
+    if (!DAY_PATTERN.test(day) || !found) return c.json({ detail: "Partition not found" }, 404);
+    const url = new URL(`${MOCK_S3_PATH}${ARCHIVE_BUCKET}/${partitionKey(meshId, day, hour)}`, c.req.url);
+    url.searchParams.set("X-Amz-Expires", String(ARCHIVE_CREDENTIAL_TTL_S));
+    url.searchParams.set("X-Amz-Signature", "mock");
+    return c.redirect(url.toString(), 302);
+  });
+
+  app.get("/readings/archive/meshes/:mesh_id/zip", async (c) => {
+    const meshId = c.req.param("mesh_id");
+    const refusal = await archiveRefusal(c.get("actor"), meshId);
+    if (refusal) return c.json(refusal, 404);
+    const [start, stop] = [c.req.query("start"), c.req.query("stop")];
+    for (const [name, value] of [["start", start], ["stop", stop]] as const) {
+      if (value && !DAY_PATTERN.test(value)) return c.json({ [name]: ["Expected a date as YYYY-MM-DD."] }, 400);
+    }
+    const partitions = db.archive.partitions(meshId, start, stop);
+    if (!partitions.length) return c.json({ detail: "Nothing archived in that range" }, 404);
+    const first = partitions[0]!.dt;
+    const last = partitions.at(-1)!.dt;
+    const hour = (h: number) => String(h).padStart(2, "0");
+    const zip = storedZip(
+      partitions.map((p) => ({
+        name: `${p.dt}/${p.dt}_${hour(p.hour)}.parquet`,
+        data: new TextEncoder().encode(`PAR1 mock ${partitionKey(meshId, p.dt, p.hour)} PAR1`),
+        modified: new Date(p.last_modified),
+      })),
+    );
+    return c.body(zip, 200, {
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="mesh-${meshId.slice(0, 8)}_${first === last ? first : `${first}_${last}`}.zip"`,
+    });
+  });
+
+  // The object a presigned link names. Not real Parquet: the mock stores no rows.
+  app.get(`${MOCK_S3_PATH}*`, (c) =>
+    c.body("PAR1 mock archive object: the console mock stores no readings. PAR1", 200, {
+      "Content-Type": "application/vnd.apache.parquet",
+      "Content-Disposition": 'attachment; filename="data.parquet"',
+    }),
+  );
 
   app.get("/readings/devices/:device_uuid/latest", async (c) => {
     const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));

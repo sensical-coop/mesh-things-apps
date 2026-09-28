@@ -10,6 +10,7 @@ import { MemoryMeshes } from "./features/mesh/repository";
 import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
 import { MemorySources } from "./features/source/repository";
+import { MemoryArchive } from "./features/archive/repository";
 import {
   DATA_RETENTION_DAYS,
   TERMS_ENFORCED,
@@ -37,6 +38,11 @@ export const SOURCE_LAPSED_ID = "21212121-2121-4212-8212-212121212121";
 export const DEVICE_GW_ID = "33333333-3333-4333-8333-333333333333";
 export const DEVICE_NODE_ID = "44444444-4444-4444-8444-444444444444";
 export const DEVICE_RIVER_GW_ID = "13131313-1313-4131-8131-131313131313";
+/** The operator's Brook mesh: one device archived, one switched off since, one never. */
+export const MESH_BROOK_ID = "22222222-3333-4333-8333-000000000001";
+export const DEVICE_BROOK_GW_ID = "27272727-2727-4272-8272-272727272727";
+export const DEVICE_BROOK_BUOY_ID = "28282828-2828-4282-8282-282828282828";
+export const DEVICE_BROOK_WEIR_ID = "29292929-2929-4292-8292-292929292929";
 export const MEAS_TEMP_ID = "66666666-6666-4666-8666-666666666666";
 export const VARIANT_ENV_ID = "77777777-7777-4777-8777-777777777777";
 export const DEVICE_MEAS_ID = "88888888-8888-4888-8888-888888888888";
@@ -98,6 +104,11 @@ function deletion(
 }
 
 /** A seed date relative to now, or null when no retention period is set (nothing lapses). */
+/** Always a time, unlike daysFromNow, which follows the retention setting. */
+function hoursAgo(hours: number): string {
+  return new Date(Date.now() - hours * 3_600_000).toISOString();
+}
+
 function daysFromNow(days: number): string | null {
   return DATA_RETENTION_DAYS ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
 }
@@ -171,6 +182,7 @@ export type Store = {
   accountTerms: Map<string, string>;
   operatorRequests: OperatorRequestRow[];
   devices: MemoryDevices;
+  archive: MemoryArchive;
   measurements: MemoryMeasurements;
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
@@ -358,7 +370,7 @@ export function createStore(owners: StoreOwners = {}): Store {
     });
   }
   const statusMeshes: [string, string, string, Partial<ConstructorParameters<typeof Mesh>[0]>][] = [
-    ["22222222-3333-4333-8333-000000000001", "Brook", operatorId, { sourceId: SOURCE_OFFLINE_ID }],
+    [MESH_BROOK_ID, "Brook", operatorId, { sourceId: SOURCE_OFFLINE_ID }],
     ["22222222-3333-4333-8333-000000000002", "Creek", operatorId, { sourceId: SOURCE_LAPSED_ID }],
     ["22222222-3333-4333-8333-000000000003", "Garden", adaId, { termsAcceptedVersion: TERMS_VERSIONS.mesh, termsExpiresAt: daysFromNow(10) }],
     ["22222222-3333-4333-8333-000000000004", "Orchard", adaId, {}],
@@ -452,6 +464,48 @@ export function createStore(owners: StoreOwners = {}): Store {
       updatedAt: t0,
     }),
   );
+  const archive = new MemoryArchive();
+  const brook: [string, number, string, boolean, string, number | null, number | null][] = [
+    // uuid, node, name, gateway, hardware, archived since (days), until (days)
+    [DEVICE_BROOK_GW_ID, 0x0b700001, "Brook GW", true, "tbeam", -9, null],
+    [DEVICE_BROOK_BUOY_ID, 0x0b700002, "Buoy", false, "rak4631", -6, -3],
+    [DEVICE_BROOK_WEIR_ID, 0x0b700003, "Weir", false, "heltec", null, null],
+  ];
+  for (const [uuid, nodeId, name, isGateway, hardwareType, since, until] of brook) {
+    const archiveEnabled = since !== null && until === null;
+    devices.items.set(
+      uuid,
+      new Device({
+        uuid,
+        nodeId,
+        meshId: MESH_BROOK_ID,
+        label: null,
+        isGateway,
+        isAllowed: true,
+        absenceDetectionEnabled: true,
+        adminKeysB64: [],
+        latitude: Math.round((41.41 + (nodeId % 8) / 1000) * 1e6) / 1e6,
+        longitude: 2.19,
+        locationOverridden: false,
+        name,
+        shortName: name.slice(0, 3).toUpperCase(),
+        hardwareType,
+        role: isGateway ? "ROUTER" : "SENSOR",
+        nodeinfoOverridden: false,
+        postprocessingCount: 0,
+        readingIntervalSeconds: 300,
+        publishIntervalSeconds: 300,
+        archiveEnabled,
+        archiveEnabledAt: archiveEnabled ? hoursAgo(-since * 24) : null,
+        archiveEnabledBy: archiveEnabled ? operatorId : null,
+        lastSeen: nowIso(),
+        createdAt: t0,
+        updatedAt: t0,
+      }),
+    );
+    if (since !== null) archive.start(MESH_BROOK_ID, nodeId, hoursAgo(-since * 24));
+    if (until !== null) archive.stop(MESH_BROOK_ID, nodeId, hoursAgo(-until * 24));
+  }
   const measurements = new MemoryMeasurements(meas);
   return {
     meshes,
@@ -493,8 +547,9 @@ export function createStore(owners: StoreOwners = {}): Store {
       },
     ],
     devices,
+    archive,
     measurements,
-    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID]), t0),
+    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID, DEVICE_BROOK_GW_ID, DEVICE_BROOK_BUOY_ID]), t0),
     actors,
     verifications,
     verificationTokens: new Map<string, string>(),

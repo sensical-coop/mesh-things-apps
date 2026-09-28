@@ -58,7 +58,8 @@ export function sourceReadJson(source: Source, status = "connected") {
   return { ...sourceJson(source), status: source.pausedAt ? "paused" : bridge };
 }
 
-export function deviceJson(device: Device) {
+/** `archive`: whether the viewer may see the archive setting, the mesh's owner or a superuser. */
+export function deviceJson(device: Device, { archive }: { archive: boolean }) {
   return {
     uuid: device.uuid,
     node_id: device.nodeId,
@@ -78,6 +79,13 @@ export function deviceJson(device: Device) {
     nodeinfo_overridden: device.nodeinfoOverridden,
     reading_interval_seconds: device.readingIntervalSeconds,
     publish_interval_seconds: device.publishIntervalSeconds,
+    ...(archive
+      ? {
+          archive_enabled: device.archiveEnabled,
+          archive_enabled_at: device.archiveEnabledAt,
+          archive_enabled_by: device.archiveEnabledBy,
+        }
+      : {}),
     last_seen: device.lastSeen,
     created_at: device.createdAt,
     updated_at: device.updatedAt,
@@ -220,13 +228,13 @@ export function ownerReadJson(
 
 export function ownerProfileJson(
   actor: Actor,
-  devices: Device[],
+  devices: ReturnType<typeof deviceJson>[],
   verification: { emailVerifiedAt: string | null; emailVerificationSentAt: string | null },
   accountTermsVersion: string | null = null,
 ) {
   return {
     ...ownerReadJson(actor, verification, accountTermsVersion),
-    devices: devices.map(deviceJson),
+    devices,
   };
 }
 
