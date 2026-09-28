@@ -6,7 +6,7 @@ import type {
   LatestReading,
   MeasurementTypeRead,
 } from "@mtt/contracts";
-import { Button, buttonStyles } from "@mtt/ui/components/base/buttons/button";
+import { buttonStyles } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils/cx";
 import {
   Frame,
@@ -32,10 +32,14 @@ import { Kpi } from "@/components/kpi/kpi";
 import { KpiPanel } from "@/components/kpi/kpi-panel";
 import { kpiIconFor } from "@/components/kpi/kpi-icon";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
+import { canArchiveDevice } from "@/features/archive/model";
+import { ArchiveButton } from "@/features/archive/ui/archive-button";
+import { ChannelActionsMenu } from "@/features/device/ui/channel-actions-menu";
 import { SeriesChart } from "@/components/series/series-chart";
 import { parseWindowMs } from "@/components/series/fill-gaps";
 import { channelShortName, isChartableMeasurement, isDerivedMeasurement } from "@/lib/measurement";
 import { ComputedFlag } from "@/components/computed-flag";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRange } from "./chart-range";
@@ -86,6 +90,8 @@ export function DeviceDetailPage(): ReactElement {
   // A device on someone else's public mesh is read-only: no settings, no alarms.
   // False until the mesh loads, so write chrome never flashes for a viewer.
   const canEdit = mesh.data != null && canEditMesh(mesh.data, me);
+  // Only on an operator's mesh, and only for its owner or a superuser.
+  const canArchive = device.data != null && canEdit && canArchiveDevice(device.data, me, mesh.data?.owner_id);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scrollToChannel, setScrollToChannel] = useState<string | null>(null);
 
@@ -223,9 +229,12 @@ export function DeviceDetailPage(): ReactElement {
             </div>
           </div>
           {device.data && canEdit ? (
-            <Button type="button" size="small" variant="secondary" onClick={() => setSettingsOpen(true)}>
-              {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-            </Button>
+            <SettingsButton
+              size="small"
+              className="shrink-0"
+              label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+              onClick={() => setSettingsOpen(true)}
+            />
           ) : null}
         </div>
         <TabsList className="mt-3 p-1">
@@ -244,6 +253,7 @@ export function DeviceDetailPage(): ReactElement {
             seen={seen}
             names={names}
             canEdit={canEdit}
+            canArchive={canArchive}
             meshOwnerId={mesh.data?.owner_id}
             onViewChart={handleViewChart}
           />
@@ -251,6 +261,7 @@ export function DeviceDetailPage(): ReactElement {
         <TabsContent value="dashboard" className="mt-6 flex flex-col gap-6">
           <DeviceDashboardTab
             deviceUuid={deviceUuid}
+            device={device.data}
             ready={Boolean(device.data)}
             latestPending={latest.isPending}
             latestGroups={latestGroups}
@@ -258,6 +269,7 @@ export function DeviceDetailPage(): ReactElement {
             chartChannelGroups={chartChannelGroups}
             names={names}
             canEdit={canEdit}
+            canArchive={canArchive}
             scrollToChannel={scrollToChannel}
             onScrolled={() => setScrollToChannel(null)}
           />
@@ -284,6 +296,7 @@ function DeviceStatusTab({
   seen,
   names,
   canEdit,
+  canArchive,
   meshOwnerId,
   onViewChart,
 }: {
@@ -293,6 +306,7 @@ function DeviceStatusTab({
   seen: UseQueryResult<DeviceMeasurement[]>;
   names: NamesByChannel;
   canEdit: boolean;
+  canArchive: boolean;
   meshOwnerId: string | undefined;
   onViewChart: (channel: string) => void;
 }): ReactElement {
@@ -364,6 +378,21 @@ function DeviceStatusTab({
                   })}
                   value={`${device.data.reading_interval_seconds ?? "—"}s / ${device.data.publish_interval_seconds ?? "—"}s`}
                 />
+                {device.data.archive_enabled !== undefined ? (
+                  <Item
+                    label={formatMessage({ id: "page.devices.detail.identity.archive", defaultMessage: "S3 storage" })}
+                    value={
+                      device.data.archive_enabled
+                        ? device.data.archive_enabled_at
+                          ? formatMessage(
+                              { id: "page.devices.detail.identity.archiveSince", defaultMessage: "On since {when}" },
+                              { when: formatWhen(device.data.archive_enabled_at) },
+                            )
+                          : formatMessage({ id: "page.devices.detail.identity.archiveOn", defaultMessage: "On" })
+                        : formatMessage({ id: "page.devices.detail.identity.archiveOff", defaultMessage: "Off" })
+                    }
+                  />
+                ) : null}
                 <Item
                   label={formatMessage({
                     id: "page.devices.detail.identity.coordinates",
@@ -528,6 +557,7 @@ function DeviceStatusTab({
                     device={device.data}
                     measurements={measurements}
                     canEdit={canEdit}
+                    canArchive={canArchive}
                     onViewChart={onViewChart}
                   />
                 );
@@ -546,6 +576,7 @@ function DeviceStatusTab({
               device={device.data}
               measurements={computedRows}
               canEdit={canEdit}
+              canArchive={canArchive}
               onViewChart={onViewChart}
             />
           ) : null}
@@ -568,6 +599,7 @@ function TelemetryVariantSection({
   device,
   measurements,
   canEdit,
+  canArchive,
   onViewChart,
 }: {
   /** Null: the channels blueprints derive, which belong to no reported variant. */
@@ -575,6 +607,7 @@ function TelemetryVariantSection({
   device: DeviceRead | undefined;
   measurements: DeviceMeasurement[];
   canEdit: boolean;
+  canArchive: boolean;
   onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
@@ -631,7 +664,12 @@ function TelemetryVariantSection({
       </div>
       {measurements.length ? (
         <div className="oa-arrive overflow-x-auto">
-          <table className="w-full min-w-[52rem] table-fixed caption-bottom text-left text-body-2-regular">
+          <table
+            className={cx(
+              "w-full table-fixed caption-bottom text-left text-body-2-regular",
+              canArchive ? "min-w-[57rem]" : "min-w-[52rem]",
+            )}
+          >
             <thead>
               <tr>
                 <th className="h-8 w-72 break-words px-3.5 text-left align-middle text-caption-1-medium text-text-secondary">
@@ -661,6 +699,11 @@ function TelemetryVariantSection({
                 {canEdit ? (
                   <th className="h-8 w-16 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
                     {formatMessage({ id: "page.devices.detail.variants.columns.alarms", defaultMessage: "Alarms" })}
+                  </th>
+                ) : null}
+                {canArchive ? (
+                  <th className="h-8 w-20 px-3.5 text-right align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
+                    {formatMessage({ id: "page.devices.detail.variants.columns.archive", defaultMessage: "S3 storage" })}
                   </th>
                 ) : null}
               </tr>
@@ -713,6 +756,11 @@ function TelemetryVariantSection({
                         ) : null}
                       </td>
                     ) : null}
+                    {canArchive ? (
+                      <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
+                        {device ? <ArchiveButton device={device} /> : null}
+                      </td>
+                    ) : null}
                   </tr>
                 );
               })}
@@ -733,6 +781,7 @@ function TelemetryVariantSection({
 
 function DeviceDashboardTab({
   deviceUuid,
+  device,
   ready,
   latestPending,
   latestGroups,
@@ -740,10 +789,12 @@ function DeviceDashboardTab({
   chartChannelGroups,
   names,
   canEdit,
+  canArchive,
   scrollToChannel,
   onScrolled,
 }: {
   deviceUuid: string;
+  device: DeviceRead | undefined;
   ready: boolean;
   latestPending: boolean;
   latestGroups: LatestKpiGroup[];
@@ -751,6 +802,7 @@ function DeviceDashboardTab({
   chartChannelGroups: ChartChannelGroup[];
   names: NamesByChannel;
   canEdit: boolean;
+  canArchive: boolean;
   scrollToChannel: string | null;
   onScrolled: () => void;
 }): ReactElement {
@@ -839,7 +891,9 @@ function DeviceDashboardTab({
                         hint={formatWhen(reading.time)}
                         badge={isDerivedMeasurement(reading) ? <ComputedFlag /> : undefined}
                         action={
-                          canEdit ? (
+                          canArchive && device ? (
+                            <ChannelActionsMenu device={device} channel={reading.channel} label={reading.field_name} />
+                          ) : canEdit ? (
                             <AlarmBellButton deviceUuid={deviceUuid} channel={reading.channel} label={reading.field_name} />
                           ) : undefined
                         }
