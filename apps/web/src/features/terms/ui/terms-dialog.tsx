@@ -47,6 +47,7 @@ export function TermsDialog({
     account: termsRepository.account(query),
     mesh: termsRepository.mesh(query),
     source: termsRepository.source(query),
+    sink: termsRepository.sink(query),
   }[kind];
   // A 404 means terms are off on this instance: an answer, not worth retrying.
   const terms = useQuery({

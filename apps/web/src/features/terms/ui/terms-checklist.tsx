@@ -10,7 +10,7 @@ import { routes } from "@/router";
 
 export type TermsChecklistProps = {
   terms: Terms;
-  /** Data terms (mesh, source) are accepted under the DPA, so their footnote links it too. */
+  /** Data terms (mesh, source, sink) are accepted under the DPA, so their footnote links it too. */
   kind: TermsKind;
   accepted: ReadonlySet<string>;
   onToggle: (id: string, checked: boolean) => void;

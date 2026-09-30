@@ -11,8 +11,8 @@ export type DataMenuProps = {
 };
 
 /**
- * Operators' data beyond the dashboards: sources bring remote brokers in, and the
- * archive keeps chosen devices' readings as files to take away.
+ * Operators' data beyond the dashboards: sources bring remote brokers in, sinks publish
+ * readings for other services, and the archive keeps chosen devices' readings as files.
  */
 export function DataMenu(props: DataMenuProps): ReactElement {
   const { formatMessage } = useIntl();
@@ -27,6 +27,14 @@ export function DataMenu(props: DataMenuProps): ReactElement {
           description: formatMessage({
             id: "console.header.data.sourcesDescription",
             defaultMessage: "Remote brokers bridged into this instance",
+          }),
+        },
+        {
+          to: routes.sinks,
+          label: formatMessage({ id: "console.header.data.sinks", defaultMessage: "Sinks" }),
+          description: formatMessage({
+            id: "console.header.data.sinksDescription",
+            defaultMessage: "Readings published for services you choose",
           }),
         },
         {

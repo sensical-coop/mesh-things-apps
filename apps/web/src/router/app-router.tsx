@@ -19,6 +19,7 @@ import { meshDetailPage } from "@/pages/meshes/detail/route";
 import { meshListPage } from "@/pages/meshes/list/route";
 import { profilePage } from "@/pages/profile/route";
 import { sourceListPage } from "@/pages/sources/list/route";
+import { sinkListPage } from "@/pages/sinks/list/route";
 import { archivePage } from "@/pages/archive/route";
 import { operatorRequestDetailPage } from "@/pages/operator-requests/detail/route";
 import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
@@ -129,6 +130,11 @@ const sourcesRoute = createRoute({
   ...sourceListPage,
 });
 
+const sinksRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...sinkListPage,
+});
+
 const archiveRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...archivePage,
@@ -174,6 +180,7 @@ const routeTree = rootRoute.addChildren([
     blueprintsRoute,
     blueprintRoute,
     sourcesRoute,
+    sinksRoute,
     archiveRoute,
     operatorRequestsRoute,
     operatorRequestRoute,

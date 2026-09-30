@@ -1,5 +1,5 @@
-/** Account terms at signup; mesh terms per mesh on the default broker; source terms per source. */
-export type TermsKind = "account" | "mesh" | "source";
+/** Account terms at signup; mesh terms per mesh on the default broker; source and sink terms per source and sink. */
+export type TermsKind = "account" | "mesh" | "source" | "sink";
 
 export type TermsLocale = "en" | "es";
 
