@@ -1,16 +1,18 @@
 /**
  * The terms owners accept, as the API serves them: the account terms at signup, the mesh
- * terms per mesh on the default broker, and the source terms per source. A copy of
+ * terms per mesh on the default broker, the source terms per source and the sink terms per
+ * sink (copied, not served yet: the mock has no sinks). A copy of
  * meshtastic-things `registry/terms.py`, word for word, and kept in step with it. The
  * console shows what these routes return and keeps no copy of its own.
  */
-export type TermsKind = "account" | "mesh" | "source";
+export type TermsKind = "account" | "mesh" | "source" | "sink";
 export type TermsLocale = "en" | "es";
 
 export const TERMS_VERSIONS: Record<TermsKind, string> = {
   account: "account-2026-09",
   mesh: "meshes-2026-09",
   source: "sources-2026-09",
+  sink: "sinks-2026-09",
 };
 
 // Mirrors REGISTRY__DATA_RETENTION_DAYS (blank for none), REGISTRY__DATA_DELETION_GRACE_DAYS
@@ -29,6 +31,9 @@ export const DATA_RETENTION_DAYS: number | null =
 export const DATA_DELETION_GRACE_DAYS = 30;
 export const TERMS_RENEWAL_NOTICE_DAYS = 30;
 
+/** Mirrors `dpa_url()`: the Data Processing Agreement page, under REGISTRY__PUBLIC_FRONTEND_URL. */
+const DPA_URL = `${(process.env.MOCK_PUBLIC_FRONTEND_URL ?? "http://localhost:5173").replace(/\/$/, "")}/dpa`;
+
 type Copy = {
   title: string;
   description: string;
@@ -43,7 +48,7 @@ type DataCopy = Copy & {
 };
 
 const COPY: { account: Record<TermsLocale, Copy> } & Record<
-  "mesh" | "source",
+  "mesh" | "source" | "sink",
   Record<TermsLocale, DataCopy>
 > = {
   account: {
@@ -86,11 +91,11 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
     en: {
       title: "Before you create a mesh",
       description:
-        "A mesh stores the traffic its gateways send to the default broker. That traffic can include personal data from people who never signed up here: node names, device IDs, positions, messages and telemetry. For this mesh you decide what is collected and why, and Sensical processes it only on your behalf to run the service. Tick each box to continue.",
+        "A mesh stores the traffic its gateways send to the default broker. That traffic can include personal data from people who never signed up here: node names, device IDs, positions and telemetry. For this mesh you decide what is collected and why, and Sensical processes it only on your behalf to run the service. Tick each box to continue.",
       statements: [
         {
           id: "controller",
-          text: "I act as data controller for the traffic this mesh brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Mesh Things Terms. If I'm an operator, this includes keeping the devices I choose in a long-term archive that I can download.",
+          text: "I act as data controller for the traffic this mesh brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Data Processing Agreement ({dpa_url}). If I'm an operator, this includes keeping the devices I choose in a long-term archive that I can download.",
         },
         {
           id: "lawfulBasis",
@@ -115,11 +120,11 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
     es: {
       title: "Antes de crear una malla",
       description:
-        "Una malla guarda el tráfico que sus pasarelas envían al bróker por defecto. Ese tráfico puede incluir datos personales de personas que nunca se han registrado aquí: nombres de nodo, identificadores de dispositivo, posiciones, mensajes y telemetría. En esta malla tú decides qué se recoge y para qué, y Sensical lo trata solo por tu cuenta para prestar el servicio. Marca cada casilla para continuar.",
+        "Una malla guarda el tráfico que sus pasarelas envían al bróker por defecto. Ese tráfico puede incluir datos personales de personas que nunca se han registrado aquí: nombres de nodo, identificadores de dispositivo, posiciones y telemetría. En esta malla tú decides qué se recoge y para qué, y Sensical lo trata solo por tu cuenta para prestar el servicio. Marca cada casilla para continuar.",
       statements: [
         {
           id: "controller",
-          text: "Actúo como responsable del tratamiento del tráfico que trae esta malla. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según las Condiciones de Mesh Things. Si soy operador, esto incluye conservar los dispositivos que elija en un archivo a largo plazo que puedo descargar.",
+          text: "Actúo como responsable del tratamiento del tráfico que trae esta malla. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según el Acuerdo de procesamiento de los datos ({dpa_url}). Si soy operador, esto incluye conservar los dispositivos que elija en un archivo a largo plazo que puedo descargar.",
         },
         {
           id: "lawfulBasis",
@@ -146,17 +151,11 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
     en: {
       title: "Before you connect a source",
       description:
-        "A source bridges traffic from a broker you choose into Mesh Things. That traffic can include personal data from people who never signed up here: node names, device IDs, positions, messages and telemetry. For this traffic you decide what is collected and why, and Sensical processes it only on your behalf to run the service. Tick each box to continue.",
-      footnote:
-        "You can withdraw at any time: delete the source's meshes, then the source, and the bridge stops. Questions or data requests: info@sensical.es.",
-      retention_limited:
-        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the source is paused, and the data of its meshes, including any archive, is deleted {grace} days later unless you renew in the meantime.",
-      retention_unlimited:
-        "Data from this source is kept while the source is in use. When a mesh is deleted or moved off the source, its data, including any archive, is deleted {grace} days later.",
+        "A source bridges traffic from a broker you choose into Mesh Things. That traffic can include personal data from people who never signed up here: node names, device IDs, positions and telemetry. For this traffic you decide what is collected and why, and Sensical processes it only on your behalf to run the service. Tick each box to continue.",
       statements: [
         {
           id: "controller",
-          text: "I act as data controller for the traffic this source brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Mesh Things Terms. This includes keeping the devices I choose in a long-term archive that I can download.",
+          text: "I act as data controller for the traffic this source brings in. I authorise Sensical to ingest, decode and store it on my behalf as a processor, under the Data Processing Agreement ({dpa_url}). This includes keeping the devices I choose in a long-term archive that I can download.",
         },
         {
           id: "authority",
@@ -175,21 +174,21 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
           text: "I won't use this source to collect sensitive data, such as health information, or to track or profile individuals.",
         },
       ],
+      footnote:
+        "You can withdraw at any time: delete the source's meshes, then the source, and the bridge stops. Questions or data requests: info@sensical.es.",
+      retention_limited:
+        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the source is paused, and the data of its meshes, including any archive, is deleted {grace} days later unless you renew in the meantime.",
+      retention_unlimited:
+        "Data from this source is kept while the source is in use. When a mesh is deleted or moved off the source, its data, including any archive, is deleted {grace} days later.",
     },
     es: {
       title: "Antes de conectar una fuente",
       description:
-        "Una fuente trae a Mesh Things el tráfico de un bróker que tú eliges. Ese tráfico puede incluir datos personales de personas que nunca se han registrado aquí: nombres de nodo, identificadores de dispositivo, posiciones, mensajes y telemetría. En este tráfico tú decides qué se recoge y para qué, y Sensical lo trata solo por tu cuenta para prestar el servicio. Marca cada casilla para continuar.",
-      footnote:
-        "Puedes retirarte cuando quieras: elimina las mallas de la fuente y después la fuente, y el puente se detiene. Dudas o solicitudes sobre datos: info@sensical.es.",
-      retention_limited:
-        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, la fuente se pausa y los datos de sus mallas, incluido cualquier archivo, se borran {grace} días después salvo que renueves antes.",
-      retention_unlimited:
-        "Los datos de esta fuente se conservan mientras la fuente esté en uso. Cuando una malla se elimina o deja la fuente, sus datos, incluido cualquier archivo, se borran {grace} días después.",
+        "Una fuente trae a Mesh Things el tráfico de un bróker que tú eliges. Ese tráfico puede incluir datos personales de personas que nunca se han registrado aquí: nombres de nodo, identificadores de dispositivo, posiciones y telemetría. En este tráfico tú decides qué se recoge y para qué, y Sensical lo trata solo por tu cuenta para prestar el servicio. Marca cada casilla para continuar.",
       statements: [
         {
           id: "controller",
-          text: "Actúo como responsable del tratamiento del tráfico que trae esta fuente. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según las Condiciones de Mesh Things. Esto incluye conservar los dispositivos que elija en un archivo a largo plazo que puedo descargar.",
+          text: "Actúo como responsable del tratamiento del tráfico que trae esta fuente. Autorizo a Sensical a recibirlo, descifrarlo y almacenarlo por mi cuenta como encargado del tratamiento, según el Acuerdo de procesamiento de los datos ({dpa_url}). Esto incluye conservar los dispositivos que elija en un archivo a largo plazo que puedo descargar.",
         },
         {
           id: "authority",
@@ -208,6 +207,72 @@ const COPY: { account: Record<TermsLocale, Copy> } & Record<
           text: "No usaré esta fuente para recoger datos sensibles, como información de salud, ni para seguir o perfilar a personas.",
         },
       ],
+      footnote:
+        "Puedes retirarte cuando quieras: elimina las mallas de la fuente y después la fuente, y el puente se detiene. Dudas o solicitudes sobre datos: info@sensical.es.",
+      retention_limited:
+        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, la fuente se pausa y los datos de sus mallas, incluido cualquier archivo, se borran {grace} días después salvo que renueves antes.",
+      retention_unlimited:
+        "Los datos de esta fuente se conservan mientras la fuente esté en uso. Cuando una malla se elimina o deja la fuente, sus datos, incluido cualquier archivo, se borran {grace} días después.",
+    },
+  },
+  sink: {
+    en: {
+      title: "Before you create a sink",
+      description:
+        "A sink lets a service you choose subscribe to readings from your meshes and devices, with credentials only you hold. Those readings can include personal data from people who never signed up here: node names, device IDs, positions and telemetry. You decide who receives them and why, and Sensical sends them only on your instructions. Tick each box to continue.",
+      statements: [
+        {
+          id: "controller",
+          text: "I act as data controller for the readings this sink sends. I instruct Sensical, as processor under the Data Processing Agreement ({dpa_url}), to make them available to whoever holds the sink's credentials.",
+        },
+        {
+          id: "recipient",
+          text: "I'll give the credentials only to recipients I trust with this data, and I'm responsible for how they use it.",
+        },
+        {
+          id: "lawfulBasis",
+          text: "I have a lawful basis for sharing these readings, and I tell the people whose nodes appear in them who receives their data.",
+        },
+        {
+          id: "minimisation",
+          text: "I'll attach only the meshes and devices the recipient needs, choose only the streams it needs, and remove them when it no longer does.",
+        },
+      ],
+      footnote:
+        "You can withdraw at any time: detach the sink's meshes and devices, then delete the sink, and its credentials stop working. Questions or data requests: info@sensical.es.",
+      retention_limited:
+        "This acceptance is valid for {days} days. We'll email you before it lapses so you can renew it. If you don't, the sink is paused: nothing more is sent and its credentials are refused until you renew. A sink keeps no data of its own.",
+      retention_unlimited:
+        "A sink keeps no data of its own. It sends readings while it is in use and stops when you delete it.",
+    },
+    es: {
+      title: "Antes de crear un destino",
+      description:
+        "Un destino permite que un servicio que tú eliges se suscriba a las lecturas de tus mallas y dispositivos, con credenciales que solo tú tienes. Esas lecturas pueden incluir datos personales de personas que nunca se han registrado aquí: nombres de nodo, identificadores de dispositivo, posiciones y telemetría. Tú decides quién las recibe y para qué, y Sensical las envía solo siguiendo tus instrucciones. Marca cada casilla para continuar.",
+      statements: [
+        {
+          id: "controller",
+          text: "Actúo como responsable del tratamiento de las lecturas que envía este destino. Encargo a Sensical, como encargado del tratamiento según el Acuerdo de procesamiento de los datos ({dpa_url}), ponerlas a disposición de quien tenga las credenciales del destino.",
+        },
+        {
+          id: "recipient",
+          text: "Daré las credenciales solo a destinatarios de confianza para estos datos, y soy responsable del uso que hagan de ellos.",
+        },
+        {
+          id: "lawfulBasis",
+          text: "Tengo una base jurídica para compartir estas lecturas, e informo a las personas cuyos nodos aparecen en ellas de quién recibe sus datos.",
+        },
+        {
+          id: "minimisation",
+          text: "Asociaré solo las mallas y dispositivos que el destinatario necesite, elegiré solo los flujos que necesite y los quitaré cuando ya no los necesite.",
+        },
+      ],
+      footnote:
+        "Puedes retirarte cuando quieras: quita las mallas y dispositivos del destino y después elimínalo, y sus credenciales dejan de funcionar. Dudas o solicitudes sobre datos: info@sensical.es.",
+      retention_limited:
+        "Esta aceptación es válida durante {days} días. Te avisaremos por correo antes de que caduque para que puedas renovarla. Si no lo haces, el destino se pausa: no se envía nada más y sus credenciales se rechazan hasta que renueves. Un destino no guarda datos propios.",
+      retention_unlimited:
+        "Un destino no guarda datos propios. Envía lecturas mientras está en uso y deja de hacerlo cuando lo eliminas.",
     },
   },
 };
@@ -216,7 +281,7 @@ export function termsLocale(value: string | null | undefined): TermsLocale {
   return value === "es" ? "es" : "en";
 }
 
-/** The current terms of `kind`; data terms (mesh, source) append the retention sentence to the footnote. */
+/** The current terms of `kind`; data terms (mesh, source, sink) append the retention sentence to the footnote. */
 export function termsJson(kind: TermsKind, locale: TermsLocale) {
   const base = COPY[kind][locale];
   const served = {
@@ -224,7 +289,7 @@ export function termsJson(kind: TermsKind, locale: TermsLocale) {
     locale,
     title: base.title,
     description: base.description,
-    statements: base.statements,
+    statements: base.statements.map((s) => ({ ...s, text: s.text.replace("{dpa_url}", DPA_URL) })),
     footnote: base.footnote,
   };
   if (kind === "account") return served;
