@@ -23,6 +23,9 @@ import {
   zSourcesTermsAcceptanceCreateData,
   zSourcesCreateData,
   zSourcesUpdateData,
+  zSinksCreateData,
+  zSinksTermsAcceptanceCreateData,
+  zSinksUpdateData,
   zTelemetryVariantsMeasurementsUpdateData,
 } from "@mtt/contracts/zod";
 import { matchesDeviceFilter, type Device } from "@mtt/domain/device/Device";
@@ -30,6 +33,7 @@ import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import {
   canDecideOperatorRequests,
+  canManageSinks,
   canManageSources,
   canRequestOperator,
   canSeeDataDeletions,
@@ -45,10 +49,13 @@ import {
   canReadBlueprint,
   canWriteBlueprint,
   visibleBlueprints,
+  visibleSinks,
   visibleSources,
   type Actor,
 } from "@mtt/domain/authz/authz";
 import { validateSource, type Source } from "@mtt/domain/source/Source";
+import { orderStreams, type Sink } from "@mtt/domain/sink/Sink";
+import { SINKS_ENABLED } from "./features/sink/repository";
 import type { DataDeletionReason } from "./features/data-deletion/repository";
 import {
   DATA_DELETION_GRACE_DAYS,
@@ -122,6 +129,8 @@ import {
   operatorRequestAdminJson,
   operatorRequestJson,
   dataDeletionJson,
+  sinkCredentialsJson,
+  sinkReadJson,
   sourceReadJson,
 } from "./serialize";
 
@@ -374,8 +383,17 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     else db.archive.stop(mesh.id, device.nodeId, nowIso());
   }
 
+  /** A deleted mesh or device leaves every sink it was attached to, as the API's links cascade. */
+  function detachFromSinks(target: { meshId?: string; deviceUuid?: string }) {
+    for (const sink of db.sinks.items.values()) {
+      sink.meshIds = sink.meshIds.filter((id) => id !== target.meshId);
+      sink.deviceIds = sink.deviceIds.filter((id) => id !== target.deviceUuid);
+    }
+  }
+
   /** A device and everything attached to it. */
   async function deleteDevice(uuid: string) {
+    detachFromSinks({ deviceUuid: uuid });
     const device = await db.devices.get(uuid);
     if (device) db.archive.stop(device.meshId, device.nodeId, nowIso());
     const attached = new Set(db.postprocessings.filter((row) => row.deviceUuid === uuid).map((row) => row.id));
@@ -467,6 +485,39 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return db.accountTerms.get(ownerId) ?? null;
   }
 
+  async function sinkForOperator(actor: Actor, sinkId: string): Promise<Sink | null> {
+    const sink = await db.sinks.get(sinkId);
+    return sink && visibleSinks(actor, [sink]).length > 0 ? sink : null;
+  }
+
+  /**
+   * As SinkWriteSerializer: every mesh, and every device's mesh, must be one the caller may
+   * edit and owned by an operator (a superuser counts).
+   */
+  async function sinkTargetErrors(
+    actor: Actor,
+    input: { mesh_ids?: string[]; device_ids?: string[] },
+  ): Promise<Record<string, string[]>> {
+    const errors: Record<string, string[]> = {};
+    const check = async (label: string, meshId: string | null) => {
+      const mesh = meshId ? await db.meshes.get(meshId) : null;
+      if (!mesh || !canWriteMesh(actor, mesh)) return `${label} not found.`;
+      const owner = db.actors.get(mesh.ownerId);
+      if (!owner || !archivesFor(owner)) return `${label} is on a mesh not owned by an operator.`;
+      return null;
+    };
+    for (const meshId of input.mesh_ids ?? []) {
+      const error = await check(`Mesh ${meshId}`, meshId);
+      if (error) (errors.mesh_ids ??= []).push(error);
+    }
+    for (const deviceId of input.device_ids ?? []) {
+      const device = await db.devices.get(deviceId);
+      const error = await check(`Device ${deviceId}`, device?.meshId ?? null);
+      if (error) (errors.device_ids ??= []).push(error);
+    }
+    return errors;
+  }
+
   async function sourceForOperator(actor: Actor, sourceId: string): Promise<Source | null> {
     const source = await db.sources.get(sourceId);
     return source && visibleSources(actor, [source]).length > 0 ? source : null;
@@ -500,7 +551,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   });
 
   // Terms off (a self-hosted lite install): every terms route answers 404, as the API does.
-  const TERMS_ROUTE = /^\/(terms|meshes\/terms|sources\/terms|owners\/me\/terms-acceptance|(meshes|sources)\/[^/]+\/terms-acceptance)$/;
+  const TERMS_ROUTE = /^\/(terms|meshes\/terms|sources\/terms|sinks\/terms|owners\/me\/terms-acceptance|(meshes|sources|sinks)\/[^/]+\/terms-acceptance)$/;
   app.use("*", async (c, next) => {
     if (!TERMS_ENFORCED && TERMS_ROUTE.test(c.req.path)) {
       return c.json({ detail: "Terms are not enforced on this instance" }, 404);
@@ -698,7 +749,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     for (const mesh of ownedMeshes) {
       const devices = await db.devices.list({ meshId: mesh.id });
       for (const device of devices) await deleteDevice(device.uuid);
+      detachFromSinks({ meshId: mesh.id });
       await db.meshes.delete(mesh.id);
+    }
+    // The owner's sinks go too: their credentials are revoked and consumers disconnected.
+    for (const sink of await db.sinks.list()) {
+      if (sink.createdById === actor.id) await db.sinks.delete(sink.id);
     }
     // Blueprints other owners' devices still run are kept, ownerless and left to superusers.
     db.blueprints = db.blueprints.flatMap((blueprint) => {
@@ -877,6 +933,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     }
     const devices = await db.devices.list({ meshId: mesh.id });
     for (const device of devices) await deleteDevice(device.uuid);
+    detachFromSinks({ meshId: mesh.id });
     await db.meshes.delete(mesh.id);
     scheduleMeshDeletion(mesh.id, "mesh_deleted", { sourceId: mesh.sourceId, requestedById: actor.id });
     return c.body(null, 204);
@@ -1182,6 +1239,133 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "Source has meshes attached; move or delete them first" }, 409);
     }
     await db.sources.delete(source.id);
+    return c.body(null, 204);
+  });
+
+  // Sinks: an operator's consumers subscribe on this instance's broker. No EMQX, no sinks.
+  const SINK_OPERATORS_ONLY = { detail: "Only an operator may access sinks" };
+  const NO_SINKS = { detail: "Not found" };
+  const sinkConnections = (sink: Sink) => db.sinks.connections.get(sink.id) ?? 0;
+  const uniqueIds = (ids: readonly string[] | undefined) => (ids ? [...new Set(ids)] : undefined);
+
+  app.get("/sinks", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    return c.json(visibleSinks(actor, await db.sinks.list()).map((sink) => sinkReadJson(sink, sinkConnections(sink))));
+  });
+
+  app.post("/sinks", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zSinksCreateData.safeParse({ body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const input = parsed.data.body;
+    const errors = {
+      ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
+      ...(await sinkTargetErrors(actor, input)),
+      ...termsVersionError("sink", input.terms_version),
+    };
+    if (Object.keys(errors).length) return c.json(errors, 400);
+    const sink = await db.sinks.insert({
+      label: input.label?.trim() || null,
+      streams: orderStreams(input.streams ?? ["decoded"]),
+      meshIds: uniqueIds(input.mesh_ids),
+      deviceIds: uniqueIds(input.device_ids),
+      createdById: actor.id,
+    });
+    sink.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.sink : null;
+    sink.termsExpiresAt = recordAcceptance("sink", actor.id, termsLocale(input.terms_locale));
+    return c.json(sinkCredentialsJson(sink, 0), 201);
+  });
+
+  app.get("/sinks/terms", (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    return c.json(termsJson("sink", termsLocale(c.req.query("locale"))));
+  });
+
+  app.post("/sinks/:sink_id/terms-acceptance", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    if (!sink) return c.json({ detail: "Sink not found" }, 404);
+    if (sink.createdById !== actor.id) {
+      return c.json({ detail: "Only the operator who created this sink can accept its terms" }, 403);
+    }
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zSinksTermsAcceptanceCreateData.safeParse({ path: { sink_id: sink.id }, body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const termsError = termsVersionError("sink", parsed.data.body.terms_version);
+    if (Object.keys(termsError).length) return c.json(termsError, 400);
+    // Renewing resumes a paused sink with the same credentials; a sink stores nothing to restore.
+    sink.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.sink : null;
+    sink.termsExpiresAt = recordAcceptance("sink", actor.id, termsLocale(parsed.data.body.terms_locale));
+    sink.pausedAt = null;
+    return c.json(sinkReadJson(sink, sinkConnections(sink)), 201);
+  });
+
+  app.get("/sinks/:sink_id", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    if (!sink) return c.json({ detail: "Sink not found" }, 404);
+    return c.json(sinkReadJson(sink, sinkConnections(sink)));
+  });
+
+  app.put("/sinks/:sink_id", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    if (!sink) return c.json({ detail: "Sink not found" }, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zSinksUpdateData.safeParse({ path: { sink_id: sink.id }, body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    // Any subset; a list sent replaces the current one, a list left out is kept.
+    const input = parsed.data.body ?? {};
+    const errors = {
+      ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
+      ...(await sinkTargetErrors(actor, input)),
+    };
+    if (Object.keys(errors).length) return c.json(errors, 400);
+    const updated = await db.sinks.update(sink.id, {
+      label: input.label === undefined ? undefined : input.label?.trim() || null,
+      streams: input.streams ? orderStreams(input.streams) : undefined,
+      meshIds: uniqueIds(input.mesh_ids),
+      deviceIds: uniqueIds(input.device_ids),
+    });
+    if (!updated) return c.json({ detail: "Sink not found" }, 404);
+    return c.json(sinkReadJson(updated, sinkConnections(updated)));
+  });
+
+  app.post("/sinks/:sink_id/credentials", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    if (!sink) return c.json({ detail: "Sink not found" }, 404);
+    // A new password, and connected consumers are dropped.
+    const rotated = await db.sinks.rotate(sink.id);
+    if (!rotated) return c.json({ detail: "Sink not found" }, 404);
+    return c.json(sinkCredentialsJson(rotated, 0));
+  });
+
+  app.delete("/sinks/:sink_id", async (c) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    const actor = c.get("actor");
+    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    if (!sink) return c.json({ detail: "Sink not found" }, 404);
+    if (sink.meshIds.length > 0 || sink.deviceIds.length > 0) {
+      return c.json({ detail: "Sink has meshes or devices attached; detach them first" }, 409);
+    }
+    await db.sinks.delete(sink.id);
     return c.body(null, 204);
   });
 

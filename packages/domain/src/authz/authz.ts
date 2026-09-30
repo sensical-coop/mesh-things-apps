@@ -133,6 +133,16 @@ export function visibleSources<T extends Created>(actor: Actor, rows: T[]): T[] 
   return rows.filter((row) => row.createdById === actor.id);
 }
 
+/** Sinks publish on shared infrastructure too, and are scoped like sources. */
+export function canManageSinks(actor: Actor): boolean {
+  return canManageSources(actor);
+}
+
+/** Every sink for a superuser, their own for an operator, none for anyone else. */
+export function visibleSinks<T extends Created>(actor: Actor, rows: T[]): T[] {
+  return visibleSources(actor, rows);
+}
+
 /** Only a plain owner asks for the operator role; operators and superusers already have it. */
 export function canRequestOperator(actor: Actor): boolean {
   return actor.isActive && actor.role === "owner";
