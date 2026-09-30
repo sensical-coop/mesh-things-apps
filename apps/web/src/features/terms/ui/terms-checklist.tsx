@@ -4,6 +4,7 @@ import { Field, FieldGroup, FieldLabel } from "@mtt/ui/components/ui/field";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { splitLinks } from "@/lib/text-links";
 import { routes } from "@/router";
 
 export type TermsChecklistProps = {
@@ -28,7 +29,21 @@ export function TermsChecklist({ terms, accepted, onToggle, idPrefix }: TermsChe
               onCheckedChange={(checked) => onToggle(statement.id, checked)}
             />
             <FieldLabel htmlFor={`${idPrefix}-${statement.id}`} className="text-body-regular text-text-primary">
-              {statement.text}
+              {splitLinks(statement.text).map((segment, index) =>
+                segment.href ? (
+                  <a
+                    key={index}
+                    href={segment.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-2 text-accent-500"
+                  >
+                    {segment.text}
+                  </a>
+                ) : (
+                  segment.text
+                ),
+              )}
             </FieldLabel>
           </Field>
         ))}
