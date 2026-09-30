@@ -108,7 +108,7 @@ export function TermsDialog({
           </StatusCopy>
         ) : null}
         {terms.data ? (
-          <TermsChecklist terms={terms.data} accepted={accepted} onToggle={toggle} idPrefix={`terms-${kind}`} />
+          <TermsChecklist terms={terms.data} kind={kind} accepted={accepted} onToggle={toggle} idPrefix={`terms-${kind}`} />
         ) : null}
         {error ? <StatusCopy>{error}</StatusCopy> : null}
         <div className={dialogActionsClass}>

@@ -257,6 +257,7 @@ export function SignupForm(): ReactElement {
                   {terms.data ? (
                     <TermsChecklist
                       terms={terms.data}
+                      kind="account"
                       accepted={accepted}
                       idPrefix="signup-terms"
                       onToggle={(id, checked) =>

@@ -159,7 +159,7 @@ const privacyPolicy = [
     headingDefault: "5. Who receives your data",
     bodyId: "page.terms.privacy.dataSharing.body",
     bodyDefault:
-      "Sensical doesn't sell or rent your personal data. Its hosting provider, Hetzner (Germany and Finland), and its email provider, Scaleway (France), process it on Sensical's behalf. Other signed-in accounts can see your name, in the owner directory and on the meshes you make public or share with them. Otherwise Sensical only shares your data when you've asked it to, when needed to investigate abuse or enforce these Terms, or when required by law.",
+      "Sensical doesn't sell or rent your personal data. Its hosting provider, Hetzner (Germany and Finland), its email provider, Scaleway (France), and the provider of its info@sensical.es mailbox, EuroDNS (Luxembourg), process it on Sensical's behalf. Other signed-in accounts can see your name, in the owner directory and on the meshes you make public or share with them. Otherwise Sensical only shares your data when you've asked it to, when needed to investigate abuse or enforce these Terms, or when required by law.",
   },
   {
     id: "retention",
