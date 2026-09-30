@@ -1103,6 +1103,116 @@ export const zStepCalibration = z.object({
 });
 
 /**
+ * * `decoded` - decoded
+ * * `derived` - derived
+ * * `alarms` - alarms
+ */
+export const zStreamsEnum = z.enum([
+    'decoded',
+    'derived',
+    'alarms'
+]);
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSinkCreate = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    streams: z.optional(z.array(zStreamsEnum)),
+    mesh_ids: z.optional(z.array(z.uuid())),
+    device_ids: z.optional(z.array(z.uuid()))
+});
+
+export const zSinkCredentials = z.object({
+    id: z.uuid().readonly(),
+    label: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    streams: z.array(zStreamsEnum).readonly(),
+    mesh_ids: z.array(z.string()).readonly(),
+    device_ids: z.array(z.string()).readonly(),
+    broker: z.string().readonly(),
+    username: z.string().readonly(),
+    topic_filter: z.string().readonly(),
+    connections: z.union([
+        z.int().readonly(),
+        z.null()
+    ]).readonly(),
+    paused_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_expires_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly(),
+    password: z.string().readonly()
+});
+
+export const zSinkRead = z.object({
+    id: z.uuid().readonly(),
+    label: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    streams: z.array(zStreamsEnum).readonly(),
+    mesh_ids: z.array(z.string()).readonly(),
+    device_ids: z.array(z.string()).readonly(),
+    broker: z.string().readonly(),
+    username: z.string().readonly(),
+    topic_filter: z.string().readonly(),
+    connections: z.union([
+        z.int().readonly(),
+        z.null()
+    ]).readonly(),
+    paused_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_expires_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * Create or update a sink. Every field is optional on update; lists replace what is there.
+ */
+export const zSinkWrite = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    streams: z.optional(z.array(zStreamsEnum)),
+    mesh_ids: z.optional(z.array(z.uuid())),
+    device_ids: z.optional(z.array(z.uuid()))
+});
+
+/**
  * GET /telemetry-variants/{id}/measurements. Readable by
  * any verified owner, same as MeasurementTypeReadSerializer.
  */
@@ -1185,6 +1295,14 @@ export const zTermsLocaleEnum = z.enum(['en', 'es']);
  * Accepting the current terms of `terms_kind`.
  */
 export const zAccountTermsAcceptance = z.object({
+    terms_version: z.string(),
+    terms_locale: z.optional(zTermsLocaleEnum)
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSinkTermsAcceptance = z.object({
     terms_version: z.string(),
     terms_locale: z.optional(zTermsLocaleEnum)
 });
@@ -1417,6 +1535,21 @@ export const zPostprocessingBackfillWritable = z.object({
 });
 
 export const zPostprocessingBlueprintWritable = z.record(z.string(), z.unknown());
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSinkCreateWritable = z.object({
+    terms_version: z.optional(z.string()),
+    terms_locale: z.optional(zTermsLocaleEnum),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    streams: z.optional(z.array(zStreamsEnum)),
+    mesh_ids: z.optional(z.array(z.uuid())),
+    device_ids: z.optional(z.array(z.uuid()))
+});
 
 /**
  * Accepting the current terms of `terms_kind`.
@@ -2345,6 +2478,85 @@ export const zReadingsMeshesNodesQualityRetrieveData = z.object({
 });
 
 export const zReadingsMeshesNodesQualityRetrieveResponse = zDeviceQualityResponse;
+
+export const zSinksListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSinksListResponse = z.array(zSinkRead);
+
+export const zSinksCreateData = z.object({
+    body: zSinkCreateWritable,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSinksCreateResponse = zSinkCredentials;
+
+export const zSinksTermsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+export const zSinksTermsRetrieveResponse = zTerms;
+
+export const zSinksDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zSinksDestroyResponse = z.void();
+
+export const zSinksRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksRetrieveResponse = zSinkRead;
+
+export const zSinksUpdateData = z.object({
+    body: z.optional(zSinkWrite),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksUpdateResponse = zSinkRead;
+
+export const zSinksCredentialsCreateData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksCredentialsCreateResponse = zSinkCredentials;
+
+export const zSinksTermsAcceptanceCreateData = z.object({
+    body: zSinkTermsAcceptance,
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksTermsAcceptanceCreateResponse = zSinkRead;
 
 export const zSourcesListData = z.object({
     body: z.optional(z.never()),
