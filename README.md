@@ -32,9 +32,22 @@ time, so changing it later needs a restart of `pnpm dev` (or a rebuild, for Dock
 
 The app will run on `5174` (note the port difference).
 
+For development, add this to `.env` so `web` runs the Vite dev server on the mounted
+source instead of the production image. Edits then reload in the browser, with no rebuild:
+
 ```bash
-docker compose up -d --build web
+COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
 ```
+
+```bash
+docker compose up -d web          # dev server, hot reload (with COMPOSE_FILE set)
+docker compose logs -f web        # wait for "ready"
+```
+
+It uses the host's `node_modules`, so run `pnpm install` on the host first. Restart it
+(`docker compose restart web`) only after changing `.env` or dependencies.
+Without `COMPOSE_FILE`, the same command builds and runs the production image; add
+`--build` to pick up changes.
 
 Don't run the full `docker compose up` locally, because `caddy` publishes host
 ports `80`/`443`, which will collide if you already have your API's own Caddy (or anything

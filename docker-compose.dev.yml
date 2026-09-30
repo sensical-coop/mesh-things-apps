@@ -1,0 +1,28 @@
+# Local development override: `web` runs the Vite dev server on the mounted repo, so
+# edits reload in the browser with no rebuild. Same URL as the production image,
+# http://localhost:5174. Enable it with COMPOSE_FILE in the repo-root .env (see
+# .env.example), then just `docker compose up -d web`. Never on the VPS: there the
+# base file alone builds the production image.
+services:
+  web:
+    build: !reset null
+    image: node:22-bookworm-slim
+    working_dir: /app/apps/web
+    # Host uid/gid, so files the container writes (Vite's cache) stay yours.
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /tmp
+    volumes:
+      - .:/app
+    # Dependencies come from the host's `pnpm install`; running pnpm in here would see a
+    # different store and reinstall node_modules from scratch. After changing
+    # dependencies, run `pnpm install` on the host and `docker compose restart web`.
+    # Same port inside and out, so Vite's HMR websocket finds its way back without extra
+    # config. VITE_* come from the mounted .env (vite.config.ts reads it from the repo root).
+    command: ["node_modules/.bin/vite", "--host", "0.0.0.0", "--port", "5174", "--strictPort"]
+    ports: !override
+      - "127.0.0.1:5174:5174"
+    mem_limit: 2g
+    restart: "no"
+    healthcheck:
+      disable: true
