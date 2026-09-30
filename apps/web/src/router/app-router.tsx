@@ -9,6 +9,7 @@ import { authResetPasswordPage } from "@/pages/reset-password/route";
 import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
+import { legalDpaPage } from "@/pages/dpa/route";
 import { alarmListPage } from "@/pages/alarms/list/route";
 import { blueprintDetailPage } from "@/pages/blueprints/detail/route";
 import { blueprintListPage } from "@/pages/blueprints/list/route";
@@ -67,6 +68,11 @@ const verifyEmailRoute = createRoute({
 const termsRoute = createRoute({
   getParentRoute: () => rootRoute,
   ...legalTermsPage,
+});
+
+const dpaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...legalDpaPage,
 });
 
 const consoleRoute = createRoute({
@@ -157,6 +163,7 @@ const routeTree = rootRoute.addChildren([
   verifyPendingRoute,
   verifyEmailRoute,
   termsRoute,
+  dpaRoute,
   consoleRoute.addChildren([
     consoleIndexRoute,
     meshesRoute,

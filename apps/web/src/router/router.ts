@@ -7,6 +7,7 @@ export const routes = Object.freeze({
   verifyPending: "/verify-pending",
   verifyEmail: "/verify-email",
   terms: "/terms",
+  dpa: "/dpa",
   console: "/console",
   meshes: "/console/meshes",
   mesh: "/console/meshes/$meshId",
