@@ -34,21 +34,24 @@ export function TermsChecklist({ terms, kind, accepted, onToggle, idPrefix }: Te
               onCheckedChange={(checked) => onToggle(statement.id, checked)}
             />
             <FieldLabel htmlFor={`${idPrefix}-${statement.id}`} className="text-body-regular text-text-primary">
-              {splitLinks(statement.text).map((segment, index) =>
-                segment.href ? (
-                  <a
-                    key={index}
-                    href={segment.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={linkClass}
-                  >
-                    {segment.text}
-                  </a>
-                ) : (
-                  segment.text
-                ),
-              )}
+              {/* One inline run: the label is a flex row, and bare text beside a link would split into columns. */}
+              <span>
+                {splitLinks(statement.text).map((segment, index) =>
+                  segment.href ? (
+                    <a
+                      key={index}
+                      href={segment.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={linkClass}
+                    >
+                      {segment.text}
+                    </a>
+                  ) : (
+                    segment.text
+                  ),
+                )}
+              </span>
             </FieldLabel>
           </Field>
         ))}
