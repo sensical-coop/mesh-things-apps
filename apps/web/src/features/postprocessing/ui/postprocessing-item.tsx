@@ -10,6 +10,7 @@ import { blueprintRepository } from "@/features/blueprint/repository";
 import { calibratedSteps, channelLabel } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { PostprocessingStateChip } from "@/features/postprocessing/ui/postprocessing-state-chip";
+import { StartRefusedDialog } from "@/features/postprocessing/ui/start-refused-dialog";
 import { routes } from "@/router";
 
 export type PostprocessingItemProps = {
@@ -58,8 +59,6 @@ export function PostprocessingItem({
   const byId = new Map(measurements.map((row) => [row.id, row]));
   const calibrates = version.data ? calibratedSteps(version.data, algorithms).length > 0 : false;
   const slots = version.data?.inputs.map((input) => input.slot) ?? Object.keys(postprocessing.input_bindings);
-  // What the API says is missing, unless a refused start just said it again.
-  const problems = refused.length ? refused : postprocessing.problems;
 
   return (
     <li className="flex flex-col gap-3 border-b border-separator-border pb-4 last:border-b-0 last:pb-0">
@@ -129,9 +128,9 @@ export function PostprocessingItem({
           ))}
         </div>
       </dl>
-      {problems.length ? (
+      {postprocessing.problems.length ? (
         <ul className="flex flex-col gap-0.5">
-          {problems.map((problem) => (
+          {postprocessing.problems.map((problem) => (
             <li key={problem} className="text-caption-1-regular text-text-secondary">
               {problem}
             </li>
@@ -175,6 +174,12 @@ export function PostprocessingItem({
           />
         ) : null}
       </div>
+      <StartRefusedDialog
+        reasons={refused}
+        blueprintName={postprocessing.blueprint_name}
+        onCalibrate={calibrates ? onCalibrate : undefined}
+        onClose={() => setRefused([])}
+      />
     </li>
   );
 }
