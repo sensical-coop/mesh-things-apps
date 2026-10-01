@@ -39,7 +39,7 @@ export function DeleteMeshDialog({
               {
                 id: "feature.mesh.deleteDialog.description",
                 defaultMessage:
-                  "This deletes {mesh} and every device registered on it. This can't be undone. Its stored readings are deleted after a grace period, so export them first if you need them.",
+                  "This deletes {mesh} and every device registered on it. This can't be undone. Its stored readings are deleted after a grace period. Make sure to export them first if you need them.",
               },
               { mesh: meshTitle(mesh) },
             )

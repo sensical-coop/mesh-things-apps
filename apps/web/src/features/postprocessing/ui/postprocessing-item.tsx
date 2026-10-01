@@ -96,7 +96,7 @@ export function PostprocessingItem({
       <dl className="grid gap-x-6 gap-y-2 text-body-regular sm:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-0.5">
           <dt className="text-caption-1-medium text-text-secondary">
-            {formatMessage({ id: "feature.postprocessing.item.reads", defaultMessage: "Reads" })}
+            {formatMessage({ id: "feature.postprocessing.item.reads", defaultMessage: "Inputs" })}
           </dt>
           {slots.map((slot) => {
             const bound = postprocessing.input_bindings[slot];
@@ -118,7 +118,7 @@ export function PostprocessingItem({
         </div>
         <div className="flex min-w-0 flex-col gap-0.5">
           <dt className="text-caption-1-medium text-text-secondary">
-            {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Writes" })}
+            {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Outputs" })}
           </dt>
           {postprocessing.outputs.map((output) => (
             <dd key={output.measurement_id} className="min-w-0 break-words font-mono text-text-primary">
@@ -142,7 +142,7 @@ export function PostprocessingItem({
           {formatMessage(
             {
               id: "feature.postprocessing.item.newerVersion",
-              defaultMessage: "Version {number} is available. Move to it from Wiring.",
+              defaultMessage: "Version {number} is available. Move to it from Settings.",
             },
             { number: latestVersion },
           )}
@@ -151,7 +151,7 @@ export function PostprocessingItem({
       <div className="flex flex-wrap gap-2">
         {canEdit ? (
           <Button type="button" size="xs" variant="secondary" onClick={onWire}>
-            {formatMessage({ id: "feature.postprocessing.item.wiring", defaultMessage: "Wiring" })}
+            {formatMessage({ id: "feature.postprocessing.item.wiring", defaultMessage: "Settings" })}
           </Button>
         ) : null}
         {calibrates ? (

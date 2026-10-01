@@ -455,7 +455,7 @@ function DeviceStatusTab({
             <StatusCopy>
               {formatMessage({
                 id: "page.devices.detail.quality.error",
-                defaultMessage: "Quality did not load. The worker may not have run.",
+                defaultMessage: "Quality did not load. Please check again soon.",
               })}
             </StatusCopy>
           ) : null}
@@ -533,7 +533,7 @@ function DeviceStatusTab({
           <FrameDescription>
             {formatMessage({
               id: "page.devices.detail.variants.description",
-              defaultMessage: "Payload families this device has sent, plus this device's own valid ranges.",
+              defaultMessage: "Payload variants this device has sent, and this device's valid ranges.",
             })}
           </FrameDescription>
         </FrameHeader>
@@ -909,7 +909,7 @@ function DeviceDashboardTab({
             <StatusCopy>
               {formatMessage({
                 id: "page.devices.detail.dashboard.latest.none",
-                defaultMessage: "No readings in the lookback.",
+                defaultMessage: "No readings found.",
               })}
             </StatusCopy>
           )

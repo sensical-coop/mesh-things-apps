@@ -79,14 +79,14 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
       label: formatMessage({ id: "feature.sink.dialog.stream.derived", defaultMessage: "Derived readings" }),
       hint: formatMessage({
         id: "feature.sink.dialog.stream.derivedHint",
-        defaultMessage: "Values your blueprints compute. Only on instances that run postprocessing.",
+        defaultMessage: "Computed values.",
       }),
     },
     alarms: {
       label: formatMessage({ id: "feature.sink.dialog.stream.alarms", defaultMessage: "Alarms" }),
       hint: formatMessage({
         id: "feature.sink.dialog.stream.alarmsHint",
-        defaultMessage: "Data quality alarms as they trigger. Only on instances that run quality checks.",
+        defaultMessage: "Alarms as they trigger.",
       }),
     },
   };
@@ -221,12 +221,12 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
         editing
           ? formatMessage({
               id: "feature.sink.dialog.editDescription",
-              defaultMessage: "Changes apply straight away. The credentials stay the same.",
+              defaultMessage: "Changes apply straight away. The credentials will not change.",
             })
           : formatMessage({
               id: "feature.sink.dialog.createDescription",
               defaultMessage:
-                "Publish readings from your meshes on this instance's broker, where a service you choose subscribes with its own credentials.",
+                "Publish readings from your meshes on this instance's MQTT broker. You can subscribe to it with its own credentials.",
             })
       }
       onClose={close}
@@ -236,7 +236,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
           <FormField
             id="sink-label"
             label={formatMessage({ id: "feature.sink.dialog.label", defaultMessage: "Label" })}
-            hint={formatMessage({ id: "feature.sink.dialog.labelHint", defaultMessage: "Who or what consumes it, for example Partner dashboard." })}
+            hint={formatMessage({ id: "feature.sink.dialog.labelHint", defaultMessage: "Example: Partner dashboard." })}
             error={errors.label}
           >
             <Input id="sink-label" name="label" autoComplete="off" defaultValue={sink?.label ?? ""} />
@@ -246,7 +246,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
           <div className="grid gap-6 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             <fieldset className="flex min-w-0 flex-col gap-3">
               <legend className="mb-2 text-caption-1-medium text-text-secondary">
-                {formatMessage({ id: "feature.sink.dialog.streams", defaultMessage: "What to send" })}
+                {formatMessage({ id: "feature.sink.dialog.streams", defaultMessage: "Publish" })}
               </legend>
               {SINK_STREAMS.map((stream) => (
                 <Field key={stream} orientation="horizontal">
@@ -271,7 +271,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
               <p className="text-caption-1-regular text-text-tertiary">
                 {formatMessage({
                   id: "feature.sink.dialog.sendFromHint",
-                  defaultMessage: "Tick a mesh to send all its nodes, including nodes that join later, or tick single devices.",
+                  defaultMessage: "Select a mesh to send all its nodes, including nodes that join later, or select single devices.",
                 })}
               </p>
               {meshes.isPending || devices.isPending ? null : groups.length === 0 ? (

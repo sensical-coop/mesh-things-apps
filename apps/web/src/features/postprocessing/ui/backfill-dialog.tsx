@@ -77,7 +77,7 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
       description={formatMessage({
         id: "feature.postprocessing.backfill.description",
         defaultMessage:
-          "Runs over stored readings with the calibration in force at each one, replacing derived values for the same times. Up to 90 days per request. Backfilled values never raise alarms.",
+          "Recomputes outputs for stored readings, using the calibration data stored (if any) for each period. This will replace derived outputs, up to 90 days per request. Backfilled values do not raise alarms.",
       })}
       onClose={onClose}
     >
@@ -102,7 +102,7 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
                 name="include_dependants"
                 label={formatMessage({
                   id: "feature.postprocessing.backfill.dependants",
-                  defaultMessage: "Also recompute postprocessings that read this one's outputs",
+                  defaultMessage: "Also recompute metrics that use the outputs of this one.",
                 })}
               />
             </FieldGroup>

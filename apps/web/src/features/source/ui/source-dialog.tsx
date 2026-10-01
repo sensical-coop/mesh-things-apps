@@ -77,14 +77,14 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
           ? formatMessage(
               {
                 id: "feature.source.dialog.bridgeFailedEdit",
-                defaultMessage: "The bridge could not be reconfigured, so the source was left as it was. {detail}",
+                defaultMessage: "The bridge could not be reconfigured. No changes were applied. {detail}",
               },
               { detail: detail ?? "" },
             )
           : formatMessage(
               {
                 id: "feature.source.createDialog.bridgeFailed",
-                defaultMessage: "The bridge could not be set up, so the source was not saved. {detail}",
+                defaultMessage: "The bridge could not be set up. The source was not saved. {detail}",
               },
               { detail: detail ?? "" },
             ),
@@ -189,7 +189,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
         editing
           ? formatMessage({
               id: "feature.source.dialog.editDescription",
-              defaultMessage: "Saving reconfigures the bridge. Meshes on this source keep using it.",
+              defaultMessage: "Saving will reconfigure this bridge. Meshes on this source will keep using it.",
             })
           : formatMessage({
               id: "feature.source.createDialog.description",
@@ -213,7 +213,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
             label={formatMessage({ id: "feature.source.createDialog.server", defaultMessage: "Server" })}
             hint={formatMessage({
               id: "feature.source.createDialog.serverHint",
-              defaultMessage: "Remote broker as host:port, for example mqtt.meshtastic.org:1883.",
+              defaultMessage: "Remote broker as host:port, for example mqtt.example.org:1883.",
             })}
             error={errors.server}
           >

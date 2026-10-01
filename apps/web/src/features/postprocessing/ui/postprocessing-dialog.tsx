@@ -72,7 +72,7 @@ export function PostprocessingDialog({
       setMessages([
         formatMessage({
           id: "feature.postprocessing.dialog.publishFailed",
-          defaultMessage: "The stream tier couldn't be told, so nothing changed. Try again.",
+          defaultMessage: "The stream tier couldn't be found. Try again.",
         }),
       ]);
       return;
@@ -141,7 +141,7 @@ export function PostprocessingDialog({
       title={
         postprocessing
           ? formatMessage(
-              { id: "feature.postprocessing.dialog.editTitle", defaultMessage: "Wiring — {name}" },
+              { id: "feature.postprocessing.dialog.editTitle", defaultMessage: "Settings — {name}" },
               { name: postprocessing.blueprint_name },
             )
           : formatMessage({ id: "feature.postprocessing.dialog.attachTitle", defaultMessage: "Attach a blueprint" })
@@ -156,7 +156,7 @@ export function PostprocessingDialog({
           : formatMessage({
               id: "feature.postprocessing.dialog.attachDescription",
               defaultMessage:
-                "Its outputs show up as channels of this device straight away. It starts stopped: calibrate it if it asks for that, then start it.",
+                "The outputs of this blueprint will appear as channels of this device. Make sure you press \"Start\" and add calibrations if needed.",
             })
       }
       onClose={onClose}
@@ -246,7 +246,7 @@ export function PostprocessingDialog({
               hint={formatMessage(
                 {
                   id: "feature.postprocessing.dialog.prefixHint",
-                  defaultMessage: "Needed to attach a blueprint twice. Writes {channels}.",
+                  defaultMessage: "Needed to attach a blueprint twice. Output: {channels}.",
                 },
                 { channels: outputFields.map((field) => `derived.${prefix}${field}`).join(", ") },
               )}
@@ -267,7 +267,7 @@ export function PostprocessingDialog({
               label={formatMessage({ id: "feature.postprocessing.dialog.tolerance", defaultMessage: "Join tolerance (s)" })}
               hint={formatMessage({
                 id: "feature.postprocessing.dialog.toleranceHint",
-                defaultMessage: "How far apart two inputs may be to be combined. Blank: half the device's reading interval, or 30 s.",
+                defaultMessage: "Maximum time difference between two inputs in different measurements for them to be combined. Blank: half the device's reading interval, or 30s.",
               })}
               error={fieldErrors.tolerance_seconds}
             >
@@ -305,7 +305,7 @@ export function PostprocessingDialog({
             {pending
               ? formatMessage({ id: "feature.postprocessing.dialog.saving", defaultMessage: "Saving" })
               : postprocessing
-                ? formatMessage({ id: "feature.postprocessing.dialog.save", defaultMessage: "Save wiring" })
+                ? formatMessage({ id: "feature.postprocessing.dialog.save", defaultMessage: "Save settings" })
                 : formatMessage({ id: "feature.postprocessing.dialog.attach", defaultMessage: "Attach blueprint" })}
           </Button>
         </div>

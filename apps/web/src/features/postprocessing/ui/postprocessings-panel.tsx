@@ -59,7 +59,7 @@ export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, ca
             {formatMessage({
               id: "feature.postprocessing.panel.description",
               defaultMessage:
-                "Blueprints computing new channels from this device's readings as they arrive. Raw readings are never changed.",
+                "Below you can find blueprints computing new channels based on readings from this device in real time. Raw readings remain unchanged.",
             })}
           </FrameDescription>
         </div>
@@ -83,7 +83,7 @@ export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, ca
           <StatusCopy>
             {formatMessage({
               id: "feature.postprocessing.panel.empty",
-              defaultMessage: "Nothing attached. Attach a blueprint to derive channels such as a dew point or a calibrated concentration.",
+              defaultMessage: "No blueprint attached. Attach a blueprint to derive channels such as a dew point or a calibrated concentration.",
             })}
           </StatusCopy>
         ) : null}

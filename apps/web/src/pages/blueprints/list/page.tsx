@@ -101,12 +101,12 @@ export function BlueprintsPage(): ReactElement {
             {blueprints.error
               ? formatMessage({
                   id: "page.blueprints.list.panel.error",
-                  defaultMessage: "Blueprints didn't load. Check your connection to the API and try again.",
+                  defaultMessage: "Blueprints didn't load. Check your connection and try again.",
                 })
               : formatMessage({
                   id: "page.blueprints.list.panel.description",
                   defaultMessage:
-                    "Your blueprints and public ones. Attach one to a device from the device page, where you wire its inputs and calibrate it.",
+                    "List of your blueprints and the public ones. Attach one to a device from the device page, where you wire its inputs and calibrate it.",
                 })}
           </FrameDescription>
         </FrameHeader>

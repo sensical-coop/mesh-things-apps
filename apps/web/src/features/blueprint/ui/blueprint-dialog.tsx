@@ -124,7 +124,7 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
           : formatMessage({
               id: "feature.blueprint.dialog.createDescription",
               defaultMessage:
-                "A recipe computing new channels from a device's readings. Attach it to devices from their page, then calibrate each one.",
+                "A blueprint is a recipe that computes new channels from a device's readings. Create a blueprint here, and then attach it to devices from their page. Calibrations can be added on the device page too.",
             })
       }
       onClose={onClose}
@@ -150,7 +150,7 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
               name="is_public"
               label={formatMessage({
                 id: "feature.blueprint.dialog.public",
-                defaultMessage: "Public: anyone can attach it to their devices",
+                defaultMessage: "Public: anyone can attach this blueprint to their devices",
               })}
             />
           </FieldGroup>

@@ -184,7 +184,7 @@ export function DataDeletionsPage(): ReactElement {
               : formatMessage({
                   id: "page.dataDeletions.panel.description",
                   defaultMessage:
-                    "A mesh's readings are scheduled when the mesh is deleted, moved off its source, or its terms lapse. They stay readable until the date shown, then are deleted from the time-series store and the archive. Renewing, or moving a mesh back, cancels it.",
+                    "A mesh's readings are scheduled for deletion when the mesh is deleted, moved off its source, or its terms lapse. They stay readable until the date shown, then are deleted from the time-series store and the archive. Renewing, or moving a mesh back, cancels the scheduled deletion.",
                 })}
           </FrameDescription>
         </FrameHeader>

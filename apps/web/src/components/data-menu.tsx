@@ -26,7 +26,7 @@ export function DataMenu(props: DataMenuProps): ReactElement {
           label: formatMessage({ id: "console.footer.sources", defaultMessage: "Sources" }),
           description: formatMessage({
             id: "console.header.data.sourcesDescription",
-            defaultMessage: "Remote brokers bridged into this instance",
+            defaultMessage: "Remote MQTT brokers bridged into this instance",
           }),
         },
         {
@@ -34,7 +34,7 @@ export function DataMenu(props: DataMenuProps): ReactElement {
           label: formatMessage({ id: "console.header.data.sinks", defaultMessage: "Sinks" }),
           description: formatMessage({
             id: "console.header.data.sinksDescription",
-            defaultMessage: "Readings published for services you choose",
+            defaultMessage: "Readings published via MQTT",
           }),
         },
         {

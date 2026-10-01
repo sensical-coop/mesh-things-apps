@@ -77,7 +77,7 @@ export function ArchiveDevicesFrame({ meshTitle, devices, pending, failed }: Arc
           {formatMessage({
             id: "feature.archive.devices.description",
             defaultMessage:
-              "Only the devices you switch on are stored in S3, from that moment on. Switching one off keeps what's already stored.",
+              "Devices stored in S3 for this mesh are shown below.",
           })}
         </FrameDescription>
       </FrameHeader>

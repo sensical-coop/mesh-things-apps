@@ -41,7 +41,7 @@ export function DetachPostprocessingDialog({ deviceUuid, postprocessing, onClose
               {
                 id: "feature.postprocessing.detach.description",
                 defaultMessage:
-                  "{name} stops running on this device and its channels ({channels}) are removed, with their alarm settings and calibrations. Readings already stored stay queryable.",
+                  "{name} will stop running on this device and its channels ({channels}) will be removed, including their alarm settings and calibrations. Readings that have been stored will remain accessible.",
               },
               {
                 name: postprocessing.blueprint_name,

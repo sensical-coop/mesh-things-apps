@@ -35,7 +35,7 @@ const sections: Section[] = [
     paragraphs: [
       { id: "page.dpa.instructions.p1", defaultMessage: "Sensical processes the data only on your documented instructions, unless EU or Member State law requires otherwise. In that case Sensical tells you first, unless that law forbids it." },
       { id: "page.dpa.instructions.p2", defaultMessage: "Your instructions are this DPA and what you configure in the service: the gateways and sources you register, the devices you archive, the sinks you create and the meshes and devices you attach to them, the alarms and blueprints you set, whether a mesh is public, and the accounts you give access to. Sensical records who turned archiving on or off for each device and who attached or detached each mesh and device from a sink, and when." },
-      { id: "page.dpa.instructions.sinks", defaultMessage: "When you attach meshes or devices to a sink, Sensical publishes their readings and alarms, in the streams you choose, on its own broker, where whoever holds that sink's credentials can subscribe to them. The recipients of a sink are yours, not Sensical's sub-processors: you choose them and give them the credentials, and you are responsible for their use of the data, including any transfer outside the European Economic Area. A sink keeps no data of its own, and deleting it or detaching its meshes and devices stops the forwarding." },
+      { id: "page.dpa.instructions.sinks", defaultMessage: "When you attach meshes or devices to a sink, Sensical publishes their readings, derived metrics and alarms, in the streams you choose, on its own broker, where whoever holds that sink's credentials can subscribe to them. The recipients of a sink are yours, not Sensical's sub-processors: you choose them and give them the credentials, and you are responsible for their use of the data, including any transfer outside the European Economic Area. A sink keeps data only for 24h to provide a session backup in case of disconnect, but beyond 24h, it doesn't keep any data of its own. Deleting it or detaching its meshes and devices stops the forwarding." },
       { id: "page.dpa.instructions.p3", defaultMessage: "You can give further instructions by email to info@sensical.es. If Sensical believes an instruction breaks data protection law, it will tell you and may suspend it until you confirm or change it." },
     ],
   },
@@ -111,7 +111,7 @@ const sections: Section[] = [
     heading: { id: "page.dpa.changes.heading", defaultMessage: "13. Changes and other terms" },
     paragraphs: [
       { id: "page.dpa.changes.p1", defaultMessage: "Sensical may update this DPA to reflect changes in the law or the service. Changes to sections 1 to 13 are announced by email at least 30 days before they take effect, and you accept them by renewing your mesh and source terms. Changes to the annexes follow sections 6 and 8. Each version is dated, and earlier versions are available on request." },
-      { id: "page.dpa.changes.p2", defaultMessage: "On data protection, this DPA prevails over the Terms of Use. It is governed by Spanish law and the courts of Barcelona have jurisdiction, except where mandatory law provides otherwise. If any provision is invalid, the rest remain in force." },
+      { id: "page.dpa.changes.p2", defaultMessage: "On data protection, this DPA prevails over the Terms of Use. It is governed by Spanish law and the courts of Barcelona have jurisdiction, except where mandatory law provides otherwise. Should any provision be invalid, the rest remain in force." },
     ],
   },
 ];
@@ -228,7 +228,7 @@ const securityMeasures: AnnexGroup[] = [
     heading: { id: "page.dpa.annex2.organisation.heading", defaultMessage: "Organisation" },
     paragraphs: [],
     items: [
-      { id: "page.dpa.annex2.organisation.li1", defaultMessage: "Access to production is limited to the Sensical staff who run the service, bound by confidentiality." },
+      { id: "page.dpa.annex2.organisation.li1", defaultMessage: "Access to the production deployment is limited to the Sensical staff who run the service, bound by confidentiality." },
       { id: "page.dpa.annex2.organisation.li2", defaultMessage: "Terms acceptances and archive and sink instructions are recorded with who gave them and when." },
       { id: "page.dpa.annex2.organisation.li3", defaultMessage: "Breaches are handled under a documented incident procedure that meets section 9, and every breach is recorded. These measures are reviewed at least once a year and whenever the service changes significantly." },
     ],

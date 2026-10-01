@@ -146,7 +146,7 @@ export function EditMeshDialog({
       )}
       description={formatMessage({
         id: "feature.mesh.editDialog.description",
-        defaultMessage: "Label, channel id, pre-shared key, and who can view it.",
+        defaultMessage: "Label, channel ID, pre-shared key, and its authorised viewers.",
       })}
       onClose={onClose}
     >
@@ -194,7 +194,7 @@ export function EditMeshDialog({
               {formatMessage({
                 id: "feature.mesh.editDialog.publicHint",
                 defaultMessage:
-                  "Anyone signed in can view its devices and readings. The pre-shared key stays private, and only you can change the mesh.",
+                  "Anyone signed in can view its devices and readings. The PSK is private, and only you can change the mesh.",
               })}
             </p>
           </div>
@@ -236,7 +236,7 @@ export function EditMeshDialog({
             {updateStatus === 502
               ? formatMessage({
                   id: "feature.mesh.editDialog.bridgeFailed",
-                  defaultMessage: "The gateways could not be moved to the new source, so nothing changed. Try again.",
+                  defaultMessage: "The gateways could not be moved to the new source. Nothing changed. Try again.",
                 })
               : formatMessage({
                   id: "feature.mesh.editDialog.error",

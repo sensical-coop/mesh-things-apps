@@ -376,7 +376,7 @@ export function MeshesPage(): ReactElement {
                 : meshes.error
                   ? formatMessage({
                       id: "page.meshes.list.panel.error",
-                      defaultMessage: "Meshes didn't load. Check your connection to the API and try again.",
+                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
                     })
                   : formatMessage({
                       id: "page.meshes.list.panel.description",
@@ -548,7 +548,7 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.pskHint",
-              defaultMessage: "Base64 channel key. Stored on the mesh, never shown in the list.",
+              defaultMessage: "Base64 channel key.",
             })}
             error={errors.psk_b64}
           >

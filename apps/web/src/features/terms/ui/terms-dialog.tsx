@@ -104,7 +104,7 @@ export function TermsDialog({
                 })
               : formatMessage({
                   id: "feature.terms.dialog.loadError",
-                  defaultMessage: "The terms didn't load, so they can't be accepted yet. Try again.",
+                  defaultMessage: "The terms didn't load and they can't be accepted yet. Try again.",
                 })}
           </StatusCopy>
         ) : null}

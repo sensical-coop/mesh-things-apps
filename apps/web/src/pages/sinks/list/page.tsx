@@ -225,7 +225,7 @@ export function SinksPage(): ReactElement {
                   : formatMessage({
                       id: "page.sinks.list.panel.description",
                       defaultMessage:
-                        "Readings from your meshes, published on this instance's broker for a service you choose. Each sink has its own credentials and topics.",
+                        "Readings from your meshes will be published on this instance's MQTT broker. You will be able to subscribe to it. Each sink has its own credentials and topics.",
                     })}
             </FrameDescription>
           </FrameHeader>

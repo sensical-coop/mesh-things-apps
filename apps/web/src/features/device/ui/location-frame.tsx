@@ -107,7 +107,7 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
     ? formatMessage({
         id: "feature.device.location.editHint",
         defaultMessage:
-          "Click the map or drag the pin. Once saved, the position is set manually and the node's own reports no longer move it.",
+          "Click the map or drag the pin. Once saved, the position is set manually and the node's reported position is ignored.",
       })
     : !saved
       ? formatMessage({
@@ -117,7 +117,7 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
       : device?.location_overridden
         ? formatMessage({
             id: "feature.device.location.manualHint",
-            defaultMessage: "Set by hand. The node's own position reports are ignored.",
+            defaultMessage: "Set by hand. The node's reported position is ignored.",
           })
         : formatMessage({
             id: "page.devices.detail.location.hasCoords",
