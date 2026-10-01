@@ -938,7 +938,8 @@ function DeviceDashboardTab({
                     const points = series?.data?.series[0]?.points;
                     // Same name as the latest-reading card above it.
                     const label = channelShortName(channel);
-                    const badge = isDerivedMeasurement({ channel }) ? <ComputedFlag /> : undefined;
+                    const computed = isDerivedMeasurement({ channel });
+                    const badge = computed ? <ComputedFlag /> : undefined;
                     // CHART_AGG_OPTIONS covers every ChartAgg value, so this always matches.
                     const aggOption = CHART_AGG_OPTIONS.find((option) => option.value === agg)!;
                     const aggLabel = formatMessage({ id: aggOption.messageId, defaultMessage: aggOption.label });
@@ -985,6 +986,7 @@ function DeviceDashboardTab({
                           hint={hint}
                           icon={icon}
                           badge={badge}
+                          computed={computed}
                           points={points}
                           windowMs={windowMs}
                           className="min-h-52"
