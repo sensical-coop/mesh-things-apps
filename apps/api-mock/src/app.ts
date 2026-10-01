@@ -650,6 +650,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       createdAt: now,
       lastLogin: null,
       alarmEmailCooldownSeconds: null,
+      statusAlertsEnabled: false,
     };
     db.actors.set(actor.id, actor);
     // Signing up accepts the current account terms; they don't lapse, as an account stores no mesh data.
@@ -724,6 +725,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (patch.alarm_email_cooldown_seconds !== undefined) {
       actor.alarmEmailCooldownSeconds = patch.alarm_email_cooldown_seconds;
     }
+    if (patch.status_alerts_enabled !== undefined) actor.statusAlertsEnabled = patch.status_alerts_enabled;
     if (patch.email !== undefined && patch.email !== actor.email) {
       const taken = [...db.actors.values()].some(
         (other) => other.id !== actor.id && other.email === patch.email,

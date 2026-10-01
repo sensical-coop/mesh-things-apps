@@ -4815,6 +4815,12 @@ components:
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
             Omitted on backends that don't yet support this setting.
+        status_alerts_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the owner is emailed when a source they created stays
+            disconnected, or a sink they created with meshes or devices attached has
+            nobody connected.
         terms_accepted_version:
           type: string
           nullable: true
@@ -4840,6 +4846,7 @@ components:
       - last_login
       - name
       - role
+      - status_alerts_enabled
       - terms_accepted_version
     OwnerPublic:
       type: object
@@ -4923,6 +4930,12 @@ components:
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
             Omitted on backends that don't yet support this setting.
+        status_alerts_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the owner is emailed when a source they created stays
+            disconnected, or a sink they created with meshes or devices attached has
+            nobody connected.
         terms_accepted_version:
           type: string
           nullable: true
@@ -4942,6 +4955,7 @@ components:
       - last_login
       - name
       - role
+      - status_alerts_enabled
       - terms_accepted_version
     OwnerRequestPasswordReset:
       type: object
@@ -4984,6 +4998,11 @@ components:
           nullable: true
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
+        status_alerts_enabled:
+          type: boolean
+          description: Email me when a source I created stays disconnected, or a sink
+            I created with meshes or devices attached has nobody connected. Off by
+            default.
     OwnerWithApiKey:
       type: object
       description: In POST /owners and POST /owners/me/rotate-key
@@ -5043,6 +5062,12 @@ components:
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
             Omitted on backends that don't yet support this setting.
+        status_alerts_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the owner is emailed when a source they created stays
+            disconnected, or a sink they created with meshes or devices attached has
+            nobody connected.
         terms_accepted_version:
           type: string
           nullable: true
@@ -5066,6 +5091,7 @@ components:
       - last_login
       - name
       - role
+      - status_alerts_enabled
       - terms_accepted_version
     Point:
       type: object
