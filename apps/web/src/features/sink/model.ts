@@ -18,16 +18,27 @@ export function sinkStreamsError(streams: readonly string[]): string | undefined
   return streams.length === 0 ? "Choose at least one stream." : undefined;
 }
 
+/** Each mesh with its devices, in the meshes' order; devices keep the order they came in. */
+export function devicesByMesh<M extends { id: string }, D extends { mesh_id: string }>(
+  meshes: readonly M[],
+  devices: readonly D[],
+): { mesh: M; devices: D[] }[] {
+  return meshes.map((mesh) => ({ mesh, devices: devices.filter((device) => device.mesh_id === mesh.id) }));
+}
+
 /**
- * The devices still worth offering one by one: those whose mesh isn't already sent whole.
- * A device picked before its mesh was ticked stays picked, so the API gets what was chosen.
+ * The single devices to send: a device whose whole mesh is ticked goes with the mesh and
+ * needs no link of its own. Picks stay in the form, so unticking the mesh brings them back.
  */
-export function singleDeviceChoices<T extends { uuid: string; mesh_id: string }>(
-  devices: readonly T[],
+export function singleDeviceIds(
+  picked: Iterable<string>,
   wholeMeshIds: ReadonlySet<string>,
-  pickedDeviceIds: ReadonlySet<string>,
-): T[] {
-  return devices.filter((device) => !wholeMeshIds.has(device.mesh_id) || pickedDeviceIds.has(device.uuid));
+  meshOf: (deviceId: string) => string | undefined,
+): string[] {
+  return [...picked].filter((id) => {
+    const meshId = meshOf(id);
+    return meshId === undefined || !wholeMeshIds.has(meshId);
+  });
 }
 
 /** `host:port` split for a client's flags; a bare host keeps MQTT over TLS's usual 8883. */

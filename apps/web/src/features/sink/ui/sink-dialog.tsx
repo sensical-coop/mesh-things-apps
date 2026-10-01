@@ -17,7 +17,7 @@ import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
-import { orderStreams, SINK_STREAMS, singleDeviceChoices, sinkStreamsError, sinkTitle } from "@/features/sink/model";
+import { devicesByMesh, orderStreams, SINK_STREAMS, singleDeviceIds, sinkStreamsError, sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 import type { TermsAcceptance } from "@/features/terms/model";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
@@ -34,7 +34,8 @@ export type SinkDialogProps = {
   onSaved: (sink: SinkRead) => void;
 };
 
-const listClass = "oa-squircle-inset flex max-h-56 flex-col gap-2 overflow-y-auto bg-background-secondary-default p-3";
+const listClass =
+  "oa-squircle-inset flex max-h-[45dvh] flex-col divide-y divide-separator-border overflow-x-hidden overflow-y-auto bg-background-secondary-default px-3";
 
 function toggled(set: ReadonlySet<string>, id: string, on: boolean): Set<string> {
   const next = new Set(set);
@@ -63,16 +64,8 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
     () => (meshes.data ?? []).filter((mesh) => me && (me.is_superuser === true || mesh.owner_id === me.id)),
     [meshes.data, me],
   );
-  const meshNames = useMemo(() => new Map(eligibleMeshes.map((mesh) => [mesh.id, meshTitle(mesh)])), [eligibleMeshes]);
-  const deviceChoices = useMemo(
-    () =>
-      singleDeviceChoices(
-        (devices.data ?? []).filter((device) => meshNames.has(device.mesh_id)),
-        meshIds,
-        deviceIds,
-      ),
-    [devices.data, meshNames, meshIds, deviceIds],
-  );
+  // One list: each mesh, then its devices. Ticking a mesh sends all of them, so they show as included.
+  const groups = useMemo(() => devicesByMesh(eligibleMeshes, devices.data ?? []), [eligibleMeshes, devices.data]);
 
   const streamCopy: Record<StreamsEnum, { label: string; hint: string }> = {
     decoded: {
@@ -195,11 +188,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
       label: label === "" ? null : label,
       streams: chosenStreams,
       mesh_ids: [...meshIds],
-      // A device whose mesh is sent whole needs no link of its own.
-      device_ids: [...deviceIds].filter((id) => {
-        const device = devices.data?.find((row) => row.uuid === id);
-        return !device || !meshIds.has(device.mesh_id);
-      }),
+      device_ids: singleDeviceIds(deviceIds, meshIds, (id) => devices.data?.find((row) => row.uuid === id)?.mesh_id),
     };
     const streamsError = sinkStreamsError(chosenStreams);
     setFormError(null);
@@ -222,7 +211,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
   return (
     <Modal
       open={open}
-      size="wide"
+      size="large"
       title={
         editing
           ? formatMessage({ id: "feature.sink.dialog.editTitle", defaultMessage: "Edit sink — {sink}" }, { sink: sinkTitle(sink) })
@@ -253,88 +242,94 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
             <Input id="sink-label" name="label" autoComplete="off" defaultValue={sink?.label ?? ""} />
           </FormField>
 
-          <fieldset className="flex flex-col gap-3">
-            <legend className="mb-2 text-caption-1-medium text-text-secondary">
-              {formatMessage({ id: "feature.sink.dialog.streams", defaultMessage: "What to send" })}
-            </legend>
-            {SINK_STREAMS.map((stream) => (
-              <Field key={stream} orientation="horizontal">
-                <Checkbox
-                  id={`sink-stream-${stream}`}
-                  checked={streams.has(stream)}
-                  onCheckedChange={(checked) => setStreams((current) => toggled(current, stream, checked))}
-                />
-                <FieldLabel htmlFor={`sink-stream-${stream}`} className="flex flex-col items-start gap-0.5">
-                  <span className="text-body-regular text-text-primary">{streamCopy[stream].label}</span>
-                  <span className="text-caption-1-regular text-text-tertiary">{streamCopy[stream].hint}</span>
-                </FieldLabel>
-              </Field>
-            ))}
-            {errors.streams ? <FieldError>{errors.streams}</FieldError> : null}
-          </fieldset>
+          {/* Streams beside the mesh list on wide screens, so the list gets the height; stacked on phones. */}
+          <div className="grid gap-6 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <fieldset className="flex min-w-0 flex-col gap-3">
+              <legend className="mb-2 text-caption-1-medium text-text-secondary">
+                {formatMessage({ id: "feature.sink.dialog.streams", defaultMessage: "What to send" })}
+              </legend>
+              {SINK_STREAMS.map((stream) => (
+                <Field key={stream} orientation="horizontal">
+                  <Checkbox
+                    id={`sink-stream-${stream}`}
+                    checked={streams.has(stream)}
+                    onCheckedChange={(checked) => setStreams((current) => toggled(current, stream, checked))}
+                  />
+                  <FieldLabel htmlFor={`sink-stream-${stream}`} className="flex flex-col items-start gap-0.5">
+                    <span className="text-body-regular text-text-primary">{streamCopy[stream].label}</span>
+                    <span className="text-caption-1-regular text-text-tertiary">{streamCopy[stream].hint}</span>
+                  </FieldLabel>
+                </Field>
+              ))}
+              {errors.streams ? <FieldError>{errors.streams}</FieldError> : null}
+            </fieldset>
 
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-caption-1-medium text-text-secondary">
-              {formatMessage({ id: "feature.sink.dialog.meshes", defaultMessage: "Whole meshes" })}
-            </legend>
-            <p className="text-caption-1-regular text-text-tertiary">
-              {formatMessage({
-                id: "feature.sink.dialog.meshesHint",
-                defaultMessage: "Every node of the mesh is sent, including nodes that join later.",
-              })}
-            </p>
-            {meshes.isPending ? null : eligibleMeshes.length === 0 ? (
-              <StatusCopy>
-                {formatMessage({ id: "feature.sink.dialog.noMeshes", defaultMessage: "You have no meshes to attach yet." })}
-              </StatusCopy>
-            ) : (
-              <div className={listClass}>
-                {eligibleMeshes.map((mesh) => (
-                  <Field key={mesh.id} orientation="horizontal">
-                    <Checkbox
-                      id={`sink-mesh-${mesh.id}`}
-                      checked={meshIds.has(mesh.id)}
-                      onCheckedChange={(checked) => setMeshIds((current) => toggled(current, mesh.id, checked))}
-                    />
-                    <FieldLabel htmlFor={`sink-mesh-${mesh.id}`} className="text-body-regular text-text-primary">
-                      {meshTitle(mesh)}
-                    </FieldLabel>
-                  </Field>
-                ))}
-              </div>
-            )}
-            {errors.mesh_ids ? <FieldError>{errors.mesh_ids}</FieldError> : null}
-          </fieldset>
-
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-caption-1-medium text-text-secondary">
-              {formatMessage({ id: "feature.sink.dialog.devices", defaultMessage: "Single devices" })}
-            </legend>
-            <p className="text-caption-1-regular text-text-tertiary">
-              {formatMessage({
-                id: "feature.sink.dialog.devicesHint",
-                defaultMessage: "Only these nodes are sent. Devices of a mesh sent whole aren't listed.",
-              })}
-            </p>
-            {devices.isPending || deviceChoices.length === 0 ? null : (
-              <div className={listClass}>
-                {deviceChoices.map((device) => (
-                  <Field key={device.uuid} orientation="horizontal">
-                    <Checkbox
-                      id={`sink-device-${device.uuid}`}
-                      checked={deviceIds.has(device.uuid)}
-                      onCheckedChange={(checked) => setDeviceIds((current) => toggled(current, device.uuid, checked))}
-                    />
-                    <FieldLabel htmlFor={`sink-device-${device.uuid}`} className="text-body-regular text-text-primary">
-                      {deviceTitle(device)}
-                      <span className="text-text-tertiary"> · {meshNames.get(device.mesh_id)}</span>
-                    </FieldLabel>
-                  </Field>
-                ))}
-              </div>
-            )}
-            {errors.device_ids ? <FieldError>{errors.device_ids}</FieldError> : null}
-          </fieldset>
+            <fieldset className="flex min-w-0 flex-col gap-2">
+              <legend className="mb-2 text-caption-1-medium text-text-secondary">
+                {formatMessage({ id: "feature.sink.dialog.sendFrom", defaultMessage: "Send from" })}
+              </legend>
+              <p className="text-caption-1-regular text-text-tertiary">
+                {formatMessage({
+                  id: "feature.sink.dialog.sendFromHint",
+                  defaultMessage: "Tick a mesh to send all its nodes, including nodes that join later, or tick single devices.",
+                })}
+              </p>
+              {meshes.isPending || devices.isPending ? null : groups.length === 0 ? (
+                <StatusCopy>
+                  {formatMessage({ id: "feature.sink.dialog.noMeshes", defaultMessage: "You have no meshes to attach yet." })}
+                </StatusCopy>
+              ) : (
+                <div className={listClass}>
+                  {groups.map(({ mesh, devices: meshDevices }) => {
+                    const whole = meshIds.has(mesh.id);
+                    return (
+                      <div key={mesh.id} className="flex flex-col gap-2 py-3">
+                        <Field orientation="horizontal">
+                          <Checkbox
+                            id={`sink-mesh-${mesh.id}`}
+                            checked={whole}
+                            onCheckedChange={(checked) => setMeshIds((current) => toggled(current, mesh.id, checked))}
+                          />
+                          <FieldLabel htmlFor={`sink-mesh-${mesh.id}`} className="flex flex-col items-start gap-0.5">
+                            <span className="text-body-medium text-text-primary">{meshTitle(mesh)}</span>
+                            <span className="text-caption-1-regular text-text-tertiary">
+                              {formatMessage({ id: "feature.sink.dialog.wholeMesh", defaultMessage: "Whole mesh: all nodes, including new ones" })}
+                            </span>
+                          </FieldLabel>
+                        </Field>
+                        {meshDevices.length === 0 ? (
+                          <p className="ps-7 text-caption-1-regular text-text-tertiary">
+                            {formatMessage({ id: "feature.sink.dialog.noDevices", defaultMessage: "No devices yet" })}
+                          </p>
+                        ) : (
+                          meshDevices.map((device) => (
+                            <Field key={device.uuid} orientation="horizontal" className="ps-7">
+                              <Checkbox
+                                id={`sink-device-${device.uuid}`}
+                                checked={whole || deviceIds.has(device.uuid)}
+                                disabled={whole}
+                                onCheckedChange={(checked) => setDeviceIds((current) => toggled(current, device.uuid, checked))}
+                              />
+                              <FieldLabel htmlFor={`sink-device-${device.uuid}`} className="text-body-regular text-text-primary">
+                                {deviceTitle(device)}
+                                {whole ? (
+                                  <span className="text-caption-1-regular text-text-tertiary">
+                                    {formatMessage({ id: "feature.sink.dialog.includedWithMesh", defaultMessage: "included with the mesh" })}
+                                  </span>
+                                ) : null}
+                              </FieldLabel>
+                            </Field>
+                          ))
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {errors.mesh_ids ? <FieldError>{errors.mesh_ids}</FieldError> : null}
+              {errors.device_ids ? <FieldError>{errors.device_ids}</FieldError> : null}
+            </fieldset>
+          </div>
         </FieldGroup>
         {formError ? <StatusCopy>{formError}</StatusCopy> : null}
         <div className={dialogActionsClass}>

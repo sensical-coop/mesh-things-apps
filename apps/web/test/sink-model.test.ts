@@ -4,7 +4,8 @@ import {
   brokerHostPort,
   consumerCommand,
   orderStreams,
-  singleDeviceChoices,
+  devicesByMesh,
+  singleDeviceIds,
   sinkStreamsError,
   sinkTitle,
 } from "../src/features/sink/model.ts";
@@ -26,17 +27,26 @@ test("sinkStreamsError asks for at least one stream", () => {
   assert.equal(sinkStreamsError(["decoded"]), undefined);
 });
 
-test("singleDeviceChoices hides devices whose mesh is sent whole, unless already picked", () => {
-  const devices = [
-    { uuid: "a", mesh_id: "m1" },
-    { uuid: "b", mesh_id: "m1" },
-    { uuid: "c", mesh_id: "m2" },
-  ];
-  assert.deepEqual(
-    singleDeviceChoices(devices, new Set(["m1"]), new Set(["b"])).map((d) => d.uuid),
-    ["b", "c"],
+test("devicesByMesh groups devices under their mesh, meshes in order", () => {
+  const groups = devicesByMesh(
+    [{ id: "m2" }, { id: "m1" }, { id: "m3" }],
+    [
+      { uuid: "a", mesh_id: "m1" },
+      { uuid: "b", mesh_id: "m2" },
+      { uuid: "c", mesh_id: "m1" },
+      { uuid: "x", mesh_id: "other" },
+    ],
   );
-  assert.equal(singleDeviceChoices(devices, new Set(), new Set()).length, 3);
+  assert.deepEqual(
+    groups.map((group) => [group.mesh.id, group.devices.map((device) => device.uuid)]),
+    [["m2", ["b"]], ["m1", ["a", "c"]], ["m3", []]],
+  );
+});
+
+test("singleDeviceIds drops devices whose whole mesh is sent, keeps unknown ones", () => {
+  const meshOf = (id: string) => ({ a: "m1", b: "m2" })[id];
+  assert.deepEqual(singleDeviceIds(["a", "b", "gone"], new Set(["m1"]), meshOf), ["b", "gone"]);
+  assert.deepEqual(singleDeviceIds(new Set(["a"]), new Set(), meshOf), ["a"]);
 });
 
 test("brokerHostPort splits host:port and defaults to 8883", () => {
