@@ -30,6 +30,9 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 | Gestionar fuentes (`/sources`) | `canManageSources` / `visibleSources` | no (403) | solo las suyas; ajenas 404 | no (403) | todas |
 | Ver `source_id` de una malla | `canSeeMeshSource` | solo en las suyas | solo en las suyas | no | todas (solo lectura en ajenas) |
 | Cambiar `source_id` de una malla | — | — | en las suyas, solo a una fuente propia | no | en las suyas |
+| Ver el ajuste de archivo de un device | `canSeeArchiveSetting` | en sus mallas | en sus mallas | no | todos |
+| Activar el archivo de un device | `archivesFor` (dueño de la malla) | no (400) | en sus mallas | no | en mallas de un operator |
+| Leer el archivo de una malla | `canReadArchive` | no (404) | las suyas | no (404) | todas |
 | Pedir el rol operator | `canRequestOperator` | sí (una pendiente a la vez) | no (ya lo es) | no | no |
 | Aprobar / rechazar peticiones | `canDecideOperatorRequests` | no | no | no | sí |
 | Ver email y flags de un owner | `canReadOwnerEmail` | solo el propio | solo el propio | no (directorio público) | sí |
@@ -57,6 +60,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 - `GET /meshes?source_id=`, `POST/PUT /meshes` con `source_id`: ver arriba.
 - `GET/POST /owners/me/operator-request`: la última petición propia (404 si no hay) / pedir el rol con `reason`. 409 si ya es operator o ya hay una pendiente.
 - `GET /operator-requests?status=pending|approved|rejected|all`, `GET/PUT /operator-requests/{id}` (`decision`, `note`): solo superuser. Aprobar convierte al owner en operator. 409 si ya se decidió.
+- `PUT /devices/{id}` con `archive_enabled` y `GET/POST /readings/archive/meshes/{id}…`: ver US-18. 404 a quien no puede leer el archivo, como si la malla no existiera.
 - `GET /data-deletions?status=pending|cancelled|done|all&mesh_id=`: solo superuser (`canSeeDataDeletions`). El mock programa un borrado al eliminar una malla o sacarla de su fuente, y lo cancela al renovar condiciones o devolver la malla a la fuente.
 - Todo 400 del mock responde errores por campo estilo DRF (`{campo: [msg]}`, `non_field_errors`).
 - Lecturas, quality, catálogo de measurements y algorithms: cualquier sesión activa que ya pueda leer el device.
@@ -68,7 +72,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 | `owner@sensical.test` | `mesh-owner-12` | owner | Hill + porch + gateway |
 | `river@sensical.test` | `mesh-owner-12` | owner | River (pública) + river gateway |
 | `admin@sensical.test` | `mesh-admin-12` | superuser | Todo |
-| `operator@sensical.test` | `mesh-operator-12` | operator | Fuente "Meshtastic public EU" + Valley (malla con esa fuente) |
+| `operator@sensical.test` | `mesh-operator-12` | operator | Fuente "Meshtastic public EU" + Valley (malla con esa fuente); Brook con tres devices: Brook GW archivado, Buoy archivado unos días y apagado, Weir sin archivar |
 | `staff@sensical.test` | `mesh-staff-12` | staff | Lectura, sin PSK |
 
 `river@sensical.test` tiene además una petición de operator pendiente (pestaña *Requests* como superuser) y la malla River con sus condiciones caducadas (banner, chip y renovación en la página de la malla). La fuente del operator caduca en 10 días (“Renovar pronto” en *Sources*).

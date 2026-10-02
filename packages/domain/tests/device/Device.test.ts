@@ -69,4 +69,20 @@ describe("Device", () => {
       }),
     ).toBe(true);
   });
+
+  it("records who switched the archive on, and clears it when switched off", () => {
+    const device = makeDevice();
+    expect(device.archiveEnabled).toBe(false);
+    device.setArchive(true, "op", "2026-09-01T00:00:00.000Z");
+    expect([device.archiveEnabled, device.archiveEnabledBy, device.archiveEnabledAt]).toEqual([
+      true,
+      "op",
+      "2026-09-01T00:00:00.000Z",
+    ]);
+    // Switching it on again keeps the first record.
+    device.setArchive(true, "admin", "2026-09-02T00:00:00.000Z");
+    expect(device.archiveEnabledBy).toBe("op");
+    device.setArchive(false, "op", "2026-09-03T00:00:00.000Z");
+    expect([device.archiveEnabled, device.archiveEnabledBy, device.archiveEnabledAt]).toEqual([false, null, null]);
+  });
 });

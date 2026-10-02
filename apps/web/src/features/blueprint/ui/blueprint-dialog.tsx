@@ -105,7 +105,7 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
   return (
     <Modal
       open
-      wide
+      size="wide"
       title={
         blueprint
           ? formatMessage(

@@ -31,6 +31,7 @@ import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
@@ -318,19 +319,15 @@ export function MeshesPage(): ReactElement {
         cell: ({ row }) => {
           const canEdit = canEditMesh(row.original, me);
           return (
-            <div className="flex justify-start gap-2">
+            <div className="flex justify-start gap-2 whitespace-nowrap">
               <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
                 {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
               </ButtonLink>
               {canEdit ? (
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="secondary"
+                <SettingsButton
+                  label={formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit mesh" })}
                   onClick={() => setMeshToEdit(row.original)}
-                >
-                  {formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit" })}
-                </Button>
+                />
               ) : null}
               {canEdit ? (
                 <Button

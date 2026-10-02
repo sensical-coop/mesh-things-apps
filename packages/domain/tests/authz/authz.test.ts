@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  archivesFor,
+  canReadArchive,
+  canSeeArchiveSetting,
   canReadMesh,
   canReadOwnerEmail,
   canSeePsk,
@@ -116,5 +119,23 @@ describe("authz", () => {
     expect(canSeeDataDeletions(actor("superuser", "admin"))).toBe(true);
     expect(canSeeDataDeletions(actor("staff", "pat"))).toBe(false);
     expect(canSeeDataDeletions(actor("operator", "op"))).toBe(false);
+  });
+
+  it("archives only on an operator's meshes, read by that operator or a superuser", () => {
+    const opMesh = { ownerId: "op" };
+    expect(archivesFor(actor("operator", "op"))).toBe(true);
+    expect(archivesFor(actor("superuser", "admin"))).toBe(true);
+    expect(archivesFor(actor("owner"))).toBe(false);
+    expect(archivesFor(actor("staff", "pat"))).toBe(false);
+    expect(canReadArchive(actor("operator", "op"), opMesh)).toBe(true);
+    expect(canReadArchive(actor("operator", "other"), opMesh)).toBe(false);
+    expect(canReadArchive(actor("superuser", "admin"), opMesh)).toBe(true);
+    expect(canReadArchive(actor("staff", "pat"), opMesh)).toBe(false);
+    // A plain owner sees their setting, which applies again if they become an operator.
+    expect(canReadArchive(actor("owner"), hill)).toBe(false);
+    expect(canSeeArchiveSetting(actor("owner"), hill)).toBe(true);
+    expect(canSeeArchiveSetting(actor("owner", "bo"), hill)).toBe(false);
+    expect(canSeeArchiveSetting(actor("staff", "pat"), hill)).toBe(false);
+    expect(canReadArchive({ ...actor("operator", "op"), isActive: false }, opMesh)).toBe(false);
   });
 });

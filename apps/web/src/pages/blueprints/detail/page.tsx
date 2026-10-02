@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
@@ -53,12 +54,14 @@ export function BlueprintPage(): ReactElement {
         </div>
         {row && editable ? (
           <div className="flex flex-wrap gap-2">
-            <Button type="button" size="small" variant="secondary" onClick={() => setEditing(true)}>
-              {formatMessage({ id: "page.blueprint.edit", defaultMessage: "Edit details" })}
-            </Button>
             <Button type="button" size="small" onClick={() => setAddingVersion(true)}>
               {formatMessage({ id: "page.blueprint.newVersion", defaultMessage: "New version" })}
             </Button>
+            <SettingsButton
+              size="small"
+              label={formatMessage({ id: "page.blueprint.edit", defaultMessage: "Edit blueprint" })}
+              onClick={() => setEditing(true)}
+            />
             <Button
               type="button"
               size="small"
@@ -66,6 +69,7 @@ export function BlueprintPage(): ReactElement {
               iconOnly
               leadingIcon={RiDeleteBinLine}
               aria-label={formatMessage({ id: "page.blueprint.delete", defaultMessage: "Delete blueprint" })}
+              title={formatMessage({ id: "page.blueprint.delete", defaultMessage: "Delete blueprint" })}
               onClick={() => setDeleting(true)}
             />
           </div>

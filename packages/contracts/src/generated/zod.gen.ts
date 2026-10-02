@@ -36,6 +36,34 @@ export const zAlgorithm = z.object({
     ]))
 });
 
+export const zArchiveCredentials = z.object({
+    access_key_id: z.string(),
+    secret_access_key: z.string(),
+    session_token: z.string(),
+    expires_at: z.iso.datetime(),
+    endpoint: z.union([
+        z.string(),
+        z.null()
+    ]),
+    region: z.string(),
+    bucket: z.string(),
+    prefix: z.string(),
+    s3_path: z.string()
+});
+
+export const zArchivePartition = z.object({
+    dt: z.iso.date(),
+    hour: z.int().gte(0).lte(23),
+    size: z.int(),
+    last_modified: z.iso.datetime()
+});
+
+export const zArchiveManifest = z.object({
+    mesh_id: z.uuid(),
+    prefix: z.string(),
+    partitions: z.array(zArchivePartition)
+});
+
 /**
  * * `pending` - Pending
  * * `running` - Running
@@ -247,6 +275,15 @@ export const zDeviceRead = z.object({
     is_gateway: z.boolean().readonly(),
     is_allowed: z.boolean().readonly(),
     absence_detection_enabled: z.boolean().readonly(),
+    archive_enabled: z.optional(z.boolean().readonly()),
+    archive_enabled_at: z.optional(z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()),
+    archive_enabled_by: z.optional(z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly()),
     admin_keys_b64: z.optional(z.array(z.string()).readonly()),
     latitude: z.union([
         z.number().readonly(),
@@ -301,6 +338,7 @@ export const zDeviceUpdate = z.object({
     is_allowed: z.optional(z.boolean()),
     is_gateway: z.optional(z.boolean()),
     absence_detection_enabled: z.optional(z.boolean()),
+    archive_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -1263,6 +1301,7 @@ export const zDeviceUpdateWritable = z.object({
     is_allowed: z.optional(z.boolean()),
     is_gateway: z.optional(z.boolean()),
     absence_detection_enabled: z.optional(z.boolean()),
+    archive_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -2146,6 +2185,55 @@ export const zPostprocessingBlueprintsVersionsRetrieveData = z.object({
 });
 
 export const zPostprocessingBlueprintsVersionsRetrieveResponse = zBlueprintVersion;
+
+export const zReadingsArchiveMeshesRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        start: z.optional(z.iso.date()),
+        stop: z.optional(z.iso.date())
+    }))
+});
+
+export const zReadingsArchiveMeshesRetrieveResponse = zArchiveManifest;
+
+export const zReadingsArchiveMeshesCredentialsCreateData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReadingsArchiveMeshesCredentialsCreateResponse = zArchiveCredentials;
+
+export const zReadingsArchiveMeshesPartitionsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        day: z.string(),
+        hour: z.int(),
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReadingsArchiveMeshesZipRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        start: z.optional(z.iso.date()),
+        stop: z.optional(z.iso.date())
+    }))
+});
+
+/**
+ * The hourly Parquet files of the range, as one zip.
+ */
+export const zReadingsArchiveMeshesZipRetrieveResponse = z.string();
 
 export const zReadingsDevicesRetrieveData = z.object({
     body: z.optional(z.never()),

@@ -21,6 +21,11 @@ export type DeviceProps = {
   postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
+  /** Opt-in to the Parquet archive; applies only while the mesh's owner is an operator. */
+  archiveEnabled?: boolean;
+  /** Who switched it on and when; cleared when it is switched off. */
+  archiveEnabledAt?: string | null;
+  archiveEnabledBy?: string | null;
   lastSeen: string | null;
   createdAt: string;
   updatedAt: string;
@@ -65,6 +70,9 @@ export class Device implements DeviceProps {
   postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
+  archiveEnabled: boolean;
+  archiveEnabledAt: string | null;
+  archiveEnabledBy: string | null;
   lastSeen: string | null;
   readonly createdAt: string;
   updatedAt: string;
@@ -99,6 +107,9 @@ export class Device implements DeviceProps {
     this.postprocessingCount = props.postprocessingCount;
     this.readingIntervalSeconds = props.readingIntervalSeconds;
     this.publishIntervalSeconds = props.publishIntervalSeconds;
+    this.archiveEnabled = props.archiveEnabled ?? false;
+    this.archiveEnabledAt = props.archiveEnabledAt ?? null;
+    this.archiveEnabledBy = props.archiveEnabledBy ?? null;
     this.lastSeen = props.lastSeen;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
@@ -106,6 +117,14 @@ export class Device implements DeviceProps {
 
   hasPostprocessing(): boolean {
     return this.postprocessingCount > 0;
+  }
+
+  /** Switches the archive on or off, recording who switched it on. */
+  setArchive(enabled: boolean, by: string, at: string): void {
+    if (enabled === this.archiveEnabled) return;
+    this.archiveEnabled = enabled;
+    this.archiveEnabledAt = enabled ? at : null;
+    this.archiveEnabledBy = enabled ? by : null;
   }
 }
 

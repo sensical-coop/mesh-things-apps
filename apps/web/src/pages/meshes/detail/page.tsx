@@ -8,13 +8,7 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@mtt/ui/components/ui/dropdown-menu";
-import { RiAddLine, RiArrowDownSLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
@@ -39,6 +33,7 @@ import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
@@ -129,23 +124,21 @@ export function MeshDetailPage(): ReactElement {
             <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
               {formatMessage({ id: "page.meshes.detail.registerGateway", defaultMessage: "Register gateway" })}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button type="button" variant="secondary" size="small" trailingIcon={RiArrowDownSLine}>
-                    {formatMessage({ id: "page.meshes.detail.actions.label", defaultMessage: "Actions" })}
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                  {formatMessage({ id: "page.meshes.detail.actions.edit", defaultMessage: "Edit mesh" })}
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
-                  {formatMessage({ id: "page.meshes.detail.actions.delete", defaultMessage: "Delete" })}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SettingsButton
+              size="small"
+              label={formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit mesh" })}
+              onClick={() => setEditOpen(true)}
+            />
+            <Button
+              type="button"
+              size="small"
+              variant="danger"
+              iconOnly
+              leadingIcon={RiDeleteBinLine}
+              aria-label={formatMessage({ id: "page.meshes.list.delete", defaultMessage: "Delete mesh" })}
+              title={formatMessage({ id: "page.meshes.list.delete", defaultMessage: "Delete mesh" })}
+              onClick={() => setDeleteOpen(true)}
+            />
           </div>
         ) : null}
       </div>
@@ -339,14 +332,10 @@ export function MeshDetailPage(): ReactElement {
                               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
                             </ButtonLink>
                             {canEdit ? (
-                              <Button
-                                type="button"
-                                size="xs"
-                                variant="secondary"
+                              <SettingsButton
+                                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
                                 onClick={() => setSettingsDevice(device)}
-                              >
-                                {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-                              </Button>
+                              />
                             ) : null}
                           </div>
                         </td>
