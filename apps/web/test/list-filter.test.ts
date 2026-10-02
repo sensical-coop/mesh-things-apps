@@ -28,3 +28,15 @@ test("listQueryBoolean reduces a filter to the bare boolean the API takes", () =
   assert.equal(listQueryBoolean("has_postprocessing=is_any_of%3Atrue%7Cfalse", "has_postprocessing"), undefined);
   assert.equal(listQueryBoolean("label=contains%3Ax", "has_postprocessing"), undefined);
 });
+
+test("matchesListQuery matches a multi-valued field as a set", () => {
+  const variants: Record<string, string[]> = { telemetry_variant: ["env", "air"] };
+  const getList = (field: string) => variants[field];
+  assert.equal(matchesListQuery(getList, "telemetry_variant=has_any_of:air|power"), true);
+  assert.equal(matchesListQuery(getList, "telemetry_variant=has_all_of:env|air"), true);
+  assert.equal(matchesListQuery(getList, "telemetry_variant=has_all_of:env|power"), false);
+  assert.equal(matchesListQuery(getList, "telemetry_variant=has_none_of:env"), false);
+  assert.equal(matchesListQuery(getList, "telemetry_variant=has_none_of:power"), true);
+  assert.equal(matchesListQuery(getList, "telemetry_variant=empty:"), false);
+  assert.equal(matchesListQuery(() => [], "telemetry_variant=empty:"), true);
+});

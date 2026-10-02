@@ -16,11 +16,18 @@ export function parseListQuery(queryString: string): Filter[] {
   return filters;
 }
 
-/** Whether a row passes every filter. `get` returns the row's text for a field, or undefined to ignore it. */
-export function matchesListQuery(get: (field: string) => string | undefined, queryString: string): boolean {
+/**
+ * Whether a row passes every filter. `get` returns the row's text for a field, a list for a
+ * multi-valued field (matched with `has_any_of`, `has_all_of`, `has_none_of`), or undefined to ignore it.
+ */
+export function matchesListQuery(
+  get: (field: string) => string | readonly string[] | undefined,
+  queryString: string,
+): boolean {
   return parseListQuery(queryString).every((filter) => {
     const value = get(filter.field);
-    return value === undefined || matchCell(value, filter);
+    if (value === undefined) return true;
+    return typeof value === "string" ? matchCell(value, filter) : matchList(value, filter);
   });
 }
 
@@ -30,6 +37,28 @@ export function listQueryBoolean(queryString: string, field: string): boolean | 
   if (!filter) return undefined;
   const passing = ["true", "false"].filter((value) => matchCell(value, filter));
   return passing.length === 1 ? passing[0] === "true" : undefined;
+}
+
+function matchList(values: readonly string[], filter: Filter): boolean {
+  const have = new Set(values.map((value) => value.toLowerCase()));
+  const needles = filter.values.map((needle) => needle.toLowerCase());
+  switch (filter.operator) {
+    case "is":
+    case "is_any_of":
+    case "has_any_of":
+      return needles.some((needle) => have.has(needle));
+    case "has_all_of":
+      return needles.every((needle) => have.has(needle));
+    case "is_not_any_of":
+    case "has_none_of":
+      return !needles.some((needle) => have.has(needle));
+    case "empty":
+      return have.size === 0;
+    case "not_empty":
+      return have.size > 0;
+    default:
+      return true;
+  }
 }
 
 function matchCell(value: string, filter: Filter): boolean {

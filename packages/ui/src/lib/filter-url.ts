@@ -14,7 +14,6 @@ export type ParsedFilterValue = {
 export function toWireOperator(operator: string): string {
   switch (operator) {
     case "is_none_of":
-    case "has_none_of":
       return "is_not_any_of";
     case "eq":
       return "equals";
@@ -22,10 +21,8 @@ export function toWireOperator(operator: string): string {
       return "greater_than";
     case "lt":
       return "less_than";
-    case "has_any_of":
-    case "has_all_of":
-      // ponytail: backend has no AND-of-values; drop to any-of until it does
-      return "is_any_of";
+    // Multiselect fields (a device's telemetry variants) keep their set operators:
+    // the API and the web's row filter both read has_any_of / has_all_of / has_none_of.
     default:
       return operator;
   }

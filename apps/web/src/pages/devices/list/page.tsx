@@ -28,6 +28,7 @@ import { deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
+import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { canArchiveDevice } from "@/features/archive/model";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
@@ -50,6 +51,7 @@ export function DevicesPage(): ReactElement {
     () => (meshes.data ?? []).map((mesh) => ({ value: mesh.id, label: meshTitle(mesh) })),
     [meshes.data],
   );
+  const variantOptions = useTelemetryVariantOptions();
   const specs = useMemo<FilterSpec[]>(
     () => [
       {
@@ -119,6 +121,17 @@ export function DevicesPage(): ReactElement {
           },
         ],
       },
+      ...(variantOptions.length
+        ? [
+            {
+              key: "telemetry_variant",
+              urlKey: "telemetry",
+              label: formatMessage({ id: "page.devices.list.filters.telemetry", defaultMessage: "Telemetry" }),
+              type: "multiselect" as const,
+              options: variantOptions,
+            },
+          ]
+        : []),
       // Only the owner (or a superuser) sees a device's setting, and only operators store devices.
       ...(isOperator
         ? [
@@ -135,7 +148,7 @@ export function DevicesPage(): ReactElement {
           ]
         : []),
     ],
-    [meshOptions, formatMessage, isOperator],
+    [meshOptions, variantOptions, formatMessage, isOperator],
   );
   const filters = useSmartFilters({ specs });
   // The API only takes bare values, and rows don't say whether a blueprint is attached,
@@ -168,6 +181,8 @@ export function DevicesPage(): ReactElement {
           return String(row.is_gateway);
         case "is_allowed":
           return String(row.is_allowed);
+        case "telemetry_variant":
+          return row.telemetry_variant_ids;
         // Devices whose setting the API doesn't send match neither On nor Off.
         case "archive_enabled":
           return row.archive_enabled === undefined ? "" : String(row.archive_enabled);

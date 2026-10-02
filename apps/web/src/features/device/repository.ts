@@ -11,6 +11,7 @@ import {
   devicesRetrieveQueryKey,
   devicesTelemetryVariantsListOptions,
   devicesUpdateMutation,
+  telemetryVariantsListOptions,
 } from "@mtt/contracts/query";
 
 export const deviceRepository = {
@@ -26,4 +27,6 @@ export const deviceRepository = {
   measurementKey: devicesMeasurementsRetrieveQueryKey,
   measurementUpdate: devicesMeasurementsUpdateMutation,
   telemetryVariants: devicesTelemetryVariantsListOptions,
+  /** Every telemetry variant any device has reported. Needs a signed-in, verified owner. */
+  variantCatalog: telemetryVariantsListOptions,
 };
