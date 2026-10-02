@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
-import { deviceRoleLabel, deviceTitle, parseCoordinate, roundCoordinate } from "../src/features/device/model.ts";
+import {
+  deviceRoleLabel,
+  deviceTitle,
+  formatNodeId,
+  parseCoordinate,
+  parseNodeId,
+  roundCoordinate,
+} from "../src/features/device/model.ts";
 
 const device = {
   uuid: "33333333-3333-4333-8333-333333333333",
@@ -61,4 +68,28 @@ test("parseCoordinate rejects garbage and out-of-range values", () => {
 test("roundCoordinate trims to six decimals", () => {
   assert.equal(roundCoordinate(41.38512345), 41.385123);
   assert.equal(roundCoordinate(-2.1700004), -2.17);
+});
+
+test("parseNodeId reads decimal and hex, with or without the !", () => {
+  assert.equal(parseNodeId("2130636288", "decimal"), 2130636288);
+  assert.equal(parseNodeId("!7efeee00", "hex"), 2130636288);
+  assert.equal(parseNodeId("7EFEEE00", "hex"), 2130636288);
+  assert.equal(parseNodeId("0x7efeee00", "hex"), 2130636288);
+  assert.equal(parseNodeId(" !ffffffff ", "hex"), 4294967295);
+});
+
+test("parseNodeId rejects empty, malformed, and out-of-range ids", () => {
+  assert.equal(parseNodeId("", "decimal"), null);
+  assert.equal(parseNodeId("!", "hex"), null);
+  assert.equal(parseNodeId("!7efeee0g", "hex"), null);
+  assert.equal(parseNodeId("!100000000", "hex"), null);
+  assert.equal(parseNodeId("4294967296", "decimal"), null);
+  assert.equal(parseNodeId("12.5", "decimal"), null);
+  assert.equal(parseNodeId("-1", "decimal"), null);
+});
+
+test("formatNodeId writes Meshtastic's !hex form", () => {
+  assert.equal(formatNodeId(2130636288, "hex"), "!7efeee00");
+  assert.equal(formatNodeId(255, "hex"), "!000000ff");
+  assert.equal(formatNodeId(255, "decimal"), "255");
 });

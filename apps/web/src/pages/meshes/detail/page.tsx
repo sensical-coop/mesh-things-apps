@@ -16,7 +16,6 @@ import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
@@ -28,6 +27,7 @@ import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
+import { NodeIdField } from "@/features/device/ui/node-id-field";
 import { useFormatters } from "@/hooks/use-formatters";
 import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
@@ -414,10 +414,21 @@ function RegisterDeviceDialog({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
+    // Empty when the node id doesn't parse; NodeIdField always posts decimal.
+    const nodeId = String(form.get("node_id") ?? "");
+    if (nodeId === "") {
+      setErrors({
+        node_id: formatMessage({
+          id: "page.meshes.detail.registerGatewayDialog.nodeIdInvalid",
+          defaultMessage: "Enter a valid node ID.",
+        }),
+      });
+      return;
+    }
     const parsed = zDevicesCreateData.safeParse({
       body: {
         mesh_id: meshId,
-        node_id: Number(form.get("node_id")),
+        node_id: Number(nodeId),
         is_gateway: true,
         label: label === "" ? null : label,
       },
@@ -449,18 +460,7 @@ function RegisterDeviceDialog({
           >
             <Input id="device-label" name="label" autoComplete="off" />
           </FormField>
-          <FormField
-            id="device-node"
-            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node ID" })}
-            hint={formatMessage({
-              id: "page.meshes.detail.registerGatewayDialog.nodeIdHint",
-              defaultMessage:
-                "The decimal node number (i.e. the version without '!'). Example: 2130636288.",
-            })}
-            error={errors.node_id}
-          >
-            <FormNumber id="device-node" name="node_id" min={0} max={4294967295} step={1} required />
-          </FormField>
+          <NodeIdField id="device-node" name="node_id" error={errors.node_id} />
         </FieldGroup>
         {create.error ? (
           <StatusCopy>
