@@ -5,6 +5,12 @@ export type MeshProps = {
   label: string | null;
   ownerId: string;
   isPublic?: boolean;
+  /** Null when the traffic arrives on this instance's own broker. */
+  sourceId?: string | null;
+  /** Mesh terms on the default broker: version accepted, when they lapse, and since when paused. */
+  termsAcceptedVersion?: string | null;
+  termsExpiresAt?: string | null;
+  pausedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -15,6 +21,7 @@ export type MeshCreate = {
   label?: string | null;
   ownerId: string;
   isPublic?: boolean;
+  sourceId?: string | null;
 };
 
 /** Public list row: PSK stays off this shape. */
@@ -27,6 +34,10 @@ export class Mesh implements MeshProps {
   label: string | null;
   readonly ownerId: string;
   isPublic: boolean;
+  sourceId: string | null;
+  termsAcceptedVersion: string | null;
+  termsExpiresAt: string | null;
+  pausedAt: string | null;
   readonly createdAt: string;
   updatedAt: string;
 
@@ -39,6 +50,10 @@ export class Mesh implements MeshProps {
     this.label = props.label;
     this.ownerId = props.ownerId;
     this.isPublic = props.isPublic ?? false;
+    this.sourceId = props.sourceId ?? null;
+    this.termsAcceptedVersion = props.termsAcceptedVersion ?? null;
+    this.termsExpiresAt = props.termsExpiresAt ?? null;
+    this.pausedAt = props.pausedAt ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }

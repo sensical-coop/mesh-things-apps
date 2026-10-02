@@ -9,13 +9,31 @@ import { MemoryDevices } from "./features/device/repository";
 import { MemoryMeshes } from "./features/mesh/repository";
 import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
+import { MemorySources } from "./features/source/repository";
+import {
+  DATA_RETENTION_DAYS,
+  TERMS_ENFORCED,
+  TERMS_VERSIONS,
+  type TermsAcceptance,
+} from "./features/terms/terms";
+import type { OperatorRequestRow } from "./features/operator-request/repository";
+import type { DataDeletionRow } from "./features/data-deletion/repository";
 
 export const OWNER_ID = "22222222-2222-4222-8222-222222222222";
 export const OWNER_BO_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 export const OWNER_ADMIN_ID = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 export const OWNER_STAFF_ID = "12121212-1212-4121-8121-121212121212";
+export const OWNER_OPERATOR_ID = "14141414-1414-4141-8141-141414141414";
 export const MESH_HILL_ID = "11111111-1111-4111-8111-111111111111";
 export const MESH_RIVER_ID = "55555555-5555-4555-8555-555555555555";
+export const MESH_BRIDGED_ID = "15151515-1515-4151-8151-151515151515";
+export const SOURCE_PUBLIC_ID = "16161616-1616-4161-8161-161616161616";
+export const OPERATOR_REQUEST_BO_ID = "17171717-1717-4171-8171-171717171717";
+/** A mesh deleted before the seed: its readings are what the seeded deletions remove. */
+export const MESH_GONE_ID = "18181818-1818-4181-8181-181818181818";
+/** One mesh per Status column state, so the colours can be checked at a glance. */
+export const SOURCE_OFFLINE_ID = "20202020-2020-4202-8202-202020202020";
+export const SOURCE_LAPSED_ID = "21212121-2121-4212-8212-212121212121";
 export const DEVICE_GW_ID = "33333333-3333-4333-8333-333333333333";
 export const DEVICE_NODE_ID = "44444444-4444-4444-8444-444444444444";
 export const DEVICE_RIVER_GW_ID = "13131313-1313-4131-8131-131313131313";
@@ -35,8 +53,45 @@ export const OWNER_ADMIN_EMAIL = "admin@sensical.test";
 export const OWNER_ADMIN_PASSWORD = "mesh-admin-12";
 export const OWNER_STAFF_EMAIL = "staff@sensical.test";
 export const OWNER_STAFF_PASSWORD = "mesh-staff-12";
+export const OWNER_OPERATOR_EMAIL = "operator@sensical.test";
+export const OWNER_OPERATOR_PASSWORD = "mesh-operator-12";
 
 const t0 = "2026-01-01T00:00:00.000Z";
+
+function inDays(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString();
+}
+
+function deletion(
+  id: string,
+  meshId: string,
+  reason: DataDeletionRow["reason"],
+  status: DataDeletionRow["status"],
+  requestedById: string | null,
+  requestedDays: number,
+  deleteAfterDays: number,
+  extra: { sourceId?: string; dataUntil?: number; attempts?: number; lastError?: string; completed?: number } = {},
+): DataDeletionRow {
+  return {
+    id,
+    meshId,
+    sourceId: extra.sourceId ?? null,
+    reason,
+    requestedById,
+    requestedAt: inDays(requestedDays),
+    deleteAfter: inDays(deleteAfterDays),
+    dataUntil: extra.dataUntil === undefined ? null : inDays(extra.dataUntil),
+    status,
+    attempts: extra.attempts ?? (status === "done" ? 1 : 0),
+    lastError: extra.lastError ?? "",
+    completedAt: extra.completed === undefined ? null : inDays(extra.completed),
+  };
+}
+
+/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
+function daysFromNow(days: number): string | null {
+  return DATA_RETENTION_DAYS ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
+}
 
 export type { BlueprintRow };
 
@@ -100,6 +155,12 @@ export type DeviceMeasurementRange = {
 
 export type Store = {
   meshes: MemoryMeshes;
+  sources: MemorySources;
+  termsAcceptances: TermsAcceptance[];
+  dataDeletions: DataDeletionRow[];
+  /** Account terms version per owner; none for accounts made outside signup (admin, staff). */
+  accountTerms: Map<string, string>;
+  operatorRequests: OperatorRequestRow[];
   devices: MemoryDevices;
   measurements: MemoryMeasurements;
   readings: MemoryReadings;
@@ -120,6 +181,7 @@ export type Store = {
 export type StoreOwners = {
   adaId?: string;
   boId?: string;
+  operatorId?: string;
   actors?: Map<string, Actor>;
   verifications?: Map<string, OwnerVerification>;
 };
@@ -127,6 +189,7 @@ export type StoreOwners = {
 export function createStore(owners: StoreOwners = {}): Store {
   const adaId = owners.adaId ?? OWNER_ID;
   const boId = owners.boId ?? OWNER_BO_ID;
+  const operatorId = owners.operatorId ?? OWNER_OPERATOR_ID;
   const actors = owners.actors ?? new Map<string, Actor>();
   const verifications =
     owners.verifications ??
@@ -189,6 +252,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       pskB64: "c2VjcmV0SGlsbA==",
       label: "Hill",
       ownerId: adaId,
+      termsAcceptedVersion: TERMS_VERSIONS.mesh,
+      termsExpiresAt: daysFromNow(300),
       createdAt: t0,
       updatedAt: t0,
     }),
@@ -201,12 +266,83 @@ export function createStore(owners: StoreOwners = {}): Store {
       pskB64: "c2VjcmV0Uml2ZXI=",
       label: "River",
       ownerId: boId,
+      // Lapsed: River stores no new data until Bo renews its terms.
+      termsAcceptedVersion: TERMS_VERSIONS.mesh,
+      termsExpiresAt: daysFromNow(-5),
+      pausedAt: daysFromNow(-5),
       // Public so the read-only view of someone else's mesh shows up locally.
       isPublic: true,
       createdAt: t0,
       updatedAt: t0,
     }),
   );
+  const sources = new MemorySources();
+  sources.items.set(SOURCE_PUBLIC_ID, {
+    id: SOURCE_PUBLIC_ID,
+    label: "Meshtastic public EU",
+    server: "mqtt.meshtastic.org:1883",
+    ssl: false,
+    username: "meshdev",
+    password: "large4cats",
+    topic: "msh/EU_868/2/e/Valley/#",
+    qos: 1,
+    createdById: operatorId,
+    termsAcceptedVersion: TERMS_VERSIONS.source,
+    // Lapses soon, so the Sources tab offers renewal.
+    termsExpiresAt: daysFromNow(10),
+    pausedAt: null,
+    createdAt: t0,
+    updatedAt: t0,
+  });
+  meshes.items.set(
+    MESH_BRIDGED_ID,
+    new Mesh({
+      id: MESH_BRIDGED_ID,
+      channelId: "Valley",
+      pskB64: "c2VjcmV0VmFsbGV5",
+      label: "Valley",
+      ownerId: operatorId,
+      sourceId: SOURCE_PUBLIC_ID,
+      createdAt: t0,
+      updatedAt: t0,
+    }),
+  );
+  // Status states: two more sources for the operator (disconnected, lapsed) and a mesh on each,
+  // and Ada's meshes that renew soon, were never accepted, and were accepted under older terms.
+  for (const [id, label, server, pausedAt] of [
+    [SOURCE_OFFLINE_ID, "Offline test", "offline.example.org:1883", null],
+    [SOURCE_LAPSED_ID, "Lapsed source", "mqtt.example.org:1883", daysFromNow(-3)],
+  ] as const) {
+    sources.items.set(id, {
+      id,
+      label,
+      server,
+      ssl: true,
+      username: null,
+      password: null,
+      topic: "msh/EU_868/2/e/Test/#",
+      qos: 1,
+      createdById: operatorId,
+      termsAcceptedVersion: TERMS_VERSIONS.source,
+      termsExpiresAt: pausedAt ? daysFromNow(-3) : daysFromNow(200),
+      pausedAt,
+      createdAt: t0,
+      updatedAt: t0,
+    });
+  }
+  const statusMeshes: [string, string, string, Partial<ConstructorParameters<typeof Mesh>[0]>][] = [
+    ["22222222-3333-4333-8333-000000000001", "Brook", operatorId, { sourceId: SOURCE_OFFLINE_ID }],
+    ["22222222-3333-4333-8333-000000000002", "Creek", operatorId, { sourceId: SOURCE_LAPSED_ID }],
+    ["22222222-3333-4333-8333-000000000003", "Garden", adaId, { termsAcceptedVersion: TERMS_VERSIONS.mesh, termsExpiresAt: daysFromNow(10) }],
+    ["22222222-3333-4333-8333-000000000004", "Orchard", adaId, {}],
+    ["22222222-3333-4333-8333-000000000005", "Meadow", adaId, { termsAcceptedVersion: "meshes-2025-01", termsExpiresAt: daysFromNow(120) }],
+  ];
+  for (const [id, label, ownerId, extra] of statusMeshes) {
+    meshes.items.set(
+      id,
+      new Mesh({ id, channelId: label, pskB64: "c2VjcmV0", label, ownerId, createdAt: t0, updatedAt: t0, ...extra }),
+    );
+  }
   const devices = new MemoryDevices();
   devices.items.set(
     DEVICE_GW_ID,
@@ -292,6 +428,43 @@ export function createStore(owners: StoreOwners = {}): Store {
   const measurements = new MemoryMeasurements(meas);
   return {
     meshes,
+    sources,
+    termsAcceptances: [],
+    // One of each state for the superuser's Deletions page. River's matches Bo's lapsed terms.
+    dataDeletions: [
+      // With terms off the API resumes River and cancels its lapse on the next lifecycle pass.
+      deletion("19191919-1919-4191-8191-000000000001", MESH_RIVER_ID, "terms_lapsed", TERMS_ENFORCED ? "pending" : "cancelled", null, -5, 25, { dataUntil: -5, ...(TERMS_ENFORCED ? {} : { completed: -1 }) }),
+      deletion("19191919-1919-4191-8191-000000000002", MESH_GONE_ID, "mesh_deleted", "pending", adaId, -20, 10),
+      deletion("19191919-1919-4191-8191-000000000003", MESH_GONE_ID, "source_detached", "pending", operatorId, -40, -10, {
+        sourceId: SOURCE_PUBLIC_ID,
+        dataUntil: -40,
+        attempts: 3,
+        lastError: "InfluxDB delete failed: connection refused",
+      }),
+      deletion("19191919-1919-4191-8191-000000000004", MESH_GONE_ID, "mesh_deleted", "done", adaId, -60, -30, { completed: -30 }),
+      deletion("19191919-1919-4191-8191-000000000005", MESH_BRIDGED_ID, "source_detached", "cancelled", operatorId, -15, 15, {
+        sourceId: SOURCE_PUBLIC_ID,
+        dataUntil: -15,
+        completed: -12,
+      }),
+    ],
+    accountTerms: new Map<string, string>([
+      [adaId, TERMS_VERSIONS.account],
+      [boId, TERMS_VERSIONS.account],
+      [operatorId, TERMS_VERSIONS.account],
+    ]),
+    operatorRequests: [
+      {
+        id: OPERATOR_REQUEST_BO_ID,
+        ownerId: boId,
+        reason: "I run the River community mesh and want to bridge our channel from the public broker.",
+        status: "pending",
+        decidedById: null,
+        decisionNote: "",
+        decidedAt: null,
+        createdAt: t0,
+      },
+    ],
     devices,
     measurements,
     readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID]), t0),

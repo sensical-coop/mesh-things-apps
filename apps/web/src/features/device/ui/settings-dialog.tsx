@@ -10,6 +10,7 @@ import { FormNumber } from "@/components/form/form-number";
 import { FormSelect } from "@/components/form/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
+import { formLevelMessage, readApiError } from "@/lib/api-errors";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
@@ -23,13 +24,14 @@ type IntervalSecondsFieldProps = {
   name: string;
   label: string;
   defaultValue: number | null;
+  error?: string;
 };
 
-function IntervalSecondsField({ id, name, label, defaultValue }: IntervalSecondsFieldProps): ReactElement {
+function IntervalSecondsField({ id, name, label, defaultValue, error }: IntervalSecondsFieldProps): ReactElement {
   const { formatSecondsAsHms } = useFormatters();
   const [seconds, setSeconds] = useState(defaultValue);
   return (
-    <FormField id={id} label={label}>
+    <FormField id={id} label={label} error={error}>
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <FormNumber id={id} name={name} min={0} defaultValue={defaultValue ?? undefined} onValueChange={setSeconds} />
@@ -57,6 +59,7 @@ export function DeviceSettingsDialog({
   const queryClient = useQueryClient();
   const blueprints = useQuery(blueprintRepository.list());
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const update = useMutation({
     ...deviceRepository.update(),
     onSuccess: async () => {
@@ -67,6 +70,7 @@ export function DeviceSettingsDialog({
       await onSaved?.();
       onClose();
     },
+    onError: (failure) => setFieldErrors(readApiError(failure).fields),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -84,6 +88,7 @@ export function DeviceSettingsDialog({
       return;
     }
     setError(null);
+    setFieldErrors({});
     const blueprint = String(form.get("postprocessing_blueprint_id") ?? "");
     const blueprintId = blueprint === "__none__" ? "" : blueprint;
     update.mutate({
@@ -157,6 +162,7 @@ export function DeviceSettingsDialog({
               defaultMessage: "Reading interval (s)",
             })}
             defaultValue={device.reading_interval_seconds}
+            error={fieldErrors.reading_interval_seconds}
           />
           <IntervalSecondsField
             id="device-publish"
@@ -166,10 +172,12 @@ export function DeviceSettingsDialog({
               defaultMessage: "Publish interval (s)",
             })}
             defaultValue={device.publish_interval_seconds}
+            error={fieldErrors.publish_interval_seconds}
           />
           <FormField
             id="device-blueprint"
             label={formatMessage({ id: "feature.device.settingsDialog.blueprint", defaultMessage: "Blueprint" })}
+            error={fieldErrors.postprocessing_blueprint_id}
           >
             <FormSelect
               id="device-blueprint"
@@ -195,6 +203,7 @@ export function DeviceSettingsDialog({
           <FormField
             id="device-lat"
             label={formatMessage({ id: "feature.device.settingsDialog.latitude", defaultMessage: "Latitude" })}
+            error={fieldErrors.latitude}
           >
             <FormNumber
               id="device-lat"
@@ -208,6 +217,7 @@ export function DeviceSettingsDialog({
           <FormField
             id="device-lon"
             label={formatMessage({ id: "feature.device.settingsDialog.longitude", defaultMessage: "Longitude" })}
+            error={fieldErrors.longitude}
           >
             <FormNumber
               id="device-lon"
@@ -226,6 +236,7 @@ export function DeviceSettingsDialog({
                 id: "feature.device.settingsDialog.updateFailed",
                 defaultMessage: "Update failed.",
               })}
+            {!error && formLevelMessage(update.error) ? ` ${formLevelMessage(update.error)}` : ""}
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>

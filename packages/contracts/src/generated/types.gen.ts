@@ -5,6 +5,23 @@ export type ClientOptions = {
 };
 
 /**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type AccountTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
  * One entry of the postprocessing function registry.
  */
 export type Algorithm = {
@@ -29,6 +46,34 @@ export type ChannelQuality = {
     expected: number | null;
     largest_gap_seconds: number | null;
 };
+
+export type DataDeletion = {
+    readonly id: string;
+    readonly mesh_id: string;
+    readonly source_id: string | null;
+    reason: ReasonEnum;
+    readonly requested_by_id: string | null;
+    readonly requested_at: string;
+    readonly delete_after: string;
+    readonly data_until: string | null;
+    status: DataDeletionStatusEnum;
+    readonly attempts: number;
+    readonly last_error: string;
+    readonly completed_at: string | null;
+};
+
+/**
+ * * `pending` - Pending
+ * * `cancelled` - Cancelled
+ * * `done` - Done
+ */
+export type DataDeletionStatusEnum = 'pending' | 'cancelled' | 'done';
+
+/**
+ * * `approve` - approve
+ * * `reject` - reject
+ */
+export type DecisionEnum = 'approve' | 'reject';
 
 /**
  * The single-message body used by the routes that return no resource.
@@ -249,6 +294,22 @@ export type Mesh = {
      * When true, any verified owner may read this mesh, its devices and their readings. Writes stay with the owner.
      */
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
+    /**
+     * Mesh terms version accepted. Null on a source, whose terms apply instead.
+     */
+    readonly terms_accepted_version?: string | null;
+    /**
+     * When the mesh terms acceptance lapses. Null for no time limit, or on a source.
+     */
+    readonly terms_expires_at?: string | null;
+    /**
+     * Set while its mesh terms have lapsed; the mesh stores no new data.
+     */
+    readonly paused_at?: string | null;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -263,15 +324,27 @@ export type MeshCreate = {
      */
     psk_b64: string;
     label?: string | null;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export type MeshUpdate = {
     channel_id?: string;
     label?: string | null;
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
 };
 
 export type MetricsResponse = {
@@ -284,6 +357,53 @@ export type MetricsResponse = {
 export type NullEnum = unknown;
 
 /**
+ * An operator request as its requester sees it.
+ */
+export type OperatorRequest = {
+    readonly id: string;
+    readonly reason: string;
+    status: OperatorRequestStatusEnum;
+    readonly decision_note: string;
+    readonly decided_at: string | null;
+    readonly created_at: string;
+};
+
+/**
+ * An operator request as a superuser sees it.
+ */
+export type OperatorRequestAdmin = {
+    readonly id: string;
+    readonly reason: string;
+    status: OperatorRequestStatusEnum;
+    readonly decision_note: string;
+    readonly decided_at: string | null;
+    readonly created_at: string;
+    readonly owner_id: string;
+    readonly owner_name: string;
+    readonly owner_email: string;
+    readonly decided_by_id: string | null;
+};
+
+export type OperatorRequestCreate = {
+    /**
+     * Why the operator role is needed. Shown to superusers.
+     */
+    reason: string;
+};
+
+export type OperatorRequestDecision = {
+    decision: DecisionEnum;
+    note?: string;
+};
+
+/**
+ * * `pending` - Pending
+ * * `approved` - Approved
+ * * `rejected` - Rejected
+ */
+export type OperatorRequestStatusEnum = 'pending' | 'approved' | 'rejected';
+
+/**
  * POST /owners/me/change-password input
  */
 export type OwnerChangePassword = {
@@ -291,6 +411,9 @@ export type OwnerChangePassword = {
     new_password: string;
 };
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
 export type OwnerCreate = {
     name: string;
     email: string;
@@ -312,9 +435,6 @@ export type OwnerLogin = {
 
 /**
  * An owner's own record together with the devices they may access.
- *
- * Describes the body the profile and login routes build by hand; nothing
- * serializes through it.
  */
 export type OwnerProfile = {
     readonly id: string;
@@ -327,6 +447,7 @@ export type OwnerProfile = {
      */
     readonly is_superuser: boolean;
     readonly is_staff: boolean;
+    role: RoleEnum;
     readonly is_active: boolean;
     readonly email_verified_at: string | null;
     readonly email_verification_sent_at: string | null;
@@ -335,7 +456,11 @@ export type OwnerProfile = {
     /**
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
-    readonly alarm_email_cooldown_seconds?: number | null;
+    readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Version of the account terms last accepted. Null if never accepted. They never lapse.
+     */
+    readonly terms_accepted_version: string | null;
     readonly devices: Array<DeviceRead>;
 };
 
@@ -365,6 +490,7 @@ export type OwnerRead = {
      */
     readonly is_superuser: boolean;
     readonly is_staff: boolean;
+    role: RoleEnum;
     readonly is_active: boolean;
     readonly email_verified_at: string | null;
     readonly email_verification_sent_at: string | null;
@@ -373,7 +499,11 @@ export type OwnerRead = {
     /**
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
-    readonly alarm_email_cooldown_seconds?: number | null;
+    readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Version of the account terms last accepted. Null if never accepted. They never lapse.
+     */
+    readonly terms_accepted_version: string | null;
 };
 
 /**
@@ -388,6 +518,10 @@ export type OwnerRequestPasswordReset = {
  */
 export type OwnerResetPassword = {
     new_password: string;
+};
+
+export type OwnerRole = {
+    role: RoleEnum;
 };
 
 export type OwnerUpdate = {
@@ -413,6 +547,7 @@ export type OwnerWithApiKey = {
      */
     readonly is_superuser: boolean;
     readonly is_staff: boolean;
+    role: RoleEnum;
     readonly is_active: boolean;
     readonly email_verified_at: string | null;
     readonly email_verification_sent_at: string | null;
@@ -421,7 +556,11 @@ export type OwnerWithApiKey = {
     /**
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
-    readonly alarm_email_cooldown_seconds?: number | null;
+    readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Version of the account terms last accepted. Null if never accepted. They never lapse.
+     */
+    readonly terms_accepted_version: string | null;
     readonly api_key: string;
 };
 
@@ -456,6 +595,12 @@ export type PostprocessingStep = {
 };
 
 /**
+ * * `0` - 0
+ * * `1` - 1
+ */
+export type QosEnum = 0 | 1;
+
+/**
  * * `physical_property` - Physical property
  * * `concentration` - Concentration
  * * `count` - Count
@@ -471,9 +616,135 @@ export type ReadingsResponse = {
     series: Array<Series>;
 };
 
+/**
+ * * `mesh_deleted` - Mesh deleted
+ * * `source_detached` - Mesh moved off its source
+ * * `terms_lapsed` - Source terms lapsed
+ */
+export type ReasonEnum = 'mesh_deleted' | 'source_detached' | 'terms_lapsed';
+
+/**
+ * * `member` - Member
+ * * `operator` - Operator
+ */
+export type RoleEnum = 'member' | 'operator';
+
 export type Series = {
     channel: string;
     points: Array<Point>;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SourceCreate = {
+    readonly id: string;
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+/**
+ * A source. The remote password is accepted but never returned.
+ */
+export type SourceRead = {
+    readonly id: string;
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+    /**
+     * The bridge's connection status, `paused`, or unknown when it cannot be checked.
+     */
+    readonly status: string;
+    /**
+     * When the source was paused because its terms lapsed.
+     */
+    readonly paused_at: string | null;
+    readonly terms_accepted_version: string | null;
+    /**
+     * When the terms acceptance lapses. Null when data is kept without a time limit.
+     */
+    readonly terms_expires_at: string | null;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SourceTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type MeshTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * Any subset of the create fields.
+ */
+export type SourceUpdate = {
+    readonly id: string;
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server?: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic?: string;
+    qos?: QosEnum;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
 };
 
 /**
@@ -518,6 +789,29 @@ export type TelemetryVariantUpdate = {
     name?: string | null;
     description?: string | null;
     default_reading_interval_seconds?: number | null;
+};
+
+export type Terms = {
+    version: string;
+    locale: string;
+    title: string;
+    description: string;
+    statements: Array<TermsStatement>;
+    /**
+     * Includes how long data is kept, from the server's retention settings.
+     */
+    footnote: string;
+};
+
+/**
+ * * `en` - en
+ * * `es` - es
+ */
+export type TermsLocaleEnum = 'en' | 'es';
+
+export type TermsStatement = {
+    id: string;
+    text: string;
 };
 
 /**
@@ -592,10 +886,42 @@ export type MeshWritable = {
      * When true, any verified owner may read this mesh, its devices and their readings. Writes stay with the owner.
      */
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
+ * POST /meshes input
+ */
+export type MeshCreateWritable = {
+    channel_id: string;
+    /**
+     * Base64-encoded channel PSK
+     */
+    psk_b64: string;
+    label?: string | null;
+    /**
+     * Version of the mesh terms accepted, from /meshes/terms. Required when the mesh uses the default broker (no source) and has no current acceptance; ignored otherwise.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     */
+    terms_locale?: TermsLocaleEnum;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
+};
+
+/**
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export type MeshUpdateWritable = {
     channel_id?: string;
@@ -605,12 +931,41 @@ export type MeshUpdateWritable = {
     psk_b64?: string;
     label?: string | null;
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
+    /**
+     * Version of the mesh terms accepted, from /meshes/terms. Required when the mesh uses the default broker (no source) and has no current acceptance; ignored otherwise.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
 };
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
 export type OwnerCreateWritable = {
     name: string;
     email: string;
     password: string;
+    /**
+     * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
 };
 
 /**
@@ -641,6 +996,83 @@ export type PostprocessingStepWritable = {
     outputs?: unknown;
 };
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SourceCreateWritable = {
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote broker password. Never returned. An empty string or null removes it.
+     */
+    password?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+    /**
+     * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * A source. The remote password is accepted but never returned.
+ */
+export type SourceReadWritable = {
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote broker password. Never returned. An empty string or null removes it.
+     */
+    password?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+};
+
+/**
+ * Any subset of the create fields.
+ */
+export type SourceUpdateWritable = {
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server?: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote broker password. Never returned. An empty string or null removes it.
+     */
+    password?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic?: string;
+    qos?: QosEnum;
+};
+
 export type AlgorithmsListData = {
     body?: never;
     path?: never;
@@ -653,6 +1085,28 @@ export type AlgorithmsListResponses = {
 };
 
 export type AlgorithmsListResponse = AlgorithmsListResponses[keyof AlgorithmsListResponses];
+
+export type DataDeletionsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Restrict to one mesh.
+         */
+        mesh_id?: string;
+        /**
+         * `pending` (the default), `cancelled`, `done`, or `all`.
+         */
+        status?: string;
+    };
+    url: '/data-deletions';
+};
+
+export type DataDeletionsListResponses = {
+    200: Array<DataDeletion>;
+};
+
+export type DataDeletionsListResponse = DataDeletionsListResponses[keyof DataDeletionsListResponses];
 
 export type DevicesListData = {
     body?: never;
@@ -948,6 +1402,10 @@ export type MeshesListData = {
          * Restrict to meshes the caller owns, excluding public ones.
          */
         owned?: boolean;
+        /**
+         * Restrict to meshes bridged from one source.
+         */
+        source_id?: string;
     };
     url: '/meshes';
 };
@@ -959,7 +1417,7 @@ export type MeshesListResponses = {
 export type MeshesListResponse = MeshesListResponses[keyof MeshesListResponses];
 
 export type MeshesCreateData = {
-    body: MeshCreate;
+    body: MeshCreateWritable;
     path?: never;
     query?: never;
     url: '/meshes';
@@ -970,6 +1428,24 @@ export type MeshesCreateResponses = {
 };
 
 export type MeshesCreateResponse = MeshesCreateResponses[keyof MeshesCreateResponses];
+
+export type MeshesTermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/meshes/terms';
+};
+
+export type MeshesTermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type MeshesTermsRetrieveResponse = MeshesTermsRetrieveResponses[keyof MeshesTermsRetrieveResponses];
 
 export type MeshesDestroyData = {
     body?: never;
@@ -1019,6 +1495,21 @@ export type MeshesUpdateResponses = {
 
 export type MeshesUpdateResponse = MeshesUpdateResponses[keyof MeshesUpdateResponses];
 
+export type MeshesTermsAcceptanceCreateData = {
+    body: MeshTermsAcceptance;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/meshes/{mesh_id}/terms-acceptance';
+};
+
+export type MeshesTermsAcceptanceCreateResponses = {
+    201: Mesh;
+};
+
+export type MeshesTermsAcceptanceCreateResponse = MeshesTermsAcceptanceCreateResponses[keyof MeshesTermsAcceptanceCreateResponses];
+
 export type MeshesDevicesListData = {
     body?: never;
     path: {
@@ -1047,6 +1538,54 @@ export type MetricsRetrieveResponses = {
 
 export type MetricsRetrieveResponse = MetricsRetrieveResponses[keyof MetricsRetrieveResponses];
 
+export type OperatorRequestsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Restrict to one status: `pending` (the default), `approved`, `rejected`, or `all`.
+         */
+        status?: string;
+    };
+    url: '/operator-requests';
+};
+
+export type OperatorRequestsListResponses = {
+    200: Array<OperatorRequestAdmin>;
+};
+
+export type OperatorRequestsListResponse = OperatorRequestsListResponses[keyof OperatorRequestsListResponses];
+
+export type OperatorRequestsRetrieveData = {
+    body?: never;
+    path: {
+        request_id: string;
+    };
+    query?: never;
+    url: '/operator-requests/{request_id}';
+};
+
+export type OperatorRequestsRetrieveResponses = {
+    200: OperatorRequestAdmin;
+};
+
+export type OperatorRequestsRetrieveResponse = OperatorRequestsRetrieveResponses[keyof OperatorRequestsRetrieveResponses];
+
+export type OperatorRequestsUpdateData = {
+    body: OperatorRequestDecision;
+    path: {
+        request_id: string;
+    };
+    query?: never;
+    url: '/operator-requests/{request_id}';
+};
+
+export type OperatorRequestsUpdateResponses = {
+    200: OperatorRequestAdmin;
+};
+
+export type OperatorRequestsUpdateResponse = OperatorRequestsUpdateResponses[keyof OperatorRequestsUpdateResponses];
+
 export type OwnersListData = {
     body?: never;
     path?: never;
@@ -1056,7 +1595,7 @@ export type OwnersListData = {
 
 export type OwnersListResponses = {
     /**
-     * The public fields shown here. A superuser receives the full record for every owner instead.
+     * The public fields shown here. A superuser receives the full record for every owner.
      */
     200: Array<OwnerPublic>;
 };
@@ -1076,6 +1615,24 @@ export type OwnersCreateResponses = {
 
 export type OwnersCreateResponse = OwnersCreateResponses[keyof OwnersCreateResponses];
 
+export type OwnersDestroyData = {
+    body?: never;
+    path: {
+        owner_id: string;
+    };
+    query?: never;
+    url: '/owners/{owner_id}';
+};
+
+export type OwnersDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type OwnersDestroyResponse = OwnersDestroyResponses[keyof OwnersDestroyResponses];
+
 export type OwnersRetrieveData = {
     body?: never;
     path: {
@@ -1087,12 +1644,27 @@ export type OwnersRetrieveData = {
 
 export type OwnersRetrieveResponses = {
     /**
-     * The public fields shown here. The owner themselves and any superuser receive the full record instead.
+     * The public fields shown here. The owner themselves and any superuser receive the full record.
      */
     200: OwnerPublic;
 };
 
 export type OwnersRetrieveResponse = OwnersRetrieveResponses[keyof OwnersRetrieveResponses];
+
+export type OwnersUpdateData = {
+    body: OwnerRole;
+    path: {
+        owner_id: string;
+    };
+    query?: never;
+    url: '/owners/{owner_id}';
+};
+
+export type OwnersUpdateResponses = {
+    200: OwnerRead;
+};
+
+export type OwnersUpdateResponse = OwnersUpdateResponses[keyof OwnersUpdateResponses];
 
 export type OwnersCsrfCookieRetrieveData = {
     body?: never;
@@ -1201,6 +1773,32 @@ export type OwnersMeDevicesRetrieveResponses = {
 
 export type OwnersMeDevicesRetrieveResponse = OwnersMeDevicesRetrieveResponses[keyof OwnersMeDevicesRetrieveResponses];
 
+export type OwnersMeOperatorRequestRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/owners/me/operator-request';
+};
+
+export type OwnersMeOperatorRequestRetrieveResponses = {
+    200: OperatorRequest;
+};
+
+export type OwnersMeOperatorRequestRetrieveResponse = OwnersMeOperatorRequestRetrieveResponses[keyof OwnersMeOperatorRequestRetrieveResponses];
+
+export type OwnersMeOperatorRequestCreateData = {
+    body: OperatorRequestCreate;
+    path?: never;
+    query?: never;
+    url: '/owners/me/operator-request';
+};
+
+export type OwnersMeOperatorRequestCreateResponses = {
+    201: OperatorRequest;
+};
+
+export type OwnersMeOperatorRequestCreateResponse = OwnersMeOperatorRequestCreateResponses[keyof OwnersMeOperatorRequestCreateResponses];
+
 export type OwnersMeResendVerificationCreateData = {
     body?: never;
     path?: never;
@@ -1226,6 +1824,19 @@ export type OwnersMeRotateKeyCreateResponses = {
 };
 
 export type OwnersMeRotateKeyCreateResponse = OwnersMeRotateKeyCreateResponses[keyof OwnersMeRotateKeyCreateResponses];
+
+export type OwnersMeTermsAcceptanceCreateData = {
+    body: AccountTermsAcceptance;
+    path?: never;
+    query?: never;
+    url: '/owners/me/terms-acceptance';
+};
+
+export type OwnersMeTermsAcceptanceCreateResponses = {
+    201: OwnerRead;
+};
+
+export type OwnersMeTermsAcceptanceCreateResponse = OwnersMeTermsAcceptanceCreateResponses[keyof OwnersMeTermsAcceptanceCreateResponses];
 
 export type OwnersRequestPasswordResetCreateData = {
     body: OwnerRequestPasswordReset;
@@ -1530,6 +2141,113 @@ export type ReadingsMeshesNodesQualityRetrieveResponses = {
 
 export type ReadingsMeshesNodesQualityRetrieveResponse = ReadingsMeshesNodesQualityRetrieveResponses[keyof ReadingsMeshesNodesQualityRetrieveResponses];
 
+export type SourcesListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/sources';
+};
+
+export type SourcesListResponses = {
+    200: Array<SourceRead>;
+};
+
+export type SourcesListResponse = SourcesListResponses[keyof SourcesListResponses];
+
+export type SourcesCreateData = {
+    body: SourceCreateWritable;
+    path?: never;
+    query?: never;
+    url: '/sources';
+};
+
+export type SourcesCreateResponses = {
+    201: SourceRead;
+};
+
+export type SourcesCreateResponse = SourcesCreateResponses[keyof SourcesCreateResponses];
+
+export type SourcesTermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/sources/terms';
+};
+
+export type SourcesTermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type SourcesTermsRetrieveResponse = SourcesTermsRetrieveResponses[keyof SourcesTermsRetrieveResponses];
+
+export type SourcesDestroyData = {
+    body?: never;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}';
+};
+
+export type SourcesDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type SourcesDestroyResponse = SourcesDestroyResponses[keyof SourcesDestroyResponses];
+
+export type SourcesRetrieveData = {
+    body?: never;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}';
+};
+
+export type SourcesRetrieveResponses = {
+    200: SourceRead;
+};
+
+export type SourcesRetrieveResponse = SourcesRetrieveResponses[keyof SourcesRetrieveResponses];
+
+export type SourcesUpdateData = {
+    body?: SourceUpdateWritable;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}';
+};
+
+export type SourcesUpdateResponses = {
+    200: SourceRead;
+};
+
+export type SourcesUpdateResponse = SourcesUpdateResponses[keyof SourcesUpdateResponses];
+
+export type SourcesTermsAcceptanceCreateData = {
+    body: SourceTermsAcceptance;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}/terms-acceptance';
+};
+
+export type SourcesTermsAcceptanceCreateResponses = {
+    201: SourceRead;
+};
+
+export type SourcesTermsAcceptanceCreateResponse = SourcesTermsAcceptanceCreateResponses[keyof SourcesTermsAcceptanceCreateResponses];
+
 export type TelemetryVariantsListData = {
     body?: never;
     path?: never;
@@ -1637,3 +2355,21 @@ export type TelemetryVariantsMeasurementsUpdateResponses = {
 };
 
 export type TelemetryVariantsMeasurementsUpdateResponse = TelemetryVariantsMeasurementsUpdateResponses[keyof TelemetryVariantsMeasurementsUpdateResponses];
+
+export type TermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/terms';
+};
+
+export type TermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type TermsRetrieveResponse = TermsRetrieveResponses[keyof TermsRetrieveResponses];
