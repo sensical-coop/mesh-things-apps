@@ -100,6 +100,9 @@ export const devicesListQueryKey = (options?: Options<DevicesListData>) => creat
  * has_postprocessing: Restrict to devices with a postprocessing
  * attached, or to those without one when false.
  * label: Restrict by device label.
+ * telemetry_variant: Restrict by reported telemetry variants, as
+ * `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
+ * variant ids separated by `|`. Bare ids mean `has_any_of`.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
  * dashboard URL). Bare values (`true`, a uuid, a label) are treated as
@@ -837,6 +840,11 @@ export const meshesDevicesListQueryKey = (options: Options<MeshesDevicesListData
  * List every device registered on this mesh, gateways and nodes alike.
  *
  * Rejected registrations are shown only to the mesh's owner.
+ *
+ * Args:
+ * telemetry_variant: Restrict by reported telemetry variants, as
+ * `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
+ * variant ids separated by `|`. Bare ids mean `has_any_of`.
  */
 export const meshesDevicesListOptions = (options: Options<MeshesDevicesListData>) => queryOptions<MeshesDevicesListResponse, DefaultError, MeshesDevicesListResponse, ReturnType<typeof meshesDevicesListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {

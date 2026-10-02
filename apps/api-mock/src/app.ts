@@ -29,6 +29,11 @@ import {
   zTelemetryVariantsMeasurementsUpdateData,
 } from "@mtt/contracts/zod";
 import { matchesDeviceFilter, type Device } from "@mtt/domain/device/Device";
+import {
+  matchesTelemetryVariantFilter,
+  parseTelemetryVariantFilter,
+  type TelemetryVariantFilter,
+} from "@mtt/domain/device/TelemetryVariantFilter";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import {
@@ -78,6 +83,7 @@ import {
   DEVICE_VARIANT_ID,
   MEASUREMENT_DETECTORS,
   MEAS_TEMP_ID,
+  TELEMETRY_VARIANTS,
   VARIANT_ENV_ID,
   VARIANT_LINK_ID,
   deviceMeasurementId,
@@ -400,6 +406,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     db.postprocessings = db.postprocessings.filter((row) => !attached.has(row.id));
     db.calibrations = db.calibrations.filter((row) => !attached.has(row.postprocessingId));
     db.backfills = db.backfills.filter((row) => !attached.has(row.postprocessingId));
+    db.deviceTelemetryVariants.delete(uuid);
     await db.devices.delete(uuid);
   }
 
@@ -408,8 +415,32 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   async function devicesJson(actor: Actor, devices: Device[]) {
     const owners = new Map((await db.meshes.list()).map((mesh) => [mesh.id, mesh.ownerId]));
     return devices.map((device) =>
-      deviceJson(device, { archive: canSeeArchiveSetting(actor, { ownerId: owners.get(device.meshId) ?? "" }) }),
+      deviceJson(device, {
+        archive: canSeeArchiveSetting(actor, { ownerId: owners.get(device.meshId) ?? "" }),
+        telemetryVariantIds: db.deviceTelemetryVariants.get(device.uuid) ?? [],
+      }),
     );
+  }
+
+  /** `?telemetry_variant=`: no filter when absent, a 400 body when malformed. */
+  function telemetryVariantQuery(
+    c: Context,
+  ): { filter: TelemetryVariantFilter | null } | { error: Record<string, string[]> } {
+    const raw = c.req.query("telemetry_variant");
+    if (!raw) return { filter: null };
+    const filter = parseTelemetryVariantFilter(raw);
+    if (!filter) {
+      return {
+        error: {
+          telemetry_variant: ["Use has_any_of, has_all_of or has_none_of followed by telemetry variant ids."],
+        },
+      };
+    }
+    return { filter };
+  }
+
+  function reportsVariants(device: Device, filter: TelemetryVariantFilter | null): boolean {
+    return !filter || matchesTelemetryVariantFilter(db.deviceTelemetryVariants.get(device.uuid) ?? [], filter);
   }
 
   async function deviceOut(actor: Actor, device: Device) {
@@ -872,8 +903,15 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
     if (!mesh) return c.json({ detail: "Not found" }, 404);
+    const variants = telemetryVariantQuery(c);
+    if ("error" in variants) return c.json(variants.error, 400);
     const devices = await db.devices.list({ meshId: mesh.id });
-    return c.json(await devicesJson(actor, devices.filter((device) => visibleToReader(actor, mesh, device))));
+    return c.json(
+      await devicesJson(
+        actor,
+        devices.filter((device) => visibleToReader(actor, mesh, device) && reportsVariants(device, variants.filter)),
+      ),
+    );
   });
 
   app.put("/meshes/:mesh_id", async (c) => {
@@ -943,10 +981,13 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.get("/devices", async (c) => {
     const actor = c.get("actor");
-    const devices = (await devicesFor(db, actor)).filter((device) =>
-      matchesDeviceFilter(device, {
-        extra: queryFilters(c, ["mesh_id", "is_gateway", "is_allowed", "has_postprocessing", "label"]),
-      }),
+    const variants = telemetryVariantQuery(c);
+    if ("error" in variants) return c.json(variants.error, 400);
+    const devices = (await devicesFor(db, actor)).filter(
+      (device) =>
+        matchesDeviceFilter(device, {
+          extra: queryFilters(c, ["mesh_id", "is_gateway", "is_allowed", "has_postprocessing", "label"]),
+        }) && reportsVariants(device, variants.filter),
     );
     return c.json(await devicesJson(actor, devices));
   });
@@ -1089,24 +1130,23 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.get("/devices/:device_uuid/telemetry-variants", async (c) => {
     const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
     if (!device) return c.json({ detail: "Not found" }, 404);
-    if (device.uuid !== DEVICE_NODE_ID) return c.json([]);
-    return c.json([
-      {
-        id: DEVICE_VARIANT_ID,
-        telemetry_variant: {
-          id: VARIANT_ENV_ID,
-          payload_kind: "environmentmetrics",
-          name: "Environment",
-          description: null,
-          default_reading_interval_seconds: 300,
-          created_at: device.createdAt,
-          updated_at: device.updatedAt,
-        },
-        first_seen: device.createdAt,
-        last_seen: device.lastSeen,
-      },
-    ]);
+    const reported = db.deviceTelemetryVariants.get(device.uuid) ?? [];
+    return c.json(
+      TELEMETRY_VARIANTS.filter((variant) => reported.includes(variant.id))
+        .sort((a, b) => reported.indexOf(a.id) - reported.indexOf(b.id))
+        .map((variant) => ({
+          // The Porch node's environment link keeps its fixed id.
+          id: device.uuid === DEVICE_NODE_ID && variant.id === VARIANT_ENV_ID ? DEVICE_VARIANT_ID : newId(),
+          telemetry_variant: telemetryVariantJson(variant, device.createdAt),
+          first_seen: device.createdAt,
+          last_seen: device.lastSeen,
+        })),
+    );
   });
+
+  app.get("/telemetry-variants", (c) =>
+    c.json(TELEMETRY_VARIANTS.map((variant) => telemetryVariantJson(variant, "2026-01-01T00:00:00.000Z"))),
+  );
 
   app.get("/measurements", async (c) => {
     const rows = await db.measurements.list();
@@ -2175,4 +2215,16 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.notFound((c) => c.json({ detail: "Not implemented" }, 501));
   return app;
+}
+
+function telemetryVariantJson(variant: (typeof TELEMETRY_VARIANTS)[number], at: string) {
+  return {
+    id: variant.id,
+    payload_kind: variant.payloadKind,
+    name: variant.name,
+    description: null,
+    default_reading_interval_seconds: variant.defaultReadingIntervalSeconds,
+    created_at: at,
+    updated_at: at,
+  };
 }

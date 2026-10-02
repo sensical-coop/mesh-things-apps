@@ -79,6 +79,9 @@ paths:
             has_postprocessing: Restrict to devices with a postprocessing
                 attached, or to those without one when false.
             label: Restrict by device label.
+            telemetry_variant: Restrict by reported telemetry variants, as
+                `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
+                variant ids separated by `|`. Bare ids mean `has_any_of`.
 
         List filters use `operator:value` or `operator:v1|v2` (same wire as the
         dashboard URL). Bare values (`true`, a uuid, a label) are treated as
@@ -109,6 +112,14 @@ paths:
         schema:
           type: string
         description: List filter, e.g. `contains:Porch`.
+      - in: query
+        name: telemetry_variant
+        schema:
+          type: string
+        description: Restrict by the telemetry variants a device has reported, as
+          `operator:id|id`. `has_any_of` matches devices that reported at least one
+          of them, `has_all_of` those that reported every one, and `has_none_of` those
+          that reported none. Bare ids mean `has_any_of`.
       tags:
       - devices
       security:
@@ -1218,6 +1229,11 @@ paths:
         List every device registered on this mesh, gateways and nodes alike.
 
         Rejected registrations are shown only to the mesh's owner.
+
+        Args:
+            telemetry_variant: Restrict by reported telemetry variants, as
+                `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
+                variant ids separated by `|`. Bare ids mean `has_any_of`.
       parameters:
       - in: path
         name: mesh_id
@@ -1225,6 +1241,14 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: telemetry_variant
+        schema:
+          type: string
+        description: Restrict by the telemetry variants a device has reported, as
+          `operator:id|id`. `has_any_of` matches devices that reported at least one
+          of them, `has_all_of` those that reported every one, and `has_none_of` those
+          that reported none. Bare ids mean `has_any_of`.
       tags:
       - meshes
       security:
@@ -4113,6 +4137,13 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        telemetry_variant_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          readOnly: true
+          description: Telemetry variants this device has been seen reporting.
         created_at:
           type: string
           format: date-time
@@ -4140,6 +4171,7 @@ components:
       - reading_interval_seconds
       - role
       - short_name
+      - telemetry_variant_ids
       - updated_at
       - uuid
     DeviceTelemetryVariant:

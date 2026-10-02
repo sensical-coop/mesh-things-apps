@@ -87,7 +87,10 @@ export function sinkCredentialsJson(sink: Sink, connections: number | null) {
 }
 
 /** `archive`: whether the viewer may see the archive setting, the mesh's owner or a superuser. */
-export function deviceJson(device: Device, { archive }: { archive: boolean }) {
+export function deviceJson(
+  device: Device,
+  { archive, telemetryVariantIds }: { archive: boolean; telemetryVariantIds: readonly string[] },
+) {
   return {
     uuid: device.uuid,
     node_id: device.nodeId,
@@ -107,6 +110,7 @@ export function deviceJson(device: Device, { archive }: { archive: boolean }) {
     nodeinfo_overridden: device.nodeinfoOverridden,
     reading_interval_seconds: device.readingIntervalSeconds,
     publish_interval_seconds: device.publishIntervalSeconds,
+    telemetry_variant_ids: [...telemetryVariantIds],
     ...(archive
       ? {
           archive_enabled: device.archiveEnabled,

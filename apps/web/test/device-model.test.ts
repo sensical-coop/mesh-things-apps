@@ -29,6 +29,7 @@ const device = {
   nodeinfo_overridden: false,
   reading_interval_seconds: 300,
   publish_interval_seconds: 300,
+  telemetry_variant_ids: [],
   last_seen: null,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",

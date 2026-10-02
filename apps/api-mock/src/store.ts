@@ -48,6 +48,14 @@ export const DEVICE_BROOK_BUOY_ID = "28282828-2828-4282-8282-282828282828";
 export const DEVICE_BROOK_WEIR_ID = "29292929-2929-4292-8292-292929292929";
 export const MEAS_TEMP_ID = "66666666-6666-4666-8666-666666666666";
 export const VARIANT_ENV_ID = "77777777-7777-4777-8777-777777777777";
+export const VARIANT_DEVICE_ID = "56565656-5656-4565-8565-565656565656";
+export const VARIANT_AIR_ID = "57575757-5757-4575-8575-575757575757";
+/** GET /telemetry-variants. The registry adds a row the first time any device reports a kind. */
+export const TELEMETRY_VARIANTS = [
+  { id: VARIANT_DEVICE_ID, payloadKind: "devicemetrics", name: "Device", defaultReadingIntervalSeconds: 900 },
+  { id: VARIANT_ENV_ID, payloadKind: "environmentmetrics", name: "Environment", defaultReadingIntervalSeconds: 300 },
+  { id: VARIANT_AIR_ID, payloadKind: "airqualitymetrics", name: "Air quality", defaultReadingIntervalSeconds: 300 },
+] as const;
 export const DEVICE_MEAS_ID = "88888888-8888-4888-8888-888888888888";
 /** The Porch node's channel for the catalog row at `index`. */
 export function deviceMeasurementId(index: number): string {
@@ -197,6 +205,8 @@ export type Store = {
   verifications: Map<string, OwnerVerification>;
   verificationTokens: Map<string, string>;
   passwordResetTokens: Map<string, { ownerId: string; sentAt: string }>;
+  /** Telemetry variant ids each device has been seen reporting, in first-seen order. */
+  deviceTelemetryVariants: Map<string, string[]>;
   // Per-device-measurement override: null = inherit the catalog default below.
   detectorOverrides: Map<string, string[] | null>;
   // Catalog-wide default per telemetry-variant/measurement link (VARIANT_LINK_ID).
@@ -582,6 +592,13 @@ export function createStore(owners: StoreOwners = {}): Store {
     verifications,
     verificationTokens: new Map<string, string>(),
     passwordResetTokens: new Map<string, { ownerId: string; sentAt: string }>(),
+    deviceTelemetryVariants: new Map<string, string[]>([
+      [DEVICE_GW_ID, [VARIANT_DEVICE_ID]],
+      [DEVICE_NODE_ID, [VARIANT_DEVICE_ID, VARIANT_ENV_ID]],
+      [DEVICE_BROOK_GW_ID, [VARIANT_DEVICE_ID]],
+      [DEVICE_BROOK_BUOY_ID, [VARIANT_DEVICE_ID, VARIANT_ENV_ID, VARIANT_AIR_ID]],
+      [DEVICE_BROOK_WEIR_ID, [VARIANT_AIR_ID]],
+    ]),
     detectorOverrides: new Map<string, string[] | null>(),
     telemetryVariantMeasurements: new Map<string, TelemetryVariantMeasurementLink>([
       [VARIANT_LINK_ID, { defaultEnabledDetectors: ["range"] }],

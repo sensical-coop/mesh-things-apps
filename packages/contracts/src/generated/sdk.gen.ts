@@ -72,6 +72,9 @@ export const dataDeletionsList = <ThrowOnError extends boolean = false>(options?
  * has_postprocessing: Restrict to devices with a postprocessing
  * attached, or to those without one when false.
  * label: Restrict by device label.
+ * telemetry_variant: Restrict by reported telemetry variants, as
+ * `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
+ * variant ids separated by `|`. Bare ids mean `has_any_of`.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
  * dashboard URL). Bare values (`true`, a uuid, a label) are treated as
@@ -769,6 +772,11 @@ export const meshesTermsAcceptanceCreate = <ThrowOnError extends boolean = false
  * List every device registered on this mesh, gateways and nodes alike.
  *
  * Rejected registrations are shown only to the mesh's owner.
+ *
+ * Args:
+ * telemetry_variant: Restrict by reported telemetry variants, as
+ * `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
+ * variant ids separated by `|`. Bare ids mean `has_any_of`.
  */
 export const meshesDevicesList = <ThrowOnError extends boolean = false>(options: Options<MeshesDevicesListData, ThrowOnError>) => (options.client ?? client).get<MeshesDevicesListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesDevicesListData.parseAsync(data),
