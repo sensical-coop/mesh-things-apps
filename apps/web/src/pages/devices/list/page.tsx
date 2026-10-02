@@ -1,5 +1,5 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -17,9 +17,10 @@ import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/co
 import { useFormatters } from "@/hooks/use-formatters";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { listQuery } from "@mtt/ui/lib/filter-url";
 import { href, routes } from "@/router";
 import { pageHeadingClass } from "@/lib/page-heading";
+import { listQueryBoolean, matchesListQuery } from "@/lib/list-filter";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
@@ -28,6 +29,8 @@ import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
+import { canArchiveDevice } from "@/features/archive/model";
+import { ArchiveButton } from "@/features/archive/ui/archive-button";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
 
@@ -37,10 +40,11 @@ const col = legacyCreateColumnHelper<DeviceRow>();
 
 export function DevicesPage(): ReactElement {
   const { formatMessage } = useIntl();
-  const { formatLastSeen } = useFormatters();
+  const { formatLastSeen, formatWhen, toRelative } = useFormatters();
   const filterLabels = useTranslatedFilterLabels();
   const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   const [settingsDevice, setSettingsDevice] = useState<DeviceRow | null>(null);
+  const { me, isOperator, isSuperuser, meId, ownerName } = useOwnerDirectory();
   const meshes = useQuery(meshRepository.list());
   const meshOptions = useMemo(
     () => (meshes.data ?? []).map((mesh) => ({ value: mesh.id, label: meshTitle(mesh) })),
@@ -115,15 +119,35 @@ export function DevicesPage(): ReactElement {
           },
         ],
       },
+      // Only the owner (or a superuser) sees a device's setting, and only operators store devices.
+      ...(isOperator
+        ? [
+            {
+              key: "archive_enabled",
+              urlKey: "s3",
+              label: formatMessage({ id: "page.devices.list.filters.s3", defaultMessage: "S3 storage" }),
+              type: "select" as const,
+              options: [
+                { value: "true", label: formatMessage({ id: "page.devices.list.filters.s3On", defaultMessage: "On" }) },
+                { value: "false", label: formatMessage({ id: "page.devices.list.filters.s3Off", defaultMessage: "Off" }) },
+              ],
+            },
+          ]
+        : []),
     ],
-    [meshOptions, formatMessage],
+    [meshOptions, formatMessage, isOperator],
   );
   const filters = useSmartFilters({ specs });
-  const devices = useQuery(deviceRepository.list({ query: listQuery(filters.queryString) }));
+  // The API only takes bare values, and rows don't say whether a blueprint is attached,
+  // so that one filter goes to the server; the rest run on the loaded rows, like meshes.
+  const hasPostprocessing = listQueryBoolean(filters.queryString, "has_postprocessing");
+  const devices = useQuery(
+    deviceRepository.list(
+      hasPostprocessing === undefined ? undefined : { query: { has_postprocessing: String(hasPostprocessing) } },
+    ),
+  );
   const meshNames = new Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)]));
   const meshOwners = new Map((meshes.data ?? []).map((m) => [m.id, m.owner_id]));
-  const { me, isSuperuser, meId, ownerName } = useOwnerDirectory();
-
   const rows = useMemo<DeviceRow[]>(
     () =>
       (devices.data ?? []).map((device) => ({
@@ -133,8 +157,28 @@ export function DevicesPage(): ReactElement {
       })),
     [devices.data, meshes.data],
   );
+  const shownRows = rows.filter((row) =>
+    matchesListQuery((field) => {
+      switch (field) {
+        case "label":
+          return deviceTitle(row);
+        case "mesh_id":
+          return row.mesh_id;
+        case "is_gateway":
+          return String(row.is_gateway);
+        case "is_allowed":
+          return String(row.is_allowed);
+        // Devices whose setting the API doesn't send match neither On nor Off.
+        case "archive_enabled":
+          return row.archive_enabled === undefined ? "" : String(row.archive_enabled);
+        default:
+          return undefined;
+      }
+    }, filters.queryString),
+  );
   // Devices on public and shared meshes belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.ownerId !== meId);
+  const showArchive = rows.some((row) => canArchiveDevice(row, me, row.ownerId));
 
   const columns = useMemo(
     () => [
@@ -186,11 +230,27 @@ export function DevicesPage(): ReactElement {
             }),
           ]
         : []),
+      ...(showArchive
+        ? [
+            col.accessor((row) => row.archive_enabled === true, {
+              id: "archive",
+              header: formatMessage({ id: "page.devices.list.columns.archive", defaultMessage: "S3 storage" }),
+              cell: ({ row }) =>
+                canArchiveDevice(row.original, me, row.original.ownerId) ? <ArchiveButton device={row.original} /> : null,
+            }),
+          ]
+        : []),
       col.accessor("last_seen", {
         header: formatMessage({ id: "page.devices.list.columns.lastSeen", defaultMessage: "Last seen" }),
-        cell: (info) => (
-          <span className="tabular-nums text-text-secondary">{formatLastSeen(info.getValue())}</span>
-        ),
+        // Relative only, to keep the row narrow; the exact time is in the tooltip.
+        cell: (info) => {
+          const seen = info.getValue();
+          return (
+            <span className="whitespace-nowrap tabular-nums text-text-secondary" title={seen ? formatWhen(seen) : undefined}>
+              {seen ? (toRelative(seen) ?? formatWhen(seen)) : formatLastSeen(null)}
+            </span>
+          );
+        },
       }),
       col.display({
         id: "open",
@@ -201,20 +261,21 @@ export function DevicesPage(): ReactElement {
           </span>
         ),
         cell: ({ row }) => (
-          <div className="flex justify-start gap-2">
+          <div className="flex justify-start gap-2 whitespace-nowrap">
             <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
             </ButtonLink>
             {canEditMesh({ owner_id: row.original.ownerId }, me) ? (
-              <Button type="button" size="xs" variant="secondary" onClick={() => setSettingsDevice(row.original)}>
-                {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-              </Button>
+              <SettingsButton
+                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+                onClick={() => setSettingsDevice(row.original)}
+              />
             ) : null}
           </div>
         ),
       }),
     ],
-    [formatMessage, formatLastSeen, me, meId, ownerName, showOwner],
+    [formatMessage, formatLastSeen, formatWhen, toRelative, me, meId, ownerName, showOwner, showArchive],
   );
 
   return (
@@ -251,7 +312,7 @@ export function DevicesPage(): ReactElement {
             {devices.isPending ? <SkeletonRows /> : null}
             {devices.error ? null : devices.isPending ? null : (
               <DataTable
-                data={rows}
+                data={shownRows}
                 columns={columns}
                 getRowId={(row) => row.uuid}
                 previousPageLabel={formatMessage({
@@ -268,7 +329,7 @@ export function DevicesPage(): ReactElement {
                       })
                     : formatMessage({
                         id: "page.devices.list.empty.default",
-                        defaultMessage: "No devices yet. Register a device from a mesh.",
+                        defaultMessage: "No devices yet. Register a device in a Mesh.",
                       })
                 }
               />

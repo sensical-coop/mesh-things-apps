@@ -40,6 +40,9 @@
   --color-accent-500: var(--oa-primary);
   --color-accent-600: color-mix(in srgb, var(--oa-primary) 80%, var(--oa-primary-deep));
   --color-accent-400: color-mix(in srgb, var(--oa-primary) 80%, #ffffff);
+  /* Accent status chip: the coral as a tint, like the other status pairs. */
+  --color-status-accent-background: color-mix(in srgb, var(--oa-primary) 16%, transparent);
+  --color-status-accent-text: var(--color-accent-600);
   --color-button-ghost-foreground: var(--oa-primary);
   --color-button-ghost-background: color-mix(in srgb, var(--oa-primary) 8%, transparent);
   --color-button-ghost-hover: color-mix(in srgb, var(--oa-primary) 12%, transparent);
@@ -100,6 +103,8 @@
   --color-border-button-default: color-mix(in srgb, var(--ink) 14%, transparent);
   --color-border-focus-ring: var(--oa-ring);
   --color-accent-500: var(--oa-primary);
+  --color-status-accent-background: color-mix(in srgb, var(--oa-primary) 22%, transparent);
+  --color-status-accent-text: var(--oa-primary);
   --color-chart-1: var(--oa-primary);
   --color-button-ghost-foreground: var(--oa-primary);
   --color-button-ghost-background: color-mix(in srgb, var(--oa-primary) 12%, transparent);

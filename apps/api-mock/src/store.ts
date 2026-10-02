@@ -3,29 +3,65 @@ import { Device } from "@mtt/domain/device/Device";
 import { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
-import { NIL_BLUEPRINT_ID } from "@mtt/domain/shared/blueprint";
-import type { BlueprintRow } from "./features/blueprint/repository";
+import type { BlueprintRow, BlueprintVersionRow } from "./features/blueprint/repository";
+import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 import { MemoryDevices } from "./features/device/repository";
 import { MemoryMeshes } from "./features/mesh/repository";
 import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
+import { MemorySources } from "./features/source/repository";
+import { MemorySinks } from "./features/sink/repository";
+import { MemoryArchive } from "./features/archive/repository";
+import {
+  DATA_RETENTION_DAYS,
+  TERMS_ENFORCED,
+  TERMS_VERSIONS,
+  type TermsAcceptance,
+} from "./features/terms/terms";
+import type { OperatorRequestRow } from "./features/operator-request/repository";
+import type { DataDeletionRow } from "./features/data-deletion/repository";
 
 export const OWNER_ID = "22222222-2222-4222-8222-222222222222";
 export const OWNER_BO_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 export const OWNER_ADMIN_ID = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 export const OWNER_STAFF_ID = "12121212-1212-4121-8121-121212121212";
+export const OWNER_OPERATOR_ID = "14141414-1414-4141-8141-141414141414";
 export const MESH_HILL_ID = "11111111-1111-4111-8111-111111111111";
 export const MESH_RIVER_ID = "55555555-5555-4555-8555-555555555555";
+export const MESH_BRIDGED_ID = "15151515-1515-4151-8151-151515151515";
+export const SOURCE_PUBLIC_ID = "16161616-1616-4161-8161-161616161616";
+export const OPERATOR_REQUEST_BO_ID = "17171717-1717-4171-8171-171717171717";
+/** A mesh deleted before the seed: its readings are what the seeded deletions remove. */
+export const MESH_GONE_ID = "18181818-1818-4181-8181-181818181818";
+/** One mesh per Status column state, so the colours can be checked at a glance. */
+export const SOURCE_OFFLINE_ID = "20202020-2020-4202-8202-202020202020";
+export const SOURCE_LAPSED_ID = "21212121-2121-4212-8212-212121212121";
+export const SINK_PARTNER_ID = "30303030-3030-4303-8303-303030303030";
+export const SINK_LAPSED_ID = "31313131-3131-4313-8313-313131313131";
 export const DEVICE_GW_ID = "33333333-3333-4333-8333-333333333333";
 export const DEVICE_NODE_ID = "44444444-4444-4444-8444-444444444444";
 export const DEVICE_RIVER_GW_ID = "13131313-1313-4131-8131-131313131313";
+/** The operator's Brook mesh: one device archived, one switched off since, one never. */
+export const MESH_BROOK_ID = "22222222-3333-4333-8333-000000000001";
+export const DEVICE_BROOK_GW_ID = "27272727-2727-4272-8272-272727272727";
+export const DEVICE_BROOK_BUOY_ID = "28282828-2828-4282-8282-282828282828";
+export const DEVICE_BROOK_WEIR_ID = "29292929-2929-4292-8292-292929292929";
 export const MEAS_TEMP_ID = "66666666-6666-4666-8666-666666666666";
 export const VARIANT_ENV_ID = "77777777-7777-4777-8777-777777777777";
 export const DEVICE_MEAS_ID = "88888888-8888-4888-8888-888888888888";
+/** The Porch node's channel for the catalog row at `index`. */
+export function deviceMeasurementId(index: number): string {
+  return index === 0 ? DEVICE_MEAS_ID : `${DEVICE_MEAS_ID.slice(0, -1)}${index}`;
+}
 export const DEVICE_VARIANT_ID = "99999999-9999-4999-8999-999999999999";
 export const MEAS_DEW_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 export const MEAS_GAP_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 export const BLUEPRINT_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+export const BLUEPRINT_NO2_ID = "23232323-2323-4232-8232-232323232323";
+export const MEAS_RH_ID = "24242424-2424-4242-8242-242424242424";
+export const POSTPROCESSING_DEW_ID = "25252525-2525-4252-8252-252525252525";
+/** The dew point channel the seeded postprocessing registers on the Porch node. */
+export const DEVICE_DEW_MEAS_ID = "26262626-2626-4262-8262-262626262626";
 export const VARIANT_LINK_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 export const OWNER_EMAIL = "owner@sensical.test";
 export const OWNER_PASSWORD = "mesh-owner-12";
@@ -35,10 +71,52 @@ export const OWNER_ADMIN_EMAIL = "admin@sensical.test";
 export const OWNER_ADMIN_PASSWORD = "mesh-admin-12";
 export const OWNER_STAFF_EMAIL = "staff@sensical.test";
 export const OWNER_STAFF_PASSWORD = "mesh-staff-12";
+export const OWNER_OPERATOR_EMAIL = "operator@sensical.test";
+export const OWNER_OPERATOR_PASSWORD = "mesh-operator-12";
 
 const t0 = "2026-01-01T00:00:00.000Z";
 
-export type { BlueprintRow };
+function inDays(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString();
+}
+
+function deletion(
+  id: string,
+  meshId: string,
+  reason: DataDeletionRow["reason"],
+  status: DataDeletionRow["status"],
+  requestedById: string | null,
+  requestedDays: number,
+  deleteAfterDays: number,
+  extra: { sourceId?: string; dataUntil?: number; attempts?: number; lastError?: string; completed?: number } = {},
+): DataDeletionRow {
+  return {
+    id,
+    meshId,
+    sourceId: extra.sourceId ?? null,
+    reason,
+    requestedById,
+    requestedAt: inDays(requestedDays),
+    deleteAfter: inDays(deleteAfterDays),
+    dataUntil: extra.dataUntil === undefined ? null : inDays(extra.dataUntil),
+    status,
+    attempts: extra.attempts ?? (status === "done" ? 1 : 0),
+    lastError: extra.lastError ?? "",
+    completedAt: extra.completed === undefined ? null : inDays(extra.completed),
+  };
+}
+
+/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
+/** Always a time, unlike daysFromNow, which follows the retention setting. */
+function hoursAgo(hours: number): string {
+  return new Date(Date.now() - hours * 3_600_000).toISOString();
+}
+
+function daysFromNow(days: number): string | null {
+  return DATA_RETENTION_DAYS ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
+}
+
+export type { BackfillRow, BlueprintRow, CalibrationRow, PostprocessingRow };
 
 export type OwnerVerification = {
   emailVerifiedAt: string | null;
@@ -100,10 +178,21 @@ export type DeviceMeasurementRange = {
 
 export type Store = {
   meshes: MemoryMeshes;
+  sources: MemorySources;
+  sinks: MemorySinks;
+  termsAcceptances: TermsAcceptance[];
+  dataDeletions: DataDeletionRow[];
+  /** Account terms version per owner; none for accounts made outside signup (admin, staff). */
+  accountTerms: Map<string, string>;
+  operatorRequests: OperatorRequestRow[];
   devices: MemoryDevices;
+  archive: MemoryArchive;
   measurements: MemoryMeasurements;
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
+  postprocessings: PostprocessingRow[];
+  calibrations: CalibrationRow[];
+  backfills: BackfillRow[];
   actors: Map<string, Actor>;
   verifications: Map<string, OwnerVerification>;
   verificationTokens: Map<string, string>;
@@ -120,6 +209,7 @@ export type Store = {
 export type StoreOwners = {
   adaId?: string;
   boId?: string;
+  operatorId?: string;
   actors?: Map<string, Actor>;
   verifications?: Map<string, OwnerVerification>;
 };
@@ -127,6 +217,7 @@ export type StoreOwners = {
 export function createStore(owners: StoreOwners = {}): Store {
   const adaId = owners.adaId ?? OWNER_ID;
   const boId = owners.boId ?? OWNER_BO_ID;
+  const operatorId = owners.operatorId ?? OWNER_OPERATOR_ID;
   const actors = owners.actors ?? new Map<string, Actor>();
   const verifications =
     owners.verifications ??
@@ -153,11 +244,12 @@ export function createStore(owners: StoreOwners = {}): Store {
     },
     {
       id: MEAS_DEW_ID,
-      payloadKind: "derived",
+      // As the registry files postprocessing outputs: computed origin, flat `derived` namespace, no display name.
+      payloadKind: "computed:derived",
       fieldName: "dew_point",
       channel: "derived.dew_point",
-      origin: "derived",
-      displayName: "Dew point",
+      origin: "computed",
+      displayName: null,
       description: null,
       nativeUnit: "Cel",
       quantityKind: "physical_property",
@@ -167,13 +259,27 @@ export function createStore(owners: StoreOwners = {}): Store {
     },
     {
       id: MEAS_GAP_ID,
-      payloadKind: "quality",
+      payloadKind: "computed:quality",
       fieldName: "completeness_ratio",
       channel: "quality.completeness_ratio",
-      origin: "quality",
+      origin: "computed",
       displayName: "Completeness",
       description: null,
       nativeUnit: "ratio",
+      quantityKind: "ratio",
+      vocabularyUri: null,
+      createdAt: t0,
+      updatedAt: t0,
+    },
+    {
+      id: MEAS_RH_ID,
+      payloadKind: "environmentmetrics",
+      fieldName: "relative_humidity",
+      channel: "environmentmetrics.relative_humidity",
+      origin: "measured",
+      displayName: "Relative humidity",
+      description: null,
+      nativeUnit: "%",
       quantityKind: "ratio",
       vocabularyUri: null,
       createdAt: t0,
@@ -189,6 +295,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       pskB64: "c2VjcmV0SGlsbA==",
       label: "Hill",
       ownerId: adaId,
+      termsAcceptedVersion: TERMS_VERSIONS.mesh,
+      termsExpiresAt: daysFromNow(300),
       createdAt: t0,
       updatedAt: t0,
     }),
@@ -201,12 +309,83 @@ export function createStore(owners: StoreOwners = {}): Store {
       pskB64: "c2VjcmV0Uml2ZXI=",
       label: "River",
       ownerId: boId,
+      // Lapsed: River stores no new data until Bo renews its terms.
+      termsAcceptedVersion: TERMS_VERSIONS.mesh,
+      termsExpiresAt: daysFromNow(-5),
+      pausedAt: daysFromNow(-5),
       // Public so the read-only view of someone else's mesh shows up locally.
       isPublic: true,
       createdAt: t0,
       updatedAt: t0,
     }),
   );
+  const sources = new MemorySources();
+  sources.items.set(SOURCE_PUBLIC_ID, {
+    id: SOURCE_PUBLIC_ID,
+    label: "Meshtastic public EU",
+    server: "mqtt.meshtastic.org:1883",
+    ssl: false,
+    username: "meshdev",
+    password: "large4cats",
+    topic: "msh/EU_868/2/e/Valley/#",
+    qos: 1,
+    createdById: operatorId,
+    termsAcceptedVersion: TERMS_VERSIONS.source,
+    // Lapses soon, so the Sources tab offers renewal.
+    termsExpiresAt: daysFromNow(10),
+    pausedAt: null,
+    createdAt: t0,
+    updatedAt: t0,
+  });
+  meshes.items.set(
+    MESH_BRIDGED_ID,
+    new Mesh({
+      id: MESH_BRIDGED_ID,
+      channelId: "Valley",
+      pskB64: "c2VjcmV0VmFsbGV5",
+      label: "Valley",
+      ownerId: operatorId,
+      sourceId: SOURCE_PUBLIC_ID,
+      createdAt: t0,
+      updatedAt: t0,
+    }),
+  );
+  // Status states: two more sources for the operator (disconnected, lapsed) and a mesh on each,
+  // and Ada's meshes that renew soon, were never accepted, and were accepted under older terms.
+  for (const [id, label, server, pausedAt] of [
+    [SOURCE_OFFLINE_ID, "Offline test", "offline.example.org:1883", null],
+    [SOURCE_LAPSED_ID, "Lapsed source", "mqtt.example.org:1883", daysFromNow(-3)],
+  ] as const) {
+    sources.items.set(id, {
+      id,
+      label,
+      server,
+      ssl: true,
+      username: null,
+      password: null,
+      topic: "msh/EU_868/2/e/Test/#",
+      qos: 1,
+      createdById: operatorId,
+      termsAcceptedVersion: TERMS_VERSIONS.source,
+      termsExpiresAt: pausedAt ? daysFromNow(-3) : daysFromNow(200),
+      pausedAt,
+      createdAt: t0,
+      updatedAt: t0,
+    });
+  }
+  const statusMeshes: [string, string, string, Partial<ConstructorParameters<typeof Mesh>[0]>][] = [
+    [MESH_BROOK_ID, "Brook", operatorId, { sourceId: SOURCE_OFFLINE_ID }],
+    ["22222222-3333-4333-8333-000000000002", "Creek", operatorId, { sourceId: SOURCE_LAPSED_ID }],
+    ["22222222-3333-4333-8333-000000000003", "Garden", adaId, { termsAcceptedVersion: TERMS_VERSIONS.mesh, termsExpiresAt: daysFromNow(10) }],
+    ["22222222-3333-4333-8333-000000000004", "Orchard", adaId, {}],
+    ["22222222-3333-4333-8333-000000000005", "Meadow", adaId, { termsAcceptedVersion: "meshes-2025-01", termsExpiresAt: daysFromNow(120) }],
+  ];
+  for (const [id, label, ownerId, extra] of statusMeshes) {
+    meshes.items.set(
+      id,
+      new Mesh({ id, channelId: label, pskB64: "c2VjcmV0", label, ownerId, createdAt: t0, updatedAt: t0, ...extra }),
+    );
+  }
   const devices = new MemoryDevices();
   devices.items.set(
     DEVICE_GW_ID,
@@ -227,7 +406,7 @@ export function createStore(owners: StoreOwners = {}): Store {
       hardwareType: "tbeam",
       role: "ROUTER",
       nodeinfoOverridden: false,
-      postprocessingBlueprintId: null,
+      postprocessingCount: 0,
       readingIntervalSeconds: 300,
       publishIntervalSeconds: 300,
       lastSeen: nowIso(),
@@ -254,7 +433,7 @@ export function createStore(owners: StoreOwners = {}): Store {
       hardwareType: "heltec",
       role: "CLIENT",
       nodeinfoOverridden: false,
-      postprocessingBlueprintId: BLUEPRINT_ID,
+      postprocessingCount: 1,
       readingIntervalSeconds: 300,
       publishIntervalSeconds: 300,
       lastSeen: nowIso(),
@@ -281,7 +460,7 @@ export function createStore(owners: StoreOwners = {}): Store {
       hardwareType: "tbeam",
       role: "ROUTER",
       nodeinfoOverridden: false,
-      postprocessingBlueprintId: null,
+      postprocessingCount: 0,
       readingIntervalSeconds: 300,
       publishIntervalSeconds: 300,
       lastSeen: nowIso(),
@@ -289,12 +468,116 @@ export function createStore(owners: StoreOwners = {}): Store {
       updatedAt: t0,
     }),
   );
+  const archive = new MemoryArchive();
+  const brook: [string, number, string, boolean, string, number | null, number | null][] = [
+    // uuid, node, name, gateway, hardware, archived since (days), until (days)
+    [DEVICE_BROOK_GW_ID, 0x0b700001, "Brook GW", true, "tbeam", -9, null],
+    [DEVICE_BROOK_BUOY_ID, 0x0b700002, "Buoy", false, "rak4631", -6, -3],
+    [DEVICE_BROOK_WEIR_ID, 0x0b700003, "Weir", false, "heltec", null, null],
+  ];
+  for (const [uuid, nodeId, name, isGateway, hardwareType, since, until] of brook) {
+    const archiveEnabled = since !== null && until === null;
+    devices.items.set(
+      uuid,
+      new Device({
+        uuid,
+        nodeId,
+        meshId: MESH_BROOK_ID,
+        label: null,
+        isGateway,
+        isAllowed: true,
+        absenceDetectionEnabled: true,
+        adminKeysB64: [],
+        latitude: Math.round((41.41 + (nodeId % 8) / 1000) * 1e6) / 1e6,
+        longitude: 2.19,
+        locationOverridden: false,
+        name,
+        shortName: name.slice(0, 3).toUpperCase(),
+        hardwareType,
+        role: isGateway ? "ROUTER" : "SENSOR",
+        nodeinfoOverridden: false,
+        postprocessingCount: 0,
+        readingIntervalSeconds: 300,
+        publishIntervalSeconds: 300,
+        archiveEnabled,
+        archiveEnabledAt: archiveEnabled ? hoursAgo(-since * 24) : null,
+        archiveEnabledBy: archiveEnabled ? operatorId : null,
+        lastSeen: nowIso(),
+        createdAt: t0,
+        updatedAt: t0,
+      }),
+    );
+    if (since !== null) archive.start(MESH_BROOK_ID, nodeId, hoursAgo(-since * 24));
+    if (until !== null) archive.stop(MESH_BROOK_ID, nodeId, hoursAgo(-until * 24));
+  }
   const measurements = new MemoryMeasurements(meas);
+  // The operator's sinks: one sending Valley and Brook's buoy with a consumer connected,
+  // one paused because its terms lapsed.
+  const sinks = new MemorySinks();
+  for (const [id, label, streams, meshIds, deviceIds, pausedAt, connections] of [
+    [SINK_PARTNER_ID, "Partner dashboard", ["decoded", "alarms"], [MESH_BRIDGED_ID], [DEVICE_BROOK_BUOY_ID], null, 1],
+    [SINK_LAPSED_ID, "Old partner", ["decoded"], [], [DEVICE_BROOK_WEIR_ID], daysFromNow(-4), 0],
+  ] as const) {
+    sinks.items.set(id, {
+      id,
+      label,
+      streams: [...streams],
+      meshIds: [...meshIds],
+      deviceIds: [...deviceIds],
+      password: "seeded-password",
+      createdById: operatorId,
+      termsAcceptedVersion: TERMS_VERSIONS.sink,
+      termsExpiresAt: pausedAt ? daysFromNow(-4) : daysFromNow(200),
+      pausedAt,
+      createdAt: t0,
+      updatedAt: t0,
+    });
+    sinks.connections.set(id, connections);
+  }
   return {
     meshes,
+    sources,
+    sinks,
+    termsAcceptances: [],
+    // One of each state for the superuser's Deletions page. River's matches Bo's lapsed terms.
+    dataDeletions: [
+      // With terms off the API resumes River and cancels its lapse on the next lifecycle pass.
+      deletion("19191919-1919-4191-8191-000000000001", MESH_RIVER_ID, "terms_lapsed", TERMS_ENFORCED ? "pending" : "cancelled", null, -5, 25, { dataUntil: -5, ...(TERMS_ENFORCED ? {} : { completed: -1 }) }),
+      deletion("19191919-1919-4191-8191-000000000002", MESH_GONE_ID, "mesh_deleted", "pending", adaId, -20, 10),
+      deletion("19191919-1919-4191-8191-000000000003", MESH_GONE_ID, "source_detached", "pending", operatorId, -40, -10, {
+        sourceId: SOURCE_PUBLIC_ID,
+        dataUntil: -40,
+        attempts: 3,
+        lastError: "InfluxDB delete failed: connection refused",
+      }),
+      deletion("19191919-1919-4191-8191-000000000004", MESH_GONE_ID, "mesh_deleted", "done", adaId, -60, -30, { completed: -30 }),
+      deletion("19191919-1919-4191-8191-000000000005", MESH_BRIDGED_ID, "source_detached", "cancelled", operatorId, -15, 15, {
+        sourceId: SOURCE_PUBLIC_ID,
+        dataUntil: -15,
+        completed: -12,
+      }),
+    ],
+    accountTerms: new Map<string, string>([
+      [adaId, TERMS_VERSIONS.account],
+      [boId, TERMS_VERSIONS.account],
+      [operatorId, TERMS_VERSIONS.account],
+    ]),
+    operatorRequests: [
+      {
+        id: OPERATOR_REQUEST_BO_ID,
+        ownerId: boId,
+        reason: "I run the River community mesh and want to bridge our channel from the public broker.",
+        status: "pending",
+        decidedById: null,
+        decisionNote: "",
+        decidedAt: null,
+        createdAt: t0,
+      },
+    ],
     devices,
+    archive,
     measurements,
-    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID]), t0),
+    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID, DEVICE_BROOK_GW_ID, DEVICE_BROOK_BUOY_ID]), t0),
     actors,
     verifications,
     verificationTokens: new Map<string, string>(),
@@ -310,23 +593,91 @@ export function createStore(owners: StoreOwners = {}): Store {
       {
         id: BLUEPRINT_ID,
         name: "Dew point",
-        description: "Temperature + RH",
+        description: "Dew point from temperature and relative humidity.",
+        isPublic: false,
         ownerId: adaId,
-        steps: [
+        versions: [
           {
-            id: newId(),
-            order: 1,
-            function_name: "dew_point",
-            inputs: { temperature: "environmentmetrics.temperature", relative_humidity: "environmentmetrics.relative_humidity" },
-            params: {},
-            outputs: { dew_point: "derived.dew_point" },
+            number: 1,
+            inputs: [
+              { slot: "temperature", default_channel: "environmentmetrics.temperature" },
+              { slot: "relative_humidity", default_channel: "environmentmetrics.relative_humidity" },
+            ],
+            steps: [
+              {
+                key: "dew",
+                order: 0,
+                function_name: "dew_point",
+                inputs: { temperature: "slot:temperature", relative_humidity: "slot:relative_humidity" },
+                params: {},
+                outputs: { dew_point: "dew_point" },
+              },
+            ],
+            notes: null,
+            createdAt: t0,
           },
         ],
         createdAt: t0,
         updatedAt: t0,
       },
+      {
+        id: BLUEPRINT_NO2_ID,
+        name: "NO2 electrochemical",
+        description: "Alphasense-style four-electrode NO2 sensor on an ADS1115.",
+        isPublic: true,
+        ownerId: OWNER_ADMIN_ID,
+        versions: [1, 2].map((number): BlueprintVersionRow => ({
+          number,
+          inputs: [
+            { slot: "working", default_channel: "ads1115.channel_0" },
+            { slot: "auxiliary", default_channel: "ads1115.channel_1" },
+            { slot: "temperature", default_channel: "environmentmetrics.temperature" },
+          ],
+          steps: [
+            {
+              key: "ppb",
+              order: 0,
+              function_name: "ec_sensor_ppb",
+              inputs: { working: "slot:working", auxiliary: "slot:auxiliary", temperature: "slot:temperature" },
+              params: { temperature_coefficient: 0.01 },
+              outputs: { concentration_ppb: "no2_ppb" },
+            },
+            ...(number === 2
+              ? [
+                  {
+                    key: "ugm3",
+                    order: 1,
+                    function_name: "ppb_to_ugm3",
+                    inputs: { concentration_ppb: "step:ppb.concentration_ppb", temperature: "slot:temperature" },
+                    params: { molecular_weight: 46.01 },
+                    outputs: { concentration_ugm3: "no2_ugm3" },
+                  },
+                ]
+              : []),
+          ],
+          notes: number === 2 ? "Adds the mass concentration." : null,
+          createdAt: t0,
+        })),
+        createdAt: t0,
+        updatedAt: t0,
+      },
     ],
+    postprocessings: [
+      {
+        id: POSTPROCESSING_DEW_ID,
+        deviceUuid: DEVICE_NODE_ID,
+        blueprintId: BLUEPRINT_ID,
+        versionNumber: 1,
+        bindings: { temperature: DEVICE_MEAS_ID, relative_humidity: deviceMeasurementId(3) },
+        outputPrefix: "",
+        toleranceSeconds: null,
+        isEnabled: true,
+        outputs: [{ fieldName: "dew_point", measurementId: DEVICE_DEW_MEAS_ID, measurementTypeId: MEAS_DEW_ID, unit: "Cel" }],
+        createdAt: t0,
+        updatedAt: t0,
+      },
+    ],
+    calibrations: [],
+    backfills: [],
   };
 }
-
-export { NIL_BLUEPRINT_ID };

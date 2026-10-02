@@ -1,4 +1,3 @@
-import { NIL_BLUEPRINT_ID } from "../shared/blueprint";
 import { matchesListFilters, type ListFilter } from "../shared/list-filter";
 
 export type DeviceProps = {
@@ -18,9 +17,15 @@ export type DeviceProps = {
   hardwareType: string | null;
   role: string | null;
   nodeinfoOverridden: boolean;
-  postprocessingBlueprintId: string | null;
+  /** Blueprints attached to this device (`DevicePostprocessing` rows). */
+  postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
+  /** Opt-in to the Parquet archive; applies only while the mesh's owner is an operator. */
+  archiveEnabled?: boolean;
+  /** Who switched it on and when; cleared when it is switched off. */
+  archiveEnabledAt?: string | null;
+  archiveEnabledBy?: string | null;
   lastSeen: string | null;
   createdAt: string;
   updatedAt: string;
@@ -62,9 +67,12 @@ export class Device implements DeviceProps {
   hardwareType: string | null;
   role: string | null;
   nodeinfoOverridden: boolean;
-  postprocessingBlueprintId: string | null;
+  postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
+  archiveEnabled: boolean;
+  archiveEnabledAt: string | null;
+  archiveEnabledBy: string | null;
   lastSeen: string | null;
   readonly createdAt: string;
   updatedAt: string;
@@ -96,19 +104,27 @@ export class Device implements DeviceProps {
     this.hardwareType = props.hardwareType;
     this.role = props.role;
     this.nodeinfoOverridden = props.nodeinfoOverridden;
-    this.postprocessingBlueprintId = props.postprocessingBlueprintId;
+    this.postprocessingCount = props.postprocessingCount;
     this.readingIntervalSeconds = props.readingIntervalSeconds;
     this.publishIntervalSeconds = props.publishIntervalSeconds;
+    this.archiveEnabled = props.archiveEnabled ?? false;
+    this.archiveEnabledAt = props.archiveEnabledAt ?? null;
+    this.archiveEnabledBy = props.archiveEnabledBy ?? null;
     this.lastSeen = props.lastSeen;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
 
   hasPostprocessing(): boolean {
-    return (
-      this.postprocessingBlueprintId !== null &&
-      this.postprocessingBlueprintId !== NIL_BLUEPRINT_ID
-    );
+    return this.postprocessingCount > 0;
+  }
+
+  /** Switches the archive on or off, recording who switched it on. */
+  setArchive(enabled: boolean, by: string, at: string): void {
+    if (enabled === this.archiveEnabled) return;
+    this.archiveEnabled = enabled;
+    this.archiveEnabledAt = enabled ? at : null;
+    this.archiveEnabledBy = enabled ? by : null;
   }
 }
 

@@ -11,6 +11,7 @@ export function KpiPanel({
   children,
   icon: Icon = kpiIconFor(label),
   action,
+  badge,
   "aria-hidden": ariaHidden,
 }: {
   label: string;
@@ -19,6 +20,8 @@ export function KpiPanel({
   children: ReactNode;
   icon?: RemixiconComponentType;
   action?: ReactNode;
+  /** Shown after the label, e.g. a flag for a computed channel. */
+  badge?: ReactNode;
   "aria-hidden"?: boolean;
 }): ReactElement {
   return (
@@ -28,6 +31,7 @@ export function KpiPanel({
           <div className="flex items-center gap-2">
             <Icon className="size-4 shrink-0 text-foreground-icon-tertiary" aria-hidden />
             <p className="text-caption-1-medium text-text-secondary">{label}</p>
+            {badge}
           </div>
           {hint ? <p className="text-pretty text-caption-1-regular text-text-tertiary">{hint}</p> : null}
         </div>

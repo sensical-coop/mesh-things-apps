@@ -5,5 +5,5 @@ export interface IMeshRepository {
   list(filters?: ListFilter[]): Promise<Mesh[]>;
   get(id: string): Promise<Mesh | null>;
   insert(input: MeshCreate): Promise<Mesh>;
-  update(id: string, patch: { channelId?: string; pskB64?: string; label?: string | null; isPublic?: boolean }): Promise<Mesh | null>;
+  update(id: string, patch: { channelId?: string; pskB64?: string; label?: string | null; isPublic?: boolean; sourceId?: string | null }): Promise<Mesh | null>;
 }

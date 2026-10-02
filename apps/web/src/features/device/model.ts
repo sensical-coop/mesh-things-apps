@@ -69,3 +69,22 @@ export function deviceSilent(
   if (!Number.isFinite(seen)) return true;
   return seen + missed * intervalMs < nowMs;
 }
+
+export type CoordinateParse = { ok: true; value: number | null } | { ok: false };
+
+// Free-text on purpose: a locale-aware number field reads "41.38" as 4138 in
+// Spanish. Either separator is accepted as the decimal mark; thousands
+// separators never appear in a coordinate.
+export function parseCoordinate(raw: string, limit: 90 | 180): CoordinateParse {
+  const text = raw.trim().replace(",", ".");
+  if (text === "") return { ok: true, value: null };
+  if (!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(text)) return { ok: false };
+  const value = Number(text);
+  if (!Number.isFinite(value) || Math.abs(value) > limit) return { ok: false };
+  return { ok: true, value };
+}
+
+// Six decimals is ~0.1 m, finer than any GPS fix a node reports.
+export function roundCoordinate(value: number): number {
+  return Math.round(value * 1e6) / 1e6;
+}

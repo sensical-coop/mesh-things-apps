@@ -8,19 +8,12 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@mtt/ui/components/ui/dropdown-menu";
-import { RiAddLine, RiArrowDownSLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine, RiShareLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine, RiShareLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
@@ -28,6 +21,9 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
+import { FitToPoints } from "@/features/device/ui/map-fit";
+import { DeviceMapLegend } from "@/features/device/ui/map-legend";
+import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
@@ -37,25 +33,35 @@ import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { meshRepository } from "@/features/mesh/repository";
-import { canEditMesh, meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshStatus, meshTermsStanding, meshTitle } from "@/features/mesh/model";
+import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshViewersFrame } from "@/features/mesh/ui/mesh-viewers-frame";
 import { ShareMeshDialog } from "@/features/mesh/ui/share-mesh-dialog";
+import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
+import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
+import { termsLocale } from "@/features/terms/model";
+import { termsRepository } from "@/features/terms/repository";
+import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { sourceRepository } from "@/features/source/repository";
 
 export function MeshDetailPage(): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const { formatLastSeen } = useFormatters();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
-  const { me, owners, ownerName } = useOwnerDirectory();
+  const { me, owners, isOperator, ownerName } = useOwnerDirectory();
+  const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -64,6 +70,24 @@ export function MeshDetailPage(): ReactElement {
   // Public and shared meshes are read-only: every write affordance hangs off this.
   const canEdit = mesh.data != null && canEditMesh(mesh.data, me);
   const viewers = useQuery({ ...meshRepository.viewers({ path: { mesh_id: meshId } }), enabled: canEdit });
+  // A self-hosted instance asks for no terms: no chip, no notice.
+  const termsEnforced = useTermsEnforced() === true;
+  const meshTerms = useQuery({
+    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    enabled: termsEnforced,
+  });
+  const termsStanding =
+    termsEnforced && mesh.data ? meshTermsStanding(mesh.data, meshTerms.data?.version, new Date()) : null;
+  const meshState = mesh.data
+    ? meshStatus(mesh.data, {
+        termsEnforced,
+        currentTermsVersion: meshTerms.data?.version,
+        sourceStatus: mesh.data.source_id
+          ? sources.data?.find((source) => source.id === mesh.data.source_id)?.status
+          : undefined,
+        now: new Date(),
+      })
+    : null;
 
   const plotted = useMemo(
     () => (devices.data ?? []).filter((d) => d.latitude != null && d.longitude != null),
@@ -86,6 +110,9 @@ export function MeshDetailPage(): ReactElement {
                 : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
             </h1>
             {mesh.data ? <MeshAccessBadge mesh={mesh.data} canEdit={canEdit} /> : null}
+            {/* Only a bridged mesh says so; the default broker is the norm. */}
+            {mesh.data?.source_id ? <MeshSourceLabel mesh={mesh.data} sources={sources.data ?? []} /> : null}
+            {meshState && meshState.kind !== "hidden" ? <MeshStatusChip status={meshState} /> : null}
           </div>
           {mesh.data && me && mesh.data.owner_id !== me.id ? (
             <p className="text-caption-1-regular text-text-secondary">
@@ -113,26 +140,31 @@ export function MeshDetailPage(): ReactElement {
                 {formatMessage({ id: "page.meshes.detail.share", defaultMessage: "Share" })}
               </Button>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button type="button" variant="secondary" size="small" trailingIcon={RiArrowDownSLine}>
-                    {formatMessage({ id: "page.meshes.detail.actions.label", defaultMessage: "Actions" })}
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                  {formatMessage({ id: "page.meshes.detail.actions.edit", defaultMessage: "Edit mesh" })}
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
-                  {formatMessage({ id: "page.meshes.detail.actions.delete", defaultMessage: "Delete" })}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SettingsButton
+              size="small"
+              label={formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit mesh" })}
+              onClick={() => setEditOpen(true)}
+            />
+            <Button
+              type="button"
+              size="small"
+              variant="danger"
+              iconOnly
+              leadingIcon={RiDeleteBinLine}
+              aria-label={formatMessage({ id: "page.meshes.list.delete", defaultMessage: "Delete mesh" })}
+              title={formatMessage({ id: "page.meshes.list.delete", defaultMessage: "Delete mesh" })}
+              onClick={() => setDeleteOpen(true)}
+            />
           </div>
         ) : null}
       </div>
+      {mesh.data && termsStanding ? (
+        <MeshTermsNotice
+          mesh={mesh.data}
+          standing={termsStanding}
+          canRenew={me !== undefined && mesh.data.owner_id === me.id}
+        />
+      ) : null}
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
@@ -192,26 +224,23 @@ export function MeshDetailPage(): ReactElement {
           </FrameHeader>
           <FramePanel>
             {plotted.length ? (
-              <div className="oa-arrive oa-squircle-inset h-80 overflow-hidden">
+              <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
+                <DeviceMapLegend />
                 <Map
                   center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
                   zoom={12}
                   className="h-full min-h-80 w-full"
                 >
                   <MapControls />
+                  <FitToPoints points={plotted.map((device) => ({ lng: device.longitude!, lat: device.latitude! }))} />
                   {plotted.map((device) => (
                     <MapMarker key={device.uuid} longitude={device.longitude!} latitude={device.latitude!}>
                       <MarkerContent>
-                        <Tooltip>
-                          <TooltipTrigger
-                            delay={0}
-                            aria-label={deviceTitle(device)}
-                            className="relative flex size-5 items-center justify-center rounded-full bg-transparent p-0"
-                          >
-                            <span className="relative size-2.5 rounded-full bg-accent-500 ring-2 ring-background-primary-default" aria-hidden />
-                          </TooltipTrigger>
-                          <TooltipContent sideOffset={8}>{deviceTitle(device)}</TooltipContent>
-                        </Tooltip>
+                        <DeviceMapPin
+                          isGateway={device.is_gateway}
+                          label={deviceTitle(device)}
+                          deviceUuid={device.uuid}
+                        />
                       </MarkerContent>
                     </MapMarker>
                   ))}
@@ -319,14 +348,10 @@ export function MeshDetailPage(): ReactElement {
                               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
                             </ButtonLink>
                             {canEdit ? (
-                              <Button
-                                type="button"
-                                size="xs"
-                                variant="secondary"
+                              <SettingsButton
+                                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
                                 onClick={() => setSettingsDevice(device)}
-                              >
-                                {formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-                              </Button>
+                              />
                             ) : null}
                           </div>
                         </td>
@@ -408,6 +433,7 @@ function RegisterDeviceDialog({
       });
       onClose();
     },
+    onError: (error) => setErrors(readApiError(error).fields),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -423,12 +449,7 @@ function RegisterDeviceDialog({
       },
     });
     if (!parsed.success) {
-      const next: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path.at(-1) ?? "form");
-        next[key] ??= issue.message;
-      }
-      setErrors(next);
+      setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
@@ -473,6 +494,7 @@ function RegisterDeviceDialog({
               id: "page.meshes.detail.registerGatewayDialog.error",
               defaultMessage: "Registration failed. Check node ID and try again.",
             })}
+            {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>

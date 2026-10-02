@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlgorithmsListData, AlgorithmsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MeshesViewersCreateData, MeshesViewersCreateResponses, MeshesViewersDestroyData, MeshesViewersDestroyResponses, MeshesViewersListData, MeshesViewersListResponses, MetricsRetrieveData, MetricsRetrieveResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses } from './types.gen';
-import { zAlgorithmsListData, zAlgorithmsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMeshesViewersCreateData, zMeshesViewersCreateResponse, zMeshesViewersDestroyData, zMeshesViewersDestroyResponse, zMeshesViewersListData, zMeshesViewersListResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse } from './zod.gen';
+import type { AlgorithmsListData, AlgorithmsListResponses, DataDeletionsListData, DataDeletionsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponses, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponses, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponses, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponses, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponses, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponses, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponses, DevicesPostprocessingsListData, DevicesPostprocessingsListResponses, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponses, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponses, MeshesTermsRetrieveData, MeshesTermsRetrieveResponses, MeshesUpdateData, MeshesUpdateResponses, MeshesViewersCreateData, MeshesViewersCreateResponses, MeshesViewersDestroyData, MeshesViewersDestroyResponses, MeshesViewersListData, MeshesViewersListResponses, MetricsRetrieveData, MetricsRetrieveResponses, OperatorRequestsListData, OperatorRequestsListResponses, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponses, OperatorRequestsUpdateData, OperatorRequestsUpdateResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersDestroyData, OwnersDestroyResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponses, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersUpdateData, OwnersUpdateResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponses, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponses, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponses, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponses, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesPartitionsRetrieveErrors, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponses, ReadingsArchiveMeshesZipRetrieveData, ReadingsArchiveMeshesZipRetrieveErrors, ReadingsArchiveMeshesZipRetrieveResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, SinksCreateData, SinksCreateResponses, SinksCredentialsCreateData, SinksCredentialsCreateResponses, SinksDestroyData, SinksDestroyResponses, SinksListData, SinksListResponses, SinksRetrieveData, SinksRetrieveResponses, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponses, SinksTermsRetrieveData, SinksTermsRetrieveResponses, SinksUpdateData, SinksUpdateResponses, SourcesCreateData, SourcesCreateResponses, SourcesDestroyData, SourcesDestroyResponses, SourcesListData, SourcesListResponses, SourcesRetrieveData, SourcesRetrieveResponses, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponses, SourcesTermsRetrieveData, SourcesTermsRetrieveResponses, SourcesUpdateData, SourcesUpdateResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses, TermsRetrieveData, TermsRetrieveResponses } from './types.gen';
+import { zAlgorithmsListData, zAlgorithmsListResponse, zDataDeletionsListData, zDataDeletionsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesPostprocessingsBackfillsCreateData, zDevicesPostprocessingsBackfillsCreateResponse, zDevicesPostprocessingsBackfillsListData, zDevicesPostprocessingsBackfillsListResponse, zDevicesPostprocessingsCalibrationsCreateData, zDevicesPostprocessingsCalibrationsCreateResponse, zDevicesPostprocessingsCalibrationsDestroyData, zDevicesPostprocessingsCalibrationsDestroyResponse, zDevicesPostprocessingsCalibrationsListData, zDevicesPostprocessingsCalibrationsListResponse, zDevicesPostprocessingsCreateData, zDevicesPostprocessingsCreateResponse, zDevicesPostprocessingsDestroyData, zDevicesPostprocessingsDestroyResponse, zDevicesPostprocessingsListData, zDevicesPostprocessingsListResponse, zDevicesPostprocessingsRetrieveData, zDevicesPostprocessingsRetrieveResponse, zDevicesPostprocessingsUpdateData, zDevicesPostprocessingsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesTermsAcceptanceCreateData, zMeshesTermsAcceptanceCreateResponse, zMeshesTermsRetrieveData, zMeshesTermsRetrieveResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMeshesViewersCreateData, zMeshesViewersCreateResponse, zMeshesViewersDestroyData, zMeshesViewersDestroyResponse, zMeshesViewersListData, zMeshesViewersListResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOperatorRequestsListData, zOperatorRequestsListResponse, zOperatorRequestsRetrieveData, zOperatorRequestsRetrieveResponse, zOperatorRequestsUpdateData, zOperatorRequestsUpdateResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersDestroyData, zOwnersDestroyResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeOperatorRequestCreateData, zOwnersMeOperatorRequestCreateResponse, zOwnersMeOperatorRequestRetrieveData, zOwnersMeOperatorRequestRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeTermsAcceptanceCreateData, zOwnersMeTermsAcceptanceCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersUpdateData, zOwnersUpdateResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zPostprocessingBlueprintsVersionsCreateData, zPostprocessingBlueprintsVersionsCreateResponse, zPostprocessingBlueprintsVersionsListData, zPostprocessingBlueprintsVersionsListResponse, zPostprocessingBlueprintsVersionsRetrieveData, zPostprocessingBlueprintsVersionsRetrieveResponse, zReadingsArchiveMeshesCredentialsCreateData, zReadingsArchiveMeshesCredentialsCreateResponse, zReadingsArchiveMeshesPartitionsRetrieveData, zReadingsArchiveMeshesRetrieveData, zReadingsArchiveMeshesRetrieveResponse, zReadingsArchiveMeshesZipRetrieveData, zReadingsArchiveMeshesZipRetrieveResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zSinksCreateData, zSinksCreateResponse, zSinksCredentialsCreateData, zSinksCredentialsCreateResponse, zSinksDestroyData, zSinksDestroyResponse, zSinksListData, zSinksListResponse, zSinksRetrieveData, zSinksRetrieveResponse, zSinksTermsAcceptanceCreateData, zSinksTermsAcceptanceCreateResponse, zSinksTermsRetrieveData, zSinksTermsRetrieveResponse, zSinksUpdateData, zSinksUpdateResponse, zSourcesCreateData, zSourcesCreateResponse, zSourcesDestroyData, zSourcesDestroyResponse, zSourcesListData, zSourcesListResponse, zSourcesRetrieveData, zSourcesRetrieveResponse, zSourcesTermsAcceptanceCreateData, zSourcesTermsAcceptanceCreateResponse, zSourcesTermsRetrieveData, zSourcesTermsRetrieveResponse, zSourcesUpdateData, zSourcesUpdateResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse, zTermsRetrieveData, zTermsRetrieveResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -38,6 +38,30 @@ export const algorithmsList = <ThrowOnError extends boolean = false>(options?: O
 });
 
 /**
+ * List scheduled deletions of stored readings, newest first. Superusers only.
+ *
+ * A mesh's readings are scheduled for deletion when the mesh is deleted,
+ * moved off its source, or its source's terms lapse. They stay in place
+ * until `delete_after`, then are deleted from both the time-series store
+ * and the archive.
+ *
+ * Args:
+ * status: `pending`, the default, `cancelled`, `done`, or `all`.
+ * mesh_id: Restrict to one mesh.
+ */
+export const dataDeletionsList = <ThrowOnError extends boolean = false>(options?: Options<DataDeletionsListData, ThrowOnError>) => (options?.client ?? client).get<DataDeletionsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDataDeletionsListData.parseAsync(data),
+    responseValidator: async (data) => await zDataDeletionsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/data-deletions',
+    ...options
+});
+
+/**
  * List the caller's registered devices, or every device for a superuser.
  *
  * Args:
@@ -45,8 +69,8 @@ export const algorithmsList = <ThrowOnError extends boolean = false>(options?: O
  * is_gateway: Restrict to gateways, or to plain nodes when false.
  * is_allowed: Restrict to allowed registrations, or to rejected ones
  * when false.
- * has_postprocessing: Restrict to devices with a blueprint attached,
- * or to those without one when false.
+ * has_postprocessing: Restrict to devices with a postprocessing
+ * attached, or to those without one when false.
  * label: Restrict by device label.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
@@ -127,6 +151,12 @@ export const devicesRetrieve = <ThrowOnError extends boolean = false>(options: O
  * Position and identity fields are filled in from what the device reports
  * until they are set here, after which the values given take precedence.
  * Disallowing a gateway stops its traffic being decoded.
+ *
+ * `archive_enabled` stores the device's readings in the Parquet archive from
+ * then on. It is accepted only on a mesh owned by an operator and on
+ * instances that run the archive. Turning it off stops storing new readings
+ * and keeps those already stored. The setting is rolled back if the
+ * pipeline cannot be told about it.
  */
 export const devicesUpdate = <ThrowOnError extends boolean = false>(options: Options<DevicesUpdateData, ThrowOnError>) => (options.client ?? client).put<DevicesUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesUpdateData.parseAsync(data),
@@ -216,6 +246,240 @@ export const devicesMeasurementsUpdate = <ThrowOnError extends boolean = false>(
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List the blueprints attached to a device, with their wiring, outputs and state.
+ *
+ * `problems` lists what keeps a postprocessing from being enabled, and is
+ * empty once it can run.
+ */
+export const devicesPostprocessingsList = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsListData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsListData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings',
+    ...options
+});
+
+/**
+ * Attach a blueprint to a device.
+ *
+ * Slots not given in `input_bindings` are bound to the device's channel
+ * named by their `default_channel` when it has one. The derived channels
+ * the blueprint produces are registered on the device straight away, so
+ * detectors and ranges can be configured on them before any data
+ * arrives. A postprocessing starts disabled unless `is_enabled` is set,
+ * and can only be enabled once every slot is bound and every step that
+ * needs one has a calibration. Changes are rolled back if the stream
+ * tier cannot be notified.
+ *
+ * Args:
+ * blueprint_id: Blueprint to attach, the caller's own or a public one. Required.
+ * blueprint_version: Version number. Defaults to the latest.
+ * input_bindings: {slot: measurement id of this device}.
+ * output_prefix: Prepended to every derived field name, so a blueprint can run twice on one device.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Defaults to half the device's
+ * reading interval.
+ * is_enabled: Start running straight away. Defaults to false.
+ */
+export const devicesPostprocessingsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCreateData, ThrowOnError>) => (options.client ?? client).post<DevicesPostprocessingsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Detach a blueprint from a device.
+ *
+ * Its derived channels are removed from the device, while readings
+ * already stored remain queryable. Refused while another postprocessing
+ * on the device reads one of those channels.
+ */
+export const devicesPostprocessingsDestroy = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsDestroyData, ThrowOnError>) => (options.client ?? client).delete<DevicesPostprocessingsDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}',
+    ...options
+});
+
+/**
+ * Return one blueprint attachment on a device.
+ */
+export const devicesPostprocessingsRetrieve = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsRetrieveData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}',
+    ...options
+});
+
+/**
+ * Rewire, move to another version, or enable or disable a postprocessing.
+ *
+ * Moving to another version keeps bindings for slots it still declares
+ * and calibrations for steps with the same key and algorithm. Derived
+ * channels the new wiring no longer produces are removed from the device,
+ * which is refused while another postprocessing reads them. Changes are
+ * rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * blueprint_version: Version number of the same blueprint.
+ * input_bindings: {slot: measurement id of this device}. Null unbinds a slot. Slots not given keep
+ * their binding.
+ * output_prefix: Prepended to every derived field name.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Null uses half the device's
+ * reading interval.
+ * is_enabled: Run or stop the postprocessing.
+ */
+export const devicesPostprocessingsUpdate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsUpdateData, ThrowOnError>) => (options.client ?? client).put<DevicesPostprocessingsUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the backfills requested for a postprocessing and how they went, oldest first.
+ */
+export const devicesPostprocessingsBackfillsList = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsBackfillsListData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsBackfillsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsBackfillsListData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsBackfillsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills',
+    ...options
+});
+
+/**
+ * Recompute a postprocessing's derived channels over stored history.
+ *
+ * Readings already stored between `start` and `stop` are run through the
+ * postprocessing with the calibration in force when each was taken, and
+ * the results replace any derived values stored for the same times.
+ * Backfilled values are stored and archived but never raise alarms. The
+ * request is queued and runs within about a minute; its progress is
+ * reported in `status`. The postprocessing must be runnable, although it
+ * does not need to be enabled.
+ *
+ * Args:
+ * start: Start of the range to recompute.
+ * stop: End of the range. Defaults to now. At most 90 days after `start`.
+ * include_dependants: Also recompute every enabled postprocessing that reads this one's outputs. Defaults
+ * to false.
+ */
+export const devicesPostprocessingsBackfillsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsBackfillsCreateData, ThrowOnError>) => (options.client ?? client).post<DevicesPostprocessingsBackfillsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsBackfillsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsBackfillsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the calibration history of a postprocessing, per step and oldest first.
+ */
+export const devicesPostprocessingsCalibrationsList = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsListData, ThrowOnError>) => (options.client ?? client).get<DevicesPostprocessingsCalibrationsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsListData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCalibrationsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations',
+    ...options
+});
+
+/**
+ * Record a calibration for one step, in force from `valid_from` onwards.
+ *
+ * History is kept: readings are processed with the calibration in force
+ * when they were taken, so recalibrating a sensor never rewrites the
+ * past. Every required calibration parameter of the step's algorithm
+ * must be given. Rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * step_key: Step being calibrated.
+ * params: Calibration parameters of the step's algorithm.
+ * valid_from: When this calibration takes effect. Defaults to now.
+ */
+export const devicesPostprocessingsCalibrationsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsCreateData, ThrowOnError>) => (options.client ?? client).post<DevicesPostprocessingsCalibrationsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCalibrationsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a calibration recorded by mistake.
+ *
+ * Refused when it would leave an enabled postprocessing without a
+ * calibration it needs. To change a calibration from some point onwards,
+ * record a new one instead.
+ */
+export const devicesPostprocessingsCalibrationsDestroy = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsDestroyData, ThrowOnError>) => (options.client ?? client).delete<DevicesPostprocessingsCalibrationsDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zDevicesPostprocessingsCalibrationsDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations/{calibration_id}',
+    ...options
 });
 
 /**
@@ -379,10 +643,35 @@ export const meshesCreate = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
+ * Return the terms an owner accepts to create a mesh on the default broker.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the mesh, or when moving a mesh from a
+ * source onto the default broker. The footnote states how long the mesh's
+ * data is kept.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const meshesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<MeshesTermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<MeshesTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/terms',
+    ...options
+});
+
+/**
  * Delete a mesh and every device registered on it.
  *
  * Its gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * removed if that fails. The mesh's stored readings are deleted after the
+ * grace period, so export them first if they are needed.
  */
 export const meshesDestroy = <ThrowOnError extends boolean = false>(options: Options<MeshesDestroyData, ThrowOnError>) => (options.client ?? client).delete<MeshesDestroyResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesDestroyData.parseAsync(data),
@@ -417,8 +706,22 @@ export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Update a mesh.
  *
- * Changing the pre-shared key redistributes it to every allowed gateway
- * on the mesh, and the whole update is rolled back if that fails.
+ * Changing the channel_id, the pre-shared key or the source redistributes
+ * them to every allowed gateway on the mesh, and the whole update is
+ * rolled back if that fails. Once the source changes, the mesh's gateways
+ * are only accepted through the new one.
+ *
+ * Args:
+ * source_id: Source to bridge the mesh's traffic from, which must be one
+ * the caller created, or any source for a superuser, and not paused.
+ * Null moves it to the default broker. Moving a mesh off a source
+ * schedules the readings stored until then for deletion after the
+ * grace period; moving it back within that period cancels it.
+ * terms_version: The `version` of the mesh terms accepted. Required when
+ * moving the mesh onto the default broker unless it already holds a
+ * current acceptance; ignored otherwise.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const meshesUpdate = <ThrowOnError extends boolean = false>(options: Options<MeshesUpdateData, ThrowOnError>) => (options.client ?? client).put<MeshesUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesUpdateData.parseAsync(data),
@@ -429,6 +732,36 @@ export const meshesUpdate = <ThrowOnError extends boolean = false>(options: Opti
             type: 'apiKey'
         }],
     url: '/meshes/{mesh_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Accept the current mesh terms again, renewing the mesh. Its owner only.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the mesh is paused: its gateways are deregistered and its
+ * readings are scheduled for deletion. Renewing resumes it and cancels the
+ * deletion, as long as the grace period has not ended. A mesh on a source
+ * is covered by the source's terms and answers `409`.
+ *
+ * Args:
+ * terms_version: The `version` of the mesh terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const meshesTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<MeshesTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<MeshesTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/{mesh_id}/terms-acceptance',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -529,6 +862,65 @@ export const metricsRetrieve = <ThrowOnError extends boolean = false>(options?: 
 });
 
 /**
+ * List operator requests, newest first. Superusers only.
+ *
+ * Args:
+ * status: `pending`, the default, `approved`, `rejected`, or `all`.
+ */
+export const operatorRequestsList = <ThrowOnError extends boolean = false>(options?: Options<OperatorRequestsListData, ThrowOnError>) => (options?.client ?? client).get<OperatorRequestsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOperatorRequestsListData.parseAsync(data),
+    responseValidator: async (data) => await zOperatorRequestsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/operator-requests',
+    ...options
+});
+
+/**
+ * Return one operator request. Superusers only.
+ */
+export const operatorRequestsRetrieve = <ThrowOnError extends boolean = false>(options: Options<OperatorRequestsRetrieveData, ThrowOnError>) => (options.client ?? client).get<OperatorRequestsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOperatorRequestsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zOperatorRequestsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/operator-requests/{request_id}',
+    ...options
+});
+
+/**
+ * Approve or reject a pending operator request. Superusers only.
+ *
+ * Approving makes the requester an operator. The requester is emailed
+ * the decision, and the decision stands even if that email fails.
+ *
+ * Args:
+ * decision: `approve` or `reject`. Required.
+ * note: Message to the requester, included in the email. Optional.
+ */
+export const operatorRequestsUpdate = <ThrowOnError extends boolean = false>(options: Options<OperatorRequestsUpdateData, ThrowOnError>) => (options.client ?? client).put<OperatorRequestsUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOperatorRequestsUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zOperatorRequestsUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/operator-requests/{request_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List registered owners.
  *
  * A superuser sees the full record for every owner. Everyone else,
@@ -551,9 +943,16 @@ export const ownersList = <ThrowOnError extends boolean = false>(options?: Optio
 /**
  * Register an owner and return its API key.
  *
- * The only write on this API that needs no authentication. The key is
- * shown in this response and cannot be retrieved again afterwards. A new
- * owner stays inactive until its email address is verified.
+ * Signing up accepts the current account terms, which are recorded. The
+ * key is shown in this response and cannot be retrieved again afterwards.
+ * A new owner stays inactive until its email address is verified.
+ *
+ * Args:
+ * terms_version: The `version` of the account terms accepted, as
+ * served by the terms endpoint. Required, and refused once the
+ * terms have changed.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const ownersCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersCreateData.parseAsync(data),
@@ -572,11 +971,28 @@ export const ownersCreate = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
+ * Remove an owner, along with their meshes and devices. Superusers only.
+ *
+ * Their gateways are deregistered from the decoder first, and nothing is
+ * removed if that fails.
+ */
+export const ownersDestroy = <ThrowOnError extends boolean = false>(options: Options<OwnersDestroyData, ThrowOnError>) => (options.client ?? client).delete<OwnersDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/{owner_id}',
+    ...options
+});
+
+/**
  * Return one owner.
  *
  * The full record comes back when the caller is the owner being requested, or
- * a superuser: email address, verification state, Django admin access and the
- * last password login. Everyone else gets the public fields only.
+ * a superuser. Everyone else gets the public fields only.
  */
 export const ownersRetrieve = <ThrowOnError extends boolean = false>(options: Options<OwnersRetrieveData, ThrowOnError>) => (options.client ?? client).get<OwnersRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersRetrieveData.parseAsync(data),
@@ -588,6 +1004,32 @@ export const ownersRetrieve = <ThrowOnError extends boolean = false>(options: Op
         }],
     url: '/owners/{owner_id}',
     ...options
+});
+
+/**
+ * Change an owner's role. Superusers only.
+ *
+ * Args:
+ * role: `member`, the default, or `operator`, which may also manage
+ * sources and archive devices. Granting `operator` also approves any
+ * pending operator request from this owner, without emailing them.
+ * Taking it away stops archiving the owner's devices, and the role
+ * is kept if the pipeline cannot be told.
+ */
+export const ownersUpdate = <ThrowOnError extends boolean = false>(options: Options<OwnersUpdateData, ThrowOnError>) => (options.client ?? client).put<OwnersUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/{owner_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -721,6 +1163,47 @@ export const ownersMeDevicesRetrieve = <ThrowOnError extends boolean = false>(op
 });
 
 /**
+ * Return the caller's most recent operator request and its status.
+ */
+export const ownersMeOperatorRequestRetrieve = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeOperatorRequestRetrieveData, ThrowOnError>) => (options?.client ?? client).get<OwnersMeOperatorRequestRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersMeOperatorRequestRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersMeOperatorRequestRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/me/operator-request',
+    ...options
+});
+
+/**
+ * Ask for the operator role, which lets an owner create sources.
+ *
+ * Every superuser is emailed and one of them approves or rejects the
+ * request. Only one request can be pending at a time, and an owner who
+ * is already an operator cannot file one. Limited to 3 requests a day.
+ *
+ * Args:
+ * reason: Why the role is needed. Shown to superusers. Required.
+ */
+export const ownersMeOperatorRequestCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeOperatorRequestCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersMeOperatorRequestCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersMeOperatorRequestCreateData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersMeOperatorRequestCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/me/operator-request',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Send a fresh verification email to the authenticated owner.
  */
 export const ownersMeResendVerificationCreate = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeResendVerificationCreateData, ThrowOnError>) => (options?.client ?? client).post<OwnersMeResendVerificationCreateResponses, unknown, ThrowOnError>({
@@ -750,6 +1233,32 @@ export const ownersMeRotateKeyCreate = <ThrowOnError extends boolean = false>(op
         }],
     url: '/owners/me/rotate-key',
     ...options
+});
+
+/**
+ * Accept the current account terms, when they have changed since signing up.
+ *
+ * Account terms never lapse, so this pauses and resumes nothing.
+ *
+ * Args:
+ * terms_version: The `version` of the account terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const ownersMeTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersMeTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zOwnersMeTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zOwnersMeTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/owners/me/terms-acceptance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -795,7 +1304,12 @@ export const ownersVerifyEmailRetrieve = <ThrowOnError extends boolean = false>(
 });
 
 /**
- * List the caller's postprocessing blueprints, or every one for a superuser.
+ * List the postprocessing blueprints the caller may use: their own and public ones.
+ *
+ * A superuser sees every blueprint.
+ *
+ * Args:
+ * owned: Restrict to the caller's own blueprints, excluding public ones.
  */
 export const postprocessingBlueprintsList = <ThrowOnError extends boolean = false>(options?: Options<PostprocessingBlueprintsListData, ThrowOnError>) => (options?.client ?? client).get<PostprocessingBlueprintsListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsListData.parseAsync(data),
@@ -810,8 +1324,21 @@ export const postprocessingBlueprintsList = <ThrowOnError extends boolean = fals
 });
 
 /**
- * Create a postprocessing blueprint, an ordered set of steps that compute
- * new channels from a device's readings.
+ * Create a postprocessing blueprint together with its first version.
+ *
+ * A version declares the input slots it reads and an ordered list of
+ * steps. Each step runs one algorithm, takes its inputs from a slot or
+ * from an earlier step's output, and names the derived channels its
+ * outputs are stored as. Calibration parameters are not set here: each
+ * device supplies its own when the blueprint is attached to it.
+ *
+ * Args:
+ * name: Unique among the caller's blueprints.
+ * description: Free text.
+ * is_public: Lets any owner attach the blueprint to their devices. Defaults to false.
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing this version.
  */
 export const postprocessingBlueprintsCreate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsCreateData, ThrowOnError>) => (options.client ?? client).post<PostprocessingBlueprintsCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsCreateData.parseAsync(data),
@@ -830,10 +1357,9 @@ export const postprocessingBlueprintsCreate = <ThrowOnError extends boolean = fa
 });
 
 /**
- * Delete a postprocessing blueprint.
+ * Delete a blueprint and all of its versions.
  *
- * Devices using it keep recording telemetry and simply stop producing
- * computed channels.
+ * Refused while any device still uses one of its versions.
  */
 export const postprocessingBlueprintsDestroy = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsDestroyData, ThrowOnError>) => (options.client ?? client).delete<PostprocessingBlueprintsDestroyResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsDestroyData.parseAsync(data),
@@ -848,7 +1374,7 @@ export const postprocessingBlueprintsDestroy = <ThrowOnError extends boolean = f
 });
 
 /**
- * Return one postprocessing blueprint and its steps.
+ * Return one postprocessing blueprint and its latest version.
  */
 export const postprocessingBlueprintsRetrieve = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsRetrieveData, ThrowOnError>) => (options.client ?? client).get<PostprocessingBlueprintsRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsRetrieveData.parseAsync(data),
@@ -863,10 +1389,10 @@ export const postprocessingBlueprintsRetrieve = <ThrowOnError extends boolean = 
 });
 
 /**
- * Update a postprocessing blueprint.
+ * Rename or describe a blueprint, or change whether it is public.
  *
- * Supplying `steps` replaces the whole ordered list; omitting it leaves
- * the existing steps untouched.
+ * Steps cannot be changed here: create a new version instead. Making a
+ * blueprint private does not detach it from devices already using it.
  */
 export const postprocessingBlueprintsUpdate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsUpdateData, ThrowOnError>) => (options.client ?? client).put<PostprocessingBlueprintsUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBlueprintsUpdateData.parseAsync(data),
@@ -882,6 +1408,154 @@ export const postprocessingBlueprintsUpdate = <ThrowOnError extends boolean = fa
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List every version of a blueprint, oldest first.
+ */
+export const postprocessingBlueprintsVersionsList = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsVersionsListData, ThrowOnError>) => (options.client ?? client).get<PostprocessingBlueprintsVersionsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBlueprintsVersionsListData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBlueprintsVersionsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-blueprints/{blueprint_id}/versions',
+    ...options
+});
+
+/**
+ * Add a version of a blueprint.
+ *
+ * Versions are immutable, so this is how a blueprint's steps change.
+ * Devices keep running the version they use until they are moved to the
+ * new one. Keeping a step's `key` and algorithm lets a device keep its
+ * calibration when it moves.
+ *
+ * Args:
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing what changed.
+ */
+export const postprocessingBlueprintsVersionsCreate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsVersionsCreateData, ThrowOnError>) => (options.client ?? client).post<PostprocessingBlueprintsVersionsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBlueprintsVersionsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBlueprintsVersionsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-blueprints/{blueprint_id}/versions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return one version of a blueprint and its steps.
+ */
+export const postprocessingBlueprintsVersionsRetrieve = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBlueprintsVersionsRetrieveData, ThrowOnError>) => (options.client ?? client).get<PostprocessingBlueprintsVersionsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBlueprintsVersionsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBlueprintsVersionsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-blueprints/{blueprint_id}/versions/{number}',
+    ...options
+});
+
+/**
+ * List the hourly Parquet files archived for a mesh, oldest first.
+ *
+ * Only devices whose archive is switched on are stored, from the moment it
+ * was switched on, so the list stays empty until one of them reports.
+ * Available to the mesh's owner while they are an operator, and to
+ * superusers.
+ *
+ * Args:
+ * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
+ * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
+ */
+export const readingsArchiveMeshesRetrieve = <ThrowOnError extends boolean = false>(options: Options<ReadingsArchiveMeshesRetrieveData, ThrowOnError>) => (options.client ?? client).get<ReadingsArchiveMeshesRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReadingsArchiveMeshesRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zReadingsArchiveMeshesRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/readings/archive/meshes/{mesh_id}',
+    ...options
+});
+
+/**
+ * Issue temporary S3 credentials that can read this mesh's archive and nothing else.
+ *
+ * Use them with DuckDB, pandas or any S3 client to query the archive as a
+ * partitioned dataset. The secret is shown in this response only. The
+ * credentials cannot be revoked and stay valid until `expires_at`, even if
+ * the caller loses access to the mesh in the meantime. Available to the
+ * mesh's owner while they are an operator, and to superusers.
+ */
+export const readingsArchiveMeshesCredentialsCreate = <ThrowOnError extends boolean = false>(options: Options<ReadingsArchiveMeshesCredentialsCreateData, ThrowOnError>) => (options.client ?? client).post<ReadingsArchiveMeshesCredentialsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReadingsArchiveMeshesCredentialsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zReadingsArchiveMeshesCredentialsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/readings/archive/meshes/{mesh_id}/credentials',
+    ...options
+});
+
+/**
+ * Download one hour of a mesh's archive as a Parquet file.
+ *
+ * Answers with a redirect to a temporary link, valid for the same time as
+ * issued credentials, that any HTTP client can follow. The file does not
+ * carry `mesh_id` as a column. Available to the mesh's owner while they are
+ * an operator, and to superusers.
+ */
+export const readingsArchiveMeshesPartitionsRetrieve = <ThrowOnError extends boolean = false>(options: Options<ReadingsArchiveMeshesPartitionsRetrieveData, ThrowOnError>) => (options.client ?? client).get<unknown, ReadingsArchiveMeshesPartitionsRetrieveErrors, ThrowOnError>({
+    requestValidator: async (data) => await zReadingsArchiveMeshesPartitionsRetrieveData.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/readings/archive/meshes/{mesh_id}/partitions/{day}/{hour}',
+    ...options
+});
+
+/**
+ * Download a range of a mesh's archive as one zip, a folder per day.
+ *
+ * Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole
+ * archive is one download. The zip streams as the files are read, and holds
+ * what the file list shows at the time of the request. For querying in place,
+ * issue credentials instead. Available to the mesh's owner while they are an
+ * operator, and to superusers.
+ *
+ * Args:
+ * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
+ * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
+ */
+export const readingsArchiveMeshesZipRetrieve = <ThrowOnError extends boolean = false>(options: Options<ReadingsArchiveMeshesZipRetrieveData, ThrowOnError>) => (options.client ?? client).get<ReadingsArchiveMeshesZipRetrieveResponses, ReadingsArchiveMeshesZipRetrieveErrors, ThrowOnError>({
+    requestValidator: async (data) => await zReadingsArchiveMeshesZipRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zReadingsArchiveMeshesZipRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/readings/archive/meshes/{mesh_id}/zip',
+    ...options
 });
 
 /**
@@ -1014,6 +1688,363 @@ export const readingsMeshesNodesQualityRetrieve = <ThrowOnError extends boolean 
 });
 
 /**
+ * List the sinks the caller created, or every sink for a superuser. Operators only.
+ *
+ * Each carries how many consumers are connected, null for all of them when
+ * the broker cannot be asked. Passwords are never included.
+ */
+export const sinksList = <ThrowOnError extends boolean = false>(options?: Options<SinksListData, ThrowOnError>) => (options?.client ?? client).get<SinksListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksListData.parseAsync(data),
+    responseValidator: async (data) => await zSinksListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks',
+    ...options
+});
+
+/**
+ * Create a sink and return the credentials its consumer subscribes with. Operators only.
+ *
+ * The consumer connects to `broker` over TLS as `username` with the returned
+ * password and subscribes under `topic_filter`, where each message is one
+ * reading or alarm as JSON. The password is shown in this response only.
+ * The caller must first accept the current sink terms. Nothing is kept if
+ * the broker or the pipeline cannot be set up, or if the broker does not
+ * yet keep sink topics private.
+ *
+ * Args:
+ * label: Name for the sink.
+ * streams: Which readings are sent: `decoded`, `derived` and `alarms`.
+ * Defaults to `decoded`. Derived readings are sent only by
+ * instances that run postprocessing, and alarms only by those that
+ * run quality checks.
+ * mesh_ids: Meshes whose every node is sent, including nodes that
+ * appear later. Each must be one the caller may edit, owned by an
+ * operator.
+ * device_ids: Registrations of single devices to send, under the same
+ * conditions.
+ * terms_version: The `version` of the sink terms the caller accepted.
+ * Required unless the instance does not enforce terms.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sinksCreate = <ThrowOnError extends boolean = false>(options: Options<SinksCreateData, ThrowOnError>) => (options.client ?? client).post<SinksCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSinksCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return the terms an operator must accept to create a sink. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the sink. Answers `404` on an instance that
+ * does not enforce terms or has no sinks.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sinksTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SinksTermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<SinksTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSinksTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/terms',
+    ...options
+});
+
+/**
+ * Delete a sink, revoke its credentials and disconnect its consumers. Operators only.
+ *
+ * A sink with meshes or devices attached cannot be deleted. Nothing is
+ * removed if the broker cannot be told. Its terms acceptances are kept.
+ */
+export const sinksDestroy = <ThrowOnError extends boolean = false>(options: Options<SinksDestroyData, ThrowOnError>) => (options.client ?? client).delete<SinksDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zSinksDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/{sink_id}',
+    ...options
+});
+
+/**
+ * Return one sink and how many consumers are connected to it. Operators only.
+ *
+ * An operator can read only the sinks they created; a superuser can read
+ * any. The password is never included.
+ */
+export const sinksRetrieve = <ThrowOnError extends boolean = false>(options: Options<SinksRetrieveData, ThrowOnError>) => (options.client ?? client).get<SinksRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSinksRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/{sink_id}',
+    ...options
+});
+
+/**
+ * Update a sink. Operators only, on the sinks they created.
+ *
+ * Any subset of the create fields may be sent, except the terms. A list
+ * sent replaces the current one, so an empty `mesh_ids` detaches every
+ * mesh. Changes the pipeline cannot be told about are rolled back.
+ */
+export const sinksUpdate = <ThrowOnError extends boolean = false>(options: Options<SinksUpdateData, ThrowOnError>) => (options.client ?? client).put<SinksUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zSinksUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/{sink_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Replace a sink's password and disconnect its consumers. Operators only, on the sinks they created.
+ *
+ * The new password is shown in this response only. The old one is kept if
+ * the broker cannot be told.
+ */
+export const sinksCredentialsCreate = <ThrowOnError extends boolean = false>(options: Options<SinksCredentialsCreateData, ThrowOnError>) => (options.client ?? client).post<SinksCredentialsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksCredentialsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSinksCredentialsCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/{sink_id}/credentials',
+    ...options
+});
+
+/**
+ * Accept the current sink terms again, renewing the sink. Only the operator who created it.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the sink is paused: nothing is sent and its consumers are
+ * refused. Renewing a paused sink resumes it with the same credentials.
+ * Answers `404` on an instance that does not enforce terms.
+ *
+ * Args:
+ * terms_version: The `version` of the sink terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sinksTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<SinksTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<SinksTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSinksTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/{sink_id}/terms-acceptance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the sources the caller created, or every source for a superuser. Operators only.
+ *
+ * Each carries its bridge's status, `unknown` for all of them when the
+ * broker cannot be asked. Remote passwords are never included.
+ */
+export const sourcesList = <ThrowOnError extends boolean = false>(options?: Options<SourcesListData, ThrowOnError>) => (options?.client ?? client).get<SourcesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesListData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources',
+    ...options
+});
+
+/**
+ * Create a source and start bridging its remote topic into this instance. Operators only.
+ *
+ * The caller must first accept the current source terms. The acceptance
+ * is recorded with the source. Nothing is kept if the bridge cannot be set
+ * up.
+ *
+ * Args:
+ * server: Remote broker as `host:port`. Cannot be this instance's own
+ * broker or one the server has blocked.
+ * ssl: Connect to the remote broker over TLS. Defaults to true.
+ * username: Remote broker username, if it requires one.
+ * password: Remote broker password. Accepted but never returned.
+ * topic: Remote topic filter, for example `msh/EU_868/2/e/MyChannel/#`.
+ * `$share`, `$SYS` and filters the server has blocked, such as `#`,
+ * are rejected.
+ * qos: 0 or 1. Defaults to 1.
+ * terms_version: The `version` of the source terms the caller accepted.
+ * Required, and refused once the terms have changed.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sourcesCreate = <ThrowOnError extends boolean = false>(options: Options<SourcesCreateData, ThrowOnError>) => (options.client ?? client).post<SourcesCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Return the terms an operator must accept to add a source. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the source. The footnote states how long
+ * the source's data is kept.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sourcesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SourcesTermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<SourcesTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/terms',
+    ...options
+});
+
+/**
+ * Delete a source and stop bridging it. Operators only, on the sources they created.
+ *
+ * A source with meshes attached cannot be deleted. Nothing is removed if
+ * the bridge cannot be torn down. Its terms acceptances are kept.
+ */
+export const sourcesDestroy = <ThrowOnError extends boolean = false>(options: Options<SourcesDestroyData, ThrowOnError>) => (options.client ?? client).delete<SourcesDestroyResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesDestroyData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesDestroyResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}',
+    ...options
+});
+
+/**
+ * Return one source and the live status of its bridge. Operators only.
+ *
+ * An operator can read only the sources they created; a superuser can read
+ * any. The status is `unknown` when the broker cannot be reached to check
+ * it, and `paused` once its terms have lapsed.
+ */
+export const sourcesRetrieve = <ThrowOnError extends boolean = false>(options: Options<SourcesRetrieveData, ThrowOnError>) => (options.client ?? client).get<SourcesRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}',
+    ...options
+});
+
+/**
+ * Update a source and reconfigure its bridge. Operators only, on the sources they created.
+ *
+ * Any subset of the create fields may be sent. The update is rolled back
+ * if the bridge cannot be reconfigured. A paused source is updated
+ * without touching the broker. Send an empty `password` to remove it.
+ */
+export const sourcesUpdate = <ThrowOnError extends boolean = false>(options: Options<SourcesUpdateData, ThrowOnError>) => (options.client ?? client).put<SourcesUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Accept the current source terms again, renewing the source. Only the operator who created it.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the source is paused. Renewing a paused source restarts its
+ * bridge and cancels the deletion of its meshes' data, as long as the
+ * grace period has not ended.
+ *
+ * Args:
+ * terms_version: The `version` of the source terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sourcesTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<SourcesTermsAcceptanceCreateData, ThrowOnError>) => (options.client ?? client).post<SourcesTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/{source_id}/terms-acceptance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List the known telemetry variants, such as device or environment metrics.
  *
  * Variants are registered automatically as devices report them, so there is
@@ -1133,4 +2164,28 @@ export const telemetryVariantsMeasurementsUpdate = <ThrowOnError extends boolean
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Return the account terms, which signing up accepts.
+ *
+ * They cover the account only (Terms of Use and Privacy Policy): signing up
+ * stores no mesh data. Creating a mesh on the default broker accepts the
+ * mesh terms instead. Every statement must be accepted. Send the returned
+ * `version` back as `terms_version` when signing up. They never lapse.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const termsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<TermsRetrieveData, ThrowOnError>) => (options?.client ?? client).get<TermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/terms',
+    ...options
 });

@@ -10,6 +10,8 @@ import {
   OWNER_BO_EMAIL,
   OWNER_BO_PASSWORD,
   OWNER_EMAIL,
+  OWNER_OPERATOR_EMAIL,
+  OWNER_OPERATOR_PASSWORD,
   OWNER_PASSWORD,
   OWNER_STAFF_EMAIL,
   OWNER_STAFF_PASSWORD,
@@ -23,6 +25,7 @@ export const SEED_ACCOUNTS = [
   { key: "ada", email: OWNER_EMAIL, password: OWNER_PASSWORD, name: "Ada Owner", role: "owner" as const },
   { key: "bo", email: OWNER_BO_EMAIL, password: OWNER_BO_PASSWORD, name: "Bo Owner", role: "owner" as const },
   { key: "admin", email: OWNER_ADMIN_EMAIL, password: OWNER_ADMIN_PASSWORD, name: "Admin Superuser", role: "superuser" as const },
+  { key: "operator", email: OWNER_OPERATOR_EMAIL, password: OWNER_OPERATOR_PASSWORD, name: "Olu Operator", role: "operator" as const },
   { key: "staff", email: OWNER_STAFF_EMAIL, password: OWNER_STAFF_PASSWORD, name: "Pat Staff", role: "staff" as const },
 ] as const;
 
@@ -86,11 +89,12 @@ export async function seedStore(auth: MockAuth): Promise<Store> {
       createdAt: t0,
       lastLogin: null,
       alarmEmailCooldownSeconds: null,
+      statusAlertsEnabled: false,
     };
     actors.set(actor.id, actor);
     ids[account.key] = actor.id;
   }
-  return createStore({ adaId: ids.ada, boId: ids.bo, actors });
+  return createStore({ adaId: ids.ada, boId: ids.bo, operatorId: ids.operator, actors });
 }
 
 export function stampLogin(actor: Actor): Actor {

@@ -1,10 +1,12 @@
 import type { OwnerProfile, OwnerPublic } from "@mtt/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { authRepository } from "@/features/auth/repository";
+import { canManageSources } from "@/features/source/model";
 
 export function useOwnerDirectory(): {
   me: OwnerProfile | undefined;
   isSuperuser: boolean;
+  isOperator: boolean;
   meId: string | undefined;
   owners: readonly OwnerPublic[];
   ownerName: (ownerId: string) => string;
@@ -18,6 +20,7 @@ export function useOwnerDirectory(): {
   return {
     me: me.data,
     isSuperuser: me.data?.is_superuser === true,
+    isOperator: canManageSources(me.data),
     meId: me.data?.id,
     owners: owners.data ?? [],
     ownerName: (ownerId) => namesById.get(ownerId) ?? ownerId,

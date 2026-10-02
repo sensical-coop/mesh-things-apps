@@ -25,6 +25,46 @@ paths:
                 items:
                   $ref: '#/components/schemas/Algorithm'
           description: ''
+  /data-deletions:
+    get:
+      operationId: data_deletions_list
+      description: |-
+        List scheduled deletions of stored readings, newest first. Superusers only.
+
+        A mesh's readings are scheduled for deletion when the mesh is deleted,
+        moved off its source, or its source's terms lapse. They stay in place
+        until `delete_after`, then are deleted from both the time-series store
+        and the archive.
+
+        Args:
+            status: `pending`, the default, `cancelled`, `done`, or `all`.
+            mesh_id: Restrict to one mesh.
+      parameters:
+      - in: query
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        description: Restrict to one mesh.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: '`pending` (the default), `cancelled`, `done`, or `all`.'
+      tags:
+      - data-deletions
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataDeletion'
+          description: ''
   /devices:
     get:
       operationId: devices_list
@@ -36,8 +76,8 @@ paths:
             is_gateway: Restrict to gateways, or to plain nodes when false.
             is_allowed: Restrict to allowed registrations, or to rejected ones
                 when false.
-            has_postprocessing: Restrict to devices with a blueprint attached,
-                or to those without one when false.
+            has_postprocessing: Restrict to devices with a postprocessing
+                attached, or to those without one when false.
             label: Restrict by device label.
 
         List filters use `operator:value` or `operator:v1|v2` (same wire as the
@@ -146,6 +186,12 @@ paths:
         Position and identity fields are filled in from what the device reports
         until they are set here, after which the values given take precedence.
         Disallowing a gateway stops its traffic being decoded.
+
+        `archive_enabled` stores the device's readings in the Parquet archive from
+        then on. It is accepted only on a mesh owned by an operator and on
+        instances that run the archive. Turning it off stops storing new readings
+        and keeps those already stored. The setting is rolled back if the
+        pipeline cannot be told about it.
       parameters:
       - in: path
         name: device_uuid
@@ -322,6 +368,406 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceMeasurement'
           description: ''
+  /devices/{device_uuid}/postprocessings:
+    get:
+      operationId: devices_postprocessings_list
+      description: |-
+        List the blueprints attached to a device, with their wiring, outputs and state.
+
+        `problems` lists what keeps a postprocessing from being enabled, and is
+        empty once it can run.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+    post:
+      operationId: devices_postprocessings_create
+      description: |-
+        Attach a blueprint to a device.
+
+        Slots not given in `input_bindings` are bound to the device's channel
+        named by their `default_channel` when it has one. The derived channels
+        the blueprint produces are registered on the device straight away, so
+        detectors and ranges can be configured on them before any data
+        arrives. A postprocessing starts disabled unless `is_enabled` is set,
+        and can only be enabled once every slot is bound and every step that
+        needs one has a calibration. Changes are rolled back if the stream
+        tier cannot be notified.
+
+        Args:
+            blueprint_id: Blueprint to attach, the caller's own or a public one. Required.
+            blueprint_version: Version number. Defaults to the latest.
+            input_bindings: {slot: measurement id of this device}.
+            output_prefix: Prepended to every derived field name, so a blueprint can run twice on one device.
+            tolerance_seconds: Maximum distance between samples joined into one row. Defaults to half the device's
+                reading interval.
+            is_enabled: Start running straight away. Defaults to false.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}:
+    get:
+      operationId: devices_postprocessings_retrieve
+      description: Return one blueprint attachment on a device.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+    put:
+      operationId: devices_postprocessings_update
+      description: |-
+        Rewire, move to another version, or enable or disable a postprocessing.
+
+        Moving to another version keeps bindings for slots it still declares
+        and calibrations for steps with the same key and algorithm. Derived
+        channels the new wiring no longer produces are removed from the device,
+        which is refused while another postprocessing reads them. Changes are
+        rolled back if the stream tier cannot be notified.
+
+        Args:
+            blueprint_version: Version number of the same blueprint.
+            input_bindings: {slot: measurement id of this device}. Null unbinds a slot. Slots not given keep
+                their binding.
+            output_prefix: Prepended to every derived field name.
+            tolerance_seconds: Maximum distance between samples joined into one row. Null uses half the device's
+                reading interval.
+            is_enabled: Run or stop the postprocessing.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+    delete:
+      operationId: devices_postprocessings_destroy
+      description: |-
+        Detach a blueprint from a device.
+
+        Its derived channels are removed from the device, while readings
+        already stored remain queryable. Refused while another postprocessing
+        on the device reads one of those channels.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills:
+    get:
+      operationId: devices_postprocessings_backfills_list
+      description: List the backfills requested for a postprocessing and how they
+        went, oldest first.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostprocessingBackfill'
+          description: ''
+    post:
+      operationId: devices_postprocessings_backfills_create
+      description: |-
+        Recompute a postprocessing's derived channels over stored history.
+
+        Readings already stored between `start` and `stop` are run through the
+        postprocessing with the calibration in force when each was taken, and
+        the results replace any derived values stored for the same times.
+        Backfilled values are stored and archived but never raise alarms. The
+        request is queued and runs within about a minute; its progress is
+        reported in `status`. The postprocessing must be runnable, although it
+        does not need to be enabled.
+
+        Args:
+            start: Start of the range to recompute.
+            stop: End of the range. Defaults to now. At most 90 days after `start`.
+            include_dependants: Also recompute every enabled postprocessing that reads this one's outputs. Defaults
+                to false.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostprocessingBackfill'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostprocessingBackfill'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostprocessingBackfill'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostprocessingBackfill'
+          description: ''
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations:
+    get:
+      operationId: devices_postprocessings_calibrations_list
+      description: List the calibration history of a postprocessing, per step and
+        oldest first.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StepCalibration'
+          description: ''
+    post:
+      operationId: devices_postprocessings_calibrations_create
+      description: |-
+        Record a calibration for one step, in force from `valid_from` onwards.
+
+        History is kept: readings are processed with the calibration in force
+        when they were taken, so recalibrating a sensor never rewrites the
+        past. Every required calibration parameter of the step's algorithm
+        must be given. Rolled back if the stream tier cannot be notified.
+
+        Args:
+            step_key: Step being calibrated.
+            params: Calibration parameters of the step's algorithm.
+            valid_from: When this calibration takes effect. Defaults to now.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StepCalibration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StepCalibration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StepCalibration'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepCalibration'
+          description: ''
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations/{calibration_id}:
+    delete:
+      operationId: devices_postprocessings_calibrations_destroy
+      description: |-
+        Delete a calibration recorded by mistake.
+
+        Refused when it would leave an enabled postprocessing without a
+        calibration it needs. To change a calibration from some point onwards,
+        record a new one instead.
+      parameters:
+      - in: path
+        name: calibration_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
   /devices/{device_uuid}/telemetry-variants:
     get:
       operationId: devices_telemetry_variants_list
@@ -543,6 +989,12 @@ paths:
           type: boolean
         description: Restrict to meshes the caller owns, excluding public and granted
           ones.
+      - in: query
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        description: Restrict to meshes bridged from one source.
       tags:
       - meshes
       security:
@@ -584,6 +1036,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/Mesh'
           description: ''
+  /meshes/terms:
+    get:
+      operationId: meshes_terms_retrieve
+      description: |-
+        Return the terms an owner accepts to create a mesh on the default broker.
+
+        Every statement must be accepted. Send the returned `version` back as
+        `terms_version` when creating the mesh, or when moving a mesh from a
+        source onto the default broker. The footnote states how long the mesh's
+        data is kept.
+
+        Args:
+            locale: `en` or `es`. Defaults to `en`, which is also used for any
+                other value.
+      parameters:
+      - in: query
+        name: locale
+        schema:
+          type: string
+        description: '`en` or `es`. Defaults to `en`; unknown locales fall back to
+          it.'
+      tags:
+      - meshes
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terms'
+          description: ''
   /meshes/{mesh_id}:
     get:
       operationId: meshes_retrieve
@@ -616,8 +1101,22 @@ paths:
       description: |-
         Update a mesh.
 
-        Changing the pre-shared key redistributes it to every allowed gateway
-        on the mesh, and the whole update is rolled back if that fails.
+        Changing the channel_id, the pre-shared key or the source redistributes
+        them to every allowed gateway on the mesh, and the whole update is
+        rolled back if that fails. Once the source changes, the mesh's gateways
+        are only accepted through the new one.
+
+        Args:
+            source_id: Source to bridge the mesh's traffic from, which must be one
+                the caller created, or any source for a superuser, and not paused.
+                Null moves it to the default broker. Moving a mesh off a source
+                schedules the readings stored until then for deletion after the
+                grace period; moving it back within that period cancels it.
+            terms_version: The `version` of the mesh terms accepted. Required when
+                moving the mesh onto the default broker unless it already holds a
+                current acceptance; ignored otherwise.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
       parameters:
       - in: path
         name: mesh_id
@@ -654,7 +1153,8 @@ paths:
         Delete a mesh and every device registered on it.
 
         Its gateways are deregistered from the decoder first, and nothing is
-        removed if that fails.
+        removed if that fails. The mesh's stored readings are deleted after the
+        grace period, so export them first if they are needed.
       parameters:
       - in: path
         name: mesh_id
@@ -670,6 +1170,53 @@ paths:
       responses:
         '204':
           description: Deleted.
+  /meshes/{mesh_id}/terms-acceptance:
+    post:
+      operationId: meshes_terms_acceptance_create
+      description: |-
+        Accept the current mesh terms again, renewing the mesh. Its owner only.
+
+        With a retention period configured, an acceptance lapses after that
+        period and the mesh is paused: its gateways are deregistered and its
+        readings are scheduled for deletion. Renewing resumes it and cancels the
+        deletion, as long as the grace period has not ended. A mesh on a source
+        is covered by the source's terms and answers `409`.
+
+        Args:
+            terms_version: The `version` of the mesh terms accepted. Required.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - meshes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeshTermsAcceptance'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MeshTermsAcceptance'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MeshTermsAcceptance'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mesh'
+          description: ''
   /meshes/{mesh_id}/devices:
     get:
       operationId: meshes_devices_list
@@ -820,6 +1367,100 @@ paths:
               schema:
                 $ref: '#/components/schemas/MetricsResponse'
           description: ''
+  /operator-requests:
+    get:
+      operationId: operator_requests_list
+      description: |-
+        List operator requests, newest first. Superusers only.
+
+        Args:
+            status: `pending`, the default, `approved`, `rejected`, or `all`.
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: 'Restrict to one status: `pending` (the default), `approved`,
+          `rejected`, or `all`.'
+      tags:
+      - operator-requests
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OperatorRequestAdmin'
+          description: ''
+  /operator-requests/{request_id}:
+    get:
+      operationId: operator_requests_retrieve
+      description: Return one operator request. Superusers only.
+      parameters:
+      - in: path
+        name: request_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - operator-requests
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRequestAdmin'
+          description: ''
+    put:
+      operationId: operator_requests_update
+      description: |-
+        Approve or reject a pending operator request. Superusers only.
+
+        Approving makes the requester an operator. The requester is emailed
+        the decision, and the decision stands even if that email fails.
+
+        Args:
+            decision: `approve` or `reject`. Required.
+            note: Message to the requester, included in the email. Optional.
+      parameters:
+      - in: path
+        name: request_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - operator-requests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorRequestDecision'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OperatorRequestDecision'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OperatorRequestDecision'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRequestAdmin'
+          description: ''
   /owners:
     get:
       operationId: owners_list
@@ -845,15 +1486,22 @@ paths:
                 items:
                   $ref: '#/components/schemas/OwnerPublic'
           description: The public fields shown here. A superuser receives the full
-            record for every owner instead.
+            record for every owner.
     post:
       operationId: owners_create
       description: |-
         Register an owner and return its API key.
 
-        The only write on this API that needs no authentication. The key is
-        shown in this response and cannot be retrieved again afterwards. A new
-        owner stays inactive until its email address is verified.
+        Signing up accepts the current account terms, which are recorded. The
+        key is shown in this response and cannot be retrieved again afterwards.
+        A new owner stays inactive until its email address is verified.
+
+        Args:
+            terms_version: The `version` of the account terms accepted, as
+                served by the terms endpoint. Required, and refused once the
+                terms have changed.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
       tags:
       - owners
       requestBody:
@@ -886,8 +1534,7 @@ paths:
         Return one owner.
 
         The full record comes back when the caller is the owner being requested, or
-        a superuser: email address, verification state, Django admin access and the
-        last password login. Everyone else gets the public fields only.
+        a superuser. Everyone else gets the public fields only.
       parameters:
       - in: path
         name: owner_id
@@ -908,7 +1555,73 @@ paths:
               schema:
                 $ref: '#/components/schemas/OwnerPublic'
           description: The public fields shown here. The owner themselves and any
-            superuser receive the full record instead.
+            superuser receive the full record.
+    put:
+      operationId: owners_update
+      description: |-
+        Change an owner's role. Superusers only.
+
+        Args:
+            role: `member`, the default, or `operator`, which may also manage
+                sources and archive devices. Granting `operator` also approves any
+                pending operator request from this owner, without emailing them.
+                Taking it away stops archiving the owner's devices, and the role
+                is kept if the pipeline cannot be told.
+      parameters:
+      - in: path
+        name: owner_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - owners
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnerRole'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OwnerRole'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OwnerRole'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerRead'
+          description: ''
+    delete:
+      operationId: owners_destroy
+      description: |-
+        Remove an owner, along with their meshes and devices. Superusers only.
+
+        Their gateways are deregistered from the decoder first, and nothing is
+        removed if that fails.
+      parameters:
+      - in: path
+        name: owner_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - owners
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: Deleted.
   /owners/csrf-cookie:
     get:
       operationId: owners_csrf_cookie_retrieve
@@ -1077,6 +1790,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/OwnerDevices'
           description: ''
+  /owners/me/operator-request:
+    get:
+      operationId: owners_me_operator_request_retrieve
+      description: Return the caller's most recent operator request and its status.
+      tags:
+      - owners
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRequest'
+          description: ''
+    post:
+      operationId: owners_me_operator_request_create
+      description: |-
+        Ask for the operator role, which lets an owner create sources.
+
+        Every superuser is emailed and one of them approves or rejects the
+        request. Only one request can be pending at a time, and an owner who
+        is already an operator cannot file one. Limited to 3 requests a day.
+
+        Args:
+            reason: Why the role is needed. Shown to superusers. Required.
+      tags:
+      - owners
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorRequestCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OperatorRequestCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OperatorRequestCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRequest'
+          description: ''
   /owners/me/resend-verification:
     post:
       operationId: owners_me_resend_verification_create
@@ -1111,6 +1875,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OwnerWithApiKey'
+          description: ''
+  /owners/me/terms-acceptance:
+    post:
+      operationId: owners_me_terms_acceptance_create
+      description: |-
+        Accept the current account terms, when they have changed since signing up.
+
+        Account terms never lapse, so this pauses and resumes nothing.
+
+        Args:
+            terms_version: The `version` of the account terms accepted. Required.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
+      tags:
+      - owners
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountTermsAcceptance'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountTermsAcceptance'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountTermsAcceptance'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerRead'
           description: ''
   /owners/request-password-reset:
     post:
@@ -1196,8 +1996,19 @@ paths:
   /postprocessing-blueprints:
     get:
       operationId: postprocessing_blueprints_list
-      description: List the caller's postprocessing blueprints, or every one for a
-        superuser.
+      description: |-
+        List the postprocessing blueprints the caller may use: their own and public ones.
+
+        A superuser sees every blueprint.
+
+        Args:
+            owned: Restrict to the caller's own blueprints, excluding public ones.
+      parameters:
+      - in: query
+        name: owned
+        schema:
+          type: boolean
+        description: Restrict to the caller's own blueprints, excluding public ones.
       tags:
       - postprocessing-blueprints
       security:
@@ -1215,21 +2026,34 @@ paths:
     post:
       operationId: postprocessing_blueprints_create
       description: |-
-        Create a postprocessing blueprint, an ordered set of steps that compute
-        new channels from a device's readings.
+        Create a postprocessing blueprint together with its first version.
+
+        A version declares the input slots it reads and an ordered list of
+        steps. Each step runs one algorithm, takes its inputs from a slot or
+        from an earlier step's output, and names the derived channels its
+        outputs are stored as. Calibration parameters are not set here: each
+        device supplies its own when the blueprint is attached to it.
+
+        Args:
+            name: Unique among the caller's blueprints.
+            description: Free text.
+            is_public: Lets any owner attach the blueprint to their devices. Defaults to false.
+            inputs: Input slots, each with an optional `default_channel`.
+            steps: Steps, each with a `key` that stays the same across versions.
+            notes: Free text describing this version.
       tags:
       - postprocessing-blueprints
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintCreate'
         required: true
       security:
       - bearerAuth: []
@@ -1244,7 +2068,7 @@ paths:
   /postprocessing-blueprints/{blueprint_id}:
     get:
       operationId: postprocessing_blueprints_retrieve
-      description: Return one postprocessing blueprint and its steps.
+      description: Return one postprocessing blueprint and its latest version.
       parameters:
       - in: path
         name: blueprint_id
@@ -1267,10 +2091,10 @@ paths:
     put:
       operationId: postprocessing_blueprints_update
       description: |-
-        Update a postprocessing blueprint.
+        Rename or describe a blueprint, or change whether it is public.
 
-        Supplying `steps` replaces the whole ordered list; omitting it leaves
-        the existing steps untouched.
+        Steps cannot be changed here: create a new version instead. Making a
+        blueprint private does not detach it from devices already using it.
       parameters:
       - in: path
         name: blueprint_id
@@ -1284,14 +2108,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
-        required: true
+              $ref: '#/components/schemas/PostprocessingBlueprintUpdate'
       security:
       - bearerAuth: []
       - cookieAuth: []
@@ -1305,10 +2128,9 @@ paths:
     delete:
       operationId: postprocessing_blueprints_destroy
       description: |-
-        Delete a postprocessing blueprint.
+        Delete a blueprint and all of its versions.
 
-        Devices using it keep recording telemetry and simply stop producing
-        computed channels.
+        Refused while any device still uses one of its versions.
       parameters:
       - in: path
         name: blueprint_id
@@ -1324,6 +2146,264 @@ paths:
       responses:
         '204':
           description: Deleted.
+  /postprocessing-blueprints/{blueprint_id}/versions:
+    get:
+      operationId: postprocessing_blueprints_versions_list
+      description: List every version of a blueprint, oldest first.
+      parameters:
+      - in: path
+        name: blueprint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - postprocessing-blueprints
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlueprintVersion'
+          description: ''
+    post:
+      operationId: postprocessing_blueprints_versions_create
+      description: |-
+        Add a version of a blueprint.
+
+        Versions are immutable, so this is how a blueprint's steps change.
+        Devices keep running the version they use until they are moved to the
+        new one. Keeping a step's `key` and algorithm lets a device keep its
+        calibration when it moves.
+
+        Args:
+            inputs: Input slots, each with an optional `default_channel`.
+            steps: Steps, each with a `key` that stays the same across versions.
+            notes: Free text describing what changed.
+      parameters:
+      - in: path
+        name: blueprint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - postprocessing-blueprints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlueprintVersion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlueprintVersion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlueprintVersion'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintVersion'
+          description: ''
+  /postprocessing-blueprints/{blueprint_id}/versions/{number}:
+    get:
+      operationId: postprocessing_blueprints_versions_retrieve
+      description: Return one version of a blueprint and its steps.
+      parameters:
+      - in: path
+        name: blueprint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: number
+        schema:
+          type: integer
+        required: true
+      tags:
+      - postprocessing-blueprints
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintVersion'
+          description: ''
+  /readings/archive/meshes/{mesh_id}:
+    get:
+      operationId: readings_archive_meshes_retrieve
+      description: "List the hourly Parquet files archived for a mesh, oldest first.\n\nOnly\
+        \ devices whose archive is switched on are stored, from the moment it\nwas switched\
+        \ on, so the list stays empty until one of them reports.\nAvailable to the mesh's\
+        \ owner while they are an operator, and to\nsuperusers.\n\nArgs:\n    start: Earliest\
+        \ day to include, as `YYYY-MM-DD`. Defaults to the first archived day.\n    stop:\
+        \ Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day."
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+        description: Earliest day, as `YYYY-MM-DD`.
+      - in: query
+        name: stop
+        schema:
+          type: string
+          format: date
+        description: Latest day, as `YYYY-MM-DD`.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveManifest'
+          description: ''
+  /readings/archive/meshes/{mesh_id}/credentials:
+    post:
+      operationId: readings_archive_meshes_credentials_create
+      description: 'Issue temporary S3 credentials that can read this mesh''s archive and
+        nothing else.
+
+
+        Use them with DuckDB, pandas or any S3 client to query the archive as a
+
+        partitioned dataset. The secret is shown in this response only. The
+
+        credentials cannot be revoked and stay valid until `expires_at`, even if
+
+        the caller loses access to the mesh in the meantime. Available to the
+
+        mesh''s owner while they are an operator, and to superusers.'
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveCredentials'
+          description: ''
+  /readings/archive/meshes/{mesh_id}/partitions/{day}/{hour}:
+    get:
+      operationId: readings_archive_meshes_partitions_retrieve
+      description: 'Download one hour of a mesh''s archive as a Parquet file.
+
+
+        Answers with a redirect to a temporary link, valid for the same time as
+
+        issued credentials, that any HTTP client can follow. The file does not
+
+        carry `mesh_id` as a column. Available to the mesh''s owner while they are
+
+        an operator, and to superusers.'
+      parameters:
+      - in: path
+        name: day
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: hour
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '302':
+          description: Redirect to a temporary download link for the Parquet file.
+        '404':
+          description: No such mesh, or nothing archived for that hour.
+  /readings/archive/meshes/{mesh_id}/zip:
+    get:
+      operationId: readings_archive_meshes_zip_retrieve
+      description: "Download a range of a mesh's archive as one zip, a folder per day.\n\n\
+        Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole\narchive\
+        \ is one download. The zip streams as the files are read, and holds\nwhat the file\
+        \ list shows at the time of the request. For querying in place,\nissue credentials\
+        \ instead. Available to the mesh's owner while they are an\noperator, and to superusers.\n\
+        \nArgs:\n    start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first\
+        \ archived day.\n    stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the\
+        \ last archived day."
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+        description: Earliest day, as `YYYY-MM-DD`.
+      - in: query
+        name: stop
+        schema:
+          type: string
+          format: date
+        description: Latest day, as `YYYY-MM-DD`.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+          description: The hourly Parquet files of the range, as one zip.
+        '404':
+          description: No such mesh, or nothing archived in the range.
   /readings/devices/{device_uuid}:
     get:
       operationId: readings_devices_retrieve
@@ -1665,6 +2745,506 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceQualityResponse'
           description: ''
+  /sinks:
+    get:
+      operationId: sinks_list
+      description: |-
+        List the sinks the caller created, or every sink for a superuser. Operators only.
+
+        Each carries how many consumers are connected, null for all of them when
+        the broker cannot be asked. Passwords are never included.
+      tags:
+      - sinks
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SinkRead'
+          description: ''
+    post:
+      operationId: sinks_create
+      description: |-
+        Create a sink and return the credentials its consumer subscribes with. Operators only.
+
+        The consumer connects to `broker` over TLS as `username` with the returned
+        password and subscribes under `topic_filter`, where each message is one
+        reading or alarm as JSON. The password is shown in this response only.
+        The caller must first accept the current sink terms. Nothing is kept if
+        the broker or the pipeline cannot be set up, or if the broker does not
+        yet keep sink topics private.
+
+        Args:
+            label: Name for the sink.
+            streams: Which readings are sent: `decoded`, `derived` and `alarms`.
+                Defaults to `decoded`. Derived readings are sent only by
+                instances that run postprocessing, and alarms only by those that
+                run quality checks.
+            mesh_ids: Meshes whose every node is sent, including nodes that
+                appear later. Each must be one the caller may edit, owned by an
+                operator.
+            device_ids: Registrations of single devices to send, under the same
+                conditions.
+            terms_version: The `version` of the sink terms the caller accepted.
+                Required unless the instance does not enforce terms.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
+      tags:
+      - sinks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SinkCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SinkCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SinkCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SinkCredentials'
+          description: ''
+  /sinks/terms:
+    get:
+      operationId: sinks_terms_retrieve
+      description: |-
+        Return the terms an operator must accept to create a sink. Operators only.
+
+        Every statement must be accepted. Send the returned `version` back as
+        `terms_version` when creating the sink. Answers `404` on an instance that
+        does not enforce terms or has no sinks.
+
+        Args:
+            locale: `en` or `es`. Defaults to `en`, which is also used for any
+                other value.
+      parameters:
+      - in: query
+        name: locale
+        schema:
+          type: string
+        description: '`en` or `es`. Defaults to `en`; unknown locales fall back to
+          it.'
+      tags:
+      - sinks
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terms'
+          description: ''
+  /sinks/{sink_id}:
+    get:
+      operationId: sinks_retrieve
+      description: |-
+        Return one sink and how many consumers are connected to it. Operators only.
+
+        An operator can read only the sinks they created; a superuser can read
+        any. The password is never included.
+      parameters:
+      - in: path
+        name: sink_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sinks
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SinkRead'
+          description: ''
+    put:
+      operationId: sinks_update
+      description: |-
+        Update a sink. Operators only, on the sinks they created.
+
+        Any subset of the create fields may be sent, except the terms. A list
+        sent replaces the current one, so an empty `mesh_ids` detaches every
+        mesh. Changes the pipeline cannot be told about are rolled back.
+      parameters:
+      - in: path
+        name: sink_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sinks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SinkWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SinkWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SinkWrite'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SinkRead'
+          description: ''
+    delete:
+      operationId: sinks_destroy
+      description: |-
+        Delete a sink, revoke its credentials and disconnect its consumers. Operators only.
+
+        A sink with meshes or devices attached cannot be deleted. Nothing is
+        removed if the broker cannot be told. Its terms acceptances are kept.
+      parameters:
+      - in: path
+        name: sink_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sinks
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+  /sinks/{sink_id}/credentials:
+    post:
+      operationId: sinks_credentials_create
+      description: |-
+        Replace a sink's password and disconnect its consumers. Operators only, on the sinks they created.
+
+        The new password is shown in this response only. The old one is kept if
+        the broker cannot be told.
+      parameters:
+      - in: path
+        name: sink_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sinks
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SinkCredentials'
+          description: ''
+  /sinks/{sink_id}/terms-acceptance:
+    post:
+      operationId: sinks_terms_acceptance_create
+      description: |-
+        Accept the current sink terms again, renewing the sink. Only the operator who created it.
+
+        With a retention period configured, an acceptance lapses after that
+        period and the sink is paused: nothing is sent and its consumers are
+        refused. Renewing a paused sink resumes it with the same credentials.
+        Answers `404` on an instance that does not enforce terms.
+
+        Args:
+            terms_version: The `version` of the sink terms accepted. Required.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
+      parameters:
+      - in: path
+        name: sink_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sinks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SinkTermsAcceptance'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SinkTermsAcceptance'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SinkTermsAcceptance'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SinkRead'
+          description: ''
+  /sources:
+    get:
+      operationId: sources_list
+      description: |-
+        List the sources the caller created, or every source for a superuser. Operators only.
+
+        Each carries its bridge's status, `unknown` for all of them when the
+        broker cannot be asked. Remote passwords are never included.
+      tags:
+      - sources
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SourceRead'
+          description: ''
+    post:
+      operationId: sources_create
+      description: |-
+        Create a source and start bridging its remote topic into this instance. Operators only.
+
+        The caller must first accept the current source terms. The acceptance
+        is recorded with the source. Nothing is kept if the bridge cannot be set
+        up.
+
+        Args:
+            server: Remote broker as `host:port`. Cannot be this instance's own
+                broker or one the server has blocked.
+            ssl: Connect to the remote broker over TLS. Defaults to true.
+            username: Remote broker username, if it requires one.
+            password: Remote broker password. Accepted but never returned.
+            topic: Remote topic filter, for example `msh/EU_868/2/e/MyChannel/#`.
+                `$share`, `$SYS` and filters the server has blocked, such as `#`,
+                are rejected.
+            qos: 0 or 1. Defaults to 1.
+            terms_version: The `version` of the source terms the caller accepted.
+                Required, and refused once the terms have changed.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
+      tags:
+      - sources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SourceCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SourceCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceRead'
+          description: ''
+  /sources/terms:
+    get:
+      operationId: sources_terms_retrieve
+      description: |-
+        Return the terms an operator must accept to add a source. Operators only.
+
+        Every statement must be accepted. Send the returned `version` back as
+        `terms_version` when creating the source. The footnote states how long
+        the source's data is kept.
+
+        Args:
+            locale: `en` or `es`. Defaults to `en`, which is also used for any
+                other value.
+      parameters:
+      - in: query
+        name: locale
+        schema:
+          type: string
+        description: '`en` or `es`. Defaults to `en`; unknown locales fall back to
+          it.'
+      tags:
+      - sources
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terms'
+          description: ''
+  /sources/{source_id}:
+    get:
+      operationId: sources_retrieve
+      description: |-
+        Return one source and the live status of its bridge. Operators only.
+
+        An operator can read only the sources they created; a superuser can read
+        any. The status is `unknown` when the broker cannot be reached to check
+        it, and `paused` once its terms have lapsed.
+      parameters:
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sources
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceRead'
+          description: ''
+    put:
+      operationId: sources_update
+      description: |-
+        Update a source and reconfigure its bridge. Operators only, on the sources they created.
+
+        Any subset of the create fields may be sent. The update is rolled back
+        if the bridge cannot be reconfigured. A paused source is updated
+        without touching the broker. Send an empty `password` to remove it.
+      parameters:
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SourceUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SourceUpdate'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceRead'
+          description: ''
+    delete:
+      operationId: sources_destroy
+      description: |-
+        Delete a source and stop bridging it. Operators only, on the sources they created.
+
+        A source with meshes attached cannot be deleted. Nothing is removed if
+        the bridge cannot be torn down. Its terms acceptances are kept.
+      parameters:
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sources
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+  /sources/{source_id}/terms-acceptance:
+    post:
+      operationId: sources_terms_acceptance_create
+      description: |-
+        Accept the current source terms again, renewing the source. Only the operator who created it.
+
+        With a retention period configured, an acceptance lapses after that
+        period and the source is paused. Renewing a paused source restarts its
+        bridge and cancels the deletion of its meshes' data, as long as the
+        grace period has not ended.
+
+        Args:
+            terms_version: The `version` of the source terms accepted. Required.
+            terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+                to `en`.
+      parameters:
+      - in: path
+        name: source_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - sources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceTermsAcceptance'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SourceTermsAcceptance'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SourceTermsAcceptance'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceRead'
+          description: ''
   /telemetry-variants:
     get:
       operationId: telemetry_variants_list
@@ -1863,8 +3443,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/TelemetryVariantMeasurementRead'
           description: ''
+  /terms:
+    get:
+      operationId: terms_retrieve
+      description: |-
+        Return the account terms, which signing up accepts.
+
+        They cover the account only (Terms of Use and Privacy Policy): signing up
+        stores no mesh data. Creating a mesh on the default broker accepts the
+        mesh terms instead. Every statement must be accepted. Send the returned
+        `version` back as `terms_version` when signing up. They never lapse.
+
+        Args:
+            locale: `en` or `es`. Defaults to `en`, which is also used for any
+                other value.
+      parameters:
+      - in: query
+        name: locale
+        schema:
+          type: string
+        description: '`en` or `es`. Defaults to `en`; unknown locales fall back to
+          it.'
+      tags:
+      - terms
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Terms'
+          description: ''
 components:
   schemas:
+    AccountTermsAcceptance:
+      type: object
+      description: Accepting the current terms of `terms_kind`.
+      properties:
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Version of the terms accepted, as served by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
+      required:
+      - terms_version
     Algorithm:
       type: object
       description: One entry of the postprocessing function registry.
@@ -1882,11 +3516,7 @@ components:
         params:
           type: array
           items:
-            type: string
-        optional_params:
-          type: array
-          items:
-            type: string
+            $ref: '#/components/schemas/AlgorithmParam'
         mode:
           type: string
         doc:
@@ -1902,13 +3532,172 @@ components:
       - inputs
       - mode
       - name
-      - optional_params
       - output_units
       - outputs
       - params
+    AlgorithmParam:
+      type: object
+      description: One keyword argument of an algorithm.
+      properties:
+        name:
+          type: string
+        calibration:
+          type: boolean
+          description: Set per device rather than on the blueprint step, because it
+            describes one physical sensor.
+        required:
+          type: boolean
+        default:
+          nullable: true
+        unit:
+          type: string
+          nullable: true
+        doc:
+          type: string
+      required:
+      - calibration
+      - default
+      - doc
+      - name
+      - required
+      - unit
+    ArchiveCredentials:
+      type: object
+      properties:
+        access_key_id:
+          type: string
+        secret_access_key:
+          type: string
+        session_token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        endpoint:
+          type: string
+          nullable: true
+          description: S3 endpoint to connect to. Null means the provider's default (AWS).
+        region:
+          type: string
+        bucket:
+          type: string
+        prefix:
+          type: string
+        s3_path:
+          type: string
+      required:
+      - access_key_id
+      - bucket
+      - endpoint
+      - expires_at
+      - prefix
+      - region
+      - s3_path
+      - secret_access_key
+      - session_token
+    ArchiveManifest:
+      type: object
+      properties:
+        mesh_id:
+          type: string
+          format: uuid
+        prefix:
+          type: string
+        partitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivePartition'
+      required:
+      - mesh_id
+      - partitions
+      - prefix
+    ArchivePartition:
+      type: object
+      properties:
+        dt:
+          type: string
+          format: date
+        hour:
+          type: integer
+          maximum: 23
+          minimum: 0
+        size:
+          type: integer
+          description: Object size in bytes.
+        last_modified:
+          type: string
+          format: date-time
+      required:
+      - dt
+      - hour
+      - last_modified
+      - size
+    BackfillStatusEnum:
+      enum:
+      - pending
+      - running
+      - done
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `running` - Running
+        * `done` - Done
+        * `failed` - Failed
     BlankEnum:
       enum:
       - ''
+    BlueprintInput:
+      type: object
+      description: An input slot a blueprint version reads, bound to a channel by
+        each device.
+      properties:
+        slot:
+          type: string
+          maxLength: 64
+        default_channel:
+          type: string
+          nullable: true
+          description: Channel bound automatically when the device has it, such as
+            `environment_metrics.temperature`.
+      required:
+      - slot
+    BlueprintVersion:
+      type: object
+      description: Immutable once created. Steps are nested in read and write.
+      properties:
+        blueprint_id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintInput'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostprocessingStep'
+        notes:
+          type: string
+          nullable: true
+        device_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - blueprint_id
+      - created_at
+      - device_count
+      - inputs
+      - number
+      - steps
     ChannelQuality:
       type: object
       properties:
@@ -1936,6 +3725,108 @@ components:
       - expected
       - largest_gap_seconds
       - observed
+    DataDeletion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        mesh_id:
+          type: string
+          format: uuid
+          readOnly: true
+        source_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reason:
+          allOf:
+          - $ref: '#/components/schemas/ReasonEnum'
+          readOnly: true
+        requested_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+        delete_after:
+          type: string
+          format: date-time
+          readOnly: true
+        data_until:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DataDeletionStatusEnum'
+          readOnly: true
+        attempts:
+          type: integer
+          readOnly: true
+        last_error:
+          type: string
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - attempts
+      - completed_at
+      - data_until
+      - delete_after
+      - id
+      - last_error
+      - mesh_id
+      - reason
+      - requested_at
+      - requested_by_id
+      - source_id
+      - status
+    DataDeletionStatusEnum:
+      enum:
+      - pending
+      - cancelled
+      - done
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `cancelled` - Cancelled
+        * `done` - Done
+    DecisionEnum:
+      enum:
+      - approve
+      - reject
+      type: string
+      description: |-
+        * `approve` - approve
+        * `reject` - reject
+    DerivedOutput:
+      type: object
+      properties:
+        field_name:
+          type: string
+        channel:
+          type: string
+        measurement_id:
+          type: string
+          format: uuid
+        unit:
+          type: string
+          nullable: true
+      required:
+      - channel
+      - field_name
+      - measurement_id
+      - unit
     Detail:
       type: object
       description: The single-message body used by the routes that return no resource.
@@ -2065,12 +3956,20 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        produced_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: The device postprocessing computing this channel, null for
+            a channel the device reports.
       required:
       - effective_detectors
       - first_seen
       - id
       - last_seen
       - measurement_type
+      - produced_by
       - telemetry_variant_id
     DeviceMeasurementUpdate:
       type: object
@@ -2091,6 +3990,106 @@ components:
           type: number
           format: double
           nullable: true
+    DevicePostprocessing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        device_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        blueprint_id:
+          type: string
+          format: uuid
+          readOnly: true
+        blueprint_name:
+          type: string
+          readOnly: true
+        blueprint_version:
+          type: integer
+          readOnly: true
+        input_bindings:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        output_prefix:
+          type: string
+          readOnly: true
+        tolerance_seconds:
+          type: integer
+          readOnly: true
+          nullable: true
+        effective_tolerance_seconds:
+          type: number
+          format: double
+          readOnly: true
+        is_enabled:
+          type: boolean
+          readOnly: true
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DerivedOutput'
+          readOnly: true
+        problems:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - blueprint_id
+      - blueprint_name
+      - blueprint_version
+      - created_at
+      - device_uuid
+      - effective_tolerance_seconds
+      - id
+      - input_bindings
+      - is_enabled
+      - output_prefix
+      - outputs
+      - problems
+      - tolerance_seconds
+      - updated_at
+    DevicePostprocessingWrite:
+      type: object
+      properties:
+        blueprint_id:
+          type: string
+          format: uuid
+          description: Required when attaching.
+        blueprint_version:
+          type: integer
+          minimum: 1
+          description: Defaults to the latest version when attaching.
+        input_bindings:
+          type: object
+          additionalProperties:
+            type: string
+            format: uuid
+            nullable: true
+          description: '{slot: measurement id of this device}. Null unbinds a slot.'
+        output_prefix:
+          type: string
+          maxLength: 64
+        tolerance_seconds:
+          type: integer
+          minimum: 1
+          nullable: true
+        is_enabled:
+          type: boolean
     DeviceQualityResponse:
       type: object
       properties:
@@ -2158,6 +4157,20 @@ components:
         absence_detection_enabled:
           type: boolean
           readOnly: true
+        archive_enabled:
+          type: boolean
+          readOnly: true
+          description: Shown only to the mesh's owner and superusers.
+        archive_enabled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        archive_enabled_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
           description: Gates only the absence detector (device stopped publishing).
             Per-channel detectors are unaffected.
         admin_keys_b64:
@@ -2197,11 +4210,6 @@ components:
         nodeinfo_overridden:
           type: boolean
           readOnly: true
-        postprocessing_blueprint_id:
-          type: string
-          format: uuid
-          readOnly: true
-          nullable: true
         reading_interval_seconds:
           type: integer
           readOnly: true
@@ -2238,7 +4246,6 @@ components:
       - name
       - node_id
       - nodeinfo_overridden
-      - postprocessing_blueprint_id
       - publish_interval_seconds
       - reading_interval_seconds
       - role
@@ -2296,6 +4303,11 @@ components:
           type: boolean
           description: Gates only the absence detector (device stopped publishing).
             Per-channel detectors are unaffected.
+        archive_enabled:
+          type: boolean
+          description: Store this device's readings in the Parquet archive from now
+            on. Only on a mesh owned by an operator, and only on instances that run
+            the archive. Turning it off keeps what was stored.
         latitude:
           type: number
           format: double
@@ -2320,10 +4332,6 @@ components:
           type: string
           nullable: true
           maxLength: 32
-        postprocessing_blueprint_id:
-          type: string
-          format: uuid
-          nullable: true
         reading_interval_seconds:
           type: integer
           maximum: 2147483647
@@ -2533,6 +4541,32 @@ components:
           type: boolean
           description: When true, any verified owner may read this mesh, its devices
             and their readings. Writes stay with the owner.
+        source_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Source the mesh's traffic is bridged from. Null for this instance's
+            own broker.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          description: Mesh terms version accepted. Null on a source, whose terms
+            apply instead.
+          readOnly: true
+        terms_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the mesh terms acceptance lapses. Null for no time limit,
+            or on a source.
+          readOnly: true
+        paused_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Set while its mesh terms have lapsed; the mesh stores no new
+            data.
         created_at:
           type: string
           format: date-time
@@ -2561,13 +4595,36 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Version of the mesh terms accepted, from /meshes/terms. Required
+            when the mesh uses the default broker (no source) and has no current acceptance;
+            ignored otherwise.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+        source_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Source the mesh's traffic is bridged from. Null for this instance's
+            own broker.
       required:
       - channel_id
       - psk_b64
     MeshUpdate:
       type: object
-      description: 'PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are
-        editable.'
+      description: |-
+        PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+
+        channel_id/psk_b64 are a pair configured together on the physical
+        devices, so both can change here the same way - the pipeline decrypts by
+        gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
       properties:
         channel_id:
           type: string
@@ -2582,6 +4639,28 @@ components:
           maxLength: 255
         is_public:
           type: boolean
+        source_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Source the mesh's traffic is bridged from. Null for this instance's
+            own broker.
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Version of the mesh terms accepted, from /meshes/terms. Required
+            when the mesh uses the default broker (no source) and has no current acceptance;
+            ignored otherwise.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
     MeshViewer:
       type: object
       description: A grant, reported to the mesh owner. The viewer's email is never
@@ -2631,6 +4710,124 @@ components:
     NullEnum:
       enum:
       - null
+    OperatorRequest:
+      type: object
+      description: An operator request as its requester sees it.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OperatorRequestStatusEnum'
+          readOnly: true
+        decision_note:
+          type: string
+          readOnly: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - decided_at
+      - decision_note
+      - id
+      - reason
+      - status
+    OperatorRequestAdmin:
+      type: object
+      description: An operator request as a superuser sees it.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OperatorRequestStatusEnum'
+          readOnly: true
+        decision_note:
+          type: string
+          readOnly: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        owner_id:
+          type: string
+          format: uuid
+          readOnly: true
+        owner_name:
+          type: string
+          readOnly: true
+        owner_email:
+          type: string
+          format: email
+          readOnly: true
+        decided_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - decided_at
+      - decided_by_id
+      - decision_note
+      - id
+      - owner_email
+      - owner_id
+      - owner_name
+      - reason
+      - status
+    OperatorRequestCreate:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Why the operator role is needed. Shown to superusers.
+          maxLength: 2000
+      required:
+      - reason
+    OperatorRequestDecision:
+      type: object
+      properties:
+        decision:
+          $ref: '#/components/schemas/DecisionEnum'
+        note:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - decision
+    OperatorRequestStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `rejected` - Rejected
     OwnerChangePassword:
       type: object
       description: POST /owners/me/change-password input
@@ -2646,6 +4843,7 @@ components:
       - new_password
     OwnerCreate:
       type: object
+      description: Accepting the current terms of `terms_kind`.
       properties:
         name:
           type: string
@@ -2656,6 +4854,20 @@ components:
         password:
           type: string
           writeOnly: true
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
       required:
       - email
       - name
@@ -2686,11 +4898,7 @@ components:
       - password
     OwnerProfile:
       type: object
-      description: |-
-        An owner's own record together with the devices they may access.
-
-        Describes the body the profile and login routes build by hand; nothing
-        serializes through it.
+      description: An owner's own record together with the devices they may access.
       properties:
         id:
           type: string
@@ -2711,6 +4919,10 @@ components:
             assigning them.
         is_staff:
           type: boolean
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
         is_active:
           type: boolean
@@ -2743,12 +4955,25 @@ components:
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
             Omitted on backends that don't yet support this setting.
+        status_alerts_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the owner is emailed when a source they created stays
+            disconnected, or a sink they created with meshes or devices attached has
+            nobody connected.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          description: Version of the account terms last accepted. Null if never accepted.
+            They never lapse.
+          readOnly: true
         devices:
           type: array
           items:
             $ref: '#/components/schemas/DeviceRead'
           readOnly: true
       required:
+      - alarm_email_cooldown_seconds
       - created_at
       - devices
       - email
@@ -2760,6 +4985,9 @@ components:
       - is_superuser
       - last_login
       - name
+      - role
+      - status_alerts_enabled
+      - terms_accepted_version
     OwnerPublic:
       type: object
       description: Public directory
@@ -2807,6 +5035,10 @@ components:
         is_staff:
           type: boolean
           readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -2838,7 +5070,20 @@ components:
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
             Omitted on backends that don't yet support this setting.
+        status_alerts_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the owner is emailed when a source they created stays
+            disconnected, or a sink they created with meshes or devices attached has
+            nobody connected.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          description: Version of the account terms last accepted. Null if never accepted.
+            They never lapse.
+          readOnly: true
       required:
+      - alarm_email_cooldown_seconds
       - created_at
       - email
       - email_verification_sent_at
@@ -2849,6 +5094,9 @@ components:
       - is_superuser
       - last_login
       - name
+      - role
+      - status_alerts_enabled
+      - terms_accepted_version
     OwnerRequestPasswordReset:
       type: object
       description: POST /owners/request-password-reset input
@@ -2867,6 +5115,13 @@ components:
           writeOnly: true
       required:
       - new_password
+    OwnerRole:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - role
     OwnerUpdate:
       type: object
       properties:
@@ -2883,6 +5138,11 @@ components:
           nullable: true
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
+        status_alerts_enabled:
+          type: boolean
+          description: Email me when a source I created stays disconnected, or a sink
+            I created with meshes or devices attached has nobody connected. Off by
+            default.
     OwnerWithApiKey:
       type: object
       description: In POST /owners and POST /owners/me/rotate-key
@@ -2907,6 +5167,10 @@ components:
         is_staff:
           type: boolean
           readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
         is_active:
           type: boolean
           readOnly: true
@@ -2938,10 +5202,23 @@ components:
           description: Minimum time between quality-alarm emails, in seconds
             (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
             Omitted on backends that don't yet support this setting.
+        status_alerts_enabled:
+          type: boolean
+          readOnly: true
+          description: Whether the owner is emailed when a source they created stays
+            disconnected, or a sink they created with meshes or devices attached has
+            nobody connected.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          description: Version of the account terms last accepted. Null if never accepted.
+            They never lapse.
+          readOnly: true
         api_key:
           type: string
           readOnly: true
       required:
+      - alarm_email_cooldown_seconds
       - api_key
       - created_at
       - email
@@ -2953,6 +5230,9 @@ components:
       - is_superuser
       - last_login
       - name
+      - role
+      - status_alerts_enabled
+      - terms_accepted_version
     Point:
       type: object
       properties:
@@ -2963,9 +5243,63 @@ components:
       required:
       - time
       - value
+    PostprocessingBackfill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        postprocessing_id:
+          type: string
+          format: uuid
+          readOnly: true
+        start:
+          type: string
+          format: date-time
+        stop:
+          type: string
+          format: date-time
+          description: Defaults to now.
+        include_dependants:
+          type: boolean
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BackfillStatusEnum'
+          readOnly: true
+        points_published:
+          type: integer
+          readOnly: true
+        error:
+          type: string
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - error
+      - finished_at
+      - id
+      - points_published
+      - postprocessing_id
+      - start
+      - started_at
+      - status
     PostprocessingBlueprint:
       type: object
-      description: Steps are nested in read and write
       properties:
         id:
           type: string
@@ -2973,18 +5307,24 @@ components:
           readOnly: true
         name:
           type: string
-          maxLength: 255
+          readOnly: true
         description:
           type: string
+          readOnly: true
           nullable: true
+        is_public:
+          type: boolean
+          readOnly: true
         owner_id:
           type: string
           format: uuid
           readOnly: true
-        steps:
-          type: array
-          items:
-            $ref: '#/components/schemas/PostprocessingStep'
+          nullable: true
+          description: Null once its owner was deleted while devices still used it.
+        latest_version:
+          allOf:
+          - $ref: '#/components/schemas/BlueprintVersion'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -2995,19 +5335,60 @@ components:
           readOnly: true
       required:
       - created_at
+      - description
       - id
+      - is_public
+      - latest_version
       - name
       - owner_id
-      - steps
       - updated_at
+    PostprocessingBlueprintCreate:
+      type: object
+      description: A new blueprint together with its first version.
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
+          default: false
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintInput'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostprocessingStep'
+        notes:
+          type: string
+          nullable: true
+      required:
+      - inputs
+      - name
+      - steps
+    PostprocessingBlueprintUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
     PostprocessingStep:
       type: object
       description: Validates each step against common/algorithms
       properties:
-        id:
+        key:
           type: string
-          format: uuid
-          readOnly: true
+          maxLength: 64
+          pattern: ^[-a-zA-Z0-9_]+$
         order:
           type: integer
           maximum: 2147483647
@@ -3020,8 +5401,16 @@ components:
         outputs: {}
       required:
       - function_name
-      - id
+      - key
       - order
+    QosEnum:
+      enum:
+      - 0
+      - 1
+      type: integer
+      description: |-
+        * `0` - 0
+        * `1` - 1
     QuantityKindEnum:
       enum:
       - physical_property
@@ -3054,6 +5443,24 @@ components:
       - node_id
       - payload_kind
       - series
+    ReasonEnum:
+      enum:
+      - mesh_deleted
+      - source_detached
+      - terms_lapsed
+      type: string
+      description: |-
+        * `mesh_deleted` - Mesh deleted
+        * `source_detached` - Mesh moved off its source
+        * `terms_lapsed` - Source terms lapsed
+    RoleEnum:
+      enum:
+      - member
+      - operator
+      type: string
+      description: |-
+        * `member` - Member
+        * `operator` - Operator
     Series:
       type: object
       properties:
@@ -3066,6 +5473,560 @@ components:
       required:
       - channel
       - points
+    SinkCreate:
+      type: object
+      description: Accepting the current terms of `terms_kind`.
+      properties:
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED,
+            on by default); ignored otherwise. Version of the terms accepted, as served
+            by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+        streams:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamsEnum'
+          description: 'Which readings are sent: `decoded`, `derived`, `alarms`. Defaults
+            to `decoded`.'
+        mesh_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Meshes whose every node is sent, including nodes that appear
+            later.
+        device_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Registrations (`uuid`) of single devices to send.
+    SinkCredentials:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          readOnly: true
+          nullable: true
+        streams:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamsEnum'
+          readOnly: true
+          description: What the sink sends, in the order `decoded`, `derived`, `alarms`.
+        mesh_ids:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        device_ids:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        broker:
+          type: string
+          readOnly: true
+          description: Broker the consumer connects to over TLS, as host:port.
+        username:
+          type: string
+          readOnly: true
+        topic_filter:
+          type: string
+          readOnly: true
+          description: Everything the consumer may subscribe to.
+        connections:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Consumers connected now. Null when the broker cannot be asked.
+        paused_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the sink was paused because its terms lapsed.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          readOnly: true
+        terms_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the terms acceptance lapses. Null for no time limit.
+          readOnly: true
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        password:
+          type: string
+          readOnly: true
+          description: Shown only in this response.
+      required:
+      - broker
+      - connections
+      - created_at
+      - created_by_id
+      - device_ids
+      - id
+      - label
+      - mesh_ids
+      - password
+      - paused_at
+      - streams
+      - terms_accepted_version
+      - terms_expires_at
+      - topic_filter
+      - updated_at
+      - username
+    SinkRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          readOnly: true
+          nullable: true
+        streams:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamsEnum'
+          readOnly: true
+          description: What the sink sends, in the order `decoded`, `derived`, `alarms`.
+        mesh_ids:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        device_ids:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        broker:
+          type: string
+          readOnly: true
+          description: Broker the consumer connects to over TLS, as host:port.
+        username:
+          type: string
+          readOnly: true
+        topic_filter:
+          type: string
+          readOnly: true
+          description: Everything the consumer may subscribe to.
+        connections:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Consumers connected now. Null when the broker cannot be asked.
+        paused_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the sink was paused because its terms lapsed.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          readOnly: true
+        terms_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the terms acceptance lapses. Null for no time limit.
+          readOnly: true
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - broker
+      - connections
+      - created_at
+      - created_by_id
+      - device_ids
+      - id
+      - label
+      - mesh_ids
+      - paused_at
+      - streams
+      - terms_accepted_version
+      - terms_expires_at
+      - topic_filter
+      - updated_at
+      - username
+    SinkTermsAcceptance:
+      type: object
+      description: Accepting the current terms of `terms_kind`.
+      properties:
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Version of the terms accepted, as served by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
+      required:
+      - terms_version
+    SinkWrite:
+      type: object
+      description: Create or update a sink. Every field is optional on update; lists
+        replace what is there.
+      properties:
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+        streams:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamsEnum'
+          description: 'Which readings are sent: `decoded`, `derived`, `alarms`. Defaults
+            to `decoded`.'
+        mesh_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Meshes whose every node is sent, including nodes that appear
+            later.
+        device_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Registrations (`uuid`) of single devices to send.
+    SourceCreate:
+      type: object
+      description: Accepting the current terms of `terms_kind`.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+        server:
+          type: string
+          description: Remote broker as host:port.
+          maxLength: 255
+        ssl:
+          type: boolean
+        username:
+          type: string
+          nullable: true
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+          nullable: true
+          description: Remote broker password. Never returned. An empty string or
+            null removes it.
+        topic:
+          type: string
+          description: Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+          maxLength: 1024
+        qos:
+          allOf:
+          - $ref: '#/components/schemas/QosEnum'
+          default: 1
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
+      required:
+      - created_at
+      - created_by_id
+      - id
+      - server
+      - topic
+      - updated_at
+    SourceRead:
+      type: object
+      description: A source. The remote password is accepted but never returned.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+        server:
+          type: string
+          description: Remote broker as host:port.
+          maxLength: 255
+        ssl:
+          type: boolean
+        username:
+          type: string
+          nullable: true
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+          nullable: true
+          description: Remote broker password. Never returned. An empty string or
+            null removes it.
+        topic:
+          type: string
+          description: Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+          maxLength: 1024
+        qos:
+          allOf:
+          - $ref: '#/components/schemas/QosEnum'
+          default: 1
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+          description: The bridge's connection status, `paused`, or unknown when it
+            cannot be checked.
+        paused_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the source was paused because its terms lapsed.
+        terms_accepted_version:
+          type: string
+          nullable: true
+          readOnly: true
+        terms_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the terms acceptance lapses. Null when data is kept without
+            a time limit.
+          readOnly: true
+      required:
+      - created_at
+      - created_by_id
+      - id
+      - paused_at
+      - server
+      - status
+      - terms_accepted_version
+      - terms_expires_at
+      - topic
+      - updated_at
+    SourceTermsAcceptance:
+      type: object
+      description: Accepting the current terms of `terms_kind`.
+      properties:
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Version of the terms accepted, as served by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
+      required:
+      - terms_version
+    MeshTermsAcceptance:
+      type: object
+      description: Accepting the current terms of `terms_kind`.
+      properties:
+        terms_version:
+          type: string
+          writeOnly: true
+          description: Version of the terms accepted, as served by the terms endpoint.
+        terms_locale:
+          allOf:
+          - $ref: '#/components/schemas/TermsLocaleEnum'
+          writeOnly: true
+          default: en
+          description: |-
+            Locale the terms were shown in.
+
+            * `en` - en
+            * `es` - es
+      required:
+      - terms_version
+    SourceUpdate:
+      type: object
+      description: Any subset of the create fields.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          nullable: true
+          maxLength: 255
+        server:
+          type: string
+          description: Remote broker as host:port.
+          maxLength: 255
+        ssl:
+          type: boolean
+        username:
+          type: string
+          nullable: true
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+          nullable: true
+          description: Remote broker password. Never returned. An empty string or
+            null removes it.
+        topic:
+          type: string
+          description: Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+          maxLength: 1024
+        qos:
+          $ref: '#/components/schemas/QosEnum'
+        created_by_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by_id
+      - id
+      - updated_at
+    StepCalibration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        step_key:
+          type: string
+          maxLength: 64
+          pattern: ^[-a-zA-Z0-9_]+$
+        function_name:
+          type: string
+          readOnly: true
+        params: {}
+        valid_from:
+          type: string
+          format: date-time
+          description: Defaults to now.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - function_name
+      - id
+      - step_key
+    StreamsEnum:
+      enum:
+      - decoded
+      - derived
+      - alarms
+      type: string
+      description: |-
+        * `decoded` - decoded
+        * `derived` - derived
+        * `alarms` - alarms
     TelemetryVariantMeasurementRead:
       type: object
       description: |-
@@ -3167,6 +6128,50 @@ components:
           maximum: 2147483647
           minimum: 0
           nullable: true
+    Terms:
+      type: object
+      properties:
+        version:
+          type: string
+        locale:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/TermsStatement'
+        footnote:
+          type: string
+          description: Includes how long data is kept, from the server's retention
+            settings.
+      required:
+      - description
+      - footnote
+      - locale
+      - statements
+      - title
+      - version
+    TermsLocaleEnum:
+      enum:
+      - en
+      - es
+      type: string
+      description: |-
+        * `en` - en
+        * `es` - es
+    TermsStatement:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+      required:
+      - id
+      - text
   securitySchemes:
     bearerAuth:
       type: http

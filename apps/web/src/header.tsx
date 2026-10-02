@@ -11,6 +11,10 @@ import { useIntl } from "react-intl";
 import { BrandMark, pageWidth } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
+import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { AutomationMenu } from "@/components/automation-menu";
+import { DataMenu } from "@/components/data-menu";
+import { ManagementMenu } from "@/components/management-menu";
 
 const headerLinkClass =
   "rounded-full px-3 py-1 text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
@@ -28,6 +32,7 @@ function NavLinks({
   stacked?: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();
+  const { isOperator, isSuperuser } = useOwnerDirectory();
   const linkClass = stacked ? cx(headerLinkClass, "block w-full px-3 py-2") : headerLinkClass;
   const activeClass = stacked
     ? cx(headerLinkClass, "block w-full bg-background-secondary-default px-3 py-2 text-text-primary")
@@ -52,22 +57,18 @@ function NavLinks({
       >
         {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
       </Link>
-      <Link
-        to={routes.alarms}
-        className={linkClass}
-        activeProps={{ className: activeClass }}
-        onClick={onNavigate}
-      >
-        {formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" })}
-      </Link>
-      <Link
-        to={routes.blueprints}
-        className={linkClass}
-        activeProps={{ className: activeClass }}
-        onClick={onNavigate}
-      >
-        {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
-      </Link>
+      <AutomationMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
+      {isOperator ? (
+        <DataMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
+      ) : null}
+      {isSuperuser ? (
+        <ManagementMenu
+          stacked={stacked}
+          onNavigate={onNavigate}
+          linkClass={linkClass}
+          activeClass={activeClass}
+        />
+      ) : null}
     </>
   );
 }

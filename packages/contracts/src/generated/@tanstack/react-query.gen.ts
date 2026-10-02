@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { algorithmsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesUpdate, meshesViewersCreate, meshesViewersDestroy, meshesViewersList, metricsRetrieve, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate } from '../sdk.gen';
-import type { AlgorithmsListData, AlgorithmsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MeshesViewersCreateData, MeshesViewersCreateResponse, MeshesViewersDestroyData, MeshesViewersDestroyResponse, MeshesViewersListData, MeshesViewersListResponse, MetricsRetrieveData, MetricsRetrieveResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse } from '../types.gen';
+import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesUpdate, meshesViewersCreate, meshesViewersDestroy, meshesViewersList, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsArchiveMeshesZipRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
+import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MeshesViewersCreateData, MeshesViewersCreateResponse, MeshesViewersDestroyData, MeshesViewersDestroyResponse, MeshesViewersListData, MeshesViewersListResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsArchiveMeshesZipRetrieveData, ReadingsArchiveMeshesZipRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -60,6 +60,33 @@ export const algorithmsListOptions = (options?: Options<AlgorithmsListData>) => 
     queryKey: algorithmsListQueryKey(options)
 });
 
+export const dataDeletionsListQueryKey = (options?: Options<DataDeletionsListData>) => createQueryKey('dataDeletionsList', options);
+
+/**
+ * List scheduled deletions of stored readings, newest first. Superusers only.
+ *
+ * A mesh's readings are scheduled for deletion when the mesh is deleted,
+ * moved off its source, or its source's terms lapse. They stay in place
+ * until `delete_after`, then are deleted from both the time-series store
+ * and the archive.
+ *
+ * Args:
+ * status: `pending`, the default, `cancelled`, `done`, or `all`.
+ * mesh_id: Restrict to one mesh.
+ */
+export const dataDeletionsListOptions = (options?: Options<DataDeletionsListData>) => queryOptions<DataDeletionsListResponse, DefaultError, DataDeletionsListResponse, ReturnType<typeof dataDeletionsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await dataDeletionsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: dataDeletionsListQueryKey(options)
+});
+
 export const devicesListQueryKey = (options?: Options<DevicesListData>) => createQueryKey('devicesList', options);
 
 /**
@@ -70,8 +97,8 @@ export const devicesListQueryKey = (options?: Options<DevicesListData>) => creat
  * is_gateway: Restrict to gateways, or to plain nodes when false.
  * is_allowed: Restrict to allowed registrations, or to rejected ones
  * when false.
- * has_postprocessing: Restrict to devices with a blueprint attached,
- * or to those without one when false.
+ * has_postprocessing: Restrict to devices with a postprocessing
+ * attached, or to those without one when false.
  * label: Restrict by device label.
  *
  * List filters use `operator:value` or `operator:v1|v2` (same wire as the
@@ -156,6 +183,12 @@ export const devicesRetrieveOptions = (options: Options<DevicesRetrieveData>) =>
  * Position and identity fields are filled in from what the device reports
  * until they are set here, after which the values given take precedence.
  * Disallowing a gateway stops its traffic being decoded.
+ *
+ * `archive_enabled` stores the device's readings in the Parquet archive from
+ * then on. It is accepted only on a mesh owned by an operator and on
+ * instances that run the archive. Turning it off stops storing new readings
+ * and keeps those already stored. The setting is rolled back if the
+ * pipeline cannot be told about it.
  */
 export const devicesUpdateMutation = (options?: Partial<Options<DevicesUpdateData>>): UseMutationOptions<DevicesUpdateResponse, DefaultError, Options<DevicesUpdateData>> => {
     const mutationOptions: UseMutationOptions<DevicesUpdateResponse, DefaultError, Options<DevicesUpdateData>> = {
@@ -242,6 +275,248 @@ export const devicesMeasurementsUpdateMutation = (options?: Partial<Options<Devi
     const mutationOptions: UseMutationOptions<DevicesMeasurementsUpdateResponse, DefaultError, Options<DevicesMeasurementsUpdateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await devicesMeasurementsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsListQueryKey = (options: Options<DevicesPostprocessingsListData>) => createQueryKey('devicesPostprocessingsList', options);
+
+/**
+ * List the blueprints attached to a device, with their wiring, outputs and state.
+ *
+ * `problems` lists what keeps a postprocessing from being enabled, and is
+ * empty once it can run.
+ */
+export const devicesPostprocessingsListOptions = (options: Options<DevicesPostprocessingsListData>) => queryOptions<DevicesPostprocessingsListResponse, DefaultError, DevicesPostprocessingsListResponse, ReturnType<typeof devicesPostprocessingsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsListQueryKey(options)
+});
+
+/**
+ * Attach a blueprint to a device.
+ *
+ * Slots not given in `input_bindings` are bound to the device's channel
+ * named by their `default_channel` when it has one. The derived channels
+ * the blueprint produces are registered on the device straight away, so
+ * detectors and ranges can be configured on them before any data
+ * arrives. A postprocessing starts disabled unless `is_enabled` is set,
+ * and can only be enabled once every slot is bound and every step that
+ * needs one has a calibration. Changes are rolled back if the stream
+ * tier cannot be notified.
+ *
+ * Args:
+ * blueprint_id: Blueprint to attach, the caller's own or a public one. Required.
+ * blueprint_version: Version number. Defaults to the latest.
+ * input_bindings: {slot: measurement id of this device}.
+ * output_prefix: Prepended to every derived field name, so a blueprint can run twice on one device.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Defaults to half the device's
+ * reading interval.
+ * is_enabled: Start running straight away. Defaults to false.
+ */
+export const devicesPostprocessingsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsCreateData>>): UseMutationOptions<DevicesPostprocessingsCreateResponse, DefaultError, Options<DevicesPostprocessingsCreateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsCreateResponse, DefaultError, Options<DevicesPostprocessingsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Detach a blueprint from a device.
+ *
+ * Its derived channels are removed from the device, while readings
+ * already stored remain queryable. Refused while another postprocessing
+ * on the device reads one of those channels.
+ */
+export const devicesPostprocessingsDestroyMutation = (options?: Partial<Options<DevicesPostprocessingsDestroyData>>): UseMutationOptions<DevicesPostprocessingsDestroyResponse, DefaultError, Options<DevicesPostprocessingsDestroyData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsDestroyResponse, DefaultError, Options<DevicesPostprocessingsDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsDestroy({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsRetrieveQueryKey = (options: Options<DevicesPostprocessingsRetrieveData>) => createQueryKey('devicesPostprocessingsRetrieve', options);
+
+/**
+ * Return one blueprint attachment on a device.
+ */
+export const devicesPostprocessingsRetrieveOptions = (options: Options<DevicesPostprocessingsRetrieveData>) => queryOptions<DevicesPostprocessingsRetrieveResponse, DefaultError, DevicesPostprocessingsRetrieveResponse, ReturnType<typeof devicesPostprocessingsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsRetrieveQueryKey(options)
+});
+
+/**
+ * Rewire, move to another version, or enable or disable a postprocessing.
+ *
+ * Moving to another version keeps bindings for slots it still declares
+ * and calibrations for steps with the same key and algorithm. Derived
+ * channels the new wiring no longer produces are removed from the device,
+ * which is refused while another postprocessing reads them. Changes are
+ * rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * blueprint_version: Version number of the same blueprint.
+ * input_bindings: {slot: measurement id of this device}. Null unbinds a slot. Slots not given keep
+ * their binding.
+ * output_prefix: Prepended to every derived field name.
+ * tolerance_seconds: Maximum distance between samples joined into one row. Null uses half the device's
+ * reading interval.
+ * is_enabled: Run or stop the postprocessing.
+ */
+export const devicesPostprocessingsUpdateMutation = (options?: Partial<Options<DevicesPostprocessingsUpdateData>>): UseMutationOptions<DevicesPostprocessingsUpdateResponse, DefaultError, Options<DevicesPostprocessingsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsUpdateResponse, DefaultError, Options<DevicesPostprocessingsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsBackfillsListQueryKey = (options: Options<DevicesPostprocessingsBackfillsListData>) => createQueryKey('devicesPostprocessingsBackfillsList', options);
+
+/**
+ * List the backfills requested for a postprocessing and how they went, oldest first.
+ */
+export const devicesPostprocessingsBackfillsListOptions = (options: Options<DevicesPostprocessingsBackfillsListData>) => queryOptions<DevicesPostprocessingsBackfillsListResponse, DefaultError, DevicesPostprocessingsBackfillsListResponse, ReturnType<typeof devicesPostprocessingsBackfillsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsBackfillsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsBackfillsListQueryKey(options)
+});
+
+/**
+ * Recompute a postprocessing's derived channels over stored history.
+ *
+ * Readings already stored between `start` and `stop` are run through the
+ * postprocessing with the calibration in force when each was taken, and
+ * the results replace any derived values stored for the same times.
+ * Backfilled values are stored and archived but never raise alarms. The
+ * request is queued and runs within about a minute; its progress is
+ * reported in `status`. The postprocessing must be runnable, although it
+ * does not need to be enabled.
+ *
+ * Args:
+ * start: Start of the range to recompute.
+ * stop: End of the range. Defaults to now. At most 90 days after `start`.
+ * include_dependants: Also recompute every enabled postprocessing that reads this one's outputs. Defaults
+ * to false.
+ */
+export const devicesPostprocessingsBackfillsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsBackfillsCreateData>>): UseMutationOptions<DevicesPostprocessingsBackfillsCreateResponse, DefaultError, Options<DevicesPostprocessingsBackfillsCreateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsBackfillsCreateResponse, DefaultError, Options<DevicesPostprocessingsBackfillsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsBackfillsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const devicesPostprocessingsCalibrationsListQueryKey = (options: Options<DevicesPostprocessingsCalibrationsListData>) => createQueryKey('devicesPostprocessingsCalibrationsList', options);
+
+/**
+ * List the calibration history of a postprocessing, per step and oldest first.
+ */
+export const devicesPostprocessingsCalibrationsListOptions = (options: Options<DevicesPostprocessingsCalibrationsListData>) => queryOptions<DevicesPostprocessingsCalibrationsListResponse, DefaultError, DevicesPostprocessingsCalibrationsListResponse, ReturnType<typeof devicesPostprocessingsCalibrationsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await devicesPostprocessingsCalibrationsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: devicesPostprocessingsCalibrationsListQueryKey(options)
+});
+
+/**
+ * Record a calibration for one step, in force from `valid_from` onwards.
+ *
+ * History is kept: readings are processed with the calibration in force
+ * when they were taken, so recalibrating a sensor never rewrites the
+ * past. Every required calibration parameter of the step's algorithm
+ * must be given. Rolled back if the stream tier cannot be notified.
+ *
+ * Args:
+ * step_key: Step being calibrated.
+ * params: Calibration parameters of the step's algorithm.
+ * valid_from: When this calibration takes effect. Defaults to now.
+ */
+export const devicesPostprocessingsCalibrationsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsCalibrationsCreateData>>): UseMutationOptions<DevicesPostprocessingsCalibrationsCreateResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsCreateData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsCalibrationsCreateResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsCalibrationsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a calibration recorded by mistake.
+ *
+ * Refused when it would leave an enabled postprocessing without a
+ * calibration it needs. To change a calibration from some point onwards,
+ * record a new one instead.
+ */
+export const devicesPostprocessingsCalibrationsDestroyMutation = (options?: Partial<Options<DevicesPostprocessingsCalibrationsDestroyData>>): UseMutationOptions<DevicesPostprocessingsCalibrationsDestroyResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsDestroyData>> => {
+    const mutationOptions: UseMutationOptions<DevicesPostprocessingsCalibrationsDestroyResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await devicesPostprocessingsCalibrationsDestroy({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -429,11 +704,39 @@ export const meshesCreateMutation = (options?: Partial<Options<MeshesCreateData>
     return mutationOptions;
 };
 
+export const meshesTermsRetrieveQueryKey = (options?: Options<MeshesTermsRetrieveData>) => createQueryKey('meshesTermsRetrieve', options);
+
+/**
+ * Return the terms an owner accepts to create a mesh on the default broker.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the mesh, or when moving a mesh from a
+ * source onto the default broker. The footnote states how long the mesh's
+ * data is kept.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const meshesTermsRetrieveOptions = (options?: Options<MeshesTermsRetrieveData>) => queryOptions<MeshesTermsRetrieveResponse, DefaultError, MeshesTermsRetrieveResponse, ReturnType<typeof meshesTermsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await meshesTermsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: meshesTermsRetrieveQueryKey(options)
+});
+
 /**
  * Delete a mesh and every device registered on it.
  *
  * Its gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * removed if that fails. The mesh's stored readings are deleted after the
+ * grace period, so export them first if they are needed.
  */
 export const meshesDestroyMutation = (options?: Partial<Options<MeshesDestroyData>>): UseMutationOptions<MeshesDestroyResponse, DefaultError, Options<MeshesDestroyData>> => {
     const mutationOptions: UseMutationOptions<MeshesDestroyResponse, DefaultError, Options<MeshesDestroyData>> = {
@@ -473,13 +776,55 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
 /**
  * Update a mesh.
  *
- * Changing the pre-shared key redistributes it to every allowed gateway
- * on the mesh, and the whole update is rolled back if that fails.
+ * Changing the channel_id, the pre-shared key or the source redistributes
+ * them to every allowed gateway on the mesh, and the whole update is
+ * rolled back if that fails. Once the source changes, the mesh's gateways
+ * are only accepted through the new one.
+ *
+ * Args:
+ * source_id: Source to bridge the mesh's traffic from, which must be one
+ * the caller created, or any source for a superuser, and not paused.
+ * Null moves it to the default broker. Moving a mesh off a source
+ * schedules the readings stored until then for deletion after the
+ * grace period; moving it back within that period cancels it.
+ * terms_version: The `version` of the mesh terms accepted. Required when
+ * moving the mesh onto the default broker unless it already holds a
+ * current acceptance; ignored otherwise.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const meshesUpdateMutation = (options?: Partial<Options<MeshesUpdateData>>): UseMutationOptions<MeshesUpdateResponse, DefaultError, Options<MeshesUpdateData>> => {
     const mutationOptions: UseMutationOptions<MeshesUpdateResponse, DefaultError, Options<MeshesUpdateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await meshesUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Accept the current mesh terms again, renewing the mesh. Its owner only.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the mesh is paused: its gateways are deregistered and its
+ * readings are scheduled for deletion. Renewing resumes it and cancels the
+ * deletion, as long as the grace period has not ended. A mesh on a source
+ * is covered by the source's terms and answers `409`.
+ *
+ * Args:
+ * terms_version: The `version` of the mesh terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const meshesTermsAcceptanceCreateMutation = (options?: Partial<Options<MeshesTermsAcceptanceCreateData>>): UseMutationOptions<MeshesTermsAcceptanceCreateResponse, DefaultError, Options<MeshesTermsAcceptanceCreateData>> => {
+    const mutationOptions: UseMutationOptions<MeshesTermsAcceptanceCreateResponse, DefaultError, Options<MeshesTermsAcceptanceCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await meshesTermsAcceptanceCreate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -591,6 +936,69 @@ export const metricsRetrieveOptions = (options?: Options<MetricsRetrieveData>) =
     queryKey: metricsRetrieveQueryKey(options)
 });
 
+export const operatorRequestsListQueryKey = (options?: Options<OperatorRequestsListData>) => createQueryKey('operatorRequestsList', options);
+
+/**
+ * List operator requests, newest first. Superusers only.
+ *
+ * Args:
+ * status: `pending`, the default, `approved`, `rejected`, or `all`.
+ */
+export const operatorRequestsListOptions = (options?: Options<OperatorRequestsListData>) => queryOptions<OperatorRequestsListResponse, DefaultError, OperatorRequestsListResponse, ReturnType<typeof operatorRequestsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await operatorRequestsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: operatorRequestsListQueryKey(options)
+});
+
+export const operatorRequestsRetrieveQueryKey = (options: Options<OperatorRequestsRetrieveData>) => createQueryKey('operatorRequestsRetrieve', options);
+
+/**
+ * Return one operator request. Superusers only.
+ */
+export const operatorRequestsRetrieveOptions = (options: Options<OperatorRequestsRetrieveData>) => queryOptions<OperatorRequestsRetrieveResponse, DefaultError, OperatorRequestsRetrieveResponse, ReturnType<typeof operatorRequestsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await operatorRequestsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: operatorRequestsRetrieveQueryKey(options)
+});
+
+/**
+ * Approve or reject a pending operator request. Superusers only.
+ *
+ * Approving makes the requester an operator. The requester is emailed
+ * the decision, and the decision stands even if that email fails.
+ *
+ * Args:
+ * decision: `approve` or `reject`. Required.
+ * note: Message to the requester, included in the email. Optional.
+ */
+export const operatorRequestsUpdateMutation = (options?: Partial<Options<OperatorRequestsUpdateData>>): UseMutationOptions<OperatorRequestsUpdateResponse, DefaultError, Options<OperatorRequestsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<OperatorRequestsUpdateResponse, DefaultError, Options<OperatorRequestsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await operatorRequestsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const ownersListQueryKey = (options?: Options<OwnersListData>) => createQueryKey('ownersList', options);
 
 /**
@@ -617,14 +1025,41 @@ export const ownersListOptions = (options?: Options<OwnersListData>) => queryOpt
 /**
  * Register an owner and return its API key.
  *
- * The only write on this API that needs no authentication. The key is
- * shown in this response and cannot be retrieved again afterwards. A new
- * owner stays inactive until its email address is verified.
+ * Signing up accepts the current account terms, which are recorded. The
+ * key is shown in this response and cannot be retrieved again afterwards.
+ * A new owner stays inactive until its email address is verified.
+ *
+ * Args:
+ * terms_version: The `version` of the account terms accepted, as
+ * served by the terms endpoint. Required, and refused once the
+ * terms have changed.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const ownersCreateMutation = (options?: Partial<Options<OwnersCreateData>>): UseMutationOptions<OwnersCreateResponse, DefaultError, Options<OwnersCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersCreateResponse, DefaultError, Options<OwnersCreateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await ownersCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove an owner, along with their meshes and devices. Superusers only.
+ *
+ * Their gateways are deregistered from the decoder first, and nothing is
+ * removed if that fails.
+ */
+export const ownersDestroyMutation = (options?: Partial<Options<OwnersDestroyData>>): UseMutationOptions<OwnersDestroyResponse, DefaultError, Options<OwnersDestroyData>> => {
+    const mutationOptions: UseMutationOptions<OwnersDestroyResponse, DefaultError, Options<OwnersDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await ownersDestroy({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -641,8 +1076,7 @@ export const ownersRetrieveQueryKey = (options: Options<OwnersRetrieveData>) => 
  * Return one owner.
  *
  * The full record comes back when the caller is the owner being requested, or
- * a superuser: email address, verification state, Django admin access and the
- * last password login. Everyone else gets the public fields only.
+ * a superuser. Everyone else gets the public fields only.
  */
 export const ownersRetrieveOptions = (options: Options<OwnersRetrieveData>) => queryOptions<OwnersRetrieveResponse, DefaultError, OwnersRetrieveResponse, ReturnType<typeof ownersRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -656,6 +1090,30 @@ export const ownersRetrieveOptions = (options: Options<OwnersRetrieveData>) => q
     },
     queryKey: ownersRetrieveQueryKey(options)
 });
+
+/**
+ * Change an owner's role. Superusers only.
+ *
+ * Args:
+ * role: `member`, the default, or `operator`, which may also manage
+ * sources and archive devices. Granting `operator` also approves any
+ * pending operator request from this owner, without emailing them.
+ * Taking it away stops archiving the owner's devices, and the role
+ * is kept if the pipeline cannot be told.
+ */
+export const ownersUpdateMutation = (options?: Partial<Options<OwnersUpdateData>>): UseMutationOptions<OwnersUpdateResponse, DefaultError, Options<OwnersUpdateData>> => {
+    const mutationOptions: UseMutationOptions<OwnersUpdateResponse, DefaultError, Options<OwnersUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await ownersUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const ownersCsrfCookieRetrieveQueryKey = (options?: Options<OwnersCsrfCookieRetrieveData>) => createQueryKey('ownersCsrfCookieRetrieve', options);
 
@@ -804,6 +1262,48 @@ export const ownersMeDevicesRetrieveOptions = (options?: Options<OwnersMeDevices
     queryKey: ownersMeDevicesRetrieveQueryKey(options)
 });
 
+export const ownersMeOperatorRequestRetrieveQueryKey = (options?: Options<OwnersMeOperatorRequestRetrieveData>) => createQueryKey('ownersMeOperatorRequestRetrieve', options);
+
+/**
+ * Return the caller's most recent operator request and its status.
+ */
+export const ownersMeOperatorRequestRetrieveOptions = (options?: Options<OwnersMeOperatorRequestRetrieveData>) => queryOptions<OwnersMeOperatorRequestRetrieveResponse, DefaultError, OwnersMeOperatorRequestRetrieveResponse, ReturnType<typeof ownersMeOperatorRequestRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await ownersMeOperatorRequestRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: ownersMeOperatorRequestRetrieveQueryKey(options)
+});
+
+/**
+ * Ask for the operator role, which lets an owner create sources.
+ *
+ * Every superuser is emailed and one of them approves or rejects the
+ * request. Only one request can be pending at a time, and an owner who
+ * is already an operator cannot file one. Limited to 3 requests a day.
+ *
+ * Args:
+ * reason: Why the role is needed. Shown to superusers. Required.
+ */
+export const ownersMeOperatorRequestCreateMutation = (options?: Partial<Options<OwnersMeOperatorRequestCreateData>>): UseMutationOptions<OwnersMeOperatorRequestCreateResponse, DefaultError, Options<OwnersMeOperatorRequestCreateData>> => {
+    const mutationOptions: UseMutationOptions<OwnersMeOperatorRequestCreateResponse, DefaultError, Options<OwnersMeOperatorRequestCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await ownersMeOperatorRequestCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Send a fresh verification email to the authenticated owner.
  */
@@ -830,6 +1330,30 @@ export const ownersMeRotateKeyCreateMutation = (options?: Partial<Options<Owners
     const mutationOptions: UseMutationOptions<OwnersMeRotateKeyCreateResponse, DefaultError, Options<OwnersMeRotateKeyCreateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await ownersMeRotateKeyCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Accept the current account terms, when they have changed since signing up.
+ *
+ * Account terms never lapse, so this pauses and resumes nothing.
+ *
+ * Args:
+ * terms_version: The `version` of the account terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const ownersMeTermsAcceptanceCreateMutation = (options?: Partial<Options<OwnersMeTermsAcceptanceCreateData>>): UseMutationOptions<OwnersMeTermsAcceptanceCreateResponse, DefaultError, Options<OwnersMeTermsAcceptanceCreateData>> => {
+    const mutationOptions: UseMutationOptions<OwnersMeTermsAcceptanceCreateResponse, DefaultError, Options<OwnersMeTermsAcceptanceCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await ownersMeTermsAcceptanceCreate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -898,7 +1422,12 @@ export const ownersVerifyEmailRetrieveOptions = (options: Options<OwnersVerifyEm
 export const postprocessingBlueprintsListQueryKey = (options?: Options<PostprocessingBlueprintsListData>) => createQueryKey('postprocessingBlueprintsList', options);
 
 /**
- * List the caller's postprocessing blueprints, or every one for a superuser.
+ * List the postprocessing blueprints the caller may use: their own and public ones.
+ *
+ * A superuser sees every blueprint.
+ *
+ * Args:
+ * owned: Restrict to the caller's own blueprints, excluding public ones.
  */
 export const postprocessingBlueprintsListOptions = (options?: Options<PostprocessingBlueprintsListData>) => queryOptions<PostprocessingBlueprintsListResponse, DefaultError, PostprocessingBlueprintsListResponse, ReturnType<typeof postprocessingBlueprintsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -914,8 +1443,21 @@ export const postprocessingBlueprintsListOptions = (options?: Options<Postproces
 });
 
 /**
- * Create a postprocessing blueprint, an ordered set of steps that compute
- * new channels from a device's readings.
+ * Create a postprocessing blueprint together with its first version.
+ *
+ * A version declares the input slots it reads and an ordered list of
+ * steps. Each step runs one algorithm, takes its inputs from a slot or
+ * from an earlier step's output, and names the derived channels its
+ * outputs are stored as. Calibration parameters are not set here: each
+ * device supplies its own when the blueprint is attached to it.
+ *
+ * Args:
+ * name: Unique among the caller's blueprints.
+ * description: Free text.
+ * is_public: Lets any owner attach the blueprint to their devices. Defaults to false.
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing this version.
  */
 export const postprocessingBlueprintsCreateMutation = (options?: Partial<Options<PostprocessingBlueprintsCreateData>>): UseMutationOptions<PostprocessingBlueprintsCreateResponse, DefaultError, Options<PostprocessingBlueprintsCreateData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBlueprintsCreateResponse, DefaultError, Options<PostprocessingBlueprintsCreateData>> = {
@@ -932,10 +1474,9 @@ export const postprocessingBlueprintsCreateMutation = (options?: Partial<Options
 };
 
 /**
- * Delete a postprocessing blueprint.
+ * Delete a blueprint and all of its versions.
  *
- * Devices using it keep recording telemetry and simply stop producing
- * computed channels.
+ * Refused while any device still uses one of its versions.
  */
 export const postprocessingBlueprintsDestroyMutation = (options?: Partial<Options<PostprocessingBlueprintsDestroyData>>): UseMutationOptions<PostprocessingBlueprintsDestroyResponse, DefaultError, Options<PostprocessingBlueprintsDestroyData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBlueprintsDestroyResponse, DefaultError, Options<PostprocessingBlueprintsDestroyData>> = {
@@ -954,7 +1495,7 @@ export const postprocessingBlueprintsDestroyMutation = (options?: Partial<Option
 export const postprocessingBlueprintsRetrieveQueryKey = (options: Options<PostprocessingBlueprintsRetrieveData>) => createQueryKey('postprocessingBlueprintsRetrieve', options);
 
 /**
- * Return one postprocessing blueprint and its steps.
+ * Return one postprocessing blueprint and its latest version.
  */
 export const postprocessingBlueprintsRetrieveOptions = (options: Options<PostprocessingBlueprintsRetrieveData>) => queryOptions<PostprocessingBlueprintsRetrieveResponse, DefaultError, PostprocessingBlueprintsRetrieveResponse, ReturnType<typeof postprocessingBlueprintsRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -970,10 +1511,10 @@ export const postprocessingBlueprintsRetrieveOptions = (options: Options<Postpro
 });
 
 /**
- * Update a postprocessing blueprint.
+ * Rename or describe a blueprint, or change whether it is public.
  *
- * Supplying `steps` replaces the whole ordered list; omitting it leaves
- * the existing steps untouched.
+ * Steps cannot be changed here: create a new version instead. Making a
+ * blueprint private does not detach it from devices already using it.
  */
 export const postprocessingBlueprintsUpdateMutation = (options?: Partial<Options<PostprocessingBlueprintsUpdateData>>): UseMutationOptions<PostprocessingBlueprintsUpdateResponse, DefaultError, Options<PostprocessingBlueprintsUpdateData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBlueprintsUpdateResponse, DefaultError, Options<PostprocessingBlueprintsUpdateData>> = {
@@ -989,14 +1530,14 @@ export const postprocessingBlueprintsUpdateMutation = (options?: Partial<Options
     return mutationOptions;
 };
 
-export const readingsDevicesRetrieveQueryKey = (options: Options<ReadingsDevicesRetrieveData>) => createQueryKey('readingsDevicesRetrieve', options);
+export const postprocessingBlueprintsVersionsListQueryKey = (options: Options<PostprocessingBlueprintsVersionsListData>) => createQueryKey('postprocessingBlueprintsVersionsList', options);
 
 /**
- * Readings over a time range, addressed by the device's registration ID.
+ * List every version of a blueprint, oldest first.
  */
-export const readingsDevicesRetrieveOptions = (options: Options<ReadingsDevicesRetrieveData>) => queryOptions<ReadingsDevicesRetrieveResponse, DefaultError, ReadingsDevicesRetrieveResponse, ReturnType<typeof readingsDevicesRetrieveQueryKey>>({
+export const postprocessingBlueprintsVersionsListOptions = (options: Options<PostprocessingBlueprintsVersionsListData>) => queryOptions<PostprocessingBlueprintsVersionsListResponse, DefaultError, PostprocessingBlueprintsVersionsListResponse, ReturnType<typeof postprocessingBlueprintsVersionsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await readingsDevicesRetrieve({
+        const { data } = await postprocessingBlueprintsVersionsList({
             ...options,
             ...queryKey[0],
             signal,
@@ -1004,7 +1545,79 @@ export const readingsDevicesRetrieveOptions = (options: Options<ReadingsDevicesR
         });
         return data;
     },
-    queryKey: readingsDevicesRetrieveQueryKey(options)
+    queryKey: postprocessingBlueprintsVersionsListQueryKey(options)
+});
+
+/**
+ * Add a version of a blueprint.
+ *
+ * Versions are immutable, so this is how a blueprint's steps change.
+ * Devices keep running the version they use until they are moved to the
+ * new one. Keeping a step's `key` and algorithm lets a device keep its
+ * calibration when it moves.
+ *
+ * Args:
+ * inputs: Input slots, each with an optional `default_channel`.
+ * steps: Steps, each with a `key` that stays the same across versions.
+ * notes: Free text describing what changed.
+ */
+export const postprocessingBlueprintsVersionsCreateMutation = (options?: Partial<Options<PostprocessingBlueprintsVersionsCreateData>>): UseMutationOptions<PostprocessingBlueprintsVersionsCreateResponse, DefaultError, Options<PostprocessingBlueprintsVersionsCreateData>> => {
+    const mutationOptions: UseMutationOptions<PostprocessingBlueprintsVersionsCreateResponse, DefaultError, Options<PostprocessingBlueprintsVersionsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postprocessingBlueprintsVersionsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const postprocessingBlueprintsVersionsRetrieveQueryKey = (options: Options<PostprocessingBlueprintsVersionsRetrieveData>) => createQueryKey('postprocessingBlueprintsVersionsRetrieve', options);
+
+/**
+ * Return one version of a blueprint and its steps.
+ */
+export const postprocessingBlueprintsVersionsRetrieveOptions = (options: Options<PostprocessingBlueprintsVersionsRetrieveData>) => queryOptions<PostprocessingBlueprintsVersionsRetrieveResponse, DefaultError, PostprocessingBlueprintsVersionsRetrieveResponse, ReturnType<typeof postprocessingBlueprintsVersionsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await postprocessingBlueprintsVersionsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: postprocessingBlueprintsVersionsRetrieveQueryKey(options)
+});
+
+export const readingsArchiveMeshesRetrieveQueryKey = (options: Options<ReadingsArchiveMeshesRetrieveData>) => createQueryKey('readingsArchiveMeshesRetrieve', options);
+
+/**
+ * List the hourly Parquet files archived for a mesh, oldest first.
+ *
+ * Only devices whose archive is switched on are stored, from the moment it
+ * was switched on, so the list stays empty until one of them reports.
+ * Available to the mesh's owner while they are an operator, and to
+ * superusers.
+ *
+ * Args:
+ * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
+ * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
+ */
+export const readingsArchiveMeshesRetrieveOptions = (options: Options<ReadingsArchiveMeshesRetrieveData>) => queryOptions<ReadingsArchiveMeshesRetrieveResponse, DefaultError, ReadingsArchiveMeshesRetrieveResponse, ReturnType<typeof readingsArchiveMeshesRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsArchiveMeshesRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsArchiveMeshesRetrieveQueryKey(options)
 });
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
@@ -1035,6 +1648,171 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
     }
     return params as unknown as typeof page;
 };
+
+export const readingsArchiveMeshesRetrieveInfiniteQueryKey = (options: Options<ReadingsArchiveMeshesRetrieveData>): QueryKey<Options<ReadingsArchiveMeshesRetrieveData>> => createQueryKey('readingsArchiveMeshesRetrieve', options, true);
+
+/**
+ * List the hourly Parquet files archived for a mesh, oldest first.
+ *
+ * Only devices whose archive is switched on are stored, from the moment it
+ * was switched on, so the list stays empty until one of them reports.
+ * Available to the mesh's owner while they are an operator, and to
+ * superusers.
+ *
+ * Args:
+ * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
+ * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
+ */
+export const readingsArchiveMeshesRetrieveInfiniteOptions = (options: Options<ReadingsArchiveMeshesRetrieveData>) => infiniteQueryOptions<ReadingsArchiveMeshesRetrieveResponse, DefaultError, InfiniteData<ReadingsArchiveMeshesRetrieveResponse>, QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                start: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await readingsArchiveMeshesRetrieve({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsArchiveMeshesRetrieveInfiniteQueryKey(options)
+});
+
+/**
+ * Issue temporary S3 credentials that can read this mesh's archive and nothing else.
+ *
+ * Use them with DuckDB, pandas or any S3 client to query the archive as a
+ * partitioned dataset. The secret is shown in this response only. The
+ * credentials cannot be revoked and stay valid until `expires_at`, even if
+ * the caller loses access to the mesh in the meantime. Available to the
+ * mesh's owner while they are an operator, and to superusers.
+ */
+export const readingsArchiveMeshesCredentialsCreateMutation = (options?: Partial<Options<ReadingsArchiveMeshesCredentialsCreateData>>): UseMutationOptions<ReadingsArchiveMeshesCredentialsCreateResponse, DefaultError, Options<ReadingsArchiveMeshesCredentialsCreateData>> => {
+    const mutationOptions: UseMutationOptions<ReadingsArchiveMeshesCredentialsCreateResponse, DefaultError, Options<ReadingsArchiveMeshesCredentialsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await readingsArchiveMeshesCredentialsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const readingsArchiveMeshesPartitionsRetrieveQueryKey = (options: Options<ReadingsArchiveMeshesPartitionsRetrieveData>) => createQueryKey('readingsArchiveMeshesPartitionsRetrieve', options);
+
+/**
+ * Download one hour of a mesh's archive as a Parquet file.
+ *
+ * Answers with a redirect to a temporary link, valid for the same time as
+ * issued credentials, that any HTTP client can follow. The file does not
+ * carry `mesh_id` as a column. Available to the mesh's owner while they are
+ * an operator, and to superusers.
+ */
+export const readingsArchiveMeshesPartitionsRetrieveOptions = (options: Options<ReadingsArchiveMeshesPartitionsRetrieveData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof readingsArchiveMeshesPartitionsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsArchiveMeshesPartitionsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsArchiveMeshesPartitionsRetrieveQueryKey(options)
+});
+
+export const readingsArchiveMeshesZipRetrieveQueryKey = (options: Options<ReadingsArchiveMeshesZipRetrieveData>) => createQueryKey('readingsArchiveMeshesZipRetrieve', options);
+
+/**
+ * Download a range of a mesh's archive as one zip, a folder per day.
+ *
+ * Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole
+ * archive is one download. The zip streams as the files are read, and holds
+ * what the file list shows at the time of the request. For querying in place,
+ * issue credentials instead. Available to the mesh's owner while they are an
+ * operator, and to superusers.
+ *
+ * Args:
+ * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
+ * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
+ */
+export const readingsArchiveMeshesZipRetrieveOptions = (options: Options<ReadingsArchiveMeshesZipRetrieveData>) => queryOptions<ReadingsArchiveMeshesZipRetrieveResponse, DefaultError, ReadingsArchiveMeshesZipRetrieveResponse, ReturnType<typeof readingsArchiveMeshesZipRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsArchiveMeshesZipRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsArchiveMeshesZipRetrieveQueryKey(options)
+});
+
+export const readingsArchiveMeshesZipRetrieveInfiniteQueryKey = (options: Options<ReadingsArchiveMeshesZipRetrieveData>): QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>> => createQueryKey('readingsArchiveMeshesZipRetrieve', options, true);
+
+/**
+ * Download a range of a mesh's archive as one zip, a folder per day.
+ *
+ * Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole
+ * archive is one download. The zip streams as the files are read, and holds
+ * what the file list shows at the time of the request. For querying in place,
+ * issue credentials instead. Available to the mesh's owner while they are an
+ * operator, and to superusers.
+ *
+ * Args:
+ * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
+ * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
+ */
+export const readingsArchiveMeshesZipRetrieveInfiniteOptions = (options: Options<ReadingsArchiveMeshesZipRetrieveData>) => infiniteQueryOptions<ReadingsArchiveMeshesZipRetrieveResponse, DefaultError, InfiniteData<ReadingsArchiveMeshesZipRetrieveResponse>, QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>>, string | Pick<QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                start: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await readingsArchiveMeshesZipRetrieve({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsArchiveMeshesZipRetrieveInfiniteQueryKey(options)
+});
+
+export const readingsDevicesRetrieveQueryKey = (options: Options<ReadingsDevicesRetrieveData>) => createQueryKey('readingsDevicesRetrieve', options);
+
+/**
+ * Readings over a time range, addressed by the device's registration ID.
+ */
+export const readingsDevicesRetrieveOptions = (options: Options<ReadingsDevicesRetrieveData>) => queryOptions<ReadingsDevicesRetrieveResponse, DefaultError, ReadingsDevicesRetrieveResponse, ReturnType<typeof readingsDevicesRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsDevicesRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsDevicesRetrieveQueryKey(options)
+});
 
 export const readingsDevicesRetrieveInfiniteQueryKey = (options: Options<ReadingsDevicesRetrieveData>): QueryKey<Options<ReadingsDevicesRetrieveData>> => createQueryKey('readingsDevicesRetrieve', options, true);
 
@@ -1303,6 +2081,375 @@ export const readingsMeshesNodesQualityRetrieveInfiniteOptions = (options: Optio
     queryKey: readingsMeshesNodesQualityRetrieveInfiniteQueryKey(options)
 });
 
+export const sinksListQueryKey = (options?: Options<SinksListData>) => createQueryKey('sinksList', options);
+
+/**
+ * List the sinks the caller created, or every sink for a superuser. Operators only.
+ *
+ * Each carries how many consumers are connected, null for all of them when
+ * the broker cannot be asked. Passwords are never included.
+ */
+export const sinksListOptions = (options?: Options<SinksListData>) => queryOptions<SinksListResponse, DefaultError, SinksListResponse, ReturnType<typeof sinksListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sinksList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sinksListQueryKey(options)
+});
+
+/**
+ * Create a sink and return the credentials its consumer subscribes with. Operators only.
+ *
+ * The consumer connects to `broker` over TLS as `username` with the returned
+ * password and subscribes under `topic_filter`, where each message is one
+ * reading or alarm as JSON. The password is shown in this response only.
+ * The caller must first accept the current sink terms. Nothing is kept if
+ * the broker or the pipeline cannot be set up, or if the broker does not
+ * yet keep sink topics private.
+ *
+ * Args:
+ * label: Name for the sink.
+ * streams: Which readings are sent: `decoded`, `derived` and `alarms`.
+ * Defaults to `decoded`. Derived readings are sent only by
+ * instances that run postprocessing, and alarms only by those that
+ * run quality checks.
+ * mesh_ids: Meshes whose every node is sent, including nodes that
+ * appear later. Each must be one the caller may edit, owned by an
+ * operator.
+ * device_ids: Registrations of single devices to send, under the same
+ * conditions.
+ * terms_version: The `version` of the sink terms the caller accepted.
+ * Required unless the instance does not enforce terms.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sinksCreateMutation = (options?: Partial<Options<SinksCreateData>>): UseMutationOptions<SinksCreateResponse, DefaultError, Options<SinksCreateData>> => {
+    const mutationOptions: UseMutationOptions<SinksCreateResponse, DefaultError, Options<SinksCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sinksCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const sinksTermsRetrieveQueryKey = (options?: Options<SinksTermsRetrieveData>) => createQueryKey('sinksTermsRetrieve', options);
+
+/**
+ * Return the terms an operator must accept to create a sink. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the sink. Answers `404` on an instance that
+ * does not enforce terms or has no sinks.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sinksTermsRetrieveOptions = (options?: Options<SinksTermsRetrieveData>) => queryOptions<SinksTermsRetrieveResponse, DefaultError, SinksTermsRetrieveResponse, ReturnType<typeof sinksTermsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sinksTermsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sinksTermsRetrieveQueryKey(options)
+});
+
+/**
+ * Delete a sink, revoke its credentials and disconnect its consumers. Operators only.
+ *
+ * A sink with meshes or devices attached cannot be deleted. Nothing is
+ * removed if the broker cannot be told. Its terms acceptances are kept.
+ */
+export const sinksDestroyMutation = (options?: Partial<Options<SinksDestroyData>>): UseMutationOptions<SinksDestroyResponse, DefaultError, Options<SinksDestroyData>> => {
+    const mutationOptions: UseMutationOptions<SinksDestroyResponse, DefaultError, Options<SinksDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sinksDestroy({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const sinksRetrieveQueryKey = (options: Options<SinksRetrieveData>) => createQueryKey('sinksRetrieve', options);
+
+/**
+ * Return one sink and how many consumers are connected to it. Operators only.
+ *
+ * An operator can read only the sinks they created; a superuser can read
+ * any. The password is never included.
+ */
+export const sinksRetrieveOptions = (options: Options<SinksRetrieveData>) => queryOptions<SinksRetrieveResponse, DefaultError, SinksRetrieveResponse, ReturnType<typeof sinksRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sinksRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sinksRetrieveQueryKey(options)
+});
+
+/**
+ * Update a sink. Operators only, on the sinks they created.
+ *
+ * Any subset of the create fields may be sent, except the terms. A list
+ * sent replaces the current one, so an empty `mesh_ids` detaches every
+ * mesh. Changes the pipeline cannot be told about are rolled back.
+ */
+export const sinksUpdateMutation = (options?: Partial<Options<SinksUpdateData>>): UseMutationOptions<SinksUpdateResponse, DefaultError, Options<SinksUpdateData>> => {
+    const mutationOptions: UseMutationOptions<SinksUpdateResponse, DefaultError, Options<SinksUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sinksUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Replace a sink's password and disconnect its consumers. Operators only, on the sinks they created.
+ *
+ * The new password is shown in this response only. The old one is kept if
+ * the broker cannot be told.
+ */
+export const sinksCredentialsCreateMutation = (options?: Partial<Options<SinksCredentialsCreateData>>): UseMutationOptions<SinksCredentialsCreateResponse, DefaultError, Options<SinksCredentialsCreateData>> => {
+    const mutationOptions: UseMutationOptions<SinksCredentialsCreateResponse, DefaultError, Options<SinksCredentialsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sinksCredentialsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Accept the current sink terms again, renewing the sink. Only the operator who created it.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the sink is paused: nothing is sent and its consumers are
+ * refused. Renewing a paused sink resumes it with the same credentials.
+ * Answers `404` on an instance that does not enforce terms.
+ *
+ * Args:
+ * terms_version: The `version` of the sink terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sinksTermsAcceptanceCreateMutation = (options?: Partial<Options<SinksTermsAcceptanceCreateData>>): UseMutationOptions<SinksTermsAcceptanceCreateResponse, DefaultError, Options<SinksTermsAcceptanceCreateData>> => {
+    const mutationOptions: UseMutationOptions<SinksTermsAcceptanceCreateResponse, DefaultError, Options<SinksTermsAcceptanceCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sinksTermsAcceptanceCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const sourcesListQueryKey = (options?: Options<SourcesListData>) => createQueryKey('sourcesList', options);
+
+/**
+ * List the sources the caller created, or every source for a superuser. Operators only.
+ *
+ * Each carries its bridge's status, `unknown` for all of them when the
+ * broker cannot be asked. Remote passwords are never included.
+ */
+export const sourcesListOptions = (options?: Options<SourcesListData>) => queryOptions<SourcesListResponse, DefaultError, SourcesListResponse, ReturnType<typeof sourcesListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sourcesList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sourcesListQueryKey(options)
+});
+
+/**
+ * Create a source and start bridging its remote topic into this instance. Operators only.
+ *
+ * The caller must first accept the current source terms. The acceptance
+ * is recorded with the source. Nothing is kept if the bridge cannot be set
+ * up.
+ *
+ * Args:
+ * server: Remote broker as `host:port`. Cannot be this instance's own
+ * broker or one the server has blocked.
+ * ssl: Connect to the remote broker over TLS. Defaults to true.
+ * username: Remote broker username, if it requires one.
+ * password: Remote broker password. Accepted but never returned.
+ * topic: Remote topic filter, for example `msh/EU_868/2/e/MyChannel/#`.
+ * `$share`, `$SYS` and filters the server has blocked, such as `#`,
+ * are rejected.
+ * qos: 0 or 1. Defaults to 1.
+ * terms_version: The `version` of the source terms the caller accepted.
+ * Required, and refused once the terms have changed.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sourcesCreateMutation = (options?: Partial<Options<SourcesCreateData>>): UseMutationOptions<SourcesCreateResponse, DefaultError, Options<SourcesCreateData>> => {
+    const mutationOptions: UseMutationOptions<SourcesCreateResponse, DefaultError, Options<SourcesCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sourcesCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const sourcesTermsRetrieveQueryKey = (options?: Options<SourcesTermsRetrieveData>) => createQueryKey('sourcesTermsRetrieve', options);
+
+/**
+ * Return the terms an operator must accept to add a source. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the source. The footnote states how long
+ * the source's data is kept.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sourcesTermsRetrieveOptions = (options?: Options<SourcesTermsRetrieveData>) => queryOptions<SourcesTermsRetrieveResponse, DefaultError, SourcesTermsRetrieveResponse, ReturnType<typeof sourcesTermsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sourcesTermsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sourcesTermsRetrieveQueryKey(options)
+});
+
+/**
+ * Delete a source and stop bridging it. Operators only, on the sources they created.
+ *
+ * A source with meshes attached cannot be deleted. Nothing is removed if
+ * the bridge cannot be torn down. Its terms acceptances are kept.
+ */
+export const sourcesDestroyMutation = (options?: Partial<Options<SourcesDestroyData>>): UseMutationOptions<SourcesDestroyResponse, DefaultError, Options<SourcesDestroyData>> => {
+    const mutationOptions: UseMutationOptions<SourcesDestroyResponse, DefaultError, Options<SourcesDestroyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sourcesDestroy({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const sourcesRetrieveQueryKey = (options: Options<SourcesRetrieveData>) => createQueryKey('sourcesRetrieve', options);
+
+/**
+ * Return one source and the live status of its bridge. Operators only.
+ *
+ * An operator can read only the sources they created; a superuser can read
+ * any. The status is `unknown` when the broker cannot be reached to check
+ * it, and `paused` once its terms have lapsed.
+ */
+export const sourcesRetrieveOptions = (options: Options<SourcesRetrieveData>) => queryOptions<SourcesRetrieveResponse, DefaultError, SourcesRetrieveResponse, ReturnType<typeof sourcesRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sourcesRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sourcesRetrieveQueryKey(options)
+});
+
+/**
+ * Update a source and reconfigure its bridge. Operators only, on the sources they created.
+ *
+ * Any subset of the create fields may be sent. The update is rolled back
+ * if the bridge cannot be reconfigured. A paused source is updated
+ * without touching the broker. Send an empty `password` to remove it.
+ */
+export const sourcesUpdateMutation = (options?: Partial<Options<SourcesUpdateData>>): UseMutationOptions<SourcesUpdateResponse, DefaultError, Options<SourcesUpdateData>> => {
+    const mutationOptions: UseMutationOptions<SourcesUpdateResponse, DefaultError, Options<SourcesUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sourcesUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Accept the current source terms again, renewing the source. Only the operator who created it.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the source is paused. Renewing a paused source restarts its
+ * bridge and cancels the deletion of its meshes' data, as long as the
+ * grace period has not ended.
+ *
+ * Args:
+ * terms_version: The `version` of the source terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const sourcesTermsAcceptanceCreateMutation = (options?: Partial<Options<SourcesTermsAcceptanceCreateData>>): UseMutationOptions<SourcesTermsAcceptanceCreateResponse, DefaultError, Options<SourcesTermsAcceptanceCreateData>> => {
+    const mutationOptions: UseMutationOptions<SourcesTermsAcceptanceCreateResponse, DefaultError, Options<SourcesTermsAcceptanceCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await sourcesTermsAcceptanceCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const telemetryVariantsListQueryKey = (options?: Options<TelemetryVariantsListData>) => createQueryKey('telemetryVariantsList', options);
 
 /**
@@ -1434,3 +2581,30 @@ export const telemetryVariantsMeasurementsUpdateMutation = (options?: Partial<Op
     };
     return mutationOptions;
 };
+
+export const termsRetrieveQueryKey = (options?: Options<TermsRetrieveData>) => createQueryKey('termsRetrieve', options);
+
+/**
+ * Return the account terms, which signing up accepts.
+ *
+ * They cover the account only (Terms of Use and Privacy Policy): signing up
+ * stores no mesh data. Creating a mesh on the default broker accepts the
+ * mesh terms instead. Every statement must be accepted. Send the returned
+ * `version` back as `terms_version` when signing up. They never lapse.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const termsRetrieveOptions = (options?: Options<TermsRetrieveData>) => queryOptions<TermsRetrieveResponse, DefaultError, TermsRetrieveResponse, ReturnType<typeof termsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await termsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: termsRetrieveQueryKey(options)
+});

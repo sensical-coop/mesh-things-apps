@@ -9,6 +9,7 @@ import { FormField } from "@/components/form/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
+import { readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
 
 export function ForgotPasswordForm(): ReactElement {
@@ -28,12 +29,13 @@ export function ForgotPasswordForm(): ReactElement {
     try {
       await requestReset.mutateAsync({ body: { email } });
       setSubmittedEmail(email);
-    } catch {
+    } catch (failure) {
       setError(
-        formatMessage({
-          id: "page.forgotPassword.form.error",
-          defaultMessage: "We couldn't send the reset link. Try again in a moment.",
-        }),
+        readApiError(failure).fields.email ??
+          formatMessage({
+            id: "page.forgotPassword.form.error",
+            defaultMessage: "We couldn't send the reset link. Try again in a moment.",
+          }),
       );
     }
   }
@@ -49,7 +51,7 @@ export function ForgotPasswordForm(): ReactElement {
             <StatusCopy>
               <FormattedMessage
                 id="page.forgotPassword.sent.body"
-                defaultMessage="If an account exists for {email}, we've sent a link to reset the password."
+                defaultMessage="If an account exists for {email}, we'll send a link to reset the password."
                 values={{ email: submittedEmail }}
               />
             </StatusCopy>
@@ -72,7 +74,7 @@ export function ForgotPasswordForm(): ReactElement {
           <p className="text-body-regular text-text-secondary">
             {formatMessage({
               id: "page.forgotPassword.form.subtitle",
-              defaultMessage: "Enter the email on your owner account and we'll send you a reset link.",
+              defaultMessage: "Enter your email and we'll send you a reset link if it exists.",
             })}
           </p>
         </div>

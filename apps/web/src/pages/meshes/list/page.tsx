@@ -18,32 +18,100 @@ import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
+import { FormSelect } from "@/components/form/form-select";
+import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
+import { sourceTitle } from "@/features/source/model";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { listQuery } from "@mtt/ui/lib/filter-url";
+import { matchesListQuery } from "@/lib/list-filter";
 import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
+import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
-import { canEditMesh, meshTitle } from "@/features/mesh/model";
+import { MESH_STATUS_RANK, canEditMesh, meshStatus, meshTitle } from "@/features/mesh/model";
+import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
+import { termsLocale, type TermsAcceptance } from "@/features/terms/model";
+import { termsRepository } from "@/features/terms/repository";
+import { TermsDialog } from "@/features/terms/ui/terms-dialog";
+import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
+import { MeshOriginDialog } from "@/features/mesh/ui/mesh-origin-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
+import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
+import { sourceRepository } from "@/features/source/repository";
 
 type MeshRow = Mesh & { devices: number };
+
+/** Select value for "no source": the instance's own broker. */
+const DEFAULT_BROKER = "default";
 
 const col = legacyCreateColumnHelper<MeshRow>();
 
 export function MeshesPage(): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const filterLabels = useTranslatedFilterLabels();
   const filterOperatorLabels = useTranslatedFilterOperatorLabels();
+  // Every visible mesh loads at once and the filters run on the rows, so they can cover
+  // what the table derives (status, device count) as well as what the API returns.
+  const meshes = useQuery(meshRepository.list());
+  const devices = useQuery(deviceRepository.list());
+  const { me, isSuperuser, isOperator, meId, ownerName } = useOwnerDirectory();
+  const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });
+  // Creating a mesh: operators with sources first pick where its traffic comes from;
+  // the default broker then asks for the mesh terms, accepted anew for each mesh.
+  const [originOpen, setOriginOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [createStart, setCreateStart] = useState<CreateMeshStart | null>(null);
+
+  function startCreate() {
+    // With no terms, the origin step has nothing to decide: the form's select covers it.
+    if (!termsEnforced) setCreateStart({ sourceId: null, termsAcceptance: null });
+    else if (isOperator && (sources.data?.length ?? 0) > 0) setOriginOpen(true);
+    else setTermsOpen(true);
+  }
+  // A self-hosted instance asks for no terms; unknown counts as enforced.
+  // Flows treat "unknown" as enforced; the version lookup waits for a definite yes.
+  const enforced = useTermsEnforced();
+  const termsEnforced = enforced !== false;
+  const meshTerms = useQuery({
+    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    enabled: enforced === true,
+  });
+  const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
+  const [meshToEdit, setMeshToEdit] = useState<MeshRow | null>(null);
+  const counts = new Map<string, number>();
+  for (const device of devices.data ?? []) {
+    counts.set(device.mesh_id, (counts.get(device.mesh_id) ?? 0) + 1);
+  }
+
+  const rows = useMemo<MeshRow[]>(
+    () => (meshes.data ?? []).map((mesh) => ({ ...mesh, devices: counts.get(mesh.id) ?? 0 })),
+    [meshes.data, devices.data],
+  );
+  // Public and shared meshes belong to someone else, so say whose.
+  const showOwner = isSuperuser || rows.some((row) => row.owner_id !== meId);
+  // Only operators have sources; for everyone else every mesh is on the default broker.
+  const showSource = isOperator || rows.some((row) => row.source_id != null);
+  // Display only: terms count once confirmed, so a lite instance never flashes terms states.
+  const sourceStatusById = new Map((sources.data ?? []).map((source) => [source.id, source.status]));
+  const statusOf = (row: MeshRow) =>
+    meshStatus(row, {
+      termsEnforced: enforced === true,
+      currentTermsVersion: meshTerms.data?.version,
+      sourceStatus: row.source_id ? sourceStatusById.get(row.source_id) : undefined,
+      now: new Date(),
+    });
+  const sourceRows = sources.data ?? [];
+
+  const ownerIds = useMemo(() => [...new Set(rows.map((row) => row.owner_id))], [rows]);
   const specs = useMemo<FilterSpec[]>(
     () => [
       {
@@ -58,27 +126,127 @@ export function MeshesPage(): ReactElement {
         label: formatMessage({ id: "page.meshes.list.filters.channelId", defaultMessage: "Channel ID" }),
         type: "text",
       },
+      ...(showSource
+        ? [
+            {
+              key: "source",
+              urlKey: "source",
+              label: formatMessage({ id: "page.meshes.list.filters.source", defaultMessage: "Source" }),
+              type: "select" as const,
+              options: [
+                {
+                  value: DEFAULT_BROKER,
+                  label: formatMessage({ id: "feature.mesh.sourceLabel.default", defaultMessage: "Default broker" }),
+                },
+                ...sourceRows.map((source) => ({ value: source.id, label: sourceTitle(source) })),
+              ],
+            },
+          ]
+        : []),
+      {
+        key: "status",
+        urlKey: "status",
+        label: formatMessage({ id: "page.meshes.list.filters.status", defaultMessage: "Status" }),
+        type: "select",
+        options: [
+          { value: "active", label: formatMessage({ id: "feature.mesh.status.active", defaultMessage: "Active" }) },
+          { value: "renewSoon", label: formatMessage({ id: "feature.mesh.status.renewSoon", defaultMessage: "Renew soon" }) },
+          {
+            value: "termsChanged",
+            label: formatMessage({ id: "feature.mesh.status.termsChanged", defaultMessage: "Terms changed" }),
+          },
+          {
+            value: "termsNotAccepted",
+            label: formatMessage({ id: "feature.mesh.status.termsNotAccepted", defaultMessage: "Terms not accepted" }),
+          },
+          {
+            value: "scheduledForDeletion",
+            label: formatMessage({ id: "feature.mesh.status.scheduledForDeletion", defaultMessage: "Scheduled for deletion" }),
+          },
+          {
+            value: "sourcePaused",
+            label: formatMessage({ id: "feature.mesh.status.sourcePaused", defaultMessage: "Source paused" }),
+          },
+          {
+            value: "sourceDisconnected",
+            label: formatMessage({ id: "feature.mesh.status.sourceDisconnected", defaultMessage: "Source disconnected" }),
+          },
+          {
+            value: "sourceUnknown",
+            label: formatMessage({ id: "feature.mesh.status.sourceUnknown", defaultMessage: "Source status unknown" }),
+          },
+        ],
+      },
+      {
+        key: "access",
+        urlKey: "access",
+        label: formatMessage({ id: "page.meshes.list.filters.access", defaultMessage: "Access" }),
+        type: "select",
+        options: [
+          { value: "public", label: formatMessage({ id: "feature.mesh.accessBadge.public", defaultMessage: "Public" }) },
+          { value: "private", label: formatMessage({ id: "page.meshes.list.filters.accessPrivate", defaultMessage: "Private" }) },
+        ],
+      },
+      {
+        key: "devices",
+        urlKey: "devices",
+        label: formatMessage({ id: "page.meshes.list.filters.devices", defaultMessage: "Devices" }),
+        type: "select",
+        options: [
+          {
+            value: "true",
+            label: formatMessage({ id: "page.meshes.list.filters.devicesTrue", defaultMessage: "With devices" }),
+          },
+          {
+            value: "false",
+            label: formatMessage({ id: "page.meshes.list.filters.devicesFalse", defaultMessage: "Without devices" }),
+          },
+        ],
+      },
+      ...(showOwner
+        ? [
+            {
+              key: "owner",
+              urlKey: "owner",
+              label: formatMessage({ id: "page.meshes.list.filters.owner", defaultMessage: "Owner" }),
+              type: "select" as const,
+              options: ownerIds.map((ownerId) => ({
+                value: ownerId,
+                label:
+                  ownerId === meId
+                    ? formatMessage({ id: "common.ownerColumn.me", defaultMessage: "{name} (me)" }, { name: ownerName(ownerId) })
+                    : ownerName(ownerId),
+              })),
+            },
+          ]
+        : []),
     ],
-    [formatMessage],
+    // ownerName is rebuilt on every render; the owner ids are what change the options.
+    [formatMessage, showSource, showOwner, sourceRows, ownerIds, meId],
   );
   const filters = useSmartFilters({ specs });
-  const meshes = useQuery(meshRepository.list({ query: listQuery(filters.queryString) }));
-  const devices = useQuery(deviceRepository.list());
-  const { me, isSuperuser, meId, ownerName } = useOwnerDirectory();
-  const [open, setOpen] = useState(false);
-  const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
-  const [meshToEdit, setMeshToEdit] = useState<MeshRow | null>(null);
-  const counts = new Map<string, number>();
-  for (const device of devices.data ?? []) {
-    counts.set(device.mesh_id, (counts.get(device.mesh_id) ?? 0) + 1);
-  }
-
-  const rows = useMemo<MeshRow[]>(
-    () => (meshes.data ?? []).map((mesh) => ({ ...mesh, devices: counts.get(mesh.id) ?? 0 })),
-    [meshes.data, devices.data],
+  const shownRows = rows.filter((row) =>
+    matchesListQuery((field) => {
+      switch (field) {
+        case "label":
+          return meshTitle(row);
+        case "channel_id":
+          return row.channel_id;
+        case "source":
+          return row.source_id ?? DEFAULT_BROKER;
+        case "status":
+          return statusOf(row).kind;
+        case "access":
+          return row.is_public ? "public" : "private";
+        case "devices":
+          return String(row.devices > 0);
+        case "owner":
+          return row.owner_id;
+        default:
+          return undefined;
+      }
+    }, filters.queryString),
   );
-  // Public and shared meshes belong to someone else, so say whose.
-  const showOwner = isSuperuser || rows.some((row) => row.owner_id !== meId);
 
   const columns = useMemo(
     () => [
@@ -101,6 +269,22 @@ export function MeshesPage(): ReactElement {
       col.accessor("channel_id", {
         header: formatMessage({ id: "page.meshes.list.columns.channel", defaultMessage: "Channel" }),
         cell: (info) => <span className="text-text-secondary">{info.getValue()}</span>,
+      }),
+      ...(showSource
+        ? [
+            col.accessor((row) => row.source_id ?? "", {
+              id: "source",
+              header: formatMessage({ id: "page.meshes.list.columns.source", defaultMessage: "Source" }),
+              cell: (info) => <MeshSourceLabel mesh={info.row.original} sources={sourceRows} />,
+            }),
+          ]
+        : []),
+      col.accessor((row) => MESH_STATUS_RANK[statusOf(row).kind], {
+        id: "status",
+        // Ranked most urgent first, so the first click lists what needs attention on top.
+        sortDescFirst: false,
+        header: formatMessage({ id: "page.meshes.list.columns.status", defaultMessage: "Status" }),
+        cell: (info) => <MeshStatusChip status={statusOf(info.row.original)} />,
       }),
       col.accessor("devices", {
         header: formatMessage({ id: "page.meshes.list.columns.devices", defaultMessage: "Devices" }),
@@ -135,19 +319,15 @@ export function MeshesPage(): ReactElement {
         cell: ({ row }) => {
           const canEdit = canEditMesh(row.original, me);
           return (
-            <div className="flex justify-start gap-2">
+            <div className="flex justify-start gap-2 whitespace-nowrap">
               <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
                 {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
               </ButtonLink>
               {canEdit ? (
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="secondary"
+                <SettingsButton
+                  label={formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit mesh" })}
                   onClick={() => setMeshToEdit(row.original)}
-                >
-                  {formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit" })}
-                </Button>
+                />
               ) : null}
               {canEdit ? (
                 <Button
@@ -168,7 +348,7 @@ export function MeshesPage(): ReactElement {
         },
       }),
     ],
-    [formatMessage, me, meId, ownerName, showOwner],
+    [formatMessage, me, meId, ownerName, showOwner, showSource, sources.data, meshTerms.data?.version, enforced],
   );
 
   return (
@@ -177,7 +357,7 @@ export function MeshesPage(): ReactElement {
         <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
           {formatMessage({ id: "page.meshes.list.title", defaultMessage: "Meshes" })}
         </h1>
-        <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setOpen(true)}>
+        <Button type="button" size="small" leadingIcon={RiAddLine} onClick={startCreate}>
           {formatMessage({ id: "page.meshes.list.createMesh", defaultMessage: "Create mesh" })}
         </Button>
       </div>
@@ -196,7 +376,7 @@ export function MeshesPage(): ReactElement {
                 : meshes.error
                   ? formatMessage({
                       id: "page.meshes.list.panel.error",
-                      defaultMessage: "Meshes didn't load. Check your connection to the API and try again.",
+                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
                     })
                   : formatMessage({
                       id: "page.meshes.list.panel.description",
@@ -211,7 +391,7 @@ export function MeshesPage(): ReactElement {
             {meshes.isPending ? <SkeletonRows /> : null}
             {meshes.error ? null : meshes.isPending ? null : (
               <DataTable
-                data={rows}
+                data={shownRows}
                 columns={columns}
                 getRowId={(row) => row.id}
                 previousPageLabel={formatMessage({
@@ -236,7 +416,26 @@ export function MeshesPage(): ReactElement {
           </FramePanel>
         </Frame>
       </div>
-      <CreateMeshDialog open={open} onClose={() => setOpen(false)} />
+      <MeshOriginDialog
+        open={originOpen}
+        sources={sources.data ?? []}
+        onClose={() => setOriginOpen(false)}
+        onChoose={(sourceId) => {
+          setOriginOpen(false);
+          if (sourceId === null) setTermsOpen(true);
+          else setCreateStart({ sourceId, termsAcceptance: null });
+        }}
+      />
+      <TermsDialog
+        open={termsOpen}
+        kind="mesh"
+        onClose={() => setTermsOpen(false)}
+        onAccepted={(acceptance) => {
+          setTermsOpen(false);
+          setCreateStart({ sourceId: null, termsAcceptance: acceptance });
+        }}
+      />
+      <CreateMeshDialog start={createStart} onClose={() => setCreateStart(null)} />
       {meshToEdit ? (
         <EditMeshDialog mesh={meshToEdit} open onClose={() => setMeshToEdit(null)} />
       ) : null}
@@ -249,11 +448,34 @@ export function MeshesPage(): ReactElement {
   );
 }
 
-function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => void }): ReactElement {
+/** How "Create mesh" was started: the traffic's origin, and the mesh terms if it's the default broker. */
+type CreateMeshStart = { sourceId: string | null; termsAcceptance: TermsAcceptance | null };
+
+function CreateMeshDialog({
+  start,
+  onClose,
+}: {
+  /** Open while set. */
+  start: CreateMeshStart | null;
+  onClose: () => void;
+}): ReactElement {
+  const open = start !== null;
+  const termsAcceptance = start?.termsAcceptance ?? null;
+  const termsEnforced = useTermsEnforced() !== false;
   const { formatMessage } = useIntl();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Only operators have sources to offer; everyone else's meshes use the default broker.
+  const { isOperator } = useOwnerDirectory();
+  const sources = useQuery({ ...sourceRepository.list(), enabled: open && isOperator });
+  const sourceItems = [
+    {
+      label: formatMessage({ id: "page.meshes.list.createDialog.defaultBroker", defaultMessage: "Default broker" }),
+      value: DEFAULT_BROKER,
+    },
+    ...(sources.data ?? []).map((source) => ({ label: sourceTitle(source), value: source.id })),
+  ];
   const create = useMutation({
     ...meshRepository.create(),
     onSuccess: async (mesh) => {
@@ -261,29 +483,37 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
       onClose();
       void navigate({ to: routes.mesh, params: { meshId: mesh.id } });
     },
+    onError: (error) => setErrors(readApiError(error).fields),
   });
+  // Switching to the default broker in the form, after starting from a source, asks for the terms on save.
+  const [awaitingTerms, setAwaitingTerms] = useState<Parameters<typeof create.mutate>[0] | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
+    const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
     const parsed = zMeshesCreateData.safeParse({
       body: {
         channel_id: String(form.get("channel_id") ?? "").trim(),
         psk_b64: String(form.get("psk_b64") ?? ""),
         label: label === "" ? null : label,
+        ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
+        // Required on the default broker; a mesh on a source is covered by the source's terms.
+        ...(picked === DEFAULT_BROKER && termsAcceptance
+          ? { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
+          : {}),
       },
     });
     if (!parsed.success) {
-      const next: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path.at(-1) ?? "form");
-        next[key] ??= issue.message;
-      }
-      setErrors(next);
+      setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
+    if (termsEnforced && picked === DEFAULT_BROKER && !termsAcceptance) {
+      setAwaitingTerms({ body: parsed.data.body });
+      return;
+    }
     create.mutate({ body: parsed.data.body });
   }
 
@@ -297,7 +527,7 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
       })}
       onClose={onClose}
     >
-      <form className="flex flex-col gap-5" onSubmit={onSubmit}>
+      <form key={start ? `${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}` : "closed"} className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
           <FormField
             id="mesh-label"
@@ -318,12 +548,30 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
             label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.pskHint",
-              defaultMessage: "Base64 channel key. Stored on the mesh, never shown in the list.",
+              defaultMessage: "Base64 channel key.",
             })}
             error={errors.psk_b64}
           >
             <Input id="mesh-psk" name="psk_b64" type="password" required autoComplete="new-password" />
           </FormField>
+          {isOperator ? (
+            <FormField
+              id="mesh-source"
+              label={formatMessage({ id: "page.meshes.list.createDialog.source", defaultMessage: "Source" })}
+              hint={formatMessage({
+                id: "page.meshes.list.createDialog.sourceHint",
+                defaultMessage: "Where this mesh's gateways publish. Leave on the default broker unless you bridge it.",
+              })}
+              error={errors.source_id}
+            >
+              <FormSelect
+                id="mesh-source"
+                name="source_id"
+                items={sourceItems}
+                defaultValue={start?.sourceId ?? DEFAULT_BROKER}
+              />
+            </FormField>
+          ) : null}
         </FieldGroup>
         {create.error ? (
           <StatusCopy>
@@ -331,6 +579,13 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
               id: "page.meshes.list.createDialog.error",
               defaultMessage: "The mesh was not created. Check the fields and try again.",
             })}
+            {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
+            {errors.terms_version
+              ? ` ${formatMessage({
+                  id: "page.meshes.list.createDialog.termsChanged",
+                  defaultMessage: "The mesh terms changed. Close this dialog and accept the current terms.",
+                })}`
+              : ""}
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
@@ -344,6 +599,21 @@ function CreateMeshDialog({ open, onClose }: { open: boolean; onClose: () => voi
           </Button>
         </div>
       </form>
+      <TermsDialog
+        open={awaitingTerms !== null}
+        kind="mesh"
+        onClose={() => setAwaitingTerms(null)}
+        acceptLabel={formatMessage({ id: "page.meshes.list.createDialog.acceptAndCreate", defaultMessage: "Accept and create" })}
+        onAccepted={(acceptance) => {
+          if (!awaitingTerms) return;
+          create.mutate(
+            acceptance
+              ? { body: { ...awaitingTerms.body, terms_version: acceptance.version, terms_locale: acceptance.locale } }
+              : awaitingTerms,
+          );
+          setAwaitingTerms(null);
+        }}
+      />
     </Modal>
   );
 }

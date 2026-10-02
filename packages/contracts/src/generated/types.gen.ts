@@ -5,14 +5,30 @@ export type ClientOptions = {
 };
 
 /**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type AccountTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
  * One entry of the postprocessing function registry.
  */
 export type Algorithm = {
     name: string;
     inputs: Array<string>;
     outputs: Array<string>;
-    params: Array<string>;
-    optional_params: Array<string>;
+    params: Array<AlgorithmParam>;
     mode: string;
     doc: string | null;
     output_units: {
@@ -20,7 +36,85 @@ export type Algorithm = {
     };
 };
 
+/**
+ * One keyword argument of an algorithm.
+ */
+export type AlgorithmParam = {
+    name: string;
+    /**
+     * Set per device rather than on the blueprint step, because it describes one physical sensor.
+     */
+    calibration: boolean;
+    required: boolean;
+    default: unknown;
+    unit: string | null;
+    doc: string;
+};
+
+export type ArchiveCredentials = {
+    access_key_id: string;
+    secret_access_key: string;
+    session_token: string;
+    expires_at: string;
+    /**
+     * S3 endpoint to connect to. Null means the provider's default (AWS).
+     */
+    endpoint: string | null;
+    region: string;
+    bucket: string;
+    prefix: string;
+    s3_path: string;
+};
+
+export type ArchiveManifest = {
+    mesh_id: string;
+    prefix: string;
+    partitions: Array<ArchivePartition>;
+};
+
+export type ArchivePartition = {
+    dt: string;
+    hour: number;
+    /**
+     * Object size in bytes.
+     */
+    size: number;
+    last_modified: string;
+};
+
+/**
+ * * `pending` - Pending
+ * * `running` - Running
+ * * `done` - Done
+ * * `failed` - Failed
+ */
+export type BackfillStatusEnum = 'pending' | 'running' | 'done' | 'failed';
+
 export type BlankEnum = '';
+
+/**
+ * An input slot a blueprint version reads, bound to a channel by each device.
+ */
+export type BlueprintInput = {
+    slot: string;
+    /**
+     * Channel bound automatically when the device has it, such as `environment_metrics.temperature`.
+     */
+    default_channel?: string | null;
+};
+
+/**
+ * Immutable once created. Steps are nested in read and write.
+ */
+export type BlueprintVersion = {
+    readonly blueprint_id: string;
+    readonly number: number;
+    inputs: Array<BlueprintInput>;
+    steps: Array<PostprocessingStep>;
+    notes?: string | null;
+    readonly device_count: number;
+    readonly created_at: string;
+};
 
 export type ChannelQuality = {
     channel: string;
@@ -28,6 +122,41 @@ export type ChannelQuality = {
     observed: number | null;
     expected: number | null;
     largest_gap_seconds: number | null;
+};
+
+export type DataDeletion = {
+    readonly id: string;
+    readonly mesh_id: string;
+    readonly source_id: string | null;
+    reason: ReasonEnum;
+    readonly requested_by_id: string | null;
+    readonly requested_at: string;
+    readonly delete_after: string;
+    readonly data_until: string | null;
+    status: DataDeletionStatusEnum;
+    readonly attempts: number;
+    readonly last_error: string;
+    readonly completed_at: string | null;
+};
+
+/**
+ * * `pending` - Pending
+ * * `cancelled` - Cancelled
+ * * `done` - Done
+ */
+export type DataDeletionStatusEnum = 'pending' | 'cancelled' | 'done';
+
+/**
+ * * `approve` - approve
+ * * `reject` - reject
+ */
+export type DecisionEnum = 'approve' | 'reject';
+
+export type DerivedOutput = {
+    field_name: string;
+    channel: string;
+    measurement_id: string;
+    unit: string | null;
 };
 
 /**
@@ -85,6 +214,10 @@ export type DeviceMeasurement = {
     valid_max?: number | null;
     readonly first_seen: string;
     readonly last_seen: string | null;
+    /**
+     * The device postprocessing computing this channel, null for a channel the device reports.
+     */
+    readonly produced_by: string | null;
 };
 
 /**
@@ -94,6 +227,45 @@ export type DeviceMeasurementUpdate = {
     enabled_detectors?: Array<string> | null;
     valid_min?: number | null;
     valid_max?: number | null;
+};
+
+export type DevicePostprocessing = {
+    readonly id: string;
+    readonly device_uuid: string;
+    readonly blueprint_id: string;
+    readonly blueprint_name: string;
+    readonly blueprint_version: number;
+    readonly input_bindings: {
+        [key: string]: string;
+    };
+    readonly output_prefix: string;
+    readonly tolerance_seconds: number | null;
+    readonly effective_tolerance_seconds: number;
+    readonly is_enabled: boolean;
+    readonly outputs: Array<DerivedOutput>;
+    readonly problems: Array<string>;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+export type DevicePostprocessingWrite = {
+    /**
+     * Required when attaching.
+     */
+    blueprint_id?: string;
+    /**
+     * Defaults to the latest version when attaching.
+     */
+    blueprint_version?: number;
+    /**
+     * {slot: measurement id of this device}. Null unbinds a slot.
+     */
+    input_bindings?: {
+        [key: string]: string | null;
+    };
+    output_prefix?: string;
+    tolerance_seconds?: number | null;
+    is_enabled?: boolean;
 };
 
 export type DeviceQualityResponse = {
@@ -122,10 +294,16 @@ export type DeviceRead = {
     readonly label: string | null;
     readonly is_gateway: boolean;
     readonly is_allowed: boolean;
+    readonly absence_detection_enabled: boolean;
+    /**
+     * Shown only to the mesh's owner and superusers.
+     */
+    readonly archive_enabled?: boolean;
+    readonly archive_enabled_at?: string | null;
     /**
      * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
      */
-    readonly absence_detection_enabled: boolean;
+    readonly archive_enabled_by?: string | null;
     readonly admin_keys_b64?: Array<string>;
     readonly latitude: number | null;
     readonly longitude: number | null;
@@ -135,7 +313,6 @@ export type DeviceRead = {
     readonly hardware_type: string | null;
     readonly role: string | null;
     readonly nodeinfo_overridden: boolean;
-    readonly postprocessing_blueprint_id: string | null;
     readonly reading_interval_seconds: number | null;
     readonly publish_interval_seconds: number | null;
     readonly last_seen: string | null;
@@ -165,13 +342,16 @@ export type DeviceUpdate = {
      * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
      */
     absence_detection_enabled?: boolean;
+    /**
+     * Store this device's readings in the Parquet archive from now on. Only on a mesh owned by an operator, and only on instances that run the archive. Turning it off keeps what was stored.
+     */
+    archive_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
     short_name?: string | null;
     hardware_type?: string | null;
     role?: string | null;
-    postprocessing_blueprint_id?: string | null;
     reading_interval_seconds?: number | null;
     publish_interval_seconds?: number | null;
 };
@@ -249,6 +429,22 @@ export type Mesh = {
      * When true, any verified owner may read this mesh, its devices and their readings. Writes stay with the owner.
      */
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
+    /**
+     * Mesh terms version accepted. Null on a source, whose terms apply instead.
+     */
+    readonly terms_accepted_version?: string | null;
+    /**
+     * When the mesh terms acceptance lapses. Null for no time limit, or on a source.
+     */
+    readonly terms_expires_at?: string | null;
+    /**
+     * Set while its mesh terms have lapsed; the mesh stores no new data.
+     */
+    readonly paused_at?: string | null;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -263,15 +459,27 @@ export type MeshCreate = {
      */
     psk_b64: string;
     label?: string | null;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export type MeshUpdate = {
     channel_id?: string;
     label?: string | null;
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
 };
 
 /**
@@ -300,6 +508,53 @@ export type MetricsResponse = {
 export type NullEnum = unknown;
 
 /**
+ * An operator request as its requester sees it.
+ */
+export type OperatorRequest = {
+    readonly id: string;
+    readonly reason: string;
+    status: OperatorRequestStatusEnum;
+    readonly decision_note: string;
+    readonly decided_at: string | null;
+    readonly created_at: string;
+};
+
+/**
+ * An operator request as a superuser sees it.
+ */
+export type OperatorRequestAdmin = {
+    readonly id: string;
+    readonly reason: string;
+    status: OperatorRequestStatusEnum;
+    readonly decision_note: string;
+    readonly decided_at: string | null;
+    readonly created_at: string;
+    readonly owner_id: string;
+    readonly owner_name: string;
+    readonly owner_email: string;
+    readonly decided_by_id: string | null;
+};
+
+export type OperatorRequestCreate = {
+    /**
+     * Why the operator role is needed. Shown to superusers.
+     */
+    reason: string;
+};
+
+export type OperatorRequestDecision = {
+    decision: DecisionEnum;
+    note?: string;
+};
+
+/**
+ * * `pending` - Pending
+ * * `approved` - Approved
+ * * `rejected` - Rejected
+ */
+export type OperatorRequestStatusEnum = 'pending' | 'approved' | 'rejected';
+
+/**
  * POST /owners/me/change-password input
  */
 export type OwnerChangePassword = {
@@ -307,6 +562,9 @@ export type OwnerChangePassword = {
     new_password: string;
 };
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
 export type OwnerCreate = {
     name: string;
     email: string;
@@ -328,9 +586,6 @@ export type OwnerLogin = {
 
 /**
  * An owner's own record together with the devices they may access.
- *
- * Describes the body the profile and login routes build by hand; nothing
- * serializes through it.
  */
 export type OwnerProfile = {
     readonly id: string;
@@ -343,6 +598,7 @@ export type OwnerProfile = {
      */
     readonly is_superuser: boolean;
     readonly is_staff: boolean;
+    role: RoleEnum;
     readonly is_active: boolean;
     readonly email_verified_at: string | null;
     readonly email_verification_sent_at: string | null;
@@ -351,7 +607,15 @@ export type OwnerProfile = {
     /**
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
-    readonly alarm_email_cooldown_seconds?: number | null;
+    readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
+     * Version of the account terms last accepted. Null if never accepted. They never lapse.
+     */
+    readonly terms_accepted_version: string | null;
     readonly devices: Array<DeviceRead>;
 };
 
@@ -381,6 +645,7 @@ export type OwnerRead = {
      */
     readonly is_superuser: boolean;
     readonly is_staff: boolean;
+    role: RoleEnum;
     readonly is_active: boolean;
     readonly email_verified_at: string | null;
     readonly email_verification_sent_at: string | null;
@@ -389,7 +654,15 @@ export type OwnerRead = {
     /**
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
-    readonly alarm_email_cooldown_seconds?: number | null;
+    readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
+     * Version of the account terms last accepted. Null if never accepted. They never lapse.
+     */
+    readonly terms_accepted_version: string | null;
 };
 
 /**
@@ -406,6 +679,10 @@ export type OwnerResetPassword = {
     new_password: string;
 };
 
+export type OwnerRole = {
+    role: RoleEnum;
+};
+
 export type OwnerUpdate = {
     name?: string;
     email?: string;
@@ -413,6 +690,10 @@ export type OwnerUpdate = {
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
      */
     alarm_email_cooldown_seconds?: number | null;
+    /**
+     * Email me when a source I created stays disconnected, or a sink I created with meshes or devices attached has nobody connected. Off by default.
+     */
+    status_alerts_enabled?: boolean;
 };
 
 /**
@@ -429,6 +710,7 @@ export type OwnerWithApiKey = {
      */
     readonly is_superuser: boolean;
     readonly is_staff: boolean;
+    role: RoleEnum;
     readonly is_active: boolean;
     readonly email_verified_at: string | null;
     readonly email_verification_sent_at: string | null;
@@ -437,7 +719,15 @@ export type OwnerWithApiKey = {
     /**
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
-    readonly alarm_email_cooldown_seconds?: number | null;
+    readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
+     * Version of the account terms last accepted. Null if never accepted. They never lapse.
+     */
+    readonly terms_accepted_version: string | null;
     readonly api_key: string;
 };
 
@@ -446,30 +736,72 @@ export type Point = {
     value: unknown;
 };
 
-/**
- * Steps are nested in read and write
- */
+export type PostprocessingBackfill = {
+    readonly id: string;
+    readonly postprocessing_id: string;
+    start: string;
+    /**
+     * Defaults to now.
+     */
+    stop?: string;
+    include_dependants?: boolean;
+    status: BackfillStatusEnum;
+    readonly points_published: number;
+    readonly error: string | null;
+    readonly created_at: string;
+    readonly started_at: string | null;
+    readonly finished_at: string | null;
+};
+
 export type PostprocessingBlueprint = {
     readonly id: string;
-    name: string;
-    description?: string | null;
-    readonly owner_id: string;
-    steps: Array<PostprocessingStep>;
+    readonly name: string;
+    readonly description: string | null;
+    readonly is_public: boolean;
+    /**
+     * Null once its owner was deleted while devices still used it.
+     */
+    readonly owner_id: string | null;
+    latest_version: BlueprintVersion;
     readonly created_at: string;
     readonly updated_at: string;
+};
+
+/**
+ * A new blueprint together with its first version.
+ */
+export type PostprocessingBlueprintCreate = {
+    name: string;
+    description?: string | null;
+    is_public?: boolean;
+    inputs: Array<BlueprintInput>;
+    steps: Array<PostprocessingStep>;
+    notes?: string | null;
+};
+
+export type PostprocessingBlueprintUpdate = {
+    name?: string;
+    description?: string | null;
+    is_public?: boolean;
 };
 
 /**
  * Validates each step against common/algorithms
  */
 export type PostprocessingStep = {
-    readonly id: string;
+    key: string;
     order: number;
     function_name: string;
     inputs?: unknown;
     params?: unknown;
     outputs?: unknown;
 };
+
+/**
+ * * `0` - 0
+ * * `1` - 1
+ */
+export type QosEnum = 0 | 1;
 
 /**
  * * `physical_property` - Physical property
@@ -487,10 +819,286 @@ export type ReadingsResponse = {
     series: Array<Series>;
 };
 
+/**
+ * * `mesh_deleted` - Mesh deleted
+ * * `source_detached` - Mesh moved off its source
+ * * `terms_lapsed` - Source terms lapsed
+ */
+export type ReasonEnum = 'mesh_deleted' | 'source_detached' | 'terms_lapsed';
+
+/**
+ * * `member` - Member
+ * * `operator` - Operator
+ */
+export type RoleEnum = 'member' | 'operator';
+
 export type Series = {
     channel: string;
     points: Array<Point>;
 };
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SinkCreate = {
+    label?: string | null;
+    /**
+     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     */
+    streams?: Array<StreamsEnum>;
+    /**
+     * Meshes whose every node is sent, including nodes that appear later.
+     */
+    mesh_ids?: Array<string>;
+    /**
+     * Registrations (`uuid`) of single devices to send.
+     */
+    device_ids?: Array<string>;
+};
+
+export type SinkCredentials = {
+    readonly id: string;
+    readonly label: string | null;
+    /**
+     * What the sink sends, in the order `decoded`, `derived`, `alarms`.
+     */
+    readonly streams: Array<StreamsEnum>;
+    readonly mesh_ids: Array<string>;
+    readonly device_ids: Array<string>;
+    /**
+     * Broker the consumer connects to over TLS, as host:port.
+     */
+    readonly broker: string;
+    readonly username: string;
+    /**
+     * Everything the consumer may subscribe to.
+     */
+    readonly topic_filter: string;
+    /**
+     * Consumers connected now. Null when the broker cannot be asked.
+     */
+    readonly connections: number | null;
+    /**
+     * When the sink was paused because its terms lapsed.
+     */
+    readonly paused_at: string | null;
+    readonly terms_accepted_version: string | null;
+    /**
+     * When the terms acceptance lapses. Null for no time limit.
+     */
+    readonly terms_expires_at: string | null;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+    /**
+     * Shown only in this response.
+     */
+    readonly password: string;
+};
+
+export type SinkRead = {
+    readonly id: string;
+    readonly label: string | null;
+    /**
+     * What the sink sends, in the order `decoded`, `derived`, `alarms`.
+     */
+    readonly streams: Array<StreamsEnum>;
+    readonly mesh_ids: Array<string>;
+    readonly device_ids: Array<string>;
+    /**
+     * Broker the consumer connects to over TLS, as host:port.
+     */
+    readonly broker: string;
+    readonly username: string;
+    /**
+     * Everything the consumer may subscribe to.
+     */
+    readonly topic_filter: string;
+    /**
+     * Consumers connected now. Null when the broker cannot be asked.
+     */
+    readonly connections: number | null;
+    /**
+     * When the sink was paused because its terms lapsed.
+     */
+    readonly paused_at: string | null;
+    readonly terms_accepted_version: string | null;
+    /**
+     * When the terms acceptance lapses. Null for no time limit.
+     */
+    readonly terms_expires_at: string | null;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SinkTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * Create or update a sink. Every field is optional on update; lists replace what is there.
+ */
+export type SinkWrite = {
+    label?: string | null;
+    /**
+     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     */
+    streams?: Array<StreamsEnum>;
+    /**
+     * Meshes whose every node is sent, including nodes that appear later.
+     */
+    mesh_ids?: Array<string>;
+    /**
+     * Registrations (`uuid`) of single devices to send.
+     */
+    device_ids?: Array<string>;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SourceCreate = {
+    readonly id: string;
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+/**
+ * A source. The remote password is accepted but never returned.
+ */
+export type SourceRead = {
+    readonly id: string;
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+    /**
+     * The bridge's connection status, `paused`, or unknown when it cannot be checked.
+     */
+    readonly status: string;
+    /**
+     * When the source was paused because its terms lapsed.
+     */
+    readonly paused_at: string | null;
+    readonly terms_accepted_version: string | null;
+    /**
+     * When the terms acceptance lapses. Null when data is kept without a time limit.
+     */
+    readonly terms_expires_at: string | null;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SourceTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type MeshTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * Any subset of the create fields.
+ */
+export type SourceUpdate = {
+    readonly id: string;
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server?: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic?: string;
+    qos?: QosEnum;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+export type StepCalibration = {
+    readonly id: string;
+    step_key: string;
+    readonly function_name: string;
+    params?: unknown;
+    /**
+     * Defaults to now.
+     */
+    valid_from?: string;
+    readonly created_at: string;
+};
+
+/**
+ * * `decoded` - decoded
+ * * `derived` - derived
+ * * `alarms` - alarms
+ */
+export type StreamsEnum = 'decoded' | 'derived' | 'alarms';
 
 /**
  * GET /telemetry-variants/{id}/measurements. Readable by
@@ -536,6 +1144,38 @@ export type TelemetryVariantUpdate = {
     default_reading_interval_seconds?: number | null;
 };
 
+export type Terms = {
+    version: string;
+    locale: string;
+    title: string;
+    description: string;
+    statements: Array<TermsStatement>;
+    /**
+     * Includes how long data is kept, from the server's retention settings.
+     */
+    footnote: string;
+};
+
+/**
+ * * `en` - en
+ * * `es` - es
+ */
+export type TermsLocaleEnum = 'en' | 'es';
+
+export type TermsStatement = {
+    id: string;
+    text: string;
+};
+
+/**
+ * Immutable once created. Steps are nested in read and write.
+ */
+export type BlueprintVersionWritable = {
+    inputs: Array<BlueprintInput>;
+    steps: Array<PostprocessingStep>;
+    notes?: string | null;
+};
+
 /**
  * POST /devices input
  */
@@ -571,6 +1211,10 @@ export type DeviceMeasurementWritable = {
     valid_max?: number | null;
 };
 
+export type DevicePostprocessingWritable = {
+    [key: string]: unknown;
+};
+
 /**
  * node_id/mesh are fixed at creation. Role is editable
  */
@@ -586,13 +1230,16 @@ export type DeviceUpdateWritable = {
      * Gates only the absence detector (device stopped publishing). Per-channel detectors are unaffected.
      */
     absence_detection_enabled?: boolean;
+    /**
+     * Store this device's readings in the Parquet archive from now on. Only on a mesh owned by an operator, and only on instances that run the archive. Turning it off keeps what was stored.
+     */
+    archive_enabled?: boolean;
     latitude?: number | null;
     longitude?: number | null;
     name?: string | null;
     short_name?: string | null;
     hardware_type?: string | null;
     role?: string | null;
-    postprocessing_blueprint_id?: string | null;
     reading_interval_seconds?: number | null;
     publish_interval_seconds?: number | null;
 };
@@ -608,10 +1255,42 @@ export type MeshWritable = {
      * When true, any verified owner may read this mesh, its devices and their readings. Writes stay with the owner.
      */
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
+ * POST /meshes input
+ */
+export type MeshCreateWritable = {
+    channel_id: string;
+    /**
+     * Base64-encoded channel PSK
+     */
+    psk_b64: string;
+    label?: string | null;
+    /**
+     * Version of the mesh terms accepted, from /meshes/terms. Required when the mesh uses the default broker (no source) and has no current acceptance; ignored otherwise.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     */
+    terms_locale?: TermsLocaleEnum;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
+};
+
+/**
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export type MeshUpdateWritable = {
     channel_id?: string;
@@ -621,12 +1300,41 @@ export type MeshUpdateWritable = {
     psk_b64?: string;
     label?: string | null;
     is_public?: boolean;
+    /**
+     * Source the mesh's traffic is bridged from. Null for this instance's own broker.
+     */
+    source_id?: string | null;
+    /**
+     * Version of the mesh terms accepted, from /meshes/terms. Required when the mesh uses the default broker (no source) and has no current acceptance; ignored otherwise.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
 };
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
 export type OwnerCreateWritable = {
     name: string;
     email: string;
     password: string;
+    /**
+     * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
 };
 
 /**
@@ -637,24 +1345,133 @@ export type OwnerLoginWritable = {
     password: string;
 };
 
-/**
- * Steps are nested in read and write
- */
+export type PostprocessingBackfillWritable = {
+    start: string;
+    /**
+     * Defaults to now.
+     */
+    stop?: string;
+    include_dependants?: boolean;
+};
+
 export type PostprocessingBlueprintWritable = {
-    name: string;
-    description?: string | null;
-    steps: Array<PostprocessingStepWritable>;
+    [key: string]: unknown;
 };
 
 /**
- * Validates each step against common/algorithms
+ * Accepting the current terms of `terms_kind`.
  */
-export type PostprocessingStepWritable = {
-    order: number;
-    function_name: string;
-    inputs?: unknown;
+export type SinkCreateWritable = {
+    /**
+     * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+    label?: string | null;
+    /**
+     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     */
+    streams?: Array<StreamsEnum>;
+    /**
+     * Meshes whose every node is sent, including nodes that appear later.
+     */
+    mesh_ids?: Array<string>;
+    /**
+     * Registrations (`uuid`) of single devices to send.
+     */
+    device_ids?: Array<string>;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SourceCreateWritable = {
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote broker password. Never returned. An empty string or null removes it.
+     */
+    password?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+    /**
+     * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * A source. The remote password is accepted but never returned.
+ */
+export type SourceReadWritable = {
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote broker password. Never returned. An empty string or null removes it.
+     */
+    password?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic: string;
+    qos?: QosEnum;
+};
+
+/**
+ * Any subset of the create fields.
+ */
+export type SourceUpdateWritable = {
+    label?: string | null;
+    /**
+     * Remote broker as host:port.
+     */
+    server?: string;
+    ssl?: boolean;
+    username?: string | null;
+    /**
+     * Remote broker password. Never returned. An empty string or null removes it.
+     */
+    password?: string | null;
+    /**
+     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     */
+    topic?: string;
+    qos?: QosEnum;
+};
+
+export type StepCalibrationWritable = {
+    step_key: string;
     params?: unknown;
-    outputs?: unknown;
+    /**
+     * Defaults to now.
+     */
+    valid_from?: string;
 };
 
 export type AlgorithmsListData = {
@@ -669,6 +1486,28 @@ export type AlgorithmsListResponses = {
 };
 
 export type AlgorithmsListResponse = AlgorithmsListResponses[keyof AlgorithmsListResponses];
+
+export type DataDeletionsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Restrict to one mesh.
+         */
+        mesh_id?: string;
+        /**
+         * `pending` (the default), `cancelled`, `done`, or `all`.
+         */
+        status?: string;
+    };
+    url: '/data-deletions';
+};
+
+export type DataDeletionsListResponses = {
+    200: Array<DataDeletion>;
+};
+
+export type DataDeletionsListResponse = DataDeletionsListResponses[keyof DataDeletionsListResponses];
 
 export type DevicesListData = {
     body?: never;
@@ -825,6 +1664,171 @@ export type DevicesMeasurementsUpdateResponses = {
 
 export type DevicesMeasurementsUpdateResponse = DevicesMeasurementsUpdateResponses[keyof DevicesMeasurementsUpdateResponses];
 
+export type DevicesPostprocessingsListData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings';
+};
+
+export type DevicesPostprocessingsListResponses = {
+    200: Array<DevicePostprocessing>;
+};
+
+export type DevicesPostprocessingsListResponse = DevicesPostprocessingsListResponses[keyof DevicesPostprocessingsListResponses];
+
+export type DevicesPostprocessingsCreateData = {
+    body?: DevicePostprocessingWrite;
+    path: {
+        device_uuid: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings';
+};
+
+export type DevicesPostprocessingsCreateResponses = {
+    201: DevicePostprocessing;
+};
+
+export type DevicesPostprocessingsCreateResponse = DevicesPostprocessingsCreateResponses[keyof DevicesPostprocessingsCreateResponses];
+
+export type DevicesPostprocessingsDestroyData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}';
+};
+
+export type DevicesPostprocessingsDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DevicesPostprocessingsDestroyResponse = DevicesPostprocessingsDestroyResponses[keyof DevicesPostprocessingsDestroyResponses];
+
+export type DevicesPostprocessingsRetrieveData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}';
+};
+
+export type DevicesPostprocessingsRetrieveResponses = {
+    200: DevicePostprocessing;
+};
+
+export type DevicesPostprocessingsRetrieveResponse = DevicesPostprocessingsRetrieveResponses[keyof DevicesPostprocessingsRetrieveResponses];
+
+export type DevicesPostprocessingsUpdateData = {
+    body?: DevicePostprocessingWrite;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}';
+};
+
+export type DevicesPostprocessingsUpdateResponses = {
+    200: DevicePostprocessing;
+};
+
+export type DevicesPostprocessingsUpdateResponse = DevicesPostprocessingsUpdateResponses[keyof DevicesPostprocessingsUpdateResponses];
+
+export type DevicesPostprocessingsBackfillsListData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills';
+};
+
+export type DevicesPostprocessingsBackfillsListResponses = {
+    200: Array<PostprocessingBackfill>;
+};
+
+export type DevicesPostprocessingsBackfillsListResponse = DevicesPostprocessingsBackfillsListResponses[keyof DevicesPostprocessingsBackfillsListResponses];
+
+export type DevicesPostprocessingsBackfillsCreateData = {
+    body: PostprocessingBackfillWritable;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills';
+};
+
+export type DevicesPostprocessingsBackfillsCreateResponses = {
+    202: PostprocessingBackfill;
+};
+
+export type DevicesPostprocessingsBackfillsCreateResponse = DevicesPostprocessingsBackfillsCreateResponses[keyof DevicesPostprocessingsBackfillsCreateResponses];
+
+export type DevicesPostprocessingsCalibrationsListData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations';
+};
+
+export type DevicesPostprocessingsCalibrationsListResponses = {
+    200: Array<StepCalibration>;
+};
+
+export type DevicesPostprocessingsCalibrationsListResponse = DevicesPostprocessingsCalibrationsListResponses[keyof DevicesPostprocessingsCalibrationsListResponses];
+
+export type DevicesPostprocessingsCalibrationsCreateData = {
+    body: StepCalibrationWritable;
+    path: {
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations';
+};
+
+export type DevicesPostprocessingsCalibrationsCreateResponses = {
+    201: StepCalibration;
+};
+
+export type DevicesPostprocessingsCalibrationsCreateResponse = DevicesPostprocessingsCalibrationsCreateResponses[keyof DevicesPostprocessingsCalibrationsCreateResponses];
+
+export type DevicesPostprocessingsCalibrationsDestroyData = {
+    body?: never;
+    path: {
+        calibration_id: string;
+        device_uuid: string;
+        postprocessing_id: string;
+    };
+    query?: never;
+    url: '/devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations/{calibration_id}';
+};
+
+export type DevicesPostprocessingsCalibrationsDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type DevicesPostprocessingsCalibrationsDestroyResponse = DevicesPostprocessingsCalibrationsDestroyResponses[keyof DevicesPostprocessingsCalibrationsDestroyResponses];
+
 export type DevicesTelemetryVariantsListData = {
     body?: never;
     path: {
@@ -964,6 +1968,10 @@ export type MeshesListData = {
          * Restrict to meshes the caller owns, excluding public and granted ones.
          */
         owned?: boolean;
+        /**
+         * Restrict to meshes bridged from one source.
+         */
+        source_id?: string;
     };
     url: '/meshes';
 };
@@ -975,7 +1983,7 @@ export type MeshesListResponses = {
 export type MeshesListResponse = MeshesListResponses[keyof MeshesListResponses];
 
 export type MeshesCreateData = {
-    body: MeshCreate;
+    body: MeshCreateWritable;
     path?: never;
     query?: never;
     url: '/meshes';
@@ -986,6 +1994,24 @@ export type MeshesCreateResponses = {
 };
 
 export type MeshesCreateResponse = MeshesCreateResponses[keyof MeshesCreateResponses];
+
+export type MeshesTermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/meshes/terms';
+};
+
+export type MeshesTermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type MeshesTermsRetrieveResponse = MeshesTermsRetrieveResponses[keyof MeshesTermsRetrieveResponses];
 
 export type MeshesDestroyData = {
     body?: never;
@@ -1034,6 +2060,21 @@ export type MeshesUpdateResponses = {
 };
 
 export type MeshesUpdateResponse = MeshesUpdateResponses[keyof MeshesUpdateResponses];
+
+export type MeshesTermsAcceptanceCreateData = {
+    body: MeshTermsAcceptance;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/meshes/{mesh_id}/terms-acceptance';
+};
+
+export type MeshesTermsAcceptanceCreateResponses = {
+    201: Mesh;
+};
+
+export type MeshesTermsAcceptanceCreateResponse = MeshesTermsAcceptanceCreateResponses[keyof MeshesTermsAcceptanceCreateResponses];
 
 export type MeshesDevicesListData = {
     body?: never;
@@ -1116,6 +2157,54 @@ export type MetricsRetrieveResponses = {
 
 export type MetricsRetrieveResponse = MetricsRetrieveResponses[keyof MetricsRetrieveResponses];
 
+export type OperatorRequestsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Restrict to one status: `pending` (the default), `approved`, `rejected`, or `all`.
+         */
+        status?: string;
+    };
+    url: '/operator-requests';
+};
+
+export type OperatorRequestsListResponses = {
+    200: Array<OperatorRequestAdmin>;
+};
+
+export type OperatorRequestsListResponse = OperatorRequestsListResponses[keyof OperatorRequestsListResponses];
+
+export type OperatorRequestsRetrieveData = {
+    body?: never;
+    path: {
+        request_id: string;
+    };
+    query?: never;
+    url: '/operator-requests/{request_id}';
+};
+
+export type OperatorRequestsRetrieveResponses = {
+    200: OperatorRequestAdmin;
+};
+
+export type OperatorRequestsRetrieveResponse = OperatorRequestsRetrieveResponses[keyof OperatorRequestsRetrieveResponses];
+
+export type OperatorRequestsUpdateData = {
+    body: OperatorRequestDecision;
+    path: {
+        request_id: string;
+    };
+    query?: never;
+    url: '/operator-requests/{request_id}';
+};
+
+export type OperatorRequestsUpdateResponses = {
+    200: OperatorRequestAdmin;
+};
+
+export type OperatorRequestsUpdateResponse = OperatorRequestsUpdateResponses[keyof OperatorRequestsUpdateResponses];
+
 export type OwnersListData = {
     body?: never;
     path?: never;
@@ -1125,7 +2214,7 @@ export type OwnersListData = {
 
 export type OwnersListResponses = {
     /**
-     * The public fields shown here. A superuser receives the full record for every owner instead.
+     * The public fields shown here. A superuser receives the full record for every owner.
      */
     200: Array<OwnerPublic>;
 };
@@ -1145,6 +2234,24 @@ export type OwnersCreateResponses = {
 
 export type OwnersCreateResponse = OwnersCreateResponses[keyof OwnersCreateResponses];
 
+export type OwnersDestroyData = {
+    body?: never;
+    path: {
+        owner_id: string;
+    };
+    query?: never;
+    url: '/owners/{owner_id}';
+};
+
+export type OwnersDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type OwnersDestroyResponse = OwnersDestroyResponses[keyof OwnersDestroyResponses];
+
 export type OwnersRetrieveData = {
     body?: never;
     path: {
@@ -1156,12 +2263,27 @@ export type OwnersRetrieveData = {
 
 export type OwnersRetrieveResponses = {
     /**
-     * The public fields shown here. The owner themselves and any superuser receive the full record instead.
+     * The public fields shown here. The owner themselves and any superuser receive the full record.
      */
     200: OwnerPublic;
 };
 
 export type OwnersRetrieveResponse = OwnersRetrieveResponses[keyof OwnersRetrieveResponses];
+
+export type OwnersUpdateData = {
+    body: OwnerRole;
+    path: {
+        owner_id: string;
+    };
+    query?: never;
+    url: '/owners/{owner_id}';
+};
+
+export type OwnersUpdateResponses = {
+    200: OwnerRead;
+};
+
+export type OwnersUpdateResponse = OwnersUpdateResponses[keyof OwnersUpdateResponses];
 
 export type OwnersCsrfCookieRetrieveData = {
     body?: never;
@@ -1270,6 +2392,32 @@ export type OwnersMeDevicesRetrieveResponses = {
 
 export type OwnersMeDevicesRetrieveResponse = OwnersMeDevicesRetrieveResponses[keyof OwnersMeDevicesRetrieveResponses];
 
+export type OwnersMeOperatorRequestRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/owners/me/operator-request';
+};
+
+export type OwnersMeOperatorRequestRetrieveResponses = {
+    200: OperatorRequest;
+};
+
+export type OwnersMeOperatorRequestRetrieveResponse = OwnersMeOperatorRequestRetrieveResponses[keyof OwnersMeOperatorRequestRetrieveResponses];
+
+export type OwnersMeOperatorRequestCreateData = {
+    body: OperatorRequestCreate;
+    path?: never;
+    query?: never;
+    url: '/owners/me/operator-request';
+};
+
+export type OwnersMeOperatorRequestCreateResponses = {
+    201: OperatorRequest;
+};
+
+export type OwnersMeOperatorRequestCreateResponse = OwnersMeOperatorRequestCreateResponses[keyof OwnersMeOperatorRequestCreateResponses];
+
 export type OwnersMeResendVerificationCreateData = {
     body?: never;
     path?: never;
@@ -1295,6 +2443,19 @@ export type OwnersMeRotateKeyCreateResponses = {
 };
 
 export type OwnersMeRotateKeyCreateResponse = OwnersMeRotateKeyCreateResponses[keyof OwnersMeRotateKeyCreateResponses];
+
+export type OwnersMeTermsAcceptanceCreateData = {
+    body: AccountTermsAcceptance;
+    path?: never;
+    query?: never;
+    url: '/owners/me/terms-acceptance';
+};
+
+export type OwnersMeTermsAcceptanceCreateResponses = {
+    201: OwnerRead;
+};
+
+export type OwnersMeTermsAcceptanceCreateResponse = OwnersMeTermsAcceptanceCreateResponses[keyof OwnersMeTermsAcceptanceCreateResponses];
 
 export type OwnersRequestPasswordResetCreateData = {
     body: OwnerRequestPasswordReset;
@@ -1343,7 +2504,12 @@ export type OwnersVerifyEmailRetrieveResponse = OwnersVerifyEmailRetrieveRespons
 export type PostprocessingBlueprintsListData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Restrict to the caller's own blueprints, excluding public ones.
+         */
+        owned?: boolean;
+    };
     url: '/postprocessing-blueprints';
 };
 
@@ -1354,7 +2520,7 @@ export type PostprocessingBlueprintsListResponses = {
 export type PostprocessingBlueprintsListResponse = PostprocessingBlueprintsListResponses[keyof PostprocessingBlueprintsListResponses];
 
 export type PostprocessingBlueprintsCreateData = {
-    body: PostprocessingBlueprintWritable;
+    body: PostprocessingBlueprintCreate;
     path?: never;
     query?: never;
     url: '/postprocessing-blueprints';
@@ -1400,7 +2566,7 @@ export type PostprocessingBlueprintsRetrieveResponses = {
 export type PostprocessingBlueprintsRetrieveResponse = PostprocessingBlueprintsRetrieveResponses[keyof PostprocessingBlueprintsRetrieveResponses];
 
 export type PostprocessingBlueprintsUpdateData = {
-    body: PostprocessingBlueprintWritable;
+    body?: PostprocessingBlueprintUpdate;
     path: {
         blueprint_id: string;
     };
@@ -1413,6 +2579,143 @@ export type PostprocessingBlueprintsUpdateResponses = {
 };
 
 export type PostprocessingBlueprintsUpdateResponse = PostprocessingBlueprintsUpdateResponses[keyof PostprocessingBlueprintsUpdateResponses];
+
+export type PostprocessingBlueprintsVersionsListData = {
+    body?: never;
+    path: {
+        blueprint_id: string;
+    };
+    query?: never;
+    url: '/postprocessing-blueprints/{blueprint_id}/versions';
+};
+
+export type PostprocessingBlueprintsVersionsListResponses = {
+    200: Array<BlueprintVersion>;
+};
+
+export type PostprocessingBlueprintsVersionsListResponse = PostprocessingBlueprintsVersionsListResponses[keyof PostprocessingBlueprintsVersionsListResponses];
+
+export type PostprocessingBlueprintsVersionsCreateData = {
+    body: BlueprintVersionWritable;
+    path: {
+        blueprint_id: string;
+    };
+    query?: never;
+    url: '/postprocessing-blueprints/{blueprint_id}/versions';
+};
+
+export type PostprocessingBlueprintsVersionsCreateResponses = {
+    201: BlueprintVersion;
+};
+
+export type PostprocessingBlueprintsVersionsCreateResponse = PostprocessingBlueprintsVersionsCreateResponses[keyof PostprocessingBlueprintsVersionsCreateResponses];
+
+export type PostprocessingBlueprintsVersionsRetrieveData = {
+    body?: never;
+    path: {
+        blueprint_id: string;
+        number: number;
+    };
+    query?: never;
+    url: '/postprocessing-blueprints/{blueprint_id}/versions/{number}';
+};
+
+export type PostprocessingBlueprintsVersionsRetrieveResponses = {
+    200: BlueprintVersion;
+};
+
+export type PostprocessingBlueprintsVersionsRetrieveResponse = PostprocessingBlueprintsVersionsRetrieveResponses[keyof PostprocessingBlueprintsVersionsRetrieveResponses];
+
+export type ReadingsArchiveMeshesRetrieveData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Earliest day, as `YYYY-MM-DD`.
+         */
+        start?: string;
+        /**
+         * Latest day, as `YYYY-MM-DD`.
+         */
+        stop?: string;
+    };
+    url: '/readings/archive/meshes/{mesh_id}';
+};
+
+export type ReadingsArchiveMeshesRetrieveResponses = {
+    200: ArchiveManifest;
+};
+
+export type ReadingsArchiveMeshesRetrieveResponse = ReadingsArchiveMeshesRetrieveResponses[keyof ReadingsArchiveMeshesRetrieveResponses];
+
+export type ReadingsArchiveMeshesCredentialsCreateData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/archive/meshes/{mesh_id}/credentials';
+};
+
+export type ReadingsArchiveMeshesCredentialsCreateResponses = {
+    201: ArchiveCredentials;
+};
+
+export type ReadingsArchiveMeshesCredentialsCreateResponse = ReadingsArchiveMeshesCredentialsCreateResponses[keyof ReadingsArchiveMeshesCredentialsCreateResponses];
+
+export type ReadingsArchiveMeshesPartitionsRetrieveData = {
+    body?: never;
+    path: {
+        day: string;
+        hour: number;
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/archive/meshes/{mesh_id}/partitions/{day}/{hour}';
+};
+
+export type ReadingsArchiveMeshesPartitionsRetrieveErrors = {
+    /**
+     * No such mesh, or nothing archived for that hour.
+     */
+    404: unknown;
+};
+
+export type ReadingsArchiveMeshesZipRetrieveData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Earliest day, as `YYYY-MM-DD`.
+         */
+        start?: string;
+        /**
+         * Latest day, as `YYYY-MM-DD`.
+         */
+        stop?: string;
+    };
+    url: '/readings/archive/meshes/{mesh_id}/zip';
+};
+
+export type ReadingsArchiveMeshesZipRetrieveErrors = {
+    /**
+     * No such mesh, or nothing archived in the range.
+     */
+    404: unknown;
+};
+
+export type ReadingsArchiveMeshesZipRetrieveResponses = {
+    /**
+     * The hourly Parquet files of the range, as one zip.
+     */
+    200: Blob | File;
+};
+
+export type ReadingsArchiveMeshesZipRetrieveResponse = ReadingsArchiveMeshesZipRetrieveResponses[keyof ReadingsArchiveMeshesZipRetrieveResponses];
 
 export type ReadingsDevicesRetrieveData = {
     body?: never;
@@ -1599,6 +2902,235 @@ export type ReadingsMeshesNodesQualityRetrieveResponses = {
 
 export type ReadingsMeshesNodesQualityRetrieveResponse = ReadingsMeshesNodesQualityRetrieveResponses[keyof ReadingsMeshesNodesQualityRetrieveResponses];
 
+export type SinksListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/sinks';
+};
+
+export type SinksListResponses = {
+    200: Array<SinkRead>;
+};
+
+export type SinksListResponse = SinksListResponses[keyof SinksListResponses];
+
+export type SinksCreateData = {
+    body: SinkCreateWritable;
+    path?: never;
+    query?: never;
+    url: '/sinks';
+};
+
+export type SinksCreateResponses = {
+    201: SinkCredentials;
+};
+
+export type SinksCreateResponse = SinksCreateResponses[keyof SinksCreateResponses];
+
+export type SinksTermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/sinks/terms';
+};
+
+export type SinksTermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type SinksTermsRetrieveResponse = SinksTermsRetrieveResponses[keyof SinksTermsRetrieveResponses];
+
+export type SinksDestroyData = {
+    body?: never;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}';
+};
+
+export type SinksDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type SinksDestroyResponse = SinksDestroyResponses[keyof SinksDestroyResponses];
+
+export type SinksRetrieveData = {
+    body?: never;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}';
+};
+
+export type SinksRetrieveResponses = {
+    200: SinkRead;
+};
+
+export type SinksRetrieveResponse = SinksRetrieveResponses[keyof SinksRetrieveResponses];
+
+export type SinksUpdateData = {
+    body?: SinkWrite;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}';
+};
+
+export type SinksUpdateResponses = {
+    200: SinkRead;
+};
+
+export type SinksUpdateResponse = SinksUpdateResponses[keyof SinksUpdateResponses];
+
+export type SinksCredentialsCreateData = {
+    body?: never;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}/credentials';
+};
+
+export type SinksCredentialsCreateResponses = {
+    200: SinkCredentials;
+};
+
+export type SinksCredentialsCreateResponse = SinksCredentialsCreateResponses[keyof SinksCredentialsCreateResponses];
+
+export type SinksTermsAcceptanceCreateData = {
+    body: SinkTermsAcceptance;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}/terms-acceptance';
+};
+
+export type SinksTermsAcceptanceCreateResponses = {
+    201: SinkRead;
+};
+
+export type SinksTermsAcceptanceCreateResponse = SinksTermsAcceptanceCreateResponses[keyof SinksTermsAcceptanceCreateResponses];
+
+export type SourcesListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/sources';
+};
+
+export type SourcesListResponses = {
+    200: Array<SourceRead>;
+};
+
+export type SourcesListResponse = SourcesListResponses[keyof SourcesListResponses];
+
+export type SourcesCreateData = {
+    body: SourceCreateWritable;
+    path?: never;
+    query?: never;
+    url: '/sources';
+};
+
+export type SourcesCreateResponses = {
+    201: SourceRead;
+};
+
+export type SourcesCreateResponse = SourcesCreateResponses[keyof SourcesCreateResponses];
+
+export type SourcesTermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/sources/terms';
+};
+
+export type SourcesTermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type SourcesTermsRetrieveResponse = SourcesTermsRetrieveResponses[keyof SourcesTermsRetrieveResponses];
+
+export type SourcesDestroyData = {
+    body?: never;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}';
+};
+
+export type SourcesDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type SourcesDestroyResponse = SourcesDestroyResponses[keyof SourcesDestroyResponses];
+
+export type SourcesRetrieveData = {
+    body?: never;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}';
+};
+
+export type SourcesRetrieveResponses = {
+    200: SourceRead;
+};
+
+export type SourcesRetrieveResponse = SourcesRetrieveResponses[keyof SourcesRetrieveResponses];
+
+export type SourcesUpdateData = {
+    body?: SourceUpdateWritable;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}';
+};
+
+export type SourcesUpdateResponses = {
+    200: SourceRead;
+};
+
+export type SourcesUpdateResponse = SourcesUpdateResponses[keyof SourcesUpdateResponses];
+
+export type SourcesTermsAcceptanceCreateData = {
+    body: SourceTermsAcceptance;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}/terms-acceptance';
+};
+
+export type SourcesTermsAcceptanceCreateResponses = {
+    201: SourceRead;
+};
+
+export type SourcesTermsAcceptanceCreateResponse = SourcesTermsAcceptanceCreateResponses[keyof SourcesTermsAcceptanceCreateResponses];
+
 export type TelemetryVariantsListData = {
     body?: never;
     path?: never;
@@ -1706,3 +3238,21 @@ export type TelemetryVariantsMeasurementsUpdateResponses = {
 };
 
 export type TelemetryVariantsMeasurementsUpdateResponse = TelemetryVariantsMeasurementsUpdateResponses[keyof TelemetryVariantsMeasurementsUpdateResponses];
+
+export type TermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/terms';
+};
+
+export type TermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type TermsRetrieveResponse = TermsRetrieveResponses[keyof TermsRetrieveResponses];

@@ -121,7 +121,7 @@ export function AlarmsPage(): ReactElement {
           <FrameDescription>
             {formatMessage({
               id: "page.alarms.list.panel.description",
-              defaultMessage: "Every device, grouped by mesh, telemetry variant, and measurement.",
+              defaultMessage: "Alarms can be configured per channel.",
             })}
           </FrameDescription>
         </FrameHeader>

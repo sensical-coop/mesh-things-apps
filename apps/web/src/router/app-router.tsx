@@ -9,13 +9,21 @@ import { authResetPasswordPage } from "@/pages/reset-password/route";
 import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
+import { legalDpaPage } from "@/pages/dpa/route";
 import { alarmListPage } from "@/pages/alarms/list/route";
+import { blueprintDetailPage } from "@/pages/blueprints/detail/route";
 import { blueprintListPage } from "@/pages/blueprints/list/route";
 import { deviceDetailPage } from "@/pages/devices/detail/route";
 import { deviceListPage } from "@/pages/devices/list/route";
 import { meshDetailPage } from "@/pages/meshes/detail/route";
 import { meshListPage } from "@/pages/meshes/list/route";
 import { profilePage } from "@/pages/profile/route";
+import { sourceListPage } from "@/pages/sources/list/route";
+import { sinkListPage } from "@/pages/sinks/list/route";
+import { archivePage } from "@/pages/archive/route";
+import { operatorRequestDetailPage } from "@/pages/operator-requests/detail/route";
+import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
+import { dataDeletionListPage } from "@/pages/data-deletions/list/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
 
@@ -63,6 +71,11 @@ const termsRoute = createRoute({
   ...legalTermsPage,
 });
 
+const dpaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...legalDpaPage,
+});
+
 const consoleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: routes.console,
@@ -107,6 +120,41 @@ const blueprintsRoute = createRoute({
   ...blueprintListPage,
 });
 
+const blueprintRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...blueprintDetailPage,
+});
+
+const sourcesRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...sourceListPage,
+});
+
+const sinksRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...sinkListPage,
+});
+
+const archiveRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...archivePage,
+});
+
+const operatorRequestsRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...operatorRequestListPage,
+});
+
+const operatorRequestRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...operatorRequestDetailPage,
+});
+
+const dataDeletionsRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...dataDeletionListPage,
+});
+
 const profileRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...profilePage,
@@ -121,6 +169,7 @@ const routeTree = rootRoute.addChildren([
   verifyPendingRoute,
   verifyEmailRoute,
   termsRoute,
+  dpaRoute,
   consoleRoute.addChildren([
     consoleIndexRoute,
     meshesRoute,
@@ -129,6 +178,13 @@ const routeTree = rootRoute.addChildren([
     deviceDetailRoute,
     alarmsRoute,
     blueprintsRoute,
+    blueprintRoute,
+    sourcesRoute,
+    sinksRoute,
+    archiveRoute,
+    operatorRequestsRoute,
+    operatorRequestRoute,
+    dataDeletionsRoute,
     profileRoute,
   ]),
 ]);

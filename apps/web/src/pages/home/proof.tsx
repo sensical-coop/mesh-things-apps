@@ -58,7 +58,7 @@ export function LandingProof({ className }: { className?: string }): ReactElemen
           <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
             <FormattedMessage
               id="page.home.proof.heading"
-              defaultMessage="Live data with no hassle, <secondary> get notifications when you need them.</secondary>"
+              defaultMessage="Live data in two clicks, <secondary>deploy as you need.</secondary>"
               values={richTextValues}
             />
           </h2>

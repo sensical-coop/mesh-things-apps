@@ -3,14 +3,28 @@
 import { z } from 'zod';
 
 /**
+ * One keyword argument of an algorithm.
+ */
+export const zAlgorithmParam = z.object({
+    name: z.string(),
+    calibration: z.boolean(),
+    required: z.boolean(),
+    default: z.unknown(),
+    unit: z.union([
+        z.string(),
+        z.null()
+    ]),
+    doc: z.string()
+});
+
+/**
  * One entry of the postprocessing function registry.
  */
 export const zAlgorithm = z.object({
     name: z.string(),
     inputs: z.array(z.string()),
     outputs: z.array(z.string()),
-    params: z.array(z.string()),
-    optional_params: z.array(z.string()),
+    params: z.array(zAlgorithmParam),
     mode: z.string(),
     doc: z.union([
         z.string(),
@@ -22,7 +36,59 @@ export const zAlgorithm = z.object({
     ]))
 });
 
+export const zArchiveCredentials = z.object({
+    access_key_id: z.string(),
+    secret_access_key: z.string(),
+    session_token: z.string(),
+    expires_at: z.iso.datetime(),
+    endpoint: z.union([
+        z.string(),
+        z.null()
+    ]),
+    region: z.string(),
+    bucket: z.string(),
+    prefix: z.string(),
+    s3_path: z.string()
+});
+
+export const zArchivePartition = z.object({
+    dt: z.iso.date(),
+    hour: z.int().gte(0).lte(23),
+    size: z.int(),
+    last_modified: z.iso.datetime()
+});
+
+export const zArchiveManifest = z.object({
+    mesh_id: z.uuid(),
+    prefix: z.string(),
+    partitions: z.array(zArchivePartition)
+});
+
+/**
+ * * `pending` - Pending
+ * * `running` - Running
+ * * `done` - Done
+ * * `failed` - Failed
+ */
+export const zBackfillStatusEnum = z.enum([
+    'pending',
+    'running',
+    'done',
+    'failed'
+]);
+
 export const zBlankEnum = z.enum(['']);
+
+/**
+ * An input slot a blueprint version reads, bound to a channel by each device.
+ */
+export const zBlueprintInput = z.object({
+    slot: z.string().max(64),
+    default_channel: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
 
 export const zChannelQuality = z.object({
     channel: z.string(),
@@ -40,6 +106,33 @@ export const zChannelQuality = z.object({
     ]),
     largest_gap_seconds: z.union([
         z.number(),
+        z.null()
+    ])
+});
+
+/**
+ * * `pending` - Pending
+ * * `cancelled` - Cancelled
+ * * `done` - Done
+ */
+export const zDataDeletionStatusEnum = z.enum([
+    'pending',
+    'cancelled',
+    'done'
+]);
+
+/**
+ * * `approve` - approve
+ * * `reject` - reject
+ */
+export const zDecisionEnum = z.enum(['approve', 'reject']);
+
+export const zDerivedOutput = z.object({
+    field_name: z.string(),
+    channel: z.string(),
+    measurement_id: z.uuid(),
+    unit: z.union([
+        z.string(),
         z.null()
     ])
 });
@@ -116,6 +209,41 @@ export const zDeviceMeasurementUpdate = z.object({
     ]))
 });
 
+export const zDevicePostprocessing = z.object({
+    id: z.uuid().readonly(),
+    device_uuid: z.uuid().readonly(),
+    blueprint_id: z.uuid().readonly(),
+    blueprint_name: z.string().readonly(),
+    blueprint_version: z.int().readonly(),
+    input_bindings: z.record(z.string(), z.string()).readonly(),
+    output_prefix: z.string().readonly(),
+    tolerance_seconds: z.union([
+        z.int().readonly(),
+        z.null()
+    ]).readonly(),
+    effective_tolerance_seconds: z.number().readonly(),
+    is_enabled: z.boolean().readonly(),
+    outputs: z.array(zDerivedOutput).readonly(),
+    problems: z.array(z.string()).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+export const zDevicePostprocessingWrite = z.object({
+    blueprint_id: z.optional(z.uuid()),
+    blueprint_version: z.optional(z.int().gte(1)),
+    input_bindings: z.optional(z.record(z.string(), z.union([
+        z.uuid(),
+        z.null()
+    ]))),
+    output_prefix: z.optional(z.string().max(64)),
+    tolerance_seconds: z.optional(z.union([
+        z.int().gte(1),
+        z.null()
+    ])),
+    is_enabled: z.optional(z.boolean())
+});
+
 export const zDeviceQualityResponse = z.object({
     mesh_id: z.string(),
     node_id: z.int(),
@@ -147,6 +275,15 @@ export const zDeviceRead = z.object({
     is_gateway: z.boolean().readonly(),
     is_allowed: z.boolean().readonly(),
     absence_detection_enabled: z.boolean().readonly(),
+    archive_enabled: z.optional(z.boolean().readonly()),
+    archive_enabled_at: z.optional(z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()),
+    archive_enabled_by: z.optional(z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly()),
     admin_keys_b64: z.optional(z.array(z.string()).readonly()),
     latitude: z.union([
         z.number().readonly(),
@@ -174,10 +311,6 @@ export const zDeviceRead = z.object({
         z.null()
     ]).readonly(),
     nodeinfo_overridden: z.boolean().readonly(),
-    postprocessing_blueprint_id: z.union([
-        z.uuid().readonly(),
-        z.null()
-    ]).readonly(),
     reading_interval_seconds: z.union([
         z.int().readonly(),
         z.null()
@@ -205,6 +338,7 @@ export const zDeviceUpdate = z.object({
     is_allowed: z.optional(z.boolean()),
     is_gateway: z.optional(z.boolean()),
     absence_detection_enabled: z.optional(z.boolean()),
+    archive_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -227,10 +361,6 @@ export const zDeviceUpdate = z.object({
     ])),
     role: z.optional(z.union([
         z.string().max(32),
-        z.null()
-    ])),
-    postprocessing_blueprint_id: z.optional(z.union([
-        z.uuid(),
         z.null()
     ])),
     reading_interval_seconds: z.optional(z.union([
@@ -280,6 +410,22 @@ export const zMesh = z.object({
     ])),
     owner_id: z.uuid().readonly(),
     is_public: z.optional(z.boolean()),
+    source_id: z.optional(z.union([
+        z.uuid(),
+        z.null()
+    ])),
+    terms_accepted_version: z.optional(z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly()),
+    terms_expires_at: z.optional(z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()),
+    paused_at: z.optional(z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
 });
@@ -293,11 +439,19 @@ export const zMeshCreate = z.object({
     label: z.optional(z.union([
         z.string().max(255),
         z.null()
+    ])),
+    source_id: z.optional(z.union([
+        z.uuid(),
+        z.null()
     ]))
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export const zMeshUpdate = z.object({
     channel_id: z.optional(z.string().max(255)),
@@ -305,7 +459,11 @@ export const zMeshUpdate = z.object({
         z.string().max(255),
         z.null()
     ])),
-    is_public: z.optional(z.boolean())
+    is_public: z.optional(z.boolean()),
+    source_id: z.optional(z.union([
+        z.uuid(),
+        z.null()
+    ]))
 });
 
 /**
@@ -324,6 +482,63 @@ export const zMetricsResponse = z.object({
 
 export const zNullEnum = z.unknown();
 
+export const zOperatorRequestCreate = z.object({
+    reason: z.string().max(2000)
+});
+
+export const zOperatorRequestDecision = z.object({
+    decision: zDecisionEnum,
+    note: z.optional(z.string().max(2000)).default('')
+});
+
+/**
+ * * `pending` - Pending
+ * * `approved` - Approved
+ * * `rejected` - Rejected
+ */
+export const zOperatorRequestStatusEnum = z.enum([
+    'pending',
+    'approved',
+    'rejected'
+]);
+
+/**
+ * An operator request as its requester sees it.
+ */
+export const zOperatorRequest = z.object({
+    id: z.uuid().readonly(),
+    reason: z.string().readonly(),
+    status: zOperatorRequestStatusEnum,
+    decision_note: z.string().readonly(),
+    decided_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly()
+});
+
+/**
+ * An operator request as a superuser sees it.
+ */
+export const zOperatorRequestAdmin = z.object({
+    id: z.uuid().readonly(),
+    reason: z.string().readonly(),
+    status: zOperatorRequestStatusEnum,
+    decision_note: z.string().readonly(),
+    decided_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    owner_id: z.uuid().readonly(),
+    owner_name: z.string().readonly(),
+    owner_email: z.email().readonly(),
+    decided_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly()
+});
+
 /**
  * POST /owners/me/change-password input
  */
@@ -332,6 +547,9 @@ export const zOwnerChangePassword = z.object({
     new_password: z.string()
 });
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
 export const zOwnerCreate = z.object({
     name: z.string().max(255),
     email: z.email()
@@ -352,39 +570,6 @@ export const zOwnerLogin = z.object({
 });
 
 /**
- * An owner's own record together with the devices they may access.
- *
- * Describes the body the profile and login routes build by hand; nothing
- * serializes through it.
- */
-export const zOwnerProfile = z.object({
-    id: z.uuid().readonly(),
-    name: z.string().readonly(),
-    email: z.email().readonly(),
-    is_superuser: z.boolean().readonly(),
-    is_staff: z.boolean().readonly(),
-    is_active: z.boolean().readonly(),
-    email_verified_at: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    email_verification_sent_at: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    last_login: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    created_at: z.iso.datetime().readonly(),
-    alarm_email_cooldown_seconds: z.optional(z.union([
-        z.int().gte(0).lte(2592000).readonly(),
-        z.null()
-    ]).readonly()),
-    devices: z.array(zDeviceRead).readonly()
-});
-
-/**
  * Public directory
  */
 export const zOwnerPublic = z.object({
@@ -400,38 +585,6 @@ export const zMeshViewer = z.object({
     id: z.uuid().readonly(),
     viewer: zOwnerPublic,
     created_at: z.iso.datetime().readonly()
-});
-
-/**
- * The full record, for the owner themselves and for superusers.
- *
- * `last_login` tracks password logins only: a bearer-key request never
- * updates it, so it is null for an owner who has only ever used their API key.
- */
-export const zOwnerRead = z.object({
-    id: z.uuid().readonly(),
-    name: z.string().readonly(),
-    email: z.email().readonly(),
-    is_superuser: z.boolean().readonly(),
-    is_staff: z.boolean().readonly(),
-    is_active: z.boolean().readonly(),
-    email_verified_at: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    email_verification_sent_at: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    last_login: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    created_at: z.iso.datetime().readonly(),
-    alarm_email_cooldown_seconds: z.optional(z.union([
-        z.int().gte(0).lte(2592000).readonly(),
-        z.null()
-    ]).readonly())
 });
 
 /**
@@ -454,37 +607,8 @@ export const zOwnerUpdate = z.object({
     alarm_email_cooldown_seconds: z.optional(z.union([
         z.int().gte(0).lte(2592000),
         z.null()
-    ]))
-});
-
-/**
- * In POST /owners and POST /owners/me/rotate-key
- */
-export const zOwnerWithApiKey = z.object({
-    id: z.uuid().readonly(),
-    name: z.string().readonly(),
-    email: z.email().readonly(),
-    is_superuser: z.boolean().readonly(),
-    is_staff: z.boolean().readonly(),
-    is_active: z.boolean().readonly(),
-    email_verified_at: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    email_verification_sent_at: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    last_login: z.union([
-        z.iso.datetime().readonly(),
-        z.null()
-    ]).readonly(),
-    created_at: z.iso.datetime().readonly(),
-    alarm_email_cooldown_seconds: z.optional(z.union([
-        z.int().gte(0).lte(2592000).readonly(),
-        z.null()
-    ]).readonly()),
-    api_key: z.string().readonly()
+    ])),
+    status_alerts_enabled: z.optional(z.boolean())
 });
 
 export const zPoint = z.object({
@@ -492,11 +616,43 @@ export const zPoint = z.object({
     value: z.unknown()
 });
 
+export const zPostprocessingBackfill = z.object({
+    id: z.uuid().readonly(),
+    postprocessing_id: z.uuid().readonly(),
+    start: z.iso.datetime(),
+    stop: z.optional(z.iso.datetime()),
+    include_dependants: z.optional(z.boolean()),
+    status: zBackfillStatusEnum,
+    points_published: z.int().readonly(),
+    error: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    started_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    finished_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()
+});
+
+export const zPostprocessingBlueprintUpdate = z.object({
+    name: z.optional(z.string().max(255)),
+    description: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    is_public: z.optional(z.boolean())
+});
+
 /**
  * Validates each step against common/algorithms
  */
 export const zPostprocessingStep = z.object({
-    id: z.uuid().readonly(),
+    key: z.string().max(64).regex(/^[-a-zA-Z0-9_]+$/),
     order: z.int().gte(0).lte(2147483647),
     function_name: z.string().max(128),
     inputs: z.optional(z.unknown()),
@@ -505,20 +661,61 @@ export const zPostprocessingStep = z.object({
 });
 
 /**
- * Steps are nested in read and write
+ * Immutable once created. Steps are nested in read and write.
  */
+export const zBlueprintVersion = z.object({
+    blueprint_id: z.uuid().readonly(),
+    number: z.int().readonly(),
+    inputs: z.array(zBlueprintInput),
+    steps: z.array(zPostprocessingStep),
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    device_count: z.int().readonly(),
+    created_at: z.iso.datetime().readonly()
+});
+
 export const zPostprocessingBlueprint = z.object({
     id: z.uuid().readonly(),
+    name: z.string().readonly(),
+    description: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    is_public: z.boolean().readonly(),
+    owner_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    latest_version: zBlueprintVersion,
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * A new blueprint together with its first version.
+ */
+export const zPostprocessingBlueprintCreate = z.object({
     name: z.string().max(255),
     description: z.optional(z.union([
         z.string(),
         z.null()
     ])),
-    owner_id: z.uuid().readonly(),
+    is_public: z.optional(z.boolean()).default(false),
+    inputs: z.array(zBlueprintInput),
     steps: z.array(zPostprocessingStep),
-    created_at: z.iso.datetime().readonly(),
-    updated_at: z.iso.datetime().readonly()
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
 });
+
+/**
+ * * `0` - 0
+ * * `1` - 1
+ */
+export const zQosEnum = z.union([z.literal(0), z.literal(1)]);
 
 /**
  * * `physical_property` - Physical property
@@ -623,6 +820,10 @@ export const zDeviceMeasurement = z.object({
     last_seen: z.union([
         z.iso.datetime().readonly(),
         z.null()
+    ]).readonly(),
+    produced_by: z.union([
+        z.uuid().readonly(),
+        z.null()
     ]).readonly()
 });
 
@@ -654,6 +855,164 @@ export const zMeasurementTypeUpdate = z.object({
     ]))
 });
 
+/**
+ * * `mesh_deleted` - Mesh deleted
+ * * `source_detached` - Mesh moved off its source
+ * * `terms_lapsed` - Source terms lapsed
+ */
+export const zReasonEnum = z.enum([
+    'mesh_deleted',
+    'source_detached',
+    'terms_lapsed'
+]);
+
+export const zDataDeletion = z.object({
+    id: z.uuid().readonly(),
+    mesh_id: z.uuid().readonly(),
+    source_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    reason: zReasonEnum,
+    requested_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    requested_at: z.iso.datetime().readonly(),
+    delete_after: z.iso.datetime().readonly(),
+    data_until: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    status: zDataDeletionStatusEnum,
+    attempts: z.int().readonly(),
+    last_error: z.string().readonly(),
+    completed_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()
+});
+
+/**
+ * * `member` - Member
+ * * `operator` - Operator
+ */
+export const zRoleEnum = z.enum(['member', 'operator']);
+
+/**
+ * An owner's own record together with the devices they may access.
+ */
+export const zOwnerProfile = z.object({
+    id: z.uuid().readonly(),
+    name: z.string().readonly(),
+    email: z.email().readonly(),
+    is_superuser: z.boolean().readonly(),
+    is_staff: z.boolean().readonly(),
+    role: zRoleEnum,
+    is_active: z.boolean().readonly(),
+    email_verified_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    email_verification_sent_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    last_login: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    alarm_email_cooldown_seconds: z.union([
+        z.int().gte(0).lte(2592000).readonly(),
+        z.null()
+    ]).readonly(),
+    status_alerts_enabled: z.boolean().readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    devices: z.array(zDeviceRead).readonly()
+});
+
+/**
+ * The full record, for the owner themselves and for superusers.
+ *
+ * `last_login` tracks password logins only: a bearer-key request never
+ * updates it, so it is null for an owner who has only ever used their API key.
+ */
+export const zOwnerRead = z.object({
+    id: z.uuid().readonly(),
+    name: z.string().readonly(),
+    email: z.email().readonly(),
+    is_superuser: z.boolean().readonly(),
+    is_staff: z.boolean().readonly(),
+    role: zRoleEnum,
+    is_active: z.boolean().readonly(),
+    email_verified_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    email_verification_sent_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    last_login: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    alarm_email_cooldown_seconds: z.union([
+        z.int().gte(0).lte(2592000).readonly(),
+        z.null()
+    ]).readonly(),
+    status_alerts_enabled: z.boolean().readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly()
+});
+
+export const zOwnerRole = z.object({
+    role: zRoleEnum
+});
+
+/**
+ * In POST /owners and POST /owners/me/rotate-key
+ */
+export const zOwnerWithApiKey = z.object({
+    id: z.uuid().readonly(),
+    name: z.string().readonly(),
+    email: z.email().readonly(),
+    is_superuser: z.boolean().readonly(),
+    is_staff: z.boolean().readonly(),
+    role: zRoleEnum,
+    is_active: z.boolean().readonly(),
+    email_verified_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    email_verification_sent_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    last_login: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    alarm_email_cooldown_seconds: z.union([
+        z.int().gte(0).lte(2592000).readonly(),
+        z.null()
+    ]).readonly(),
+    status_alerts_enabled: z.boolean().readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    api_key: z.string().readonly()
+});
+
 export const zSeries = z.object({
     channel: z.string(),
     points: z.array(zPoint)
@@ -664,6 +1023,213 @@ export const zReadingsResponse = z.object({
     node_id: z.int(),
     payload_kind: z.string(),
     series: z.array(zSeries)
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSourceCreate = z.object({
+    id: z.uuid().readonly(),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    server: z.string().max(255),
+    ssl: z.optional(z.boolean()),
+    username: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    topic: z.string().max(1024),
+    qos: z.optional(zQosEnum),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * A source. The remote password is accepted but never returned.
+ */
+export const zSourceRead = z.object({
+    id: z.uuid().readonly(),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    server: z.string().max(255),
+    ssl: z.optional(z.boolean()),
+    username: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    topic: z.string().max(1024),
+    qos: z.optional(zQosEnum),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly(),
+    status: z.string().readonly(),
+    paused_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_expires_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()
+});
+
+/**
+ * Any subset of the create fields.
+ */
+export const zSourceUpdate = z.object({
+    id: z.uuid().readonly(),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    server: z.optional(z.string().max(255)),
+    ssl: z.optional(z.boolean()),
+    username: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    topic: z.optional(z.string().max(1024)),
+    qos: z.optional(zQosEnum),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+export const zStepCalibration = z.object({
+    id: z.uuid().readonly(),
+    step_key: z.string().max(64).regex(/^[-a-zA-Z0-9_]+$/),
+    function_name: z.string().readonly(),
+    params: z.optional(z.unknown()),
+    valid_from: z.optional(z.iso.datetime()),
+    created_at: z.iso.datetime().readonly()
+});
+
+/**
+ * * `decoded` - decoded
+ * * `derived` - derived
+ * * `alarms` - alarms
+ */
+export const zStreamsEnum = z.enum([
+    'decoded',
+    'derived',
+    'alarms'
+]);
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSinkCreate = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    streams: z.optional(z.array(zStreamsEnum)),
+    mesh_ids: z.optional(z.array(z.uuid())),
+    device_ids: z.optional(z.array(z.uuid()))
+});
+
+export const zSinkCredentials = z.object({
+    id: z.uuid().readonly(),
+    label: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    streams: z.array(zStreamsEnum).readonly(),
+    mesh_ids: z.array(z.string()).readonly(),
+    device_ids: z.array(z.string()).readonly(),
+    broker: z.string().readonly(),
+    username: z.string().readonly(),
+    topic_filter: z.string().readonly(),
+    connections: z.union([
+        z.int().readonly(),
+        z.null()
+    ]).readonly(),
+    paused_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_expires_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly(),
+    password: z.string().readonly()
+});
+
+export const zSinkRead = z.object({
+    id: z.uuid().readonly(),
+    label: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    streams: z.array(zStreamsEnum).readonly(),
+    mesh_ids: z.array(z.string()).readonly(),
+    device_ids: z.array(z.string()).readonly(),
+    broker: z.string().readonly(),
+    username: z.string().readonly(),
+    topic_filter: z.string().readonly(),
+    connections: z.union([
+        z.int().readonly(),
+        z.null()
+    ]).readonly(),
+    paused_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_accepted_version: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    terms_expires_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    created_by_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * Create or update a sink. Every field is optional on update; lists replace what is there.
+ */
+export const zSinkWrite = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    streams: z.optional(z.array(zStreamsEnum)),
+    mesh_ids: z.optional(z.array(z.uuid())),
+    device_ids: z.optional(z.array(z.uuid()))
 });
 
 /**
@@ -740,6 +1306,70 @@ export const zTelemetryVariantUpdate = z.object({
 });
 
 /**
+ * * `en` - en
+ * * `es` - es
+ */
+export const zTermsLocaleEnum = z.enum(['en', 'es']);
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zAccountTermsAcceptance = z.object({
+    terms_version: z.string(),
+    terms_locale: z.optional(zTermsLocaleEnum)
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSinkTermsAcceptance = z.object({
+    terms_version: z.string(),
+    terms_locale: z.optional(zTermsLocaleEnum)
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSourceTermsAcceptance = z.object({
+    terms_version: z.string(),
+    terms_locale: z.optional(zTermsLocaleEnum)
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zMeshTermsAcceptance = z.object({
+    terms_version: z.string(),
+    terms_locale: z.optional(zTermsLocaleEnum)
+});
+
+export const zTermsStatement = z.object({
+    id: z.string(),
+    text: z.string()
+});
+
+export const zTerms = z.object({
+    version: z.string(),
+    locale: z.string(),
+    title: z.string(),
+    description: z.string(),
+    statements: z.array(zTermsStatement),
+    footnote: z.string()
+});
+
+/**
+ * Immutable once created. Steps are nested in read and write.
+ */
+export const zBlueprintVersionWritable = z.object({
+    inputs: z.array(zBlueprintInput),
+    steps: z.array(zPostprocessingStep),
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+/**
  * POST /devices input
  */
 export const zDeviceCreateWritable = z.object({
@@ -795,6 +1425,8 @@ export const zDeviceMeasurementWritable = z.object({
     ]))
 });
 
+export const zDevicePostprocessingWritable = z.record(z.string(), z.unknown());
+
 /**
  * node_id/mesh are fixed at creation. Role is editable
  */
@@ -807,6 +1439,7 @@ export const zDeviceUpdateWritable = z.object({
     is_allowed: z.optional(z.boolean()),
     is_gateway: z.optional(z.boolean()),
     absence_detection_enabled: z.optional(z.boolean()),
+    archive_enabled: z.optional(z.boolean()),
     latitude: z.optional(z.union([
         z.number(),
         z.null()
@@ -831,10 +1464,6 @@ export const zDeviceUpdateWritable = z.object({
         z.string().max(32),
         z.null()
     ])),
-    postprocessing_blueprint_id: z.optional(z.union([
-        z.uuid(),
-        z.null()
-    ])),
     reading_interval_seconds: z.optional(z.union([
         z.int().gte(0).lte(2147483647),
         z.null()
@@ -852,11 +1481,37 @@ export const zMeshWritable = z.object({
         z.string().max(255),
         z.null()
     ])),
-    is_public: z.optional(z.boolean())
+    is_public: z.optional(z.boolean()),
+    source_id: z.optional(z.union([
+        z.uuid(),
+        z.null()
+    ]))
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, and is_public are editable.
+ * POST /meshes input
+ */
+export const zMeshCreateWritable = z.object({
+    channel_id: z.string().max(255),
+    psk_b64: z.string(),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    terms_version: z.optional(z.string()),
+    terms_locale: z.optional(zTermsLocaleEnum),
+    source_id: z.optional(z.union([
+        z.uuid(),
+        z.null()
+    ]))
+});
+
+/**
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export const zMeshUpdateWritable = z.object({
     channel_id: z.optional(z.string().max(255)),
@@ -865,13 +1520,24 @@ export const zMeshUpdateWritable = z.object({
         z.string().max(255),
         z.null()
     ])),
-    is_public: z.optional(z.boolean())
+    is_public: z.optional(z.boolean()),
+    source_id: z.optional(z.union([
+        z.uuid(),
+        z.null()
+    ])),
+    terms_version: z.optional(z.string()),
+    terms_locale: z.optional(zTermsLocaleEnum)
 });
 
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
 export const zOwnerCreateWritable = z.object({
     name: z.string().max(255),
     email: z.email(),
-    password: z.string()
+    password: z.string(),
+    terms_version: z.optional(z.string()),
+    terms_locale: z.optional(zTermsLocaleEnum)
 });
 
 /**
@@ -882,27 +1548,101 @@ export const zOwnerLoginWritable = z.object({
     password: z.string()
 });
 
+export const zPostprocessingBackfillWritable = z.object({
+    start: z.iso.datetime(),
+    stop: z.optional(z.iso.datetime()),
+    include_dependants: z.optional(z.boolean())
+});
+
+export const zPostprocessingBlueprintWritable = z.record(z.string(), z.unknown());
+
 /**
- * Validates each step against common/algorithms
+ * Accepting the current terms of `terms_kind`.
  */
-export const zPostprocessingStepWritable = z.object({
-    order: z.int().gte(0).lte(2147483647),
-    function_name: z.string().max(128),
-    inputs: z.optional(z.unknown()),
-    params: z.optional(z.unknown()),
-    outputs: z.optional(z.unknown())
+export const zSinkCreateWritable = z.object({
+    terms_version: z.optional(z.string()),
+    terms_locale: z.optional(zTermsLocaleEnum),
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    streams: z.optional(z.array(zStreamsEnum)),
+    mesh_ids: z.optional(z.array(z.uuid())),
+    device_ids: z.optional(z.array(z.uuid()))
 });
 
 /**
- * Steps are nested in read and write
+ * Accepting the current terms of `terms_kind`.
  */
-export const zPostprocessingBlueprintWritable = z.object({
-    name: z.string().max(255),
-    description: z.optional(z.union([
+export const zSourceCreateWritable = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    server: z.string().max(255),
+    ssl: z.optional(z.boolean()),
+    username: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    password: z.optional(z.union([
         z.string(),
         z.null()
     ])),
-    steps: z.array(zPostprocessingStepWritable)
+    topic: z.string().max(1024),
+    qos: z.optional(zQosEnum),
+    terms_version: z.optional(z.string()),
+    terms_locale: z.optional(zTermsLocaleEnum)
+});
+
+/**
+ * A source. The remote password is accepted but never returned.
+ */
+export const zSourceReadWritable = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    server: z.string().max(255),
+    ssl: z.optional(z.boolean()),
+    username: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    password: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    topic: z.string().max(1024),
+    qos: z.optional(zQosEnum)
+});
+
+/**
+ * Any subset of the create fields.
+ */
+export const zSourceUpdateWritable = z.object({
+    label: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    server: z.optional(z.string().max(255)),
+    ssl: z.optional(z.boolean()),
+    username: z.optional(z.union([
+        z.string().max(255),
+        z.null()
+    ])),
+    password: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    topic: z.optional(z.string().max(1024)),
+    qos: z.optional(zQosEnum)
+});
+
+export const zStepCalibrationWritable = z.object({
+    step_key: z.string().max(64).regex(/^[-a-zA-Z0-9_]+$/),
+    params: z.optional(z.unknown()),
+    valid_from: z.optional(z.iso.datetime())
 });
 
 export const zAlgorithmsListData = z.object({
@@ -912,6 +1652,17 @@ export const zAlgorithmsListData = z.object({
 });
 
 export const zAlgorithmsListResponse = z.array(zAlgorithm);
+
+export const zDataDeletionsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        mesh_id: z.optional(z.uuid()),
+        status: z.optional(z.string())
+    }))
+});
+
+export const zDataDeletionsListResponse = z.array(zDataDeletion);
 
 export const zDevicesListData = z.object({
     body: z.optional(z.never()),
@@ -1008,6 +1759,121 @@ export const zDevicesMeasurementsUpdateData = z.object({
 
 export const zDevicesMeasurementsUpdateResponse = zDeviceMeasurement;
 
+export const zDevicesPostprocessingsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsListResponse = z.array(zDevicePostprocessing);
+
+export const zDevicesPostprocessingsCreateData = z.object({
+    body: z.optional(zDevicePostprocessingWrite),
+    path: z.object({
+        device_uuid: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsCreateResponse = zDevicePostprocessing;
+
+export const zDevicesPostprocessingsDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zDevicesPostprocessingsDestroyResponse = z.void();
+
+export const zDevicesPostprocessingsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsRetrieveResponse = zDevicePostprocessing;
+
+export const zDevicesPostprocessingsUpdateData = z.object({
+    body: z.optional(zDevicePostprocessingWrite),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsUpdateResponse = zDevicePostprocessing;
+
+export const zDevicesPostprocessingsBackfillsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsBackfillsListResponse = z.array(zPostprocessingBackfill);
+
+export const zDevicesPostprocessingsBackfillsCreateData = z.object({
+    body: zPostprocessingBackfillWritable,
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsBackfillsCreateResponse = zPostprocessingBackfill;
+
+export const zDevicesPostprocessingsCalibrationsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsCalibrationsListResponse = z.array(zStepCalibration);
+
+export const zDevicesPostprocessingsCalibrationsCreateData = z.object({
+    body: zStepCalibrationWritable,
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsCalibrationsCreateResponse = zStepCalibration;
+
+export const zDevicesPostprocessingsCalibrationsDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        calibration_id: z.uuid(),
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zDevicesPostprocessingsCalibrationsDestroyResponse = z.void();
+
 export const zDevicesTelemetryVariantsListData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -1087,19 +1953,30 @@ export const zMeshesListData = z.object({
     query: z.optional(z.object({
         label: z.optional(z.string()),
         channel_id: z.optional(z.string()),
-        owned: z.optional(z.boolean())
+        owned: z.optional(z.boolean()),
+        source_id: z.optional(z.uuid())
     }))
 });
 
 export const zMeshesListResponse = z.array(zMesh);
 
 export const zMeshesCreateData = z.object({
-    body: zMeshCreate,
+    body: zMeshCreateWritable,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
 
 export const zMeshesCreateResponse = zMesh;
+
+export const zMeshesTermsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+export const zMeshesTermsRetrieveResponse = zTerms;
 
 export const zMeshesDestroyData = z.object({
     body: z.optional(z.never()),
@@ -1133,6 +2010,16 @@ export const zMeshesUpdateData = z.object({
 });
 
 export const zMeshesUpdateResponse = zMesh;
+
+export const zMeshesTermsAcceptanceCreateData = z.object({
+    body: zMeshTermsAcceptance,
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zMeshesTermsAcceptanceCreateResponse = zMesh;
 
 export const zMeshesDevicesListData = z.object({
     body: z.optional(z.never()),
@@ -1189,6 +2076,36 @@ export const zMetricsRetrieveData = z.object({
 
 export const zMetricsRetrieveResponse = zMetricsResponse;
 
+export const zOperatorRequestsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        status: z.optional(z.string())
+    }))
+});
+
+export const zOperatorRequestsListResponse = z.array(zOperatorRequestAdmin);
+
+export const zOperatorRequestsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        request_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zOperatorRequestsRetrieveResponse = zOperatorRequestAdmin;
+
+export const zOperatorRequestsUpdateData = z.object({
+    body: zOperatorRequestDecision,
+    path: z.object({
+        request_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zOperatorRequestsUpdateResponse = zOperatorRequestAdmin;
+
 export const zOwnersListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -1196,7 +2113,7 @@ export const zOwnersListData = z.object({
 });
 
 /**
- * The public fields shown here. A superuser receives the full record for every owner instead.
+ * The public fields shown here. A superuser receives the full record for every owner.
  */
 export const zOwnersListResponse = z.array(zOwnerPublic);
 
@@ -1208,6 +2125,19 @@ export const zOwnersCreateData = z.object({
 
 export const zOwnersCreateResponse = zOwnerWithApiKey;
 
+export const zOwnersDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        owner_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zOwnersDestroyResponse = z.void();
+
 export const zOwnersRetrieveData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -1217,9 +2147,19 @@ export const zOwnersRetrieveData = z.object({
 });
 
 /**
- * The public fields shown here. The owner themselves and any superuser receive the full record instead.
+ * The public fields shown here. The owner themselves and any superuser receive the full record.
  */
 export const zOwnersRetrieveResponse = zOwnerPublic;
+
+export const zOwnersUpdateData = z.object({
+    body: zOwnerRole,
+    path: z.object({
+        owner_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zOwnersUpdateResponse = zOwnerRead;
 
 export const zOwnersCsrfCookieRetrieveData = z.object({
     body: z.optional(z.never()),
@@ -1288,6 +2228,22 @@ export const zOwnersMeDevicesRetrieveData = z.object({
 
 export const zOwnersMeDevicesRetrieveResponse = zOwnerDevices;
 
+export const zOwnersMeOperatorRequestRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zOwnersMeOperatorRequestRetrieveResponse = zOperatorRequest;
+
+export const zOwnersMeOperatorRequestCreateData = z.object({
+    body: zOperatorRequestCreate,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zOwnersMeOperatorRequestCreateResponse = zOperatorRequest;
+
 export const zOwnersMeResendVerificationCreateData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -1303,6 +2259,14 @@ export const zOwnersMeRotateKeyCreateData = z.object({
 });
 
 export const zOwnersMeRotateKeyCreateResponse = zOwnerWithApiKey;
+
+export const zOwnersMeTermsAcceptanceCreateData = z.object({
+    body: zAccountTermsAcceptance,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zOwnersMeTermsAcceptanceCreateResponse = zOwnerRead;
 
 export const zOwnersRequestPasswordResetCreateData = z.object({
     body: zOwnerRequestPasswordReset,
@@ -1333,13 +2297,15 @@ export const zOwnersVerifyEmailRetrieveResponse = zDetail;
 export const zPostprocessingBlueprintsListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
-    query: z.optional(z.never())
+    query: z.optional(z.object({
+        owned: z.optional(z.boolean())
+    }))
 });
 
 export const zPostprocessingBlueprintsListResponse = z.array(zPostprocessingBlueprint);
 
 export const zPostprocessingBlueprintsCreateData = z.object({
-    body: zPostprocessingBlueprintWritable,
+    body: zPostprocessingBlueprintCreate,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
@@ -1370,7 +2336,7 @@ export const zPostprocessingBlueprintsRetrieveData = z.object({
 export const zPostprocessingBlueprintsRetrieveResponse = zPostprocessingBlueprint;
 
 export const zPostprocessingBlueprintsUpdateData = z.object({
-    body: zPostprocessingBlueprintWritable,
+    body: z.optional(zPostprocessingBlueprintUpdate),
     path: z.object({
         blueprint_id: z.uuid()
     }),
@@ -1378,6 +2344,86 @@ export const zPostprocessingBlueprintsUpdateData = z.object({
 });
 
 export const zPostprocessingBlueprintsUpdateResponse = zPostprocessingBlueprint;
+
+export const zPostprocessingBlueprintsVersionsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        blueprint_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zPostprocessingBlueprintsVersionsListResponse = z.array(zBlueprintVersion);
+
+export const zPostprocessingBlueprintsVersionsCreateData = z.object({
+    body: zBlueprintVersionWritable,
+    path: z.object({
+        blueprint_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zPostprocessingBlueprintsVersionsCreateResponse = zBlueprintVersion;
+
+export const zPostprocessingBlueprintsVersionsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        blueprint_id: z.uuid(),
+        number: z.int()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zPostprocessingBlueprintsVersionsRetrieveResponse = zBlueprintVersion;
+
+export const zReadingsArchiveMeshesRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        start: z.optional(z.iso.date()),
+        stop: z.optional(z.iso.date())
+    }))
+});
+
+export const zReadingsArchiveMeshesRetrieveResponse = zArchiveManifest;
+
+export const zReadingsArchiveMeshesCredentialsCreateData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReadingsArchiveMeshesCredentialsCreateResponse = zArchiveCredentials;
+
+export const zReadingsArchiveMeshesPartitionsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        day: z.string(),
+        hour: z.int(),
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReadingsArchiveMeshesZipRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        start: z.optional(z.iso.date()),
+        stop: z.optional(z.iso.date())
+    }))
+});
+
+/**
+ * The hourly Parquet files of the range, as one zip.
+ */
+export const zReadingsArchiveMeshesZipRetrieveResponse = z.string();
 
 export const zReadingsDevicesRetrieveData = z.object({
     body: z.optional(z.never()),
@@ -1490,6 +2536,154 @@ export const zReadingsMeshesNodesQualityRetrieveData = z.object({
 
 export const zReadingsMeshesNodesQualityRetrieveResponse = zDeviceQualityResponse;
 
+export const zSinksListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSinksListResponse = z.array(zSinkRead);
+
+export const zSinksCreateData = z.object({
+    body: zSinkCreateWritable,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSinksCreateResponse = zSinkCredentials;
+
+export const zSinksTermsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+export const zSinksTermsRetrieveResponse = zTerms;
+
+export const zSinksDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zSinksDestroyResponse = z.void();
+
+export const zSinksRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksRetrieveResponse = zSinkRead;
+
+export const zSinksUpdateData = z.object({
+    body: z.optional(zSinkWrite),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksUpdateResponse = zSinkRead;
+
+export const zSinksCredentialsCreateData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksCredentialsCreateResponse = zSinkCredentials;
+
+export const zSinksTermsAcceptanceCreateData = z.object({
+    body: zSinkTermsAcceptance,
+    path: z.object({
+        sink_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSinksTermsAcceptanceCreateResponse = zSinkRead;
+
+export const zSourcesListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSourcesListResponse = z.array(zSourceRead);
+
+export const zSourcesCreateData = z.object({
+    body: zSourceCreateWritable,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSourcesCreateResponse = zSourceRead;
+
+export const zSourcesTermsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+export const zSourcesTermsRetrieveResponse = zTerms;
+
+export const zSourcesDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        source_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zSourcesDestroyResponse = z.void();
+
+export const zSourcesRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        source_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSourcesRetrieveResponse = zSourceRead;
+
+export const zSourcesUpdateData = z.object({
+    body: z.optional(zSourceUpdateWritable),
+    path: z.object({
+        source_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSourcesUpdateResponse = zSourceRead;
+
+export const zSourcesTermsAcceptanceCreateData = z.object({
+    body: zSourceTermsAcceptance,
+    path: z.object({
+        source_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSourcesTermsAcceptanceCreateResponse = zSourceRead;
+
 export const zTelemetryVariantsListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -1562,3 +2756,13 @@ export const zTelemetryVariantsMeasurementsUpdateData = z.object({
 });
 
 export const zTelemetryVariantsMeasurementsUpdateResponse = zTelemetryVariantMeasurementRead;
+
+export const zTermsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+export const zTermsRetrieveResponse = zTerms;

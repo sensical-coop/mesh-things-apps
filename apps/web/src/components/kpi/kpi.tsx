@@ -11,15 +11,18 @@ export type KpiProps = {
   className?: string;
   icon?: RemixiconComponentType;
   action?: ReactNode;
+  /** Shown after the label, e.g. a flag for a computed channel. */
+  badge?: ReactNode;
 };
 
-export function Kpi({ label, value, hint, className, icon: Icon = kpiIconFor(label), action }: KpiProps): ReactElement {
+export function Kpi({ label, value, hint, className, icon: Icon = kpiIconFor(label), action, badge }: KpiProps): ReactElement {
   return (
     <div className={cx(kpiShellClass, "min-h-24 justify-center gap-1", className)}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <Icon className="size-4 shrink-0 text-foreground-icon-tertiary" aria-hidden />
           <p className="min-w-0 truncate text-caption-1-medium text-text-secondary">{label}</p>
+          {badge}
         </div>
         {action}
       </div>

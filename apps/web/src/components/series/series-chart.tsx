@@ -16,6 +16,8 @@ export function SeriesChart({
   icon,
   windowMs,
   action,
+  badge,
+  computed = false,
 }: {
   points: Point[];
   compareLabel?: string;
@@ -26,17 +28,20 @@ export function SeriesChart({
   icon?: RemixiconComponentType;
   windowMs?: number | null;
   action?: ReactNode;
+  badge?: ReactNode;
+  /** A channel a blueprint derives: drawn in the purple of the "Computed" chip. */
+  computed?: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const valueLabel = label ?? formatMessage({ id: "common.seriesChart.value", defaultMessage: "Value" });
   const compareText = compareLabel ?? formatMessage({ id: "common.seriesChart.compare", defaultMessage: "Compare" });
   const body = (
     <>
-      <SeriesPlot points={points} seriesLabel={valueLabel} windowMs={windowMs} />
+      <SeriesPlot points={points} seriesLabel={valueLabel} windowMs={windowMs} computed={computed} />
       {compare ? (
         <div>
           <p className="mb-2 text-caption-1-medium text-text-secondary">{compareText}</p>
-          <SeriesPlot points={compare} seriesLabel={compareText} windowMs={windowMs} />
+          <SeriesPlot points={compare} seriesLabel={compareText} windowMs={windowMs} computed={computed} />
         </div>
       ) : null}
     </>
@@ -47,7 +52,7 @@ export function SeriesChart({
   }
 
   return (
-    <KpiPanel label={label} hint={hint} icon={icon} className={className} action={action}>
+    <KpiPanel label={label} hint={hint} icon={icon} className={className} action={action} badge={badge}>
       <div className="flex min-w-0 flex-col gap-4">{body}</div>
     </KpiPanel>
   );

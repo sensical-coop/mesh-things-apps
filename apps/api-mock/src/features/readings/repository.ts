@@ -2,6 +2,8 @@ import type { IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { IReadingsRepository, LatestReading, SeriesQuery } from "@mtt/domain/readings/Readings";
 
+const LATEST_VALUES: Record<string, number> = { temperature: 21.4, dew_point: 8.1, relative_humidity: 64 };
+
 export class MemoryReadings implements IReadingsRepository {
   constructor(
     private readonly devices: IDeviceRepository,
@@ -14,11 +16,11 @@ export class MemoryReadings implements IReadingsRepository {
     const device = await this.devices.get(deviceUuid);
     if (!device) return [];
     if (!this.latestDeviceUuids.has(device.uuid)) return [];
-    return this.measurements.map((m, i) => ({
+    return this.measurements.map((m) => ({
       payloadKind: m.payloadKind,
       fieldName: m.fieldName,
       channel: m.channel,
-      value: i === 0 ? 21.4 : i === 1 ? 8.1 : 0.91,
+      value: LATEST_VALUES[m.fieldName] ?? 0.91,
       time: this.originIso,
       unit: m.nativeUnit,
       quantityKind: m.quantityKind,

@@ -14,46 +14,18 @@ import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
+import { SaveButton } from "@/components/form/save-button";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { OperatorRolePanel } from "@/features/operator-request/ui/operator-role-panel";
+import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
+import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
+import { NotificationsPanel } from "@/features/auth/ui/notifications-panel";
 import { routes } from "@/router";
-
-const SECONDS_PER_HOUR = 3600;
-const MAX_ALARM_COOLDOWN_HOURS = 720; // matches the backend's 30-day (2592000s) cap
-
-function secondsToHours(seconds: number | null | undefined): number | undefined {
-  if (seconds == null) return undefined;
-  return Math.round((seconds / SECONDS_PER_HOUR) * 100) / 100;
-}
-
-function AlarmCooldownField({ defaultValueSeconds }: { defaultValueSeconds: number | null }): ReactElement {
-  const { formatMessage } = useIntl();
-  return (
-    <FormField
-      id="profile-alarm-cooldown"
-      label={formatMessage({ id: "page.profile.alarmCooldown", defaultMessage: "Alarm email cooldown (hours)" })}
-      hint={formatMessage({
-        id: "page.profile.alarmCooldownHint",
-        defaultMessage:
-          "Minimum time between quality-alarm emails. Leave empty to use the server default.",
-      })}
-    >
-      <FormNumber
-        id="profile-alarm-cooldown"
-        name="alarm_cooldown_hours"
-        min={0}
-        max={MAX_ALARM_COOLDOWN_HOURS}
-        step="any"
-        defaultValue={secondsToHours(defaultValueSeconds)}
-      />
-    </FormField>
-  );
-}
 
 export function ProfilePage(): ReactElement {
   const { formatMessage } = useIntl();
@@ -62,20 +34,13 @@ export function ProfilePage(): ReactElement {
   const me = useQuery(authRepository.me());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [cooldownError, setCooldownError] = useState<string | null>(null);
   const update = useMutation({
     ...authRepository.update(),
     onSuccess: async () => {
       setErrors({});
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
     },
-  });
-  const updateCooldown = useMutation({
-    ...authRepository.update(),
-    onSuccess: async () => {
-      setCooldownError(null);
-      await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
-    },
+    onError: (error) => setErrors(readApiError(error).fields),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -88,32 +53,11 @@ export function ProfilePage(): ReactElement {
       },
     });
     if (!parsed.success) {
-      const next: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path.at(-1) ?? "form");
-        next[key] ??= issue.message;
-      }
-      setErrors(next);
+      setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
     update.mutate({ body: parsed.data.body });
-  }
-
-  function onCooldownSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const raw = String(form.get("alarm_cooldown_hours") ?? "").trim();
-    const seconds = raw === "" ? null : Math.round(Number(raw) * SECONDS_PER_HOUR);
-    const parsed = zOwnersMeUpdateData.safeParse({
-      body: { alarm_email_cooldown_seconds: seconds },
-    });
-    if (!parsed.success) {
-      setCooldownError(parsed.error.issues[0]?.message ?? null);
-      return;
-    }
-    setCooldownError(null);
-    updateCooldown.mutate({ body: parsed.data.body });
   }
 
   return (
@@ -138,8 +82,8 @@ export function ProfilePage(): ReactElement {
             {me.isPending ? (
               <SkeletonRows />
             ) : (
-              <form key={me.data?.id} className="flex max-w-md flex-col gap-5" onSubmit={onSubmit}>
-                <FieldGroup>
+              <form key={me.data?.id} className="flex flex-col gap-5" onSubmit={onSubmit}>
+                <FieldGroup className="grid gap-x-8 gap-y-5 md:grid-cols-2">
                   <FormField
                     id="profile-name"
                     label={formatMessage({ id: "page.profile.name", defaultMessage: "Name" })}
@@ -166,74 +110,25 @@ export function ProfilePage(): ReactElement {
                     />
                   </FormField>
                 </FieldGroup>
-                {update.isSuccess ? (
-                  <StatusCopy>
-                    {formatMessage({
-                      id: "page.profile.saved",
-                      defaultMessage: "Saved.",
-                    })}
-                  </StatusCopy>
-                ) : null}
                 {update.error ? (
                   <StatusCopy>
                     {formatMessage({
                       id: "page.profile.error",
                       defaultMessage: "The profile was not saved. Check the fields and try again.",
                     })}
+                    {formLevelMessage(update.error) ? ` ${formLevelMessage(update.error)}` : ""}
                   </StatusCopy>
                 ) : null}
                 <div className={dialogActionsClass}>
-                  <Button type="submit" size="small" disabled={update.isPending}>
-                    {update.isPending
-                      ? formatMessage({ id: "page.profile.saving", defaultMessage: "Saving" })
-                      : formatMessage({ id: "page.profile.save", defaultMessage: "Save changes" })}
-                  </Button>
+                  <SaveButton pending={update.isPending} saved={update.isSuccess} savedKey={update.submittedAt} />
                 </div>
               </form>
             )}
           </FramePanel>
         </Frame>
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.profile.alarms.title", defaultMessage: "Alarms" })}</FrameTitle>
-            <FrameDescription>
-              {formatMessage({
-                id: "page.profile.alarms.description",
-                defaultMessage: "Control how often you're notified about a repeating alarm.",
-              })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            {me.isPending ? (
-              <SkeletonRows />
-            ) : (
-              <form key={me.data?.id} className="flex max-w-md flex-col gap-5" onSubmit={onCooldownSubmit}>
-                <FieldGroup>
-                  <AlarmCooldownField defaultValueSeconds={me.data?.alarm_email_cooldown_seconds ?? null} />
-                </FieldGroup>
-                {cooldownError ? <StatusCopy>{cooldownError}</StatusCopy> : null}
-                {updateCooldown.isSuccess ? (
-                  <StatusCopy>{formatMessage({ id: "page.profile.saved", defaultMessage: "Saved." })}</StatusCopy>
-                ) : null}
-                {updateCooldown.error ? (
-                  <StatusCopy>
-                    {formatMessage({
-                      id: "page.profile.error",
-                      defaultMessage: "The profile was not saved. Check the fields and try again.",
-                    })}
-                  </StatusCopy>
-                ) : null}
-                <div className={dialogActionsClass}>
-                  <Button type="submit" size="small" disabled={updateCooldown.isPending}>
-                    {updateCooldown.isPending
-                      ? formatMessage({ id: "page.profile.saving", defaultMessage: "Saving" })
-                      : formatMessage({ id: "page.profile.save", defaultMessage: "Save changes" })}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </FramePanel>
-        </Frame>
+        <AccountTermsPanel />
+        <OperatorRolePanel />
+        <NotificationsPanel />
         <Frame className="shadow-card [--frame-border-color:color-mix(in_oklch,var(--color-border-error-default)_35%,transparent)] [--frame-panel-bg:var(--color-background-tertiary-error)] [--frame-panel-border-color:color-mix(in_oklch,var(--color-border-error-default)_30%,transparent)]">
           <FrameHeader>
             <FrameTitle className="text-text-error-primary">{formatMessage({ id: "page.profile.dangerZone.title", defaultMessage: "Danger zone" })}</FrameTitle>
