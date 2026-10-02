@@ -482,6 +482,22 @@ export type MeshUpdate = {
     source_id?: string | null;
 };
 
+/**
+ * A grant, reported to the mesh owner. The viewer's email is never included.
+ */
+export type MeshViewer = {
+    readonly id: string;
+    viewer: OwnerPublic;
+    readonly created_at: string;
+};
+
+/**
+ * POST /meshes/{id}/viewers input
+ */
+export type MeshViewerCreate = {
+    owner_id: string;
+};
+
 export type MetricsResponse = {
     devices: number;
     owners: number;
@@ -1949,7 +1965,7 @@ export type MeshesListData = {
          */
         channel_id?: string;
         /**
-         * Restrict to meshes the caller owns, excluding public ones.
+         * Restrict to meshes the caller owns, excluding public and granted ones.
          */
         owned?: boolean;
         /**
@@ -2074,6 +2090,59 @@ export type MeshesDevicesListResponses = {
 };
 
 export type MeshesDevicesListResponse = MeshesDevicesListResponses[keyof MeshesDevicesListResponses];
+
+export type MeshesViewersListData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/meshes/{mesh_id}/viewers';
+};
+
+export type MeshesViewersListResponses = {
+    200: Array<MeshViewer>;
+};
+
+export type MeshesViewersListResponse = MeshesViewersListResponses[keyof MeshesViewersListResponses];
+
+export type MeshesViewersCreateData = {
+    body: MeshViewerCreate;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/meshes/{mesh_id}/viewers';
+};
+
+export type MeshesViewersCreateResponses = {
+    /**
+     * The grant already existed.
+     */
+    200: MeshViewer;
+    201: MeshViewer;
+};
+
+export type MeshesViewersCreateResponse = MeshesViewersCreateResponses[keyof MeshesViewersCreateResponses];
+
+export type MeshesViewersDestroyData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+        owner_id: string;
+    };
+    query?: never;
+    url: '/meshes/{mesh_id}/viewers/{owner_id}';
+};
+
+export type MeshesViewersDestroyResponses = {
+    /**
+     * Revoked.
+     */
+    204: void;
+};
+
+export type MeshesViewersDestroyResponse = MeshesViewersDestroyResponses[keyof MeshesViewersDestroyResponses];
 
 export type MetricsRetrieveData = {
     body?: never;

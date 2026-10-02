@@ -87,7 +87,7 @@ export function DeviceDetailPage(): ReactElement {
     [catalog.data],
   );
   const { me } = useOwnerDirectory();
-  // A device on someone else's public mesh is read-only: no settings, no alarms.
+  // A device on a public or shared mesh is read-only: no settings, no alarms.
   // False until the mesh loads, so write chrome never flashes for a viewer.
   const canEdit = mesh.data != null && canEditMesh(mesh.data, me);
   // Only on an operator's mesh, and only for its owner or a superuser.

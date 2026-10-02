@@ -13,11 +13,11 @@
   "iconLibrary": "lucide",
   "rtl": false,
   "aliases": {
-    "components": "#components",
-    "utils": "#lib/utils",
-    "ui": "#components/ui",
-    "lib": "#lib",
-    "hooks": "#hooks"
+    "components": "@mtt/ui/components",
+    "utils": "@mtt/ui/utils",
+    "ui": "@mtt/ui/components/ui",
+    "lib": "@mtt/ui/lib",
+    "hooks": "@mtt/ui/hooks"
   },
   "registries": {
     "@evilcharts": "https://evilcharts.com/r/{name}.json",

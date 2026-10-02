@@ -8,6 +8,10 @@ import {
   meshesRetrieveOptions,
   meshesRetrieveQueryKey,
   meshesUpdateMutation,
+  meshesViewersCreateMutation,
+  meshesViewersDestroyMutation,
+  meshesViewersListOptions,
+  meshesViewersListQueryKey,
 } from "@mtt/contracts/query";
 
 export const meshRepository = {
@@ -20,4 +24,8 @@ export const meshRepository = {
   destroy: meshesDestroyMutation,
   devices: meshesDevicesListOptions,
   devicesKey: meshesDevicesListQueryKey,
+  viewers: meshesViewersListOptions,
+  viewersKey: meshesViewersListQueryKey,
+  grantViewer: meshesViewersCreateMutation,
+  revokeViewer: meshesViewersDestroyMutation,
 };

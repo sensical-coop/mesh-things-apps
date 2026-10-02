@@ -8,7 +8,7 @@ Cuatro roles. Un actor inactivo (`isActive: false`) no pasa ninguna comprobació
 
 | Rol | Flags OpenAPI | Quién es |
 |---|---|---|
-| `owner` | `is_superuser: false`, `is_staff: false` | Dueño de mallas. Edita solo lo suyo; además lee mallas públicas. |
+| `owner` | `is_superuser: false`, `is_staff: false` | Dueño de mallas. Edita solo lo suyo; además lee mallas públicas y las que le han compartido. |
 | `operator` | `is_superuser: false`, `is_staff: false`, `role: operator` | Owner que además da de alta **fuentes** (brokers MQTT remotos). Solo ve y usa las suyas. |
 | `staff` | `is_superuser: false`, `is_staff: true` | Operación interna. Lee el catálogo entero. No ve PSK. No escribe. |
 | `superuser` | `is_superuser: true`, `is_staff: true` | Admin. Lee y escribe todo, incluido el PSK y el email de cada owner. |
@@ -23,7 +23,7 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 
 | Capacidad | Función | owner | operator | staff | superuser |
 |---|---|---|---|---|---|
-| Listar / leer mallas y devices | `canReadMesh` | las suyas y las públicas (`is_public`) | igual que owner | todas | todas |
+| Listar / leer mallas y devices | `canReadMesh` | las suyas, las públicas (`is_public`) y las compartidas con él | igual que owner | todas | todas |
 | Ver `psk_b64` | `canSeePsk` | la suya | la suya | no | sí |
 | Crear / editar malla o device | `canWriteMesh` | las suyas | las suyas | no | sí |
 | Crear blueprint | `canWriteCatalog` | sí (queda a su nombre) | sí | no | sí |
@@ -42,7 +42,7 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 
 `visibleMeshes` recorta la lista de mallas con `canReadMesh`. `visibleBlueprints` enseña las plantillas propias y las públicas (staff y superuser, todas); editar exige `canWriteBlueprint` (dueño, o superuser si el dueño borró su cuenta) y vincular a un device, `canAttachBlueprint` (públicas o del dueño de la malla).
 
-Leer no es editar: en una malla pública ajena el lector no ve PSK ni devices rechazados (`is_allowed: false`), y recibe 403 en cualquier write. En web, `canEditMesh` (`features/mesh/model.ts`) oculta toda acción de escritura (editar, borrar, registrar, ajustes de device, alarmas) cuando la malla no es suya.
+Leer no es editar: en una malla pública o compartida el lector no ve PSK ni devices rechazados (`is_allowed: false`), y recibe 403 en cualquier write. En web, `canEditMesh` (`features/mesh/model.ts`) oculta toda acción de escritura (editar, borrar, registrar, compartir, ajustes de device, alarmas) cuando la malla no es suya. Solo el dueño gestiona `GET/POST /meshes/{id}/viewers` y `DELETE /meshes/{id}/viewers/{owner_id}`; conceder o revocar envía un email al lector (lo hace el backend).
 
 `source_id` se devuelve al dueño de la malla y a los superusers (solo lectura en ajenas); `psk_b64` sigue siendo solo del dueño. Asociar una fuente que el actor no ve responde 400 en `source_id`, igual que un id inexistente; reenviar la fuente actual siempre se acepta. En web, `canManageSources` (`features/source/model.ts`) decide la pestaña Sources y el selector de fuente en *Edit mesh*.
 
@@ -55,6 +55,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 - `POST /owners/login`, `POST /owners/logout`, `GET /owners/me`: sesión. El perfil incluye solo devices visibles.
 - `GET /owners`, `GET /owners/{id}`: directorio público o registro completo según la tabla.
 - `GET/POST /meshes` (`?owned=true` para solo las propias), `GET /meshes/{id}`: filtro + PSK según rol. 404 si no se puede leer.
+- `GET/POST /meshes/{id}/viewers`, `DELETE /meshes/{id}/viewers/{owner_id}`: solo el dueño.
 - `GET/POST /devices`, `PUT /devices/{id}`: el write exige `canWriteMesh` sobre la malla del device.
 - `GET/POST /postprocessing-blueprints`: propias + públicas; staff no crea. Postprocesados, calibraciones y backfills de un device: leer con la malla, escribir con `canWriteMesh`.
 - `GET/POST /sources`, `GET/PUT/DELETE /sources/{id}`: solo operator/superuser. 400 con errores por campo estilo DRF (`{ "server": ["Must be host:port."] }`); `#` como topic está bloqueado. Un host `*.invalid` simula que EMQX falla (502, no se guarda nada). `DELETE` con mallas asociadas: 409.

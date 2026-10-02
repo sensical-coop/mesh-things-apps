@@ -96,7 +96,7 @@ export function MeshesPage(): ReactElement {
     () => (meshes.data ?? []).map((mesh) => ({ ...mesh, devices: counts.get(mesh.id) ?? 0 })),
     [meshes.data, devices.data],
   );
-  // Public meshes can belong to someone else, so say whose.
+  // Public and shared meshes belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.owner_id !== meId);
   // Only operators have sources; for everyone else every mesh is on the default broker.
   const showSource = isOperator || rows.some((row) => row.source_id != null);
@@ -262,7 +262,7 @@ export function MeshesPage(): ReactElement {
             >
               {info.getValue()}
             </Link>
-            <MeshAccessBadge mesh={info.row.original} />
+            <MeshAccessBadge mesh={info.row.original} canEdit={canEditMesh(info.row.original, me)} />
           </span>
         ),
       }),

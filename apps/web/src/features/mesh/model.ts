@@ -7,7 +7,7 @@ export function meshTitle(mesh: Pick<Mesh, "channel_id" | "label">): string {
 
 /**
  * Mirrors the API's write rule: only the mesh's owner (or a superuser) may
- * change it. Public meshes are read-only for everyone else. An
+ * change it. Public and shared meshes are read-only for everyone else. An
  * unknown caller can't edit, so write affordances stay hidden while `me` loads.
  */
 export function canEditMesh(

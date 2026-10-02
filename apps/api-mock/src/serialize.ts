@@ -34,6 +34,10 @@ export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includ
   return row;
 }
 
+export function meshViewerJson(grant: { id: string; createdAt: string }, viewer: Actor) {
+  return { id: grant.id, viewer: ownerPublicJson(viewer), created_at: grant.createdAt };
+}
+
 /** The password is write-only: never returned to anyone. */
 export function sourceJson(source: Source) {
   return {

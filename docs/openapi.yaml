@@ -966,8 +966,9 @@ paths:
       description: |-
         List the meshes the caller may read, or every mesh for a superuser.
 
-        Alongside their own, this includes public meshes. The pre-shared key is
-        included only for meshes the caller owns.
+        Alongside their own, this includes public meshes and any they have been
+        granted access to. The pre-shared key is included only for meshes the
+        caller owns.
 
         List filters use `operator:value` or `operator:v1|v2` (same wire as the
         dashboard URL). Bare values are treated as `is:<value>`.
@@ -986,7 +987,8 @@ paths:
         name: owned
         schema:
           type: boolean
-        description: Restrict to meshes the caller owns, excluding public ones.
+        description: Restrict to meshes the caller owns, excluding public and granted
+          ones.
       - in: query
         name: source_id
         schema:
@@ -1070,7 +1072,11 @@ paths:
   /meshes/{mesh_id}:
     get:
       operationId: meshes_retrieve
-      description: Return one mesh.
+      description: |-
+        Return one mesh.
+
+        Readable by its owner, a superuser, anyone when the mesh is public, and
+        owners granted access. Anyone else gets 404.
       parameters:
       - in: path
         name: mesh_id
@@ -1239,6 +1245,110 @@ paths:
                 items:
                   $ref: '#/components/schemas/DeviceRead'
           description: ''
+  /meshes/{mesh_id}/viewers:
+    get:
+      operationId: meshes_viewers_list
+      description: |-
+        List the owners granted read access to this mesh.
+
+        Only the mesh's owner may read this. Email addresses are not included.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - meshes
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeshViewer'
+          description: ''
+    post:
+      operationId: meshes_viewers_create
+      description: |-
+        Grant one owner read access to this mesh.
+
+        Only the mesh's owner may grant access, and the grant is read-only: it
+        never allows the recipient to change the mesh or its devices. The
+        recipient is emailed unless their address is still unverified. Granting
+        access that already exists returns the existing grant rather than
+        failing.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - meshes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeshViewerCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MeshViewerCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MeshViewerCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeshViewer'
+          description: The grant already existed.
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeshViewer'
+          description: ''
+  /meshes/{mesh_id}/viewers/{owner_id}:
+    delete:
+      operationId: meshes_viewers_destroy
+      description: |-
+        Revoke one owner's read access to this mesh.
+
+        Only the mesh's owner may revoke access. The recipient is emailed
+        unless their address is still unverified.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: owner_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - meshes
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Revoked.
   /metrics:
     get:
       operationId: metrics_retrieve
@@ -4551,6 +4661,36 @@ components:
 
             * `en` - en
             * `es` - es
+    MeshViewer:
+      type: object
+      description: A grant, reported to the mesh owner. The viewer's email is never
+        included.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        viewer:
+          allOf:
+          - $ref: '#/components/schemas/OwnerPublic'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - viewer
+    MeshViewerCreate:
+      type: object
+      description: POST /meshes/{id}/viewers input
+      properties:
+        owner_id:
+          type: string
+          format: uuid
+      required:
+      - owner_id
     MetricsResponse:
       type: object
       properties:

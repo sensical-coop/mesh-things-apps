@@ -176,7 +176,7 @@ export function DevicesPage(): ReactElement {
       }
     }, filters.queryString),
   );
-  // Devices on public meshes can belong to someone else, so say whose.
+  // Devices on public and shared meshes belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.ownerId !== meId);
   const showArchive = rows.some((row) => canArchiveDevice(row, me, row.ownerId));
 

@@ -466,6 +466,13 @@ export const zMeshUpdate = z.object({
     ]))
 });
 
+/**
+ * POST /meshes/{id}/viewers input
+ */
+export const zMeshViewerCreate = z.object({
+    owner_id: z.uuid()
+});
+
 export const zMetricsResponse = z.object({
     devices: z.int(),
     owners: z.int(),
@@ -568,6 +575,15 @@ export const zOwnerLogin = z.object({
 export const zOwnerPublic = z.object({
     id: z.uuid().readonly(),
     name: z.string().readonly(),
+    created_at: z.iso.datetime().readonly()
+});
+
+/**
+ * A grant, reported to the mesh owner. The viewer's email is never included.
+ */
+export const zMeshViewer = z.object({
+    id: z.uuid().readonly(),
+    viewer: zOwnerPublic,
     created_at: z.iso.datetime().readonly()
 });
 
@@ -2014,6 +2030,43 @@ export const zMeshesDevicesListData = z.object({
 });
 
 export const zMeshesDevicesListResponse = z.array(zDeviceRead);
+
+export const zMeshesViewersListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zMeshesViewersListResponse = z.array(zMeshViewer);
+
+export const zMeshesViewersCreateData = z.object({
+    body: zMeshViewerCreate,
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The grant already existed.
+ */
+export const zMeshesViewersCreateResponse = zMeshViewer;
+
+export const zMeshesViewersDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid(),
+        owner_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Revoked.
+ */
+export const zMeshesViewersDestroyResponse = z.void();
 
 export const zMetricsRetrieveData = z.object({
     body: z.optional(z.never()),
