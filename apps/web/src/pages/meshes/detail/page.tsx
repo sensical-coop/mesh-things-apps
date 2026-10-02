@@ -15,8 +15,10 @@ import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
+import { DataTable } from "@mtt/ui/components/data-table";
+import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
+import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
@@ -28,6 +30,11 @@ import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
+import { NodeIdField } from "@/features/device/ui/node-id-field";
+import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
+import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
+import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
+import { matchesListQuery } from "@/lib/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
 import { href, routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
@@ -49,6 +56,8 @@ import { termsLocale } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
+
+const col = legacyCreateColumnHelper<DeviceRead>();
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
@@ -88,6 +97,136 @@ export function MeshDetailPage(): ReactElement {
   const plotted = useMemo(
     () => (devices.data ?? []).filter((d) => d.latitude != null && d.longitude != null),
     [devices.data],
+  );
+
+  const filterLabels = useTranslatedFilterLabels();
+  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
+  const variantOptions = useTelemetryVariantOptions();
+  // Same keys as the devices list, so a filtered URL reads the same on both pages.
+  const specs = useMemo<FilterSpec[]>(
+    () => [
+      {
+        key: "label",
+        urlKey: "label",
+        label: formatMessage({ id: "page.devices.list.filters.label", defaultMessage: "Label" }),
+        type: "text",
+      },
+      {
+        key: "is_gateway",
+        urlKey: "is_gateway",
+        label: formatMessage({ id: "page.devices.list.filters.role", defaultMessage: "Role" }),
+        type: "select",
+        options: [
+          {
+            value: "true",
+            label: formatMessage({ id: "page.devices.list.filters.roleGateway", defaultMessage: "Gateway" }),
+          },
+          {
+            value: "false",
+            label: formatMessage({ id: "page.devices.list.filters.roleNode", defaultMessage: "Node" }),
+          },
+        ],
+      },
+      {
+        key: "is_allowed",
+        urlKey: "is_allowed",
+        label: formatMessage({ id: "page.devices.list.filters.allowed", defaultMessage: "Allowed" }),
+        type: "select",
+        options: [
+          {
+            value: "true",
+            label: formatMessage({ id: "page.devices.list.filters.allowedTrue", defaultMessage: "Allowed" }),
+          },
+          {
+            value: "false",
+            label: formatMessage({ id: "page.devices.list.filters.allowedFalse", defaultMessage: "Blocked" }),
+          },
+        ],
+      },
+      ...(variantOptions.length
+        ? [
+            {
+              key: "telemetry_variant",
+              urlKey: "telemetry",
+              label: formatMessage({ id: "page.devices.list.filters.telemetry", defaultMessage: "Telemetry" }),
+              type: "multiselect" as const,
+              options: variantOptions,
+            },
+          ]
+        : []),
+    ],
+    [variantOptions, formatMessage],
+  );
+  const filters = useSmartFilters({ specs });
+  const shownDevices = (devices.data ?? []).filter((device) =>
+    matchesListQuery((field) => {
+      switch (field) {
+        case "label":
+          return deviceTitle(device);
+        case "is_gateway":
+          return String(device.is_gateway);
+        case "is_allowed":
+          return String(device.is_allowed);
+        case "telemetry_variant":
+          return device.telemetry_variant_ids;
+        default:
+          return undefined;
+      }
+    }, filters.queryString),
+  );
+
+  const columns = useMemo(
+    () => [
+      col.accessor((row) => deviceTitle(row), {
+        id: "device",
+        header: formatMessage({ id: "page.meshes.detail.devices.columns.device", defaultMessage: "Device" }),
+        cell: (info) => (
+          <Link
+            to={routes.device}
+            params={{ deviceUuid: info.row.original.uuid }}
+            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            {info.getValue()}
+          </Link>
+        ),
+      }),
+      col.accessor("is_gateway", {
+        header: formatMessage({ id: "page.meshes.detail.devices.columns.role", defaultMessage: "Role" }),
+        cell: (info) => <DeviceKindBadge isGateway={info.getValue()} />,
+      }),
+      col.accessor("is_allowed", {
+        header: formatMessage({ id: "page.meshes.detail.devices.columns.allowed", defaultMessage: "Allowed" }),
+        cell: (info) => <DeviceAllowedBadge allowed={info.getValue()} />,
+      }),
+      col.display({
+        id: "radio",
+        header: formatMessage({ id: "page.meshes.detail.devices.columns.radio", defaultMessage: "Radio" }),
+        cell: (info) => <DeviceSilentBadge device={info.row.original} />,
+      }),
+      col.accessor("last_seen", {
+        header: formatMessage({ id: "page.meshes.detail.devices.columns.lastSeen", defaultMessage: "Last seen" }),
+        cell: (info) => <span className="tabular-nums text-text-secondary">{formatLastSeen(info.getValue())}</span>,
+      }),
+      col.display({
+        id: "actions",
+        enableSorting: false,
+        header: formatMessage({ id: "page.meshes.detail.devices.columns.actions", defaultMessage: "Actions" }),
+        cell: ({ row }) => (
+          <div className="flex justify-start gap-2">
+            <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
+              {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
+            </ButtonLink>
+            {canEdit ? (
+              <SettingsButton
+                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+                onClick={() => setSettingsDevice(row.original)}
+              />
+            ) : null}
+          </div>
+        ),
+      }),
+    ],
+    [formatMessage, formatLastSeen, canEdit],
   );
 
   return (
@@ -251,99 +390,56 @@ export function MeshDetailPage(): ReactElement {
                     id: "page.meshes.detail.devices.loading",
                     defaultMessage: "Loading devices on this mesh.",
                   })
-                : devices.data?.length
-                  ? formatMessage({
-                      id: "page.meshes.detail.devices.description",
-                      defaultMessage: "Gateways and nodes share this channel.",
-                    })
-                  : formatMessage({
-                      id: "page.meshes.detail.devices.none",
-                      defaultMessage: "No devices registered on this mesh.",
-                    })}
+                : devices.data?.length && filters.active
+                  ? formatMessage(
+                      {
+                        id: "page.meshes.detail.devices.filteredCount",
+                        defaultMessage: "{shown, number} of {total, plural, one {# device} other {# devices}} match.",
+                      },
+                      { shown: shownDevices.length, total: devices.data.length },
+                    )
+                  : devices.data?.length
+                    ? formatMessage(
+                        {
+                          id: "page.meshes.detail.devices.count",
+                          defaultMessage:
+                            "{total, plural, one {# device} other {# devices}} on this channel: {gateways, plural, one {# gateway} other {# gateways}} and {nodes, plural, one {# node} other {# nodes}}.",
+                        },
+                        {
+                          total: devices.data.length,
+                          gateways: devices.data.filter((d) => d.is_gateway).length,
+                          nodes: devices.data.filter((d) => !d.is_gateway).length,
+                        },
+                      )
+                    : formatMessage({
+                        id: "page.meshes.detail.devices.none",
+                        defaultMessage: "No devices registered on this mesh.",
+                      })}
             </FrameDescription>
           </FrameHeader>
           <FramePanel>
+            {devices.data?.length ? (
+              <div className="mb-4">
+                <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
+              </div>
+            ) : null}
             {devices.isPending ? <SkeletonRows /> : null}
             {devices.data?.length ? (
-              <div className="oa-arrive overflow-x-auto">
-                <table className="w-full min-w-[40rem] caption-bottom text-left text-body-2-regular">
-                  <thead>
-                    <tr>
-                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        {formatMessage({ id: "page.meshes.detail.devices.columns.device", defaultMessage: "Device" })}
-                      </th>
-                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        {formatMessage({ id: "page.meshes.detail.devices.columns.role", defaultMessage: "Role" })}
-                      </th>
-                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        {formatMessage({ id: "page.meshes.detail.devices.columns.allowed", defaultMessage: "Allowed" })}
-                      </th>
-                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        {formatMessage({ id: "page.meshes.detail.devices.columns.radio", defaultMessage: "Radio" })}
-                      </th>
-                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        {formatMessage({
-                          id: "page.meshes.detail.devices.columns.lastSeen",
-                          defaultMessage: "Last seen",
-                        })}
-                      </th>
-                      <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
-                        {formatMessage({
-                          id: "page.meshes.detail.devices.columns.actions",
-                          defaultMessage: "Actions",
-                        })}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {devices.data.map((device) => (
-                      <tr
-                        key={device.uuid}
-                        className="text-text-primary hover:bg-background-primary-hover"
-                      >
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
-                          <Link
-                            to={routes.device}
-                            params={{ deviceUuid: device.uuid }}
-                            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                          >
-                            {deviceTitle(device)}
-                          </Link>
-                        </td>
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
-                          <DeviceKindBadge isGateway={device.is_gateway} />
-                        </td>
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
-                          <DeviceAllowedBadge allowed={device.is_allowed} />
-                        </td>
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
-                          <DeviceSilentBadge device={device} />
-                        </td>
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap tabular-nums text-text-secondary">
-                          {formatLastSeen(device.last_seen)}
-                        </td>
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap">
-                          <div className="flex justify-start gap-2">
-                            <ButtonLink
-                              href={href(routes.device, { deviceUuid: device.uuid })}
-                              size="xs"
-                              variant="secondary"
-                            >
-                              {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
-                            </ButtonLink>
-                            {canEdit ? (
-                              <SettingsButton
-                                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-                                onClick={() => setSettingsDevice(device)}
-                              />
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                data={shownDevices}
+                columns={columns}
+                getRowId={(row) => row.uuid}
+                previousPageLabel={formatMessage({
+                  id: "common.dataTable.previousPage",
+                  defaultMessage: "Previous page",
+                })}
+                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
+                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
+                empty={formatMessage({
+                  id: "page.meshes.detail.devices.noMatch",
+                  defaultMessage: "No devices on this mesh match these filters.",
+                })}
+              />
             ) : null}
             {devices.data && devices.data.length === 0 ? (
               <StatusCopy>
@@ -414,10 +510,21 @@ function RegisterDeviceDialog({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
+    // Empty when the node id doesn't parse; NodeIdField always posts decimal.
+    const nodeId = String(form.get("node_id") ?? "");
+    if (nodeId === "") {
+      setErrors({
+        node_id: formatMessage({
+          id: "page.meshes.detail.registerGatewayDialog.nodeIdInvalid",
+          defaultMessage: "Enter a valid node ID.",
+        }),
+      });
+      return;
+    }
     const parsed = zDevicesCreateData.safeParse({
       body: {
         mesh_id: meshId,
-        node_id: Number(form.get("node_id")),
+        node_id: Number(nodeId),
         is_gateway: true,
         label: label === "" ? null : label,
       },
@@ -449,18 +556,7 @@ function RegisterDeviceDialog({
           >
             <Input id="device-label" name="label" autoComplete="off" />
           </FormField>
-          <FormField
-            id="device-node"
-            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.nodeId", defaultMessage: "Node ID" })}
-            hint={formatMessage({
-              id: "page.meshes.detail.registerGatewayDialog.nodeIdHint",
-              defaultMessage:
-                "The decimal node number (i.e. the version without '!'). Example: 2130636288.",
-            })}
-            error={errors.node_id}
-          >
-            <FormNumber id="device-node" name="node_id" min={0} max={4294967295} step={1} required />
-          </FormField>
+          <NodeIdField id="device-node" name="node_id" error={errors.node_id} />
         </FieldGroup>
         {create.error ? (
           <StatusCopy>

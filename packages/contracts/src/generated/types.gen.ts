@@ -316,6 +316,10 @@ export type DeviceRead = {
     readonly reading_interval_seconds: number | null;
     readonly publish_interval_seconds: number | null;
     readonly last_seen: string | null;
+    /**
+     * Telemetry variants this device has been seen reporting.
+     */
+    readonly telemetry_variant_ids: Array<string>;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -1517,6 +1521,10 @@ export type DevicesListData = {
          * List filter, e.g. `contains:Porch`.
          */
         label?: string;
+        /**
+         * Restrict by the telemetry variants a device has reported, as `operator:id|id`. `has_any_of` matches devices that reported at least one of them, `has_all_of` those that reported every one, and `has_none_of` those that reported none. Bare ids mean `has_any_of`.
+         */
+        telemetry_variant?: string;
     };
     url: '/devices';
 };
@@ -2065,7 +2073,12 @@ export type MeshesDevicesListData = {
     path: {
         mesh_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Restrict by the telemetry variants a device has reported, as `operator:id|id`. `has_any_of` matches devices that reported at least one of them, `has_all_of` those that reported every one, and `has_none_of` those that reported none. Bare ids mean `has_any_of`.
+         */
+        telemetry_variant?: string;
+    };
     url: '/meshes/{mesh_id}/devices';
 };
 

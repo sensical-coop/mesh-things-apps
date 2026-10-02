@@ -323,6 +323,7 @@ export const zDeviceRead = z.object({
         z.iso.datetime().readonly(),
         z.null()
     ]).readonly(),
+    telemetry_variant_ids: z.array(z.uuid()).readonly(),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
 });
@@ -1656,7 +1657,8 @@ export const zDevicesListData = z.object({
         is_allowed: z.optional(z.string()),
         is_gateway: z.optional(z.string()),
         mesh_id: z.optional(z.string()),
-        label: z.optional(z.string())
+        label: z.optional(z.string()),
+        telemetry_variant: z.optional(z.string())
     }))
 });
 
@@ -2010,7 +2012,9 @@ export const zMeshesDevicesListData = z.object({
     path: z.object({
         mesh_id: z.uuid()
     }),
-    query: z.optional(z.never())
+    query: z.optional(z.object({
+        telemetry_variant: z.optional(z.string())
+    }))
 });
 
 export const zMeshesDevicesListResponse = z.array(zDeviceRead);

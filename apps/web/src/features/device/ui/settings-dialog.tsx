@@ -20,15 +20,16 @@ type IntervalSecondsFieldProps = {
   id: string;
   name: string;
   label: string;
+  hint: string;
   defaultValue: number | null;
   error?: string;
 };
 
-function IntervalSecondsField({ id, name, label, defaultValue, error }: IntervalSecondsFieldProps): ReactElement {
+function IntervalSecondsField({ id, name, label, hint, defaultValue, error }: IntervalSecondsFieldProps): ReactElement {
   const { formatSecondsAsHms } = useFormatters();
   const [seconds, setSeconds] = useState(defaultValue);
   return (
-    <FormField id={id} label={label} error={error}>
+    <FormField id={id} label={label} hint={hint} error={error}>
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <FormNumber id={id} name={name} min={0} defaultValue={defaultValue ?? undefined} onValueChange={setSeconds} />
@@ -132,6 +133,10 @@ export function DeviceSettingsDialog({
             id="device-allowed"
             name="is_allowed"
             label={formatMessage({ id: "feature.device.settingsDialog.allowed", defaultMessage: "Allowed" })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.allowedHint",
+              defaultMessage: "Only allowed devices have their packets decoded and stored. Disallow a device before moving it to another mesh.",
+            })}
             defaultChecked={device.is_allowed}
           />
           <FormCheckbox
@@ -141,32 +146,36 @@ export function DeviceSettingsDialog({
               id: "feature.device.settingsDialog.gateway",
               defaultMessage: "This device is a gateway",
             })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.gatewayHint",
+              defaultMessage: "Gateways relay the mesh's traffic to the broker. Plain nodes only report through a gateway.",
+            })}
             defaultChecked={device.is_gateway}
           />
-          <div className="flex flex-col gap-1">
-            <FormCheckbox
-              id="device-alarms"
-              name="absence_detection_enabled"
-              label={formatMessage({
-                id: "feature.device.settingsDialog.alarms",
-                defaultMessage: "Enable absence detection",
-              })}
-              defaultChecked={device.absence_detection_enabled}
-            />
-            <p className="pl-7 text-caption-1-regular text-text-tertiary">
-              {formatMessage({
-                id: "feature.device.settingsDialog.alarmsHint",
-                defaultMessage:
-                  "Detects when this device stops publishing. Per-channel detectors can be configured independently.",
-              })}
-            </p>
-          </div>
+          <FormCheckbox
+            id="device-alarms"
+            name="absence_detection_enabled"
+            label={formatMessage({
+              id: "feature.device.settingsDialog.alarms",
+              defaultMessage: "Enable absence detection",
+            })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.alarmsHint",
+              defaultMessage:
+                "Detects when this device stops publishing. Per-channel detectors can be configured independently.",
+            })}
+            defaultChecked={device.absence_detection_enabled}
+          />
           <IntervalSecondsField
             id="device-reading"
             name="reading_interval_seconds"
             label={formatMessage({
               id: "feature.device.settingsDialog.readingInterval",
               defaultMessage: "Reading interval (s)",
+            })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.readingIntervalHint",
+              defaultMessage: "How often the device samples its sensors. Used to spot gaps in a channel's history.",
             })}
             defaultValue={device.reading_interval_seconds}
             error={fieldErrors.reading_interval_seconds}
@@ -178,12 +187,20 @@ export function DeviceSettingsDialog({
               id: "feature.device.settingsDialog.publishInterval",
               defaultMessage: "Publish interval (s)",
             })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.publishIntervalHint",
+              defaultMessage: "How often the device sends data to the mesh. Absence detection fires after several missed intervals.",
+            })}
             defaultValue={device.publish_interval_seconds}
             error={fieldErrors.publish_interval_seconds}
           />
           <FormField
             id="device-lat"
             label={formatMessage({ id: "feature.device.settingsDialog.latitude", defaultMessage: "Latitude" })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.latitudeHint",
+              defaultMessage: "Decimal degrees, -90 to 90. Overrides the position the node reports. Leave both blank to use it.",
+            })}
             error={fieldErrors.latitude}
           >
             <Input
@@ -199,6 +216,10 @@ export function DeviceSettingsDialog({
           <FormField
             id="device-lon"
             label={formatMessage({ id: "feature.device.settingsDialog.longitude", defaultMessage: "Longitude" })}
+            hint={formatMessage({
+              id: "feature.device.settingsDialog.longitudeHint",
+              defaultMessage: "Decimal degrees, -180 to 180.",
+            })}
             error={fieldErrors.longitude}
           >
             <Input
