@@ -532,6 +532,10 @@ function CreateMeshDialog({
           <FormField
             id="mesh-label"
             label={formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" })}
+            hint={formatMessage({
+              id: "page.meshes.list.createDialog.labelHint",
+              defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
+            })}
             error={errors.label}
           >
             <Input id="mesh-label" name="label" autoComplete="off" />
@@ -539,6 +543,10 @@ function CreateMeshDialog({
           <FormField
             id="mesh-channel"
             label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" })}
+            hint={formatMessage({
+              id: "page.meshes.list.createDialog.channelIdHint",
+              defaultMessage: "The Meshtastic channel name your gateways use.",
+            })}
             error={errors.channel_id}
           >
             <Input id="mesh-channel" name="channel_id" required autoComplete="off" />
@@ -548,7 +556,7 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.pskHint",
-              defaultMessage: "Base64 channel key.",
+              defaultMessage: "The channel's pre-shared key, in Base64.",
             })}
             error={errors.psk_b64}
           >
