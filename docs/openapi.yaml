@@ -76,8 +76,8 @@ paths:
             is_gateway: Restrict to gateways, or to plain nodes when false.
             is_allowed: Restrict to allowed registrations, or to rejected ones
                 when false.
-            has_postprocessing: Restrict to devices with a blueprint attached,
-                or to those without one when false.
+            has_postprocessing: Restrict to devices with a postprocessing
+                attached, or to those without one when false.
             label: Restrict by device label.
 
         List filters use `operator:value` or `operator:v1|v2` (same wire as the
@@ -362,6 +362,406 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceMeasurement'
           description: ''
+  /devices/{device_uuid}/postprocessings:
+    get:
+      operationId: devices_postprocessings_list
+      description: |-
+        List the blueprints attached to a device, with their wiring, outputs and state.
+
+        `problems` lists what keeps a postprocessing from being enabled, and is
+        empty once it can run.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+    post:
+      operationId: devices_postprocessings_create
+      description: |-
+        Attach a blueprint to a device.
+
+        Slots not given in `input_bindings` are bound to the device's channel
+        named by their `default_channel` when it has one. The derived channels
+        the blueprint produces are registered on the device straight away, so
+        detectors and ranges can be configured on them before any data
+        arrives. A postprocessing starts disabled unless `is_enabled` is set,
+        and can only be enabled once every slot is bound and every step that
+        needs one has a calibration. Changes are rolled back if the stream
+        tier cannot be notified.
+
+        Args:
+            blueprint_id: Blueprint to attach, the caller's own or a public one. Required.
+            blueprint_version: Version number. Defaults to the latest.
+            input_bindings: {slot: measurement id of this device}.
+            output_prefix: Prepended to every derived field name, so a blueprint can run twice on one device.
+            tolerance_seconds: Maximum distance between samples joined into one row. Defaults to half the device's
+                reading interval.
+            is_enabled: Start running straight away. Defaults to false.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}:
+    get:
+      operationId: devices_postprocessings_retrieve
+      description: Return one blueprint attachment on a device.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+    put:
+      operationId: devices_postprocessings_update
+      description: |-
+        Rewire, move to another version, or enable or disable a postprocessing.
+
+        Moving to another version keeps bindings for slots it still declares
+        and calibrations for steps with the same key and algorithm. Derived
+        channels the new wiring no longer produces are removed from the device,
+        which is refused while another postprocessing reads them. Changes are
+        rolled back if the stream tier cannot be notified.
+
+        Args:
+            blueprint_version: Version number of the same blueprint.
+            input_bindings: {slot: measurement id of this device}. Null unbinds a slot. Slots not given keep
+                their binding.
+            output_prefix: Prepended to every derived field name.
+            tolerance_seconds: Maximum distance between samples joined into one row. Null uses half the device's
+                reading interval.
+            is_enabled: Run or stop the postprocessing.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DevicePostprocessingWrite'
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePostprocessing'
+          description: ''
+    delete:
+      operationId: devices_postprocessings_destroy
+      description: |-
+        Detach a blueprint from a device.
+
+        Its derived channels are removed from the device, while readings
+        already stored remain queryable. Refused while another postprocessing
+        on the device reads one of those channels.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}/backfills:
+    get:
+      operationId: devices_postprocessings_backfills_list
+      description: List the backfills requested for a postprocessing and how they
+        went, oldest first.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostprocessingBackfill'
+          description: ''
+    post:
+      operationId: devices_postprocessings_backfills_create
+      description: |-
+        Recompute a postprocessing's derived channels over stored history.
+
+        Readings already stored between `start` and `stop` are run through the
+        postprocessing with the calibration in force when each was taken, and
+        the results replace any derived values stored for the same times.
+        Backfilled values are stored and archived but never raise alarms. The
+        request is queued and runs within about a minute; its progress is
+        reported in `status`. The postprocessing must be runnable, although it
+        does not need to be enabled.
+
+        Args:
+            start: Start of the range to recompute.
+            stop: End of the range. Defaults to now. At most 90 days after `start`.
+            include_dependants: Also recompute every enabled postprocessing that reads this one's outputs. Defaults
+                to false.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostprocessingBackfill'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostprocessingBackfill'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostprocessingBackfill'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostprocessingBackfill'
+          description: ''
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations:
+    get:
+      operationId: devices_postprocessings_calibrations_list
+      description: List the calibration history of a postprocessing, per step and
+        oldest first.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StepCalibration'
+          description: ''
+    post:
+      operationId: devices_postprocessings_calibrations_create
+      description: |-
+        Record a calibration for one step, in force from `valid_from` onwards.
+
+        History is kept: readings are processed with the calibration in force
+        when they were taken, so recalibrating a sensor never rewrites the
+        past. Every required calibration parameter of the step's algorithm
+        must be given. Rolled back if the stream tier cannot be notified.
+
+        Args:
+            step_key: Step being calibrated.
+            params: Calibration parameters of the step's algorithm.
+            valid_from: When this calibration takes effect. Defaults to now.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StepCalibration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StepCalibration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StepCalibration'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepCalibration'
+          description: ''
+  /devices/{device_uuid}/postprocessings/{postprocessing_id}/calibrations/{calibration_id}:
+    delete:
+      operationId: devices_postprocessings_calibrations_destroy
+      description: |-
+        Delete a calibration recorded by mistake.
+
+        Refused when it would leave an enabled postprocessing without a
+        calibration it needs. To change a calibration from some point onwards,
+        record a new one instead.
+      parameters:
+      - in: path
+        name: calibration_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: postprocessing_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - devices
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Deleted.
   /devices/{device_uuid}/telemetry-variants:
     get:
       operationId: devices_telemetry_variants_list
@@ -1478,8 +1878,19 @@ paths:
   /postprocessing-blueprints:
     get:
       operationId: postprocessing_blueprints_list
-      description: List the caller's postprocessing blueprints, or every one for a
-        superuser.
+      description: |-
+        List the postprocessing blueprints the caller may use: their own and public ones.
+
+        A superuser sees every blueprint.
+
+        Args:
+            owned: Restrict to the caller's own blueprints, excluding public ones.
+      parameters:
+      - in: query
+        name: owned
+        schema:
+          type: boolean
+        description: Restrict to the caller's own blueprints, excluding public ones.
       tags:
       - postprocessing-blueprints
       security:
@@ -1497,21 +1908,34 @@ paths:
     post:
       operationId: postprocessing_blueprints_create
       description: |-
-        Create a postprocessing blueprint, an ordered set of steps that compute
-        new channels from a device's readings.
+        Create a postprocessing blueprint together with its first version.
+
+        A version declares the input slots it reads and an ordered list of
+        steps. Each step runs one algorithm, takes its inputs from a slot or
+        from an earlier step's output, and names the derived channels its
+        outputs are stored as. Calibration parameters are not set here: each
+        device supplies its own when the blueprint is attached to it.
+
+        Args:
+            name: Unique among the caller's blueprints.
+            description: Free text.
+            is_public: Lets any owner attach the blueprint to their devices. Defaults to false.
+            inputs: Input slots, each with an optional `default_channel`.
+            steps: Steps, each with a `key` that stays the same across versions.
+            notes: Free text describing this version.
       tags:
       - postprocessing-blueprints
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintCreate'
         required: true
       security:
       - bearerAuth: []
@@ -1526,7 +1950,7 @@ paths:
   /postprocessing-blueprints/{blueprint_id}:
     get:
       operationId: postprocessing_blueprints_retrieve
-      description: Return one postprocessing blueprint and its steps.
+      description: Return one postprocessing blueprint and its latest version.
       parameters:
       - in: path
         name: blueprint_id
@@ -1549,10 +1973,10 @@ paths:
     put:
       operationId: postprocessing_blueprints_update
       description: |-
-        Update a postprocessing blueprint.
+        Rename or describe a blueprint, or change whether it is public.
 
-        Supplying `steps` replaces the whole ordered list; omitting it leaves
-        the existing steps untouched.
+        Steps cannot be changed here: create a new version instead. Making a
+        blueprint private does not detach it from devices already using it.
       parameters:
       - in: path
         name: blueprint_id
@@ -1566,14 +1990,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
+              $ref: '#/components/schemas/PostprocessingBlueprintUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PostprocessingBlueprint'
-        required: true
+              $ref: '#/components/schemas/PostprocessingBlueprintUpdate'
       security:
       - bearerAuth: []
       - cookieAuth: []
@@ -1587,10 +2010,9 @@ paths:
     delete:
       operationId: postprocessing_blueprints_destroy
       description: |-
-        Delete a postprocessing blueprint.
+        Delete a blueprint and all of its versions.
 
-        Devices using it keep recording telemetry and simply stop producing
-        computed channels.
+        Refused while any device still uses one of its versions.
       parameters:
       - in: path
         name: blueprint_id
@@ -1606,6 +2028,104 @@ paths:
       responses:
         '204':
           description: Deleted.
+  /postprocessing-blueprints/{blueprint_id}/versions:
+    get:
+      operationId: postprocessing_blueprints_versions_list
+      description: List every version of a blueprint, oldest first.
+      parameters:
+      - in: path
+        name: blueprint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - postprocessing-blueprints
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlueprintVersion'
+          description: ''
+    post:
+      operationId: postprocessing_blueprints_versions_create
+      description: |-
+        Add a version of a blueprint.
+
+        Versions are immutable, so this is how a blueprint's steps change.
+        Devices keep running the version they use until they are moved to the
+        new one. Keeping a step's `key` and algorithm lets a device keep its
+        calibration when it moves.
+
+        Args:
+            inputs: Input slots, each with an optional `default_channel`.
+            steps: Steps, each with a `key` that stays the same across versions.
+            notes: Free text describing what changed.
+      parameters:
+      - in: path
+        name: blueprint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - postprocessing-blueprints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlueprintVersion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlueprintVersion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlueprintVersion'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintVersion'
+          description: ''
+  /postprocessing-blueprints/{blueprint_id}/versions/{number}:
+    get:
+      operationId: postprocessing_blueprints_versions_retrieve
+      description: Return one version of a blueprint and its steps.
+      parameters:
+      - in: path
+        name: blueprint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: number
+        schema:
+          type: integer
+        required: true
+      tags:
+      - postprocessing-blueprints
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlueprintVersion'
+          description: ''
   /readings/devices/{device_uuid}:
     get:
       operationId: readings_devices_retrieve
@@ -2453,11 +2973,7 @@ components:
         params:
           type: array
           items:
-            type: string
-        optional_params:
-          type: array
-          items:
-            type: string
+            $ref: '#/components/schemas/AlgorithmParam'
         mode:
           type: string
         doc:
@@ -2473,13 +2989,101 @@ components:
       - inputs
       - mode
       - name
-      - optional_params
       - output_units
       - outputs
       - params
+    AlgorithmParam:
+      type: object
+      description: One keyword argument of an algorithm.
+      properties:
+        name:
+          type: string
+        calibration:
+          type: boolean
+          description: Set per device rather than on the blueprint step, because it
+            describes one physical sensor.
+        required:
+          type: boolean
+        default:
+          nullable: true
+        unit:
+          type: string
+          nullable: true
+        doc:
+          type: string
+      required:
+      - calibration
+      - default
+      - doc
+      - name
+      - required
+      - unit
+    BackfillStatusEnum:
+      enum:
+      - pending
+      - running
+      - done
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `running` - Running
+        * `done` - Done
+        * `failed` - Failed
     BlankEnum:
       enum:
       - ''
+    BlueprintInput:
+      type: object
+      description: An input slot a blueprint version reads, bound to a channel by
+        each device.
+      properties:
+        slot:
+          type: string
+          maxLength: 64
+        default_channel:
+          type: string
+          nullable: true
+          description: Channel bound automatically when the device has it, such as
+            `environment_metrics.temperature`.
+      required:
+      - slot
+    BlueprintVersion:
+      type: object
+      description: Immutable once created. Steps are nested in read and write.
+      properties:
+        blueprint_id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintInput'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostprocessingStep'
+        notes:
+          type: string
+          nullable: true
+        device_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - blueprint_id
+      - created_at
+      - device_count
+      - inputs
+      - number
+      - steps
     ChannelQuality:
       type: object
       properties:
@@ -2591,6 +3195,24 @@ components:
       description: |-
         * `approve` - approve
         * `reject` - reject
+    DerivedOutput:
+      type: object
+      properties:
+        field_name:
+          type: string
+        channel:
+          type: string
+        measurement_id:
+          type: string
+          format: uuid
+        unit:
+          type: string
+          nullable: true
+      required:
+      - channel
+      - field_name
+      - measurement_id
+      - unit
     Detail:
       type: object
       description: The single-message body used by the routes that return no resource.
@@ -2720,12 +3342,20 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        produced_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: The device postprocessing computing this channel, null for
+            a channel the device reports.
       required:
       - effective_detectors
       - first_seen
       - id
       - last_seen
       - measurement_type
+      - produced_by
       - telemetry_variant_id
     DeviceMeasurementUpdate:
       type: object
@@ -2746,6 +3376,106 @@ components:
           type: number
           format: double
           nullable: true
+    DevicePostprocessing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        device_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        blueprint_id:
+          type: string
+          format: uuid
+          readOnly: true
+        blueprint_name:
+          type: string
+          readOnly: true
+        blueprint_version:
+          type: integer
+          readOnly: true
+        input_bindings:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        output_prefix:
+          type: string
+          readOnly: true
+        tolerance_seconds:
+          type: integer
+          readOnly: true
+          nullable: true
+        effective_tolerance_seconds:
+          type: number
+          format: double
+          readOnly: true
+        is_enabled:
+          type: boolean
+          readOnly: true
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DerivedOutput'
+          readOnly: true
+        problems:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - blueprint_id
+      - blueprint_name
+      - blueprint_version
+      - created_at
+      - device_uuid
+      - effective_tolerance_seconds
+      - id
+      - input_bindings
+      - is_enabled
+      - output_prefix
+      - outputs
+      - problems
+      - tolerance_seconds
+      - updated_at
+    DevicePostprocessingWrite:
+      type: object
+      properties:
+        blueprint_id:
+          type: string
+          format: uuid
+          description: Required when attaching.
+        blueprint_version:
+          type: integer
+          minimum: 1
+          description: Defaults to the latest version when attaching.
+        input_bindings:
+          type: object
+          additionalProperties:
+            type: string
+            format: uuid
+            nullable: true
+          description: '{slot: measurement id of this device}. Null unbinds a slot.'
+        output_prefix:
+          type: string
+          maxLength: 64
+        tolerance_seconds:
+          type: integer
+          minimum: 1
+          nullable: true
+        is_enabled:
+          type: boolean
     DeviceQualityResponse:
       type: object
       properties:
@@ -2852,11 +3582,6 @@ components:
         nodeinfo_overridden:
           type: boolean
           readOnly: true
-        postprocessing_blueprint_id:
-          type: string
-          format: uuid
-          readOnly: true
-          nullable: true
         reading_interval_seconds:
           type: integer
           readOnly: true
@@ -2893,7 +3618,6 @@ components:
       - name
       - node_id
       - nodeinfo_overridden
-      - postprocessing_blueprint_id
       - publish_interval_seconds
       - reading_interval_seconds
       - role
@@ -2975,10 +3699,6 @@ components:
           type: string
           nullable: true
           maxLength: 32
-        postprocessing_blueprint_id:
-          type: string
-          format: uuid
-          nullable: true
         reading_interval_seconds:
           type: integer
           maximum: 2147483647
@@ -3834,9 +4554,63 @@ components:
       required:
       - time
       - value
+    PostprocessingBackfill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        postprocessing_id:
+          type: string
+          format: uuid
+          readOnly: true
+        start:
+          type: string
+          format: date-time
+        stop:
+          type: string
+          format: date-time
+          description: Defaults to now.
+        include_dependants:
+          type: boolean
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BackfillStatusEnum'
+          readOnly: true
+        points_published:
+          type: integer
+          readOnly: true
+        error:
+          type: string
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - error
+      - finished_at
+      - id
+      - points_published
+      - postprocessing_id
+      - start
+      - started_at
+      - status
     PostprocessingBlueprint:
       type: object
-      description: Steps are nested in read and write
       properties:
         id:
           type: string
@@ -3844,18 +4618,24 @@ components:
           readOnly: true
         name:
           type: string
-          maxLength: 255
+          readOnly: true
         description:
           type: string
+          readOnly: true
           nullable: true
+        is_public:
+          type: boolean
+          readOnly: true
         owner_id:
           type: string
           format: uuid
           readOnly: true
-        steps:
-          type: array
-          items:
-            $ref: '#/components/schemas/PostprocessingStep'
+          nullable: true
+          description: Null once its owner was deleted while devices still used it.
+        latest_version:
+          allOf:
+          - $ref: '#/components/schemas/BlueprintVersion'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -3866,19 +4646,60 @@ components:
           readOnly: true
       required:
       - created_at
+      - description
       - id
+      - is_public
+      - latest_version
       - name
       - owner_id
-      - steps
       - updated_at
+    PostprocessingBlueprintCreate:
+      type: object
+      description: A new blueprint together with its first version.
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
+          default: false
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlueprintInput'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostprocessingStep'
+        notes:
+          type: string
+          nullable: true
+      required:
+      - inputs
+      - name
+      - steps
+    PostprocessingBlueprintUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
     PostprocessingStep:
       type: object
       description: Validates each step against common/algorithms
       properties:
-        id:
+        key:
           type: string
-          format: uuid
-          readOnly: true
+          maxLength: 64
+          pattern: ^[-a-zA-Z0-9_]+$
         order:
           type: integer
           maximum: 2147483647
@@ -3891,7 +4712,7 @@ components:
         outputs: {}
       required:
       - function_name
-      - id
+      - key
       - order
     QosEnum:
       enum:
@@ -4207,6 +5028,34 @@ components:
       - created_by_id
       - id
       - updated_at
+    StepCalibration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        step_key:
+          type: string
+          maxLength: 64
+          pattern: ^[-a-zA-Z0-9_]+$
+        function_name:
+          type: string
+          readOnly: true
+        params: {}
+        valid_from:
+          type: string
+          format: date-time
+          description: Defaults to now.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - function_name
+      - id
+      - step_key
     TelemetryVariantMeasurementRead:
       type: object
       description: |-

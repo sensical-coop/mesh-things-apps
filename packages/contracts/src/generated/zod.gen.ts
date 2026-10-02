@@ -3,14 +3,28 @@
 import { z } from 'zod';
 
 /**
+ * One keyword argument of an algorithm.
+ */
+export const zAlgorithmParam = z.object({
+    name: z.string(),
+    calibration: z.boolean(),
+    required: z.boolean(),
+    default: z.unknown(),
+    unit: z.union([
+        z.string(),
+        z.null()
+    ]),
+    doc: z.string()
+});
+
+/**
  * One entry of the postprocessing function registry.
  */
 export const zAlgorithm = z.object({
     name: z.string(),
     inputs: z.array(z.string()),
     outputs: z.array(z.string()),
-    params: z.array(z.string()),
-    optional_params: z.array(z.string()),
+    params: z.array(zAlgorithmParam),
     mode: z.string(),
     doc: z.union([
         z.string(),
@@ -22,7 +36,31 @@ export const zAlgorithm = z.object({
     ]))
 });
 
+/**
+ * * `pending` - Pending
+ * * `running` - Running
+ * * `done` - Done
+ * * `failed` - Failed
+ */
+export const zBackfillStatusEnum = z.enum([
+    'pending',
+    'running',
+    'done',
+    'failed'
+]);
+
 export const zBlankEnum = z.enum(['']);
+
+/**
+ * An input slot a blueprint version reads, bound to a channel by each device.
+ */
+export const zBlueprintInput = z.object({
+    slot: z.string().max(64),
+    default_channel: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
 
 export const zChannelQuality = z.object({
     channel: z.string(),
@@ -60,6 +98,16 @@ export const zDataDeletionStatusEnum = z.enum([
  * * `reject` - reject
  */
 export const zDecisionEnum = z.enum(['approve', 'reject']);
+
+export const zDerivedOutput = z.object({
+    field_name: z.string(),
+    channel: z.string(),
+    measurement_id: z.uuid(),
+    unit: z.union([
+        z.string(),
+        z.null()
+    ])
+});
 
 /**
  * The single-message body used by the routes that return no resource.
@@ -133,6 +181,41 @@ export const zDeviceMeasurementUpdate = z.object({
     ]))
 });
 
+export const zDevicePostprocessing = z.object({
+    id: z.uuid().readonly(),
+    device_uuid: z.uuid().readonly(),
+    blueprint_id: z.uuid().readonly(),
+    blueprint_name: z.string().readonly(),
+    blueprint_version: z.int().readonly(),
+    input_bindings: z.record(z.string(), z.string()).readonly(),
+    output_prefix: z.string().readonly(),
+    tolerance_seconds: z.union([
+        z.int().readonly(),
+        z.null()
+    ]).readonly(),
+    effective_tolerance_seconds: z.number().readonly(),
+    is_enabled: z.boolean().readonly(),
+    outputs: z.array(zDerivedOutput).readonly(),
+    problems: z.array(z.string()).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+export const zDevicePostprocessingWrite = z.object({
+    blueprint_id: z.optional(z.uuid()),
+    blueprint_version: z.optional(z.int().gte(1)),
+    input_bindings: z.optional(z.record(z.string(), z.union([
+        z.uuid(),
+        z.null()
+    ]))),
+    output_prefix: z.optional(z.string().max(64)),
+    tolerance_seconds: z.optional(z.union([
+        z.int().gte(1),
+        z.null()
+    ])),
+    is_enabled: z.optional(z.boolean())
+});
+
 export const zDeviceQualityResponse = z.object({
     mesh_id: z.string(),
     node_id: z.int(),
@@ -191,10 +274,6 @@ export const zDeviceRead = z.object({
         z.null()
     ]).readonly(),
     nodeinfo_overridden: z.boolean().readonly(),
-    postprocessing_blueprint_id: z.union([
-        z.uuid().readonly(),
-        z.null()
-    ]).readonly(),
     reading_interval_seconds: z.union([
         z.int().readonly(),
         z.null()
@@ -244,10 +323,6 @@ export const zDeviceUpdate = z.object({
     ])),
     role: z.optional(z.union([
         z.string().max(32),
-        z.null()
-    ])),
-    postprocessing_blueprint_id: z.optional(z.union([
-        z.uuid(),
         z.null()
     ])),
     reading_interval_seconds: z.optional(z.union([
@@ -486,11 +561,43 @@ export const zPoint = z.object({
     value: z.unknown()
 });
 
+export const zPostprocessingBackfill = z.object({
+    id: z.uuid().readonly(),
+    postprocessing_id: z.uuid().readonly(),
+    start: z.iso.datetime(),
+    stop: z.optional(z.iso.datetime()),
+    include_dependants: z.optional(z.boolean()),
+    status: zBackfillStatusEnum,
+    points_published: z.int().readonly(),
+    error: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    started_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    finished_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly()
+});
+
+export const zPostprocessingBlueprintUpdate = z.object({
+    name: z.optional(z.string().max(255)),
+    description: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    is_public: z.optional(z.boolean())
+});
+
 /**
  * Validates each step against common/algorithms
  */
 export const zPostprocessingStep = z.object({
-    id: z.uuid().readonly(),
+    key: z.string().max(64).regex(/^[-a-zA-Z0-9_]+$/),
     order: z.int().gte(0).lte(2147483647),
     function_name: z.string().max(128),
     inputs: z.optional(z.unknown()),
@@ -499,19 +606,54 @@ export const zPostprocessingStep = z.object({
 });
 
 /**
- * Steps are nested in read and write
+ * Immutable once created. Steps are nested in read and write.
  */
+export const zBlueprintVersion = z.object({
+    blueprint_id: z.uuid().readonly(),
+    number: z.int().readonly(),
+    inputs: z.array(zBlueprintInput),
+    steps: z.array(zPostprocessingStep),
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    device_count: z.int().readonly(),
+    created_at: z.iso.datetime().readonly()
+});
+
 export const zPostprocessingBlueprint = z.object({
     id: z.uuid().readonly(),
+    name: z.string().readonly(),
+    description: z.union([
+        z.string().readonly(),
+        z.null()
+    ]).readonly(),
+    is_public: z.boolean().readonly(),
+    owner_id: z.union([
+        z.uuid().readonly(),
+        z.null()
+    ]).readonly(),
+    latest_version: zBlueprintVersion,
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * A new blueprint together with its first version.
+ */
+export const zPostprocessingBlueprintCreate = z.object({
     name: z.string().max(255),
     description: z.optional(z.union([
         z.string(),
         z.null()
     ])),
-    owner_id: z.uuid().readonly(),
+    is_public: z.optional(z.boolean()).default(false),
+    inputs: z.array(zBlueprintInput),
     steps: z.array(zPostprocessingStep),
-    created_at: z.iso.datetime().readonly(),
-    updated_at: z.iso.datetime().readonly()
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
 });
 
 /**
@@ -622,6 +764,10 @@ export const zDeviceMeasurement = z.object({
     first_seen: z.iso.datetime().readonly(),
     last_seen: z.union([
         z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
+    produced_by: z.union([
+        z.uuid().readonly(),
         z.null()
     ]).readonly()
 });
@@ -909,6 +1055,15 @@ export const zSourceUpdate = z.object({
     updated_at: z.iso.datetime().readonly()
 });
 
+export const zStepCalibration = z.object({
+    id: z.uuid().readonly(),
+    step_key: z.string().max(64).regex(/^[-a-zA-Z0-9_]+$/),
+    function_name: z.string().readonly(),
+    params: z.optional(z.unknown()),
+    valid_from: z.optional(z.iso.datetime()),
+    created_at: z.iso.datetime().readonly()
+});
+
 /**
  * GET /telemetry-variants/{id}/measurements. Readable by
  * any verified owner, same as MeasurementTypeReadSerializer.
@@ -1027,6 +1182,18 @@ export const zTerms = z.object({
 });
 
 /**
+ * Immutable once created. Steps are nested in read and write.
+ */
+export const zBlueprintVersionWritable = z.object({
+    inputs: z.array(zBlueprintInput),
+    steps: z.array(zPostprocessingStep),
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+/**
  * POST /devices input
  */
 export const zDeviceCreateWritable = z.object({
@@ -1082,6 +1249,8 @@ export const zDeviceMeasurementWritable = z.object({
     ]))
 });
 
+export const zDevicePostprocessingWritable = z.record(z.string(), z.unknown());
+
 /**
  * node_id/mesh are fixed at creation. Role is editable
  */
@@ -1116,10 +1285,6 @@ export const zDeviceUpdateWritable = z.object({
     ])),
     role: z.optional(z.union([
         z.string().max(32),
-        z.null()
-    ])),
-    postprocessing_blueprint_id: z.optional(z.union([
-        z.uuid(),
         z.null()
     ])),
     reading_interval_seconds: z.optional(z.union([
@@ -1206,28 +1371,13 @@ export const zOwnerLoginWritable = z.object({
     password: z.string()
 });
 
-/**
- * Validates each step against common/algorithms
- */
-export const zPostprocessingStepWritable = z.object({
-    order: z.int().gte(0).lte(2147483647),
-    function_name: z.string().max(128),
-    inputs: z.optional(z.unknown()),
-    params: z.optional(z.unknown()),
-    outputs: z.optional(z.unknown())
+export const zPostprocessingBackfillWritable = z.object({
+    start: z.iso.datetime(),
+    stop: z.optional(z.iso.datetime()),
+    include_dependants: z.optional(z.boolean())
 });
 
-/**
- * Steps are nested in read and write
- */
-export const zPostprocessingBlueprintWritable = z.object({
-    name: z.string().max(255),
-    description: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    steps: z.array(zPostprocessingStepWritable)
-});
+export const zPostprocessingBlueprintWritable = z.record(z.string(), z.unknown());
 
 /**
  * Accepting the current terms of `terms_kind`.
@@ -1295,6 +1445,12 @@ export const zSourceUpdateWritable = z.object({
     ])),
     topic: z.optional(z.string().max(1024)),
     qos: z.optional(zQosEnum)
+});
+
+export const zStepCalibrationWritable = z.object({
+    step_key: z.string().max(64).regex(/^[-a-zA-Z0-9_]+$/),
+    params: z.optional(z.unknown()),
+    valid_from: z.optional(z.iso.datetime())
 });
 
 export const zAlgorithmsListData = z.object({
@@ -1410,6 +1566,121 @@ export const zDevicesMeasurementsUpdateData = z.object({
 });
 
 export const zDevicesMeasurementsUpdateResponse = zDeviceMeasurement;
+
+export const zDevicesPostprocessingsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsListResponse = z.array(zDevicePostprocessing);
+
+export const zDevicesPostprocessingsCreateData = z.object({
+    body: z.optional(zDevicePostprocessingWrite),
+    path: z.object({
+        device_uuid: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsCreateResponse = zDevicePostprocessing;
+
+export const zDevicesPostprocessingsDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zDevicesPostprocessingsDestroyResponse = z.void();
+
+export const zDevicesPostprocessingsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsRetrieveResponse = zDevicePostprocessing;
+
+export const zDevicesPostprocessingsUpdateData = z.object({
+    body: z.optional(zDevicePostprocessingWrite),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsUpdateResponse = zDevicePostprocessing;
+
+export const zDevicesPostprocessingsBackfillsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsBackfillsListResponse = z.array(zPostprocessingBackfill);
+
+export const zDevicesPostprocessingsBackfillsCreateData = z.object({
+    body: zPostprocessingBackfillWritable,
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsBackfillsCreateResponse = zPostprocessingBackfill;
+
+export const zDevicesPostprocessingsCalibrationsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsCalibrationsListResponse = z.array(zStepCalibration);
+
+export const zDevicesPostprocessingsCalibrationsCreateData = z.object({
+    body: zStepCalibrationWritable,
+    path: z.object({
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zDevicesPostprocessingsCalibrationsCreateResponse = zStepCalibration;
+
+export const zDevicesPostprocessingsCalibrationsDestroyData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        calibration_id: z.uuid(),
+        device_uuid: z.uuid(),
+        postprocessing_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Deleted.
+ */
+export const zDevicesPostprocessingsCalibrationsDestroyResponse = z.void();
 
 export const zDevicesTelemetryVariantsListData = z.object({
     body: z.optional(z.never()),
@@ -1797,13 +2068,15 @@ export const zOwnersVerifyEmailRetrieveResponse = zDetail;
 export const zPostprocessingBlueprintsListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
-    query: z.optional(z.never())
+    query: z.optional(z.object({
+        owned: z.optional(z.boolean())
+    }))
 });
 
 export const zPostprocessingBlueprintsListResponse = z.array(zPostprocessingBlueprint);
 
 export const zPostprocessingBlueprintsCreateData = z.object({
-    body: zPostprocessingBlueprintWritable,
+    body: zPostprocessingBlueprintCreate,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
@@ -1834,7 +2107,7 @@ export const zPostprocessingBlueprintsRetrieveData = z.object({
 export const zPostprocessingBlueprintsRetrieveResponse = zPostprocessingBlueprint;
 
 export const zPostprocessingBlueprintsUpdateData = z.object({
-    body: zPostprocessingBlueprintWritable,
+    body: z.optional(zPostprocessingBlueprintUpdate),
     path: z.object({
         blueprint_id: z.uuid()
     }),
@@ -1842,6 +2115,37 @@ export const zPostprocessingBlueprintsUpdateData = z.object({
 });
 
 export const zPostprocessingBlueprintsUpdateResponse = zPostprocessingBlueprint;
+
+export const zPostprocessingBlueprintsVersionsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        blueprint_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zPostprocessingBlueprintsVersionsListResponse = z.array(zBlueprintVersion);
+
+export const zPostprocessingBlueprintsVersionsCreateData = z.object({
+    body: zBlueprintVersionWritable,
+    path: z.object({
+        blueprint_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zPostprocessingBlueprintsVersionsCreateResponse = zBlueprintVersion;
+
+export const zPostprocessingBlueprintsVersionsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        blueprint_id: z.uuid(),
+        number: z.int()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zPostprocessingBlueprintsVersionsRetrieveResponse = zBlueprintVersion;
 
 export const zReadingsDevicesRetrieveData = z.object({
     body: z.optional(z.never()),

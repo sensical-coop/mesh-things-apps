@@ -1,4 +1,3 @@
-import { NIL_BLUEPRINT_ID } from "../shared/blueprint";
 import { matchesListFilters, type ListFilter } from "../shared/list-filter";
 
 export type DeviceProps = {
@@ -18,7 +17,8 @@ export type DeviceProps = {
   hardwareType: string | null;
   role: string | null;
   nodeinfoOverridden: boolean;
-  postprocessingBlueprintId: string | null;
+  /** Blueprints attached to this device (`DevicePostprocessing` rows). */
+  postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
   lastSeen: string | null;
@@ -62,7 +62,7 @@ export class Device implements DeviceProps {
   hardwareType: string | null;
   role: string | null;
   nodeinfoOverridden: boolean;
-  postprocessingBlueprintId: string | null;
+  postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
   lastSeen: string | null;
@@ -96,7 +96,7 @@ export class Device implements DeviceProps {
     this.hardwareType = props.hardwareType;
     this.role = props.role;
     this.nodeinfoOverridden = props.nodeinfoOverridden;
-    this.postprocessingBlueprintId = props.postprocessingBlueprintId;
+    this.postprocessingCount = props.postprocessingCount;
     this.readingIntervalSeconds = props.readingIntervalSeconds;
     this.publishIntervalSeconds = props.publishIntervalSeconds;
     this.lastSeen = props.lastSeen;
@@ -105,10 +105,7 @@ export class Device implements DeviceProps {
   }
 
   hasPostprocessing(): boolean {
-    return (
-      this.postprocessingBlueprintId !== null &&
-      this.postprocessingBlueprintId !== NIL_BLUEPRINT_ID
-    );
+    return this.postprocessingCount > 0;
   }
 }
 

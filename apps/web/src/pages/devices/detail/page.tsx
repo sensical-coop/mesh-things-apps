@@ -16,7 +16,7 @@ import {
   FrameTitle,
 } from "@mtt/ui/reui/frame";
 import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { type ReactElement, useEffect, useMemo, useState } from "react";
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -36,7 +36,8 @@ import { kpiIconFor } from "@/components/kpi/kpi-icon";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { SeriesChart } from "@/components/series/series-chart";
 import { parseWindowMs } from "@/components/series/fill-gaps";
-import { isChartableMeasurement } from "@/lib/measurement";
+import { channelShortName, isChartableMeasurement, isDerivedMeasurement } from "@/lib/measurement";
+import { ComputedFlag } from "@/components/computed-flag";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRange } from "./chart-range";
@@ -48,6 +49,7 @@ import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceChartRangePicker } from "./chart-range-picker";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
+import { PostprocessingsPanel } from "@/features/postprocessing/ui/postprocessings-panel";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
@@ -120,56 +122,56 @@ export function DeviceDetailPage(): ReactElement {
     [variants.data],
   );
 
+  // Channels a blueprint derives get a group of their own, after what the device reports.
+  const groupTitle = useCallback(
+    (variantId: string): string => {
+      if (variantId === COMPUTED_GROUP) {
+        return formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" });
+      }
+      const tv = variantId ? variantById.get(variantId) : undefined;
+      return (
+        tv?.name ??
+        tv?.payload_kind ??
+        formatMessage({ id: "page.devices.detail.dashboard.latest.other", defaultMessage: "Other" })
+      );
+    },
+    [variantById, formatMessage],
+  );
+
   const latestGroups = useMemo<LatestKpiGroup[]>(() => {
     const groups = new globalThis.Map<string, LatestKpiGroup>();
     const order: string[] = [];
     for (const reading of latestKpis) {
-      const variantId = variantIdByChannel.get(reading.channel) ?? "";
+      const variantId = isDerivedMeasurement(reading) ? COMPUTED_GROUP : (variantIdByChannel.get(reading.channel) ?? "");
       if (!groups.has(variantId)) {
-        const tv = variantId ? variantById.get(variantId) : undefined;
-        groups.set(variantId, {
-          key: variantId || "other",
-          title:
-            tv?.name ??
-            tv?.payload_kind ??
-            formatMessage({ id: "page.devices.detail.dashboard.latest.other", defaultMessage: "Other" }),
-          readings: [],
-        });
+        groups.set(variantId, { key: variantId || "other", title: groupTitle(variantId), readings: [] });
         order.push(variantId);
       }
       groups.get(variantId)?.readings.push(reading);
     }
-    return order.flatMap((id) => {
+    return computedLast(order).flatMap((id) => {
       const group = groups.get(id);
       return group ? [group] : [];
     });
-  }, [latestKpis, variantIdByChannel, variantById, formatMessage]);
+  }, [latestKpis, variantIdByChannel, groupTitle]);
 
   // Same grouping, applied to the History section's chart channels.
   const chartChannelGroups = useMemo<ChartChannelGroup[]>(() => {
     const groups = new globalThis.Map<string, ChartChannelGroup>();
     const order: string[] = [];
     for (const channel of chartChannels) {
-      const variantId = variantIdByChannel.get(channel) ?? "";
+      const variantId = isDerivedMeasurement({ channel }) ? COMPUTED_GROUP : (variantIdByChannel.get(channel) ?? "");
       if (!groups.has(variantId)) {
-        const tv = variantId ? variantById.get(variantId) : undefined;
-        groups.set(variantId, {
-          key: variantId || "other",
-          title:
-            tv?.name ??
-            tv?.payload_kind ??
-            formatMessage({ id: "page.devices.detail.dashboard.latest.other", defaultMessage: "Other" }),
-          channels: [],
-        });
+        groups.set(variantId, { key: variantId || "other", title: groupTitle(variantId), channels: [] });
         order.push(variantId);
       }
       groups.get(variantId)?.channels.push(channel);
     }
-    return order.flatMap((id) => {
+    return computedLast(order).flatMap((id) => {
       const group = groups.get(id);
       return group ? [group] : [];
     });
-  }, [chartChannels, variantIdByChannel, variantById, formatMessage]);
+  }, [chartChannels, variantIdByChannel, groupTitle]);
 
   return (
     <>
@@ -243,6 +245,7 @@ export function DeviceDetailPage(): ReactElement {
             seen={seen}
             names={names}
             canEdit={canEdit}
+            meshOwnerId={mesh.data?.owner_id}
             onViewChart={handleViewChart}
           />
         </TabsContent>
@@ -266,6 +269,12 @@ export function DeviceDetailPage(): ReactElement {
 }
 
 type NamesByChannel = Map<string, MeasurementTypeRead>;
+
+const COMPUTED_GROUP = "computed";
+
+function computedLast(order: string[]): string[] {
+  return [...order.filter((id) => id !== COMPUTED_GROUP), ...order.filter((id) => id === COMPUTED_GROUP)];
+}
 type LatestKpiGroup = { key: string; title: string; readings: LatestReading[] };
 type ChartChannelGroup = { key: string; title: string; channels: string[] };
 
@@ -276,6 +285,7 @@ function DeviceStatusTab({
   seen,
   names,
   canEdit,
+  meshOwnerId,
   onViewChart,
 }: {
   device: UseQueryResult<DeviceRead>;
@@ -284,6 +294,7 @@ function DeviceStatusTab({
   seen: UseQueryResult<DeviceMeasurement[]>;
   names: NamesByChannel;
   canEdit: boolean;
+  meshOwnerId: string | undefined;
   onViewChart: (channel: string) => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
@@ -294,6 +305,7 @@ function DeviceStatusTab({
   const qualitySlots = canEdit ? ["range", "completeness", "alarms"] : ["range", "completeness"];
   const qualityCols = canEdit ? "sm:grid-cols-3" : "sm:grid-cols-2";
   const pointsIngested = quality.data?.points_ingested;
+  const computedRows = (seen.data ?? []).filter((row) => isDerivedMeasurement(row.measurement_type));
   return (
     <>
       <div className="grid gap-6 lg:grid-cols-2">
@@ -542,7 +554,8 @@ function DeviceStatusTab({
                 const measurements = (seen.data ?? []).filter(
                   (row) =>
                     row.telemetry_variant_id === variant.telemetry_variant.id &&
-                    isChartableMeasurement(row.measurement_type),
+                    isChartableMeasurement(row.measurement_type) &&
+                    !isDerivedMeasurement(row.measurement_type),
                 );
                 // A variant whose only channels are quality diagnostics has
                 // nothing chartable to show, so skip the whole section.
@@ -566,8 +579,25 @@ function DeviceStatusTab({
                   })}
                 </StatusCopy>
               )}
+          {computedRows.length ? (
+            <TelemetryVariantSection
+              variant={null}
+              device={device.data}
+              measurements={computedRows}
+              canEdit={canEdit}
+              onViewChart={onViewChart}
+            />
+          ) : null}
         </FramePanel>
       </Frame>
+      {device.data && meshOwnerId ? (
+        <PostprocessingsPanel
+          deviceUuid={device.data.uuid}
+          meshOwnerId={meshOwnerId}
+          measurements={seen.data ?? []}
+          canEdit={canEdit}
+        />
+      ) : null}
     </>
   );
 }
@@ -579,7 +609,8 @@ function TelemetryVariantSection({
   canEdit,
   onViewChart,
 }: {
-  variant: DeviceTelemetryVariant;
+  /** Null: the channels blueprints derive, which belong to no reported variant. */
+  variant: DeviceTelemetryVariant | null;
   device: DeviceRead | undefined;
   measurements: DeviceMeasurement[];
   canEdit: boolean;
@@ -587,7 +618,7 @@ function TelemetryVariantSection({
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen, formatWhen } = useFormatters();
-  const tv = variant.telemetry_variant;
+  const tv = variant?.telemetry_variant;
   const deviceReading = device?.reading_interval_seconds;
   const devicePublish = device?.publish_interval_seconds;
 
@@ -595,34 +626,45 @@ function TelemetryVariantSection({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h3 className="min-w-0 break-words text-body-medium text-text-primary">
-            {tv.name ?? tv.payload_kind}
+          <h3 className="flex min-w-0 items-center gap-2 break-words text-body-medium text-text-primary">
+            {tv
+              ? (tv.name ?? tv.payload_kind)
+              : formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" })}
           </h3>
-          <span className="min-w-0 break-words text-caption-1-regular text-text-secondary">
-            {formatMessage(
-              { id: "page.devices.detail.variants.last", defaultMessage: "last {when}" },
-              { when: formatWhen(variant.last_seen) },
-            )}
-            {deviceReading != null
-              ? ` · ${formatMessage(
-                  {
-                    id: "page.devices.detail.variants.deviceInterval",
-                    defaultMessage: "reading {reading}s · publish {publish}s",
-                  },
-                  { reading: deviceReading, publish: devicePublish ?? "—" },
-                )}`
-              : tv.default_reading_interval_seconds
+          {variant && tv ? (
+            <span className="min-w-0 break-words text-caption-1-regular text-text-secondary">
+              {formatMessage(
+                { id: "page.devices.detail.variants.last", defaultMessage: "last {when}" },
+                { when: formatWhen(variant.last_seen) },
+              )}
+              {deviceReading != null
                 ? ` · ${formatMessage(
                     {
-                      id: "page.devices.detail.variants.defaultInterval",
-                      defaultMessage: "default reading {seconds}s",
+                      id: "page.devices.detail.variants.deviceInterval",
+                      defaultMessage: "reading {reading}s · publish {publish}s",
                     },
-                    { seconds: tv.default_reading_interval_seconds },
+                    { reading: deviceReading, publish: devicePublish ?? "—" },
                   )}`
-                : ""}
-          </span>
+                : tv.default_reading_interval_seconds
+                  ? ` · ${formatMessage(
+                      {
+                        id: "page.devices.detail.variants.defaultInterval",
+                        defaultMessage: "default reading {seconds}s",
+                      },
+                      { seconds: tv.default_reading_interval_seconds },
+                    )}`
+                  : ""}
+            </span>
+          ) : (
+            <span className="min-w-0 break-words text-caption-1-regular text-text-secondary">
+              {formatMessage({
+                id: "page.devices.detail.variants.computedMeta",
+                defaultMessage: "derived by the blueprints attached below",
+              })}
+            </span>
+          )}
         </div>
-        {tv.description ? (
+        {tv?.description ? (
           <p className="text-caption-1-regular text-text-secondary">{tv.description}</p>
         ) : null}
       </div>
@@ -668,7 +710,10 @@ function TelemetryVariantSection({
                 return (
                   <tr key={row.id} className="text-text-primary hover:bg-background-primary-hover">
                     <td className="h-8 w-72 break-words px-3.5 py-0 align-middle">
-                      {row.measurement_type.display_name ?? channel}
+                      <span className="flex min-w-0 items-center gap-2">
+                        {row.measurement_type.display_name ?? channelShortName(channel)}
+                        {isDerivedMeasurement(row.measurement_type) ? <ComputedFlag /> : null}
+                      </span>
                     </td>
                     <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
                       {row.measurement_type.native_unit ?? "—"}
@@ -831,6 +876,7 @@ function DeviceDashboardTab({
                         label={reading.field_name}
                         value={`${formatValue(reading.value)}${unit ? ` ${unit}` : ""}`}
                         hint={formatWhen(reading.time)}
+                        badge={isDerivedMeasurement(reading) ? <ComputedFlag /> : undefined}
                         action={
                           canEdit ? (
                             <AlarmBellButton deviceUuid={deviceUuid} channel={reading.channel} label={reading.field_name} />
@@ -890,7 +936,10 @@ function DeviceDashboardTab({
                     const series = seriesQueries[index];
                     const type = names.get(channel);
                     const points = series?.data?.series[0]?.points;
-                    const label = type?.display_name ?? channel;
+                    // Same name as the latest-reading card above it.
+                    const label = channelShortName(channel);
+                    const computed = isDerivedMeasurement({ channel });
+                    const badge = computed ? <ComputedFlag /> : undefined;
                     // CHART_AGG_OPTIONS covers every ChartAgg value, so this always matches.
                     const aggOption = CHART_AGG_OPTIONS.find((option) => option.value === agg)!;
                     const aggLabel = formatMessage({ id: aggOption.messageId, defaultMessage: aggOption.label });
@@ -901,19 +950,16 @@ function DeviceDashboardTab({
                         )
                       : aggLabel;
                     const icon = kpiIconFor(`${type?.field_name ?? ""} ${channel}`);
-                    const bell = canEdit ? (
-                      <AlarmBellButton deviceUuid={deviceUuid} channel={channel} label={label} />
-                    ) : undefined;
                     let content: ReactElement;
                     if (series?.isPending) {
                       content = (
-                        <KpiPanel label={label} hint={hint} icon={icon} action={bell} className="min-h-52" aria-hidden>
+                        <KpiPanel label={label} hint={hint} icon={icon} badge={badge} className="min-h-52" aria-hidden>
                           <SkeletonRows rows={5} />
                         </KpiPanel>
                       );
                     } else if (series?.error) {
                       content = (
-                        <KpiPanel label={label} hint={hint} icon={icon} action={bell} className="min-h-52 justify-center">
+                        <KpiPanel label={label} hint={hint} icon={icon} badge={badge} className="min-h-52 justify-center">
                           <StatusCopy>
                             {formatMessage({
                               id: "page.devices.detail.dashboard.history.seriesError",
@@ -924,7 +970,7 @@ function DeviceDashboardTab({
                       );
                     } else if (!points?.length) {
                       content = (
-                        <KpiPanel label={label} hint={hint} icon={icon} action={bell} className="min-h-52 justify-center">
+                        <KpiPanel label={label} hint={hint} icon={icon} badge={badge} className="min-h-52 justify-center">
                           <StatusCopy>
                             {formatMessage({
                               id: "page.devices.detail.dashboard.history.noPoints",
@@ -939,7 +985,8 @@ function DeviceDashboardTab({
                           label={label}
                           hint={hint}
                           icon={icon}
-                          action={bell}
+                          badge={badge}
+                          computed={computed}
                           points={points}
                           windowMs={windowMs}
                           className="min-h-52"

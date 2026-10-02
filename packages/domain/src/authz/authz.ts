@@ -69,6 +69,35 @@ export function visibleOwned<T extends Owned>(actor: Actor, rows: T[]): T[] {
   return rows.filter((row) => row.ownerId === actor.id);
 }
 
+/** A blueprint as far as access is concerned: its owner (null once deleted while in use) and the public flag. */
+export type Shareable = { ownerId: string | null; isPublic: boolean };
+
+/** Own and public blueprints, or every one for staff and superusers. */
+export function canReadBlueprint(actor: Actor, blueprint: Shareable): boolean {
+  if (!actor.isActive) return false;
+  return (
+    actor.role === "superuser" ||
+    actor.role === "staff" ||
+    blueprint.ownerId === actor.id ||
+    blueprint.isPublic
+  );
+}
+
+export function visibleBlueprints<T extends Shareable>(actor: Actor, rows: T[]): T[] {
+  return rows.filter((row) => canReadBlueprint(actor, row));
+}
+
+/** Its owner; a blueprint whose owner was deleted is left to superusers. */
+export function canWriteBlueprint(actor: Actor, blueprint: Shareable): boolean {
+  if (!actor.isActive) return false;
+  return actor.role === "superuser" || (blueprint.ownerId !== null && blueprint.ownerId === actor.id);
+}
+
+/** A device may run its mesh owner's blueprints and public ones. */
+export function canAttachBlueprint(actor: Actor, blueprint: Shareable, meshOwnerId: string): boolean {
+  return actor.role === "superuser" || blueprint.isPublic || blueprint.ownerId === meshOwnerId;
+}
+
 /** A source as far as access is concerned: who created it. */
 export type Created = { createdById: string | null };
 

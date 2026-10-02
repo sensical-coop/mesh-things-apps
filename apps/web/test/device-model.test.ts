@@ -20,7 +20,6 @@ const device = {
   hardware_type: "tbeam",
   role: "ROUTER",
   nodeinfo_overridden: false,
-  postprocessing_blueprint_id: "00000000-0000-4000-8000-000000000000",
   reading_interval_seconds: 300,
   publish_interval_seconds: 300,
   last_seen: null,

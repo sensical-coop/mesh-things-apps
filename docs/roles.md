@@ -35,7 +35,7 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 | Ver email y flags de un owner | `canReadOwnerEmail` | solo el propio | solo el propio | no (directorio público) | sí |
 | `GET /owners` | — | `OwnerPublic` | `OwnerPublic` | `OwnerPublic` | `OwnerRead` completo |
 
-`visibleMeshes` recorta la lista de mallas con `canReadMesh`. `visibleOwned` (blueprints) sigue siendo solo `ownerId === actor.id` para un owner.
+`visibleMeshes` recorta la lista de mallas con `canReadMesh`. `visibleBlueprints` enseña las plantillas propias y las públicas (staff y superuser, todas); editar exige `canWriteBlueprint` (dueño, o superuser si el dueño borró su cuenta) y vincular a un device, `canAttachBlueprint` (públicas o del dueño de la malla).
 
 Leer no es editar: en una malla pública ajena el lector no ve PSK ni devices rechazados (`is_allowed: false`), y recibe 403 en cualquier write. En web, `canEditMesh` (`features/mesh/model.ts`) oculta toda acción de escritura (editar, borrar, registrar, ajustes de device, alarmas) cuando la malla no es suya.
 
@@ -51,7 +51,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 - `GET /owners`, `GET /owners/{id}`: directorio público o registro completo según la tabla.
 - `GET/POST /meshes` (`?owned=true` para solo las propias), `GET /meshes/{id}`: filtro + PSK según rol. 404 si no se puede leer.
 - `GET/POST /devices`, `PUT /devices/{id}`: el write exige `canWriteMesh` sobre la malla del device.
-- `GET/POST /postprocessing-blueprints`: lista filtrada; staff no crea.
+- `GET/POST /postprocessing-blueprints`: propias + públicas; staff no crea. Postprocesados, calibraciones y backfills de un device: leer con la malla, escribir con `canWriteMesh`.
 - `GET/POST /sources`, `GET/PUT/DELETE /sources/{id}`: solo operator/superuser. 400 con errores por campo estilo DRF (`{ "server": ["Must be host:port."] }`); `#` como topic está bloqueado. Un host `*.invalid` simula que EMQX falla (502, no se guarda nada). `DELETE` con mallas asociadas: 409.
 - Condiciones (la API pone versión y texto, en `en`/`es`): cuenta `GET /terms` (sin sesión; `POST /owners` y `POST /owners/me/terms-acceptance`, no caducan), malla `GET /meshes/terms` (`POST /meshes` sin fuente, `PUT /meshes/{id}` al pasar al broker por defecto, `POST /meshes/{id}/terms-acceptance` solo el dueño) y fuente `GET /sources/terms` (`POST /sources`, `POST /sources/{id}/terms-acceptance` solo quien la creó). `terms_version` actual obligatoria (400 si falta o es antigua), `terms_locale` opcional; cada aceptación se guarda. El owner expone `terms_accepted_version` (cuenta); la malla, `terms_accepted_version`, `terms_expires_at`, `paused_at` (dueño y superuser); la fuente, lo mismo y `status` (`paused` si caducó). El mock usa 365 días de validez (`MOCK_DATA_RETENTION_DAYS`, vacío = sin límite). Con `MOCK_TERMS_ENFORCED=false` imita una instancia lite (`REGISTRY__TERMS_ENFORCED=false`): 404 en todas las rutas de condiciones, `terms_version` opcional e ignorado, nada se registra ni caduca.
 - `GET /meshes?source_id=`, `POST/PUT /meshes` con `source_id`: ver arriba.

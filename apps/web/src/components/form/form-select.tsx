@@ -15,18 +15,33 @@ export function FormSelect({
   name,
   items,
   defaultValue,
+  value,
+  onValueChange,
   placeholder,
   required,
+  disabled,
 }: {
   id: string;
   name: string;
   items: readonly SelectItemOption[];
   defaultValue?: string;
+  /** Controlled use: pass both. */
+  value?: string;
+  onValueChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  disabled?: boolean;
 }): ReactElement {
   return (
-    <Select name={name} defaultValue={defaultValue} items={[...items]} required={required}>
+    <Select
+      name={name}
+      defaultValue={defaultValue}
+      value={value}
+      onValueChange={onValueChange ? (next) => onValueChange(typeof next === "string" ? next : "") : undefined}
+      items={[...items]}
+      required={required}
+      disabled={disabled}
+    >
       <SelectTrigger id={id} className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

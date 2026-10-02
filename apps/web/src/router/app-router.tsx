@@ -10,6 +10,7 @@ import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
 import { alarmListPage } from "@/pages/alarms/list/route";
+import { blueprintDetailPage } from "@/pages/blueprints/detail/route";
 import { blueprintListPage } from "@/pages/blueprints/list/route";
 import { deviceDetailPage } from "@/pages/devices/detail/route";
 import { deviceListPage } from "@/pages/devices/list/route";
@@ -111,6 +112,11 @@ const blueprintsRoute = createRoute({
   ...blueprintListPage,
 });
 
+const blueprintRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...blueprintDetailPage,
+});
+
 const sourcesRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...sourceListPage,
@@ -153,6 +159,7 @@ const routeTree = rootRoute.addChildren([
     deviceDetailRoute,
     alarmsRoute,
     blueprintsRoute,
+    blueprintRoute,
     sourcesRoute,
     operatorRequestsRoute,
     operatorRequestRoute,

@@ -281,13 +281,21 @@ Auth salvo nota: `bearerAuth` o cookie. DELETE → **204**. Resto de éxito → 
 
 | Método | Ruta | Respuesta |
 |---|---|---|
-| GET | `/postprocessing-blueprints` | **200** `PostprocessingBlueprint[]` |
-| POST | `/postprocessing-blueprints` | **201** `PostprocessingBlueprint` |
-| GET | `/postprocessing-blueprints/{blueprintid}` | **200** blueprint + steps |
-| PUT | `/postprocessing-blueprints/{blueprintid}` | **200** (enviar `steps` reemplaza la lista entera) |
-| DELETE | `/postprocessing-blueprints/{blueprintid}` | **204** (devices dejan de emitir canales computed) |
+Modelo (meshtastic-things `docs/architecture.md#postprocessing`): una **plantilla** es la receta; sus **versiones** son inmutables (entradas `slot` + pasos con clave estable). Un **postprocesado** es una versión vinculada a un device: asocia cada `slot` a un canal del device, lleva la **calibración** propia del device (historial con `valid_from`) y crea sus canales `derived.<campo>` al vincularse. Los parámetros `calibration: true` de `GET /algorithms` van en el device, el resto en el paso.
 
-Catálogo de funciones: `GET /algorithms`.
+| Método | Ruta | Respuesta |
+|---|---|---|
+| GET | `/postprocessing-blueprints[?owned=true]` | **200** propias + públicas, con `latest_version` |
+| POST | `/postprocessing-blueprints` | **201** plantilla + versión 1 (`inputs`, `steps`); 409 nombre repetido |
+| PUT | `/postprocessing-blueprints/{id}` | **200** solo `name`, `description`, `is_public` |
+| DELETE | `/postprocessing-blueprints/{id}` | **204**; 409 si algún device usa una versión |
+| GET/POST | `/postprocessing-blueprints/{id}/versions` | versiones; cambiar pasos = versión nueva |
+| GET/POST | `/devices/{uuid}/postprocessings` | vincular (`blueprint_id`, `input_bindings`, `output_prefix`, `tolerance_seconds`); `problems` dice qué impide arrancar |
+| PUT/DELETE | `/devices/{uuid}/postprocessings/{id}` | recablear, cambiar de versión, `is_enabled` (400 `{is_enabled: problems}`), desvincular |
+| GET/POST/DELETE | `/devices/{uuid}/postprocessings/{id}/calibrations` | historial de calibración por `step_key` |
+| GET/POST | `/devices/{uuid}/postprocessings/{id}/backfills` | recalcular histórico (≤ 90 días, 202 `pending`) |
+
+Algunos rechazos llegan como lista DRF sin campo (`["..."]`); `attachErrorStatus` los pasa a `non_field_errors`.
 
 ### Readings
 

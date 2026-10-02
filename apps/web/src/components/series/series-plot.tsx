@@ -5,11 +5,15 @@ import { asNumber, formatClock, formatWhen } from "@/lib/format";
 import { StatusCopy } from "@/components/status-copy";
 import { fillTimeGaps } from "@/components/series/fill-gaps";
 
-function seriesConfig(label: string): ChartConfig {
+// A computed channel takes the purple of its "Computed" chip; the token follows the theme.
+const COMPUTED_COLOR = "var(--color-status-purple-text)";
+
+function seriesConfig(label: string, computed: boolean): ChartConfig {
+  const color = computed ? COMPUTED_COLOR : "var(--oa-primary)";
   return {
     value: {
       label,
-      colors: { light: ["var(--oa-primary)"], dark: ["var(--oa-primary)"] },
+      colors: { light: [color], dark: [color] },
     },
   };
 }
@@ -18,10 +22,13 @@ export function SeriesPlot({
   points,
   seriesLabel,
   windowMs,
+  computed = false,
 }: {
   points: Point[];
   seriesLabel: string;
   windowMs?: number | null;
+  /** A channel a blueprint derives: drawn in the purple of the "Computed" chip. */
+  computed?: boolean;
 }): ReactElement {
   // Keep null-valued buckets (missing data within the aggregation window) instead
   // of dropping them, and reinsert buckets the API omitted entirely: the chart's
@@ -37,7 +44,7 @@ export function SeriesPlot({
   return (
     <EChartsAreaChart
       data={data}
-      config={seriesConfig(seriesLabel)}
+      config={seriesConfig(seriesLabel, computed)}
       xDataKey="time"
       className="h-52 w-full"
       curveType="monotone"

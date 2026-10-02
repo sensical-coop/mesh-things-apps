@@ -32,7 +32,7 @@ export class MemoryDevices implements IDeviceRepository {
       hardwareType: null,
       role: null,
       nodeinfoOverridden: false,
-      postprocessingBlueprintId: null,
+      postprocessingCount: 0,
       readingIntervalSeconds: null,
       publishIntervalSeconds: null,
       lastSeen: now,
@@ -48,7 +48,6 @@ export class MemoryDevices implements IDeviceRepository {
     patch: Partial<DeviceCreate> & {
       isAllowed?: boolean;
       absenceDetectionEnabled?: boolean;
-      postprocessingBlueprintId?: string | null;
       readingIntervalSeconds?: number | null;
       publishIntervalSeconds?: number | null;
       locationOverridden?: boolean;
@@ -64,9 +63,6 @@ export class MemoryDevices implements IDeviceRepository {
     if (patch.isAllowed !== undefined) device.isAllowed = patch.isAllowed;
     if (patch.isGateway !== undefined) device.isGateway = patch.isGateway;
     if (patch.absenceDetectionEnabled !== undefined) device.absenceDetectionEnabled = patch.absenceDetectionEnabled;
-    if (patch.postprocessingBlueprintId !== undefined) {
-      device.postprocessingBlueprintId = patch.postprocessingBlueprintId;
-    }
     if (patch.readingIntervalSeconds !== undefined) {
       device.readingIntervalSeconds = patch.readingIntervalSeconds;
     }
