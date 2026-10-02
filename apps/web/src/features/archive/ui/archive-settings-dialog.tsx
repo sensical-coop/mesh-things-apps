@@ -82,7 +82,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
             name="archive_enabled"
             label={formatMessage({
               id: "feature.archive.settingsDialog.enable",
-              defaultMessage: "Store this device's readings in S3",
+              defaultMessage: "Store this device's readings in the Archive",
             })}
             defaultChecked={device.archive_enabled === true}
           />
@@ -90,7 +90,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
             {formatMessage({
               id: "feature.archive.settingsDialog.enableHint",
               defaultMessage:
-                "From now on, its decoded and derived readings are stored. Turning it off stops storing new ones and keeps what's already stored, which is deleted along with the mesh's data.",
+                "From now on, its decoded and derived readings are stored. Turning it off stops storing new ones, but keeps already stored data.",
             })}
           </p>
           {device.archive_enabled && device.archive_enabled_at ? (
@@ -114,7 +114,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
           {formatMessage({
             id: "feature.archive.settingsDialog.terms",
             defaultMessage:
-              "Your mesh's terms already cover storing the devices you choose. Store only the devices you need, and only while you need them.",
+              "Store only the devices you need, and only while you need them.",
           })}
         </p>
         {error ? <StatusCopy>{error}</StatusCopy> : null}

@@ -67,13 +67,13 @@ export function ArchiveDownloadDialog({
         <section className="oa-squircle-inset flex flex-col gap-3 bg-background-secondary-default p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-col gap-1">
             <h3 className="text-body-medium text-text-primary">
-              {formatMessage({ id: "feature.archive.downloadAll.zip", defaultMessage: "One zip" })}
+              {formatMessage({ id: "feature.archive.downloadAll.zip", defaultMessage: "Download as one zip file" })}
             </h3>
             <p className="text-caption-1-regular text-text-secondary">
               {formatMessage({
                 id: "feature.archive.downloadAll.zipHint",
                 defaultMessage:
-                  "A folder per day, each hour named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet.",
+                  "Download includes a folder per day. Each file is named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet.",
               })}
             </p>
           </div>
@@ -121,7 +121,7 @@ export function ArchiveDownloadDialog({
         {access.error ? <StatusCopy>{access.error}</StatusCopy> : null}
         <section className="flex min-w-0 flex-col gap-2">
           <h4 className="text-body-medium text-text-primary">
-            {formatMessage({ id: "feature.archive.downloadAll.oneFile", defaultMessage: "One Parquet file (DuckDB)" })}
+            {formatMessage({ id: "feature.archive.downloadAll.oneFile", defaultMessage: "One file (DuckDB)" })}
           </h4>
           <p className="text-caption-1-regular text-text-secondary">
             {formatMessage(

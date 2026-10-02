@@ -47,6 +47,7 @@ export function TermsDialog({
     account: termsRepository.account(query),
     mesh: termsRepository.mesh(query),
     source: termsRepository.source(query),
+    sink: termsRepository.sink(query),
   }[kind];
   // A 404 means terms are off on this instance: an answer, not worth retrying.
   const terms = useQuery({
@@ -103,12 +104,12 @@ export function TermsDialog({
                 })
               : formatMessage({
                   id: "feature.terms.dialog.loadError",
-                  defaultMessage: "The terms didn't load, so they can't be accepted yet. Try again.",
+                  defaultMessage: "The terms didn't load and they can't be accepted yet. Try again.",
                 })}
           </StatusCopy>
         ) : null}
         {terms.data ? (
-          <TermsChecklist terms={terms.data} accepted={accepted} onToggle={toggle} idPrefix={`terms-${kind}`} />
+          <TermsChecklist terms={terms.data} kind={kind} accepted={accepted} onToggle={toggle} idPrefix={`terms-${kind}`} />
         ) : null}
         {error ? <StatusCopy>{error}</StatusCopy> : null}
         <div className={dialogActionsClass}>

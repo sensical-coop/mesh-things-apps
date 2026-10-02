@@ -10,7 +10,8 @@
     "./device/*": "./src/device/*.ts",
     "./measurement/*": "./src/measurement/*.ts",
     "./readings/*": "./src/readings/*.ts",
-    "./source/*": "./src/source/*.ts"
+    "./source/*": "./src/source/*.ts",
+    "./sink/*": "./src/sink/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

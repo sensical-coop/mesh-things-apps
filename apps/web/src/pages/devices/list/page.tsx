@@ -329,7 +329,7 @@ export function DevicesPage(): ReactElement {
                       })
                     : formatMessage({
                         id: "page.devices.list.empty.default",
-                        defaultMessage: "No devices yet. Register a device from a mesh.",
+                        defaultMessage: "No devices yet. Register a device in a Mesh.",
                       })
                 }
               />

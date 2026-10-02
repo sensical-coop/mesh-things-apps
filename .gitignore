@@ -8,3 +8,5 @@ dist/
 .DS_Store
 .env
 apps/web/src/locales/en.extracted.json
+/dpa/
+/docs/GDPR-TODO.md

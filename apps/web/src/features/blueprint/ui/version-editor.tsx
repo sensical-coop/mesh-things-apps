@@ -92,7 +92,7 @@ export function VersionEditor({ draft, algorithms, onChange, withNotes = false }
             {formatMessage({
               id: "feature.blueprint.editor.slotsHint",
               defaultMessage:
-                "Each device binds an input to one of its channels. A default channel binds itself when the device has it.",
+                "Each device links an input to one of its channels. If you define a default channel, it will get linked automatically if the device has it. Select steps below to automatically add inputs.",
             })}
           </p>
         </div>
@@ -164,7 +164,7 @@ export function VersionEditor({ draft, algorithms, onChange, withNotes = false }
           <p className="text-caption-1-regular text-text-tertiary">
             {formatMessage({
               id: "feature.blueprint.editor.stepsHint",
-              defaultMessage: "Run in order. A step reads inputs, or what an earlier step wrote.",
+              defaultMessage: "The steps below run in order. A step reads channels, or outputs from previous steps.",
             })}
           </p>
         </div>

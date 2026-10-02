@@ -214,7 +214,7 @@ export function SourcesPage(): ReactElement {
                 : formatMessage({
                     id: "page.sources.list.panel.description",
                     defaultMessage:
-                      "Remote MQTT brokers bridged into this instance. Meshes without a source use the default broker.",
+                      "Remote MQTT brokers bridged into this instance.",
                   })}
             </FrameDescription>
           </FrameHeader>

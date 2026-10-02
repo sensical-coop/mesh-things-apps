@@ -593,6 +593,10 @@ export type OwnerProfile = {
      */
     readonly alarm_email_cooldown_seconds: number | null;
     /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
@@ -636,6 +640,10 @@ export type OwnerRead = {
      */
     readonly alarm_email_cooldown_seconds: number | null;
     /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
@@ -666,6 +674,10 @@ export type OwnerUpdate = {
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
      */
     alarm_email_cooldown_seconds?: number | null;
+    /**
+     * Email me when a source I created stays disconnected, or a sink I created with meshes or devices attached has nobody connected. Off by default.
+     */
+    status_alerts_enabled?: boolean;
 };
 
 /**
@@ -692,6 +704,10 @@ export type OwnerWithApiKey = {
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
     readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
     /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
@@ -803,6 +819,137 @@ export type RoleEnum = 'member' | 'operator';
 export type Series = {
     channel: string;
     points: Array<Point>;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SinkCreate = {
+    label?: string | null;
+    /**
+     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     */
+    streams?: Array<StreamsEnum>;
+    /**
+     * Meshes whose every node is sent, including nodes that appear later.
+     */
+    mesh_ids?: Array<string>;
+    /**
+     * Registrations (`uuid`) of single devices to send.
+     */
+    device_ids?: Array<string>;
+};
+
+export type SinkCredentials = {
+    readonly id: string;
+    readonly label: string | null;
+    /**
+     * What the sink sends, in the order `decoded`, `derived`, `alarms`.
+     */
+    readonly streams: Array<StreamsEnum>;
+    readonly mesh_ids: Array<string>;
+    readonly device_ids: Array<string>;
+    /**
+     * Broker the consumer connects to over TLS, as host:port.
+     */
+    readonly broker: string;
+    readonly username: string;
+    /**
+     * Everything the consumer may subscribe to.
+     */
+    readonly topic_filter: string;
+    /**
+     * Consumers connected now. Null when the broker cannot be asked.
+     */
+    readonly connections: number | null;
+    /**
+     * When the sink was paused because its terms lapsed.
+     */
+    readonly paused_at: string | null;
+    readonly terms_accepted_version: string | null;
+    /**
+     * When the terms acceptance lapses. Null for no time limit.
+     */
+    readonly terms_expires_at: string | null;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+    /**
+     * Shown only in this response.
+     */
+    readonly password: string;
+};
+
+export type SinkRead = {
+    readonly id: string;
+    readonly label: string | null;
+    /**
+     * What the sink sends, in the order `decoded`, `derived`, `alarms`.
+     */
+    readonly streams: Array<StreamsEnum>;
+    readonly mesh_ids: Array<string>;
+    readonly device_ids: Array<string>;
+    /**
+     * Broker the consumer connects to over TLS, as host:port.
+     */
+    readonly broker: string;
+    readonly username: string;
+    /**
+     * Everything the consumer may subscribe to.
+     */
+    readonly topic_filter: string;
+    /**
+     * Consumers connected now. Null when the broker cannot be asked.
+     */
+    readonly connections: number | null;
+    /**
+     * When the sink was paused because its terms lapsed.
+     */
+    readonly paused_at: string | null;
+    readonly terms_accepted_version: string | null;
+    /**
+     * When the terms acceptance lapses. Null for no time limit.
+     */
+    readonly terms_expires_at: string | null;
+    readonly created_by_id: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SinkTermsAcceptance = {
+    /**
+     * Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+};
+
+/**
+ * Create or update a sink. Every field is optional on update; lists replace what is there.
+ */
+export type SinkWrite = {
+    label?: string | null;
+    /**
+     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     */
+    streams?: Array<StreamsEnum>;
+    /**
+     * Meshes whose every node is sent, including nodes that appear later.
+     */
+    mesh_ids?: Array<string>;
+    /**
+     * Registrations (`uuid`) of single devices to send.
+     */
+    device_ids?: Array<string>;
 };
 
 /**
@@ -929,6 +1076,13 @@ export type StepCalibration = {
     valid_from?: string;
     readonly created_at: string;
 };
+
+/**
+ * * `decoded` - decoded
+ * * `derived` - derived
+ * * `alarms` - alarms
+ */
+export type StreamsEnum = 'decoded' | 'derived' | 'alarms';
 
 /**
  * GET /telemetry-variants/{id}/measurements. Readable by
@@ -1186,6 +1340,36 @@ export type PostprocessingBackfillWritable = {
 
 export type PostprocessingBlueprintWritable = {
     [key: string]: unknown;
+};
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export type SinkCreateWritable = {
+    /**
+     * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
+     */
+    terms_version?: string;
+    /**
+     * Locale the terms were shown in.
+     *
+     * * `en` - en
+     * * `es` - es
+     */
+    terms_locale?: TermsLocaleEnum;
+    label?: string | null;
+    /**
+     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     */
+    streams?: Array<StreamsEnum>;
+    /**
+     * Meshes whose every node is sent, including nodes that appear later.
+     */
+    mesh_ids?: Array<string>;
+    /**
+     * Registrations (`uuid`) of single devices to send.
+     */
+    device_ids?: Array<string>;
 };
 
 /**
@@ -2648,6 +2832,128 @@ export type ReadingsMeshesNodesQualityRetrieveResponses = {
 };
 
 export type ReadingsMeshesNodesQualityRetrieveResponse = ReadingsMeshesNodesQualityRetrieveResponses[keyof ReadingsMeshesNodesQualityRetrieveResponses];
+
+export type SinksListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/sinks';
+};
+
+export type SinksListResponses = {
+    200: Array<SinkRead>;
+};
+
+export type SinksListResponse = SinksListResponses[keyof SinksListResponses];
+
+export type SinksCreateData = {
+    body: SinkCreateWritable;
+    path?: never;
+    query?: never;
+    url: '/sinks';
+};
+
+export type SinksCreateResponses = {
+    201: SinkCredentials;
+};
+
+export type SinksCreateResponse = SinksCreateResponses[keyof SinksCreateResponses];
+
+export type SinksTermsRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * `en` or `es`. Defaults to `en`; unknown locales fall back to it.
+         */
+        locale?: string;
+    };
+    url: '/sinks/terms';
+};
+
+export type SinksTermsRetrieveResponses = {
+    200: Terms;
+};
+
+export type SinksTermsRetrieveResponse = SinksTermsRetrieveResponses[keyof SinksTermsRetrieveResponses];
+
+export type SinksDestroyData = {
+    body?: never;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}';
+};
+
+export type SinksDestroyResponses = {
+    /**
+     * Deleted.
+     */
+    204: void;
+};
+
+export type SinksDestroyResponse = SinksDestroyResponses[keyof SinksDestroyResponses];
+
+export type SinksRetrieveData = {
+    body?: never;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}';
+};
+
+export type SinksRetrieveResponses = {
+    200: SinkRead;
+};
+
+export type SinksRetrieveResponse = SinksRetrieveResponses[keyof SinksRetrieveResponses];
+
+export type SinksUpdateData = {
+    body?: SinkWrite;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}';
+};
+
+export type SinksUpdateResponses = {
+    200: SinkRead;
+};
+
+export type SinksUpdateResponse = SinksUpdateResponses[keyof SinksUpdateResponses];
+
+export type SinksCredentialsCreateData = {
+    body?: never;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}/credentials';
+};
+
+export type SinksCredentialsCreateResponses = {
+    200: SinkCredentials;
+};
+
+export type SinksCredentialsCreateResponse = SinksCredentialsCreateResponses[keyof SinksCredentialsCreateResponses];
+
+export type SinksTermsAcceptanceCreateData = {
+    body: SinkTermsAcceptance;
+    path: {
+        sink_id: string;
+    };
+    query?: never;
+    url: '/sinks/{sink_id}/terms-acceptance';
+};
+
+export type SinksTermsAcceptanceCreateResponses = {
+    201: SinkRead;
+};
+
+export type SinksTermsAcceptanceCreateResponse = SinksTermsAcceptanceCreateResponses[keyof SinksTermsAcceptanceCreateResponses];
 
 export type SourcesListData = {
     body?: never;

@@ -10,6 +10,7 @@ import { MemoryMeshes } from "./features/mesh/repository";
 import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
 import { MemorySources } from "./features/source/repository";
+import { MemorySinks } from "./features/sink/repository";
 import { MemoryArchive } from "./features/archive/repository";
 import {
   DATA_RETENTION_DAYS,
@@ -35,6 +36,8 @@ export const MESH_GONE_ID = "18181818-1818-4181-8181-181818181818";
 /** One mesh per Status column state, so the colours can be checked at a glance. */
 export const SOURCE_OFFLINE_ID = "20202020-2020-4202-8202-202020202020";
 export const SOURCE_LAPSED_ID = "21212121-2121-4212-8212-212121212121";
+export const SINK_PARTNER_ID = "30303030-3030-4303-8303-303030303030";
+export const SINK_LAPSED_ID = "31313131-3131-4313-8313-313131313131";
 export const DEVICE_GW_ID = "33333333-3333-4333-8333-333333333333";
 export const DEVICE_NODE_ID = "44444444-4444-4444-8444-444444444444";
 export const DEVICE_RIVER_GW_ID = "13131313-1313-4131-8131-131313131313";
@@ -176,6 +179,7 @@ export type DeviceMeasurementRange = {
 export type Store = {
   meshes: MemoryMeshes;
   sources: MemorySources;
+  sinks: MemorySinks;
   termsAcceptances: TermsAcceptance[];
   dataDeletions: DataDeletionRow[];
   /** Account terms version per owner; none for accounts made outside signup (admin, staff). */
@@ -507,9 +511,33 @@ export function createStore(owners: StoreOwners = {}): Store {
     if (until !== null) archive.stop(MESH_BROOK_ID, nodeId, hoursAgo(-until * 24));
   }
   const measurements = new MemoryMeasurements(meas);
+  // The operator's sinks: one sending Valley and Brook's buoy with a consumer connected,
+  // one paused because its terms lapsed.
+  const sinks = new MemorySinks();
+  for (const [id, label, streams, meshIds, deviceIds, pausedAt, connections] of [
+    [SINK_PARTNER_ID, "Partner dashboard", ["decoded", "alarms"], [MESH_BRIDGED_ID], [DEVICE_BROOK_BUOY_ID], null, 1],
+    [SINK_LAPSED_ID, "Old partner", ["decoded"], [], [DEVICE_BROOK_WEIR_ID], daysFromNow(-4), 0],
+  ] as const) {
+    sinks.items.set(id, {
+      id,
+      label,
+      streams: [...streams],
+      meshIds: [...meshIds],
+      deviceIds: [...deviceIds],
+      password: "seeded-password",
+      createdById: operatorId,
+      termsAcceptedVersion: TERMS_VERSIONS.sink,
+      termsExpiresAt: pausedAt ? daysFromNow(-4) : daysFromNow(200),
+      pausedAt,
+      createdAt: t0,
+      updatedAt: t0,
+    });
+    sinks.connections.set(id, connections);
+  }
   return {
     meshes,
     sources,
+    sinks,
     termsAcceptances: [],
     // One of each state for the superuser's Deletions page. River's matches Bo's lapsed terms.
     dataDeletions: [

@@ -57,7 +57,7 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
               ? formatMessage(
                   {
                     id: "feature.archive.files.description",
-                    defaultMessage: "Stored under {prefix}, one Parquet file per hour (UTC). Open a day to download single hours.",
+                    defaultMessage: "Stored under {prefix}. Open a day to download single hours.",
                   },
                   { prefix: manifest.prefix },
                 )

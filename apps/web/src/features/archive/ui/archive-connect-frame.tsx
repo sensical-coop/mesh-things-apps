@@ -46,7 +46,7 @@ export function ArchiveConnectFrame({ access, prefix }: ArchiveConnectFrameProps
           {formatMessage({
             id: "feature.archive.connect.description",
             defaultMessage:
-              "Issue credentials that read this mesh's archive and nothing else, then paste the command into DuckDB. They also work with pandas, pyarrow or any S3 client.",
+              "Issue credentials to read this mesh's archive. Paste the command into DuckDB, pandas, pyarrow or any S3 client.",
           })}
         </FrameDescription>
       </FrameHeader>

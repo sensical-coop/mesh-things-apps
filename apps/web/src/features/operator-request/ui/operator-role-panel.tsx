@@ -107,7 +107,7 @@ export function OperatorRolePanel(): ReactElement | null {
         ) : mine.isPending ? (
           <SkeletonRows />
         ) : (
-          <div className="flex max-w-md flex-col gap-5">
+          <div className="flex flex-col gap-5">
             {request ? (
               <div className="flex flex-col gap-2">
                 <p className="flex flex-wrap items-center gap-2 text-body-regular text-text-primary">
@@ -150,11 +150,11 @@ export function OperatorRolePanel(): ReactElement | null {
                     id="operator-request-reason"
                     label={formatMessage({
                       id: "feature.operatorRequest.panel.reason",
-                      defaultMessage: "Why do you need it?",
+                      defaultMessage: "Explain why you want to be an operator.",
                     })}
                     hint={formatMessage({
                       id: "feature.operatorRequest.panel.reasonHint",
-                      defaultMessage: "Which broker and channel you want to bridge, and for which community. Shown to superusers.",
+                      defaultMessage: "Which broker and channel you want to bridge, and for which community. This will only be shown to superusers.",
                     })}
                     error={errors.reason}
                   >

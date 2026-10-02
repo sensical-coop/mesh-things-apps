@@ -35,7 +35,7 @@ export function DeleteAccountDialog({
       title={formatMessage({ id: "feature.auth.deleteAccountDialog.title", defaultMessage: "Delete account" })}
       description={formatMessage({
         id: "feature.auth.deleteAccountDialog.description",
-        defaultMessage: "This deletes your account along with every mesh, device, and blueprint you own. This can't be undone.",
+        defaultMessage: "This deletes your account along with everything you own in Mesh Things. This can't be undone.",
       })}
       onClose={onClose}
     >

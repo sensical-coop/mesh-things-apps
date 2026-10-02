@@ -23,7 +23,7 @@ export function AutomationMenu(props: AutomationMenuProps): ReactElement {
           label: formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" }),
           description: formatMessage({
             id: "console.header.automation.alarmsDescription",
-            defaultMessage: "What to watch for in each measurement",
+            defaultMessage: "Alarms for each measurement",
           }),
         },
         {
@@ -31,7 +31,7 @@ export function AutomationMenu(props: AutomationMenuProps): ReactElement {
           label: formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" }),
           description: formatMessage({
             id: "console.header.automation.blueprintsDescription",
-            defaultMessage: "What to compute from incoming readings",
+            defaultMessage: "Computations on incoming readings",
           }),
         },
       ]}

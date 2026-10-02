@@ -113,7 +113,7 @@ export function AlarmDetectorsDialog({
         {formatMessage({
           id: "feature.alarm.detectorsDialog.independenceNote",
           defaultMessage:
-            "These run regardless of the device's own \"Enable absence detection\" setting, which only covers the device going silent.",
+            "These run regardless of the device's own \"Enable absence detection\" setting, which only covers the device being silent.",
         })}
       </p>
       {loading ? <SkeletonRows rows={3} /> : null}
