@@ -250,6 +250,7 @@ export function ownerReadJson(
     last_login: actor.lastLogin,
     created_at: actor.createdAt,
     alarm_email_cooldown_seconds: actor.alarmEmailCooldownSeconds,
+    status_alerts_enabled: actor.statusAlertsEnabled,
     terms_accepted_version: accountTermsVersion,
   };
 }

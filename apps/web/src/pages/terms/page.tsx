@@ -151,7 +151,7 @@ const privacyPolicy = [
     headingDefault: "4. Purposes and legal bases",
     bodyId: "page.terms.privacy.processingPurposes.body",
     bodyDefault:
-      "Sensical uses your account data to create and maintain your account, run the console and send service emails, such as verification, password reset, alarms and terms renewal notices, because this is necessary to provide the Platform you signed up for (Article 6(1)(b) GDPR). It keeps the records of terms accepted and instructions given to show that it complies with data protection law and to defend itself against claims (Article 6(1)(c) and (f)). It uses technical data, such as your IP address, to secure the service and prevent abuse, for example by limiting sign-in attempts, based on its legitimate interest in keeping the Platform safe (Article 6(1)(f)). Sensical makes no automated decisions about you. The marketing site sets no analytics cookies, and the console only sets a session cookie once you sign in, so the API knows who you are.",
+      "Sensical uses your account data to create and maintain your account, run the console and send service emails, such as verification, password reset, alarms, the source and sink status alerts you turn on, and terms renewal notices, because this is necessary to provide the Platform you signed up for (Article 6(1)(b) GDPR). It keeps the records of terms accepted and instructions given to show that it complies with data protection law and to defend itself against claims (Article 6(1)(c) and (f)). It uses technical data, such as your IP address, to secure the service and prevent abuse, for example by limiting sign-in attempts, based on its legitimate interest in keeping the Platform safe (Article 6(1)(f)). Sensical makes no automated decisions about you. The marketing site sets no analytics cookies, and the console only sets a session cookie once you sign in, so the API knows who you are.",
   },
   {
     id: "data-sharing",
@@ -231,7 +231,7 @@ export function TermsPage(): ReactElement {
             {formatMessage({ id: "page.terms.title", defaultMessage: "Terms and Conditions" })}
           </h1>
           <p className="text-body-regular text-text-secondary">
-            {formatMessage({ id: "page.terms.lastUpdated", defaultMessage: "Last updated 2026-09-30." })}
+            {formatMessage({ id: "page.terms.lastUpdated", defaultMessage: "Last updated 2026-10-01." })}
           </p>
         </div>
 

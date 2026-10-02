@@ -107,7 +107,7 @@ export function OperatorRolePanel(): ReactElement | null {
         ) : mine.isPending ? (
           <SkeletonRows />
         ) : (
-          <div className="flex max-w-md flex-col gap-5">
+          <div className="flex flex-col gap-5">
             {request ? (
               <div className="flex flex-col gap-2">
                 <p className="flex flex-wrap items-center gap-2 text-body-regular text-text-primary">

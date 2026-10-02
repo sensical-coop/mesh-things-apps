@@ -593,6 +593,10 @@ export type OwnerProfile = {
      */
     readonly alarm_email_cooldown_seconds: number | null;
     /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
@@ -636,6 +640,10 @@ export type OwnerRead = {
      */
     readonly alarm_email_cooldown_seconds: number | null;
     /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
+    /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
@@ -666,6 +674,10 @@ export type OwnerUpdate = {
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default.
      */
     alarm_email_cooldown_seconds?: number | null;
+    /**
+     * Email me when a source I created stays disconnected, or a sink I created with meshes or devices attached has nobody connected. Off by default.
+     */
+    status_alerts_enabled?: boolean;
 };
 
 /**
@@ -692,6 +704,10 @@ export type OwnerWithApiKey = {
      * Minimum time between quality-alarm emails, in seconds (0 to 2592000, i.e. 30 days). Null uses the server-wide default. Omitted on backends that don't yet support this setting.
      */
     readonly alarm_email_cooldown_seconds: number | null;
+    /**
+     * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
+     */
+    readonly status_alerts_enabled: boolean;
     /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */

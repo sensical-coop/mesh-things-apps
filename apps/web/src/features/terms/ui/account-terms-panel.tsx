@@ -47,7 +47,7 @@ export function AccountTermsPanel(): ReactElement | null {
           </FrameDescription>
         </FrameHeader>
         <FramePanel>
-          <div className="flex max-w-md flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <StatusCopy>{message}</StatusCopy>
             {standing === "ok" ? null : (
               <div>

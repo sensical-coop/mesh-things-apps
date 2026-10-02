@@ -10,6 +10,7 @@ export type Actor = {
   createdAt: string;
   lastLogin: string | null;
   alarmEmailCooldownSeconds: number | null;
+  statusAlertsEnabled: boolean;
 };
 
 export type Owned = { ownerId: string };
