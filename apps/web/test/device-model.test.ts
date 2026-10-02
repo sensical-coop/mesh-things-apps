@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
-import { deviceRoleLabel, deviceTitle } from "../src/features/device/model.ts";
+import { deviceRoleLabel, deviceTitle, parseCoordinate, roundCoordinate } from "../src/features/device/model.ts";
 
 const device = {
   uuid: "33333333-3333-4333-8333-333333333333",
@@ -35,4 +35,30 @@ test("deviceRoleLabel sentence-cases the mesh role", () => {
   assert.equal(deviceRoleLabel(device), "Router");
   assert.equal(deviceRoleLabel({ role: "CLIENT_MUTE", is_gateway: false }), "Client mute");
   assert.equal(deviceRoleLabel({ role: null, is_gateway: true }), "Gateway");
+});
+
+test("parseCoordinate keeps decimals whatever the separator", () => {
+  assert.deepEqual(parseCoordinate("41.3851", 90), { ok: true, value: 41.3851 });
+  assert.deepEqual(parseCoordinate(" 41,3851 ", 90), { ok: true, value: 41.3851 });
+  assert.deepEqual(parseCoordinate("-2.17", 180), { ok: true, value: -2.17 });
+  assert.deepEqual(parseCoordinate(".5", 90), { ok: true, value: 0.5 });
+});
+
+test("parseCoordinate treats blank as no value", () => {
+  assert.deepEqual(parseCoordinate("", 90), { ok: true, value: null });
+  assert.deepEqual(parseCoordinate("   ", 180), { ok: true, value: null });
+});
+
+test("parseCoordinate rejects garbage and out-of-range values", () => {
+  assert.deepEqual(parseCoordinate("abc", 90), { ok: false });
+  assert.deepEqual(parseCoordinate("1.234.567", 90), { ok: false });
+  assert.deepEqual(parseCoordinate("1e3", 180), { ok: false });
+  assert.deepEqual(parseCoordinate("90.0001", 90), { ok: false });
+  assert.deepEqual(parseCoordinate("-181", 180), { ok: false });
+  assert.deepEqual(parseCoordinate("180", 180), { ok: true, value: 180 });
+});
+
+test("roundCoordinate trims to six decimals", () => {
+  assert.equal(roundCoordinate(41.38512345), 41.385123);
+  assert.equal(roundCoordinate(-2.1700004), -2.17);
 });

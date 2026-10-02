@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { routes } from "@/router";
+import { API_URL } from "@/lib/api-url";
 import { BrandMark, SITE, pageWidth } from "@/components/brand";
 
 const socials = [
@@ -77,6 +78,9 @@ export function Footer(): ReactElement {
               </a>
               <a href={`${SITE}/contact`} className={footerLinkClass}>
                 {formatMessage({ id: "console.footer.contact", defaultMessage: "Contact" })}
+              </a>
+              <a href={API_URL} className={footerLinkClass}>
+                {formatMessage({ id: "console.footer.api", defaultMessage: "API" })}
               </a>
             </nav>
           </FooterColumn>

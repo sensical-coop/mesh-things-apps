@@ -904,7 +904,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       absenceDetectionEnabled: patch.absence_detection_enabled,
       readingIntervalSeconds: patch.reading_interval_seconds,
       publishIntervalSeconds: patch.publish_interval_seconds,
-      locationOverridden: lat != null && lon != null ? true : undefined,
+      // Registry rule: sending both keys pins the location unless both are
+      // null, which hands it back to the node's own position reports.
+      locationOverridden: lat !== undefined && lon !== undefined ? lat != null || lon != null : undefined,
     });
     if (!device) return c.json({ detail: "Not found" }, 404);
     return c.json(deviceJson(device));

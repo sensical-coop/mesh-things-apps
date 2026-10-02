@@ -13,6 +13,7 @@ export function DeviceKindBadge({ isGateway }: DeviceKindBadgeProps): ReactEleme
       on={isGateway}
       yes={formatMessage({ id: "feature.device.kindBadge.gateway", defaultMessage: "Gateway" })}
       no={formatMessage({ id: "feature.device.kindBadge.node", defaultMessage: "Node" })}
+      offColor="accent"
     />
   );
 }

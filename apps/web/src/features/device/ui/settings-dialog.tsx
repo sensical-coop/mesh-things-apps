@@ -1,6 +1,7 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
+import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
@@ -11,7 +12,7 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, readApiError } from "@/lib/api-errors";
 import { deviceRepository } from "@/features/device/repository";
-import { deviceTitle } from "@/features/device/model";
+import { deviceTitle, parseCoordinate } from "@/features/device/model";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useFormatters } from "@/hooks/use-formatters";
 
@@ -71,9 +72,23 @@ export function DeviceSettingsDialog({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const lat = String(form.get("latitude") ?? "").trim();
-    const lon = String(form.get("longitude") ?? "").trim();
-    if ((lat === "") !== (lon === "")) {
+    const lat = parseCoordinate(String(form.get("latitude") ?? ""), 90);
+    const lon = parseCoordinate(String(form.get("longitude") ?? ""), 180);
+    const invalid = formatMessage({
+      id: "feature.device.settingsDialog.coordinateInvalid",
+      defaultMessage: "Enter decimal degrees, e.g. 41.3851.",
+    });
+    const coordinateErrors: Record<string, string> = {
+      ...(lat.ok ? {} : { latitude: invalid }),
+      ...(lon.ok ? {} : { longitude: invalid }),
+    };
+    if (!lat.ok || !lon.ok) {
+      setError(null);
+      setFieldErrors(coordinateErrors);
+      return;
+    }
+    if ((lat.value === null) !== (lon.value === null)) {
+      setFieldErrors({});
       setError(
         formatMessage({
           id: "feature.device.settingsDialog.latLonError",
@@ -92,8 +107,8 @@ export function DeviceSettingsDialog({
         absence_detection_enabled: form.get("absence_detection_enabled") === "on",
         reading_interval_seconds: Number(form.get("reading_interval_seconds")) || null,
         publish_interval_seconds: Number(form.get("publish_interval_seconds")) || null,
-        latitude: lat === "" ? null : Number(lat),
-        longitude: lon === "" ? null : Number(lon),
+        latitude: lat.value,
+        longitude: lon.value,
       },
     });
   }
@@ -171,13 +186,14 @@ export function DeviceSettingsDialog({
             label={formatMessage({ id: "feature.device.settingsDialog.latitude", defaultMessage: "Latitude" })}
             error={fieldErrors.latitude}
           >
-            <FormNumber
+            <Input
               id="device-lat"
               name="latitude"
-              min={-90}
-              max={90}
-              step="any"
-              defaultValue={device.latitude ?? undefined}
+              inputMode="decimal"
+              autoComplete="off"
+              className="tabular-nums"
+              aria-invalid={fieldErrors.latitude ? true : undefined}
+              defaultValue={device.latitude ?? ""}
             />
           </FormField>
           <FormField
@@ -185,13 +201,14 @@ export function DeviceSettingsDialog({
             label={formatMessage({ id: "feature.device.settingsDialog.longitude", defaultMessage: "Longitude" })}
             error={fieldErrors.longitude}
           >
-            <FormNumber
+            <Input
               id="device-lon"
               name="longitude"
-              min={-180}
-              max={180}
-              step="any"
-              defaultValue={device.longitude ?? undefined}
+              inputMode="decimal"
+              autoComplete="off"
+              className="tabular-nums"
+              aria-invalid={fieldErrors.longitude ? true : undefined}
+              defaultValue={device.longitude ?? ""}
             />
           </FormField>
         </FieldGroup>

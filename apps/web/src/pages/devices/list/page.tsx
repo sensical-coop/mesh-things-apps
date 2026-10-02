@@ -17,9 +17,9 @@ import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/co
 import { useFormatters } from "@/hooks/use-formatters";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { listQuery } from "@mtt/ui/lib/filter-url";
 import { href, routes } from "@/router";
 import { pageHeadingClass } from "@/lib/page-heading";
+import { listQueryBoolean, matchesListQuery } from "@/lib/list-filter";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
@@ -119,7 +119,14 @@ export function DevicesPage(): ReactElement {
     [meshOptions, formatMessage],
   );
   const filters = useSmartFilters({ specs });
-  const devices = useQuery(deviceRepository.list({ query: listQuery(filters.queryString) }));
+  // The API only takes bare values, and rows don't say whether a blueprint is attached,
+  // so that one filter goes to the server; the rest run on the loaded rows, like meshes.
+  const hasPostprocessing = listQueryBoolean(filters.queryString, "has_postprocessing");
+  const devices = useQuery(
+    deviceRepository.list(
+      hasPostprocessing === undefined ? undefined : { query: { has_postprocessing: String(hasPostprocessing) } },
+    ),
+  );
   const meshNames = new Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)]));
   const meshOwners = new Map((meshes.data ?? []).map((m) => [m.id, m.owner_id]));
   const { me, isSuperuser, meId, ownerName } = useOwnerDirectory();
@@ -132,6 +139,22 @@ export function DevicesPage(): ReactElement {
         ownerId: meshOwners.get(device.mesh_id) ?? "",
       })),
     [devices.data, meshes.data],
+  );
+  const shownRows = rows.filter((row) =>
+    matchesListQuery((field) => {
+      switch (field) {
+        case "label":
+          return deviceTitle(row);
+        case "mesh_id":
+          return row.mesh_id;
+        case "is_gateway":
+          return String(row.is_gateway);
+        case "is_allowed":
+          return String(row.is_allowed);
+        default:
+          return undefined;
+      }
+    }, filters.queryString),
   );
   // Devices on public meshes can belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.ownerId !== meId);
@@ -251,7 +274,7 @@ export function DevicesPage(): ReactElement {
             {devices.isPending ? <SkeletonRows /> : null}
             {devices.error ? null : devices.isPending ? null : (
               <DataTable
-                data={rows}
+                data={shownRows}
                 columns={columns}
                 getRowId={(row) => row.uuid}
                 previousPageLabel={formatMessage({

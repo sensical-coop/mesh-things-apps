@@ -6,6 +6,11 @@ import {
   NumberFieldInput,
 } from "@mtt/ui/components/reui/number-field";
 import { type ReactElement } from "react";
+import { useIntl } from "react-intl";
+
+// No grouping: with it, Spanish reads "41.38" as 4138. Without it, either
+// separator parses as the decimal mark. Intl also caps fractions at 3 by default.
+const FORMAT: Intl.NumberFormatOptions = { useGrouping: false, maximumFractionDigits: 20 };
 
 export function FormNumber({
   id,
@@ -28,9 +33,12 @@ export function FormNumber({
   disabled?: boolean;
   onValueChange?: (value: number | null) => void;
 }): ReactElement {
+  const { locale } = useIntl();
   return (
     <NumberField
       id={id}
+      locale={locale}
+      format={FORMAT}
       name={name}
       defaultValue={defaultValue}
       min={min}

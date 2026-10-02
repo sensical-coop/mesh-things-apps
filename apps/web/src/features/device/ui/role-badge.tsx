@@ -27,7 +27,7 @@ export function DeviceRoleBadge({ device }: DeviceRoleBadgeProps): ReactElement 
     node: formatMessage({ id: "feature.device.role.node", defaultMessage: "Node" }),
   };
   return (
-    <Chip variant="caption" color={device.is_gateway ? "cyan" : "soft"} className="rounded-full">
+    <Chip variant="caption" color={device.is_gateway ? "cyan" : "accent"} className="rounded-full">
       {deviceRoleLabel(device, labels)}
     </Chip>
   );

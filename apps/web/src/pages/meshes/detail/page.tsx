@@ -20,7 +20,6 @@ import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { FormField } from "@/components/form/form-field";
 import { FormNumber } from "@/components/form/form-number";
@@ -28,6 +27,9 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
+import { FitToPoints } from "@/features/device/ui/map-fit";
+import { DeviceMapLegend } from "@/features/device/ui/map-legend";
+import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
@@ -213,26 +215,23 @@ export function MeshDetailPage(): ReactElement {
           </FrameHeader>
           <FramePanel>
             {plotted.length ? (
-              <div className="oa-arrive oa-squircle-inset h-80 overflow-hidden">
+              <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
+                <DeviceMapLegend />
                 <Map
                   center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
                   zoom={12}
                   className="h-full min-h-80 w-full"
                 >
                   <MapControls />
+                  <FitToPoints points={plotted.map((device) => ({ lng: device.longitude!, lat: device.latitude! }))} />
                   {plotted.map((device) => (
                     <MapMarker key={device.uuid} longitude={device.longitude!} latitude={device.latitude!}>
                       <MarkerContent>
-                        <Tooltip>
-                          <TooltipTrigger
-                            delay={0}
-                            aria-label={deviceTitle(device)}
-                            className="relative flex size-5 items-center justify-center rounded-full bg-transparent p-0"
-                          >
-                            <span className="relative size-2.5 rounded-full bg-accent-500 ring-2 ring-background-primary-default" aria-hidden />
-                          </TooltipTrigger>
-                          <TooltipContent sideOffset={8}>{deviceTitle(device)}</TooltipContent>
-                        </Tooltip>
+                        <DeviceMapPin
+                          isGateway={device.is_gateway}
+                          label={deviceTitle(device)}
+                          deviceUuid={device.uuid}
+                        />
                       </MarkerContent>
                     </MapMarker>
                   ))}

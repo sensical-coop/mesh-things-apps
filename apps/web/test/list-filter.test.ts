@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { matchesListQuery, parseListQuery } from "../src/lib/list-filter.ts";
+import { listQueryBoolean, matchesListQuery, parseListQuery } from "../src/lib/list-filter.ts";
 
 const hill: Record<string, string> = { label: "Hill", status: "active", source: "default", devices: "true" };
 const get = (field: string) => hill[field];
@@ -19,4 +19,12 @@ test("matchesListQuery needs every filter to pass", () => {
   assert.equal(matchesListQuery(get, "label=contains:hi&status=is_not:active"), false);
   assert.equal(matchesListQuery(get, "status=is_any_of:renewSoon|termsChanged"), false);
   assert.equal(matchesListQuery(get, "unknown_field=is:x"), true);
+});
+
+test("listQueryBoolean reduces a filter to the bare boolean the API takes", () => {
+  assert.equal(listQueryBoolean("has_postprocessing=is%3Atrue", "has_postprocessing"), true);
+  assert.equal(listQueryBoolean("has_postprocessing=is_not%3Atrue", "has_postprocessing"), false);
+  assert.equal(listQueryBoolean("has_postprocessing=false", "has_postprocessing"), false);
+  assert.equal(listQueryBoolean("has_postprocessing=is_any_of%3Atrue%7Cfalse", "has_postprocessing"), undefined);
+  assert.equal(listQueryBoolean("label=contains%3Ax", "has_postprocessing"), undefined);
 });
