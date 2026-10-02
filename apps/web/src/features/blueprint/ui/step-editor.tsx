@@ -90,7 +90,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
         label={formatMessage({ id: "feature.blueprint.step.key", defaultMessage: "Step name" })}
         hint={formatMessage({
           id: "feature.blueprint.step.keyHint",
-          defaultMessage: "Later steps and device calibrations refer to it. Keep it across versions to keep calibrations.",
+          defaultMessage: "Later steps and device calibrations refer to this step name. Keep it consistent across versions to keep calibrations.",
         })}
       >
         <Input
@@ -104,7 +104,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
       {algorithm?.inputs.length ? (
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-caption-1-medium text-text-secondary">
-            {formatMessage({ id: "feature.blueprint.step.inputs", defaultMessage: "Reads" })}
+            {formatMessage({ id: "feature.blueprint.step.inputs", defaultMessage: "Inputs" })}
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {algorithm.inputs.map((input) => (
@@ -169,7 +169,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
       {algorithm?.outputs.length ? (
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-caption-1-medium text-text-secondary">
-            {formatMessage({ id: "feature.blueprint.step.outputs", defaultMessage: "Writes" })}
+            {formatMessage({ id: "feature.blueprint.step.outputs", defaultMessage: "Outputs" })}
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {algorithm.outputs.map((output) => (

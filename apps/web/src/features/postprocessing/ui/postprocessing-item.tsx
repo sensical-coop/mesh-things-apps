@@ -10,6 +10,7 @@ import { blueprintRepository } from "@/features/blueprint/repository";
 import { calibratedSteps, channelLabel } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { PostprocessingStateChip } from "@/features/postprocessing/ui/postprocessing-state-chip";
+import { StartRefusedDialog } from "@/features/postprocessing/ui/start-refused-dialog";
 import { routes } from "@/router";
 
 export type PostprocessingItemProps = {
@@ -58,8 +59,6 @@ export function PostprocessingItem({
   const byId = new Map(measurements.map((row) => [row.id, row]));
   const calibrates = version.data ? calibratedSteps(version.data, algorithms).length > 0 : false;
   const slots = version.data?.inputs.map((input) => input.slot) ?? Object.keys(postprocessing.input_bindings);
-  // What the API says is missing, unless a refused start just said it again.
-  const problems = refused.length ? refused : postprocessing.problems;
 
   return (
     <li className="flex flex-col gap-3 border-b border-separator-border pb-4 last:border-b-0 last:pb-0">
@@ -97,7 +96,7 @@ export function PostprocessingItem({
       <dl className="grid gap-x-6 gap-y-2 text-body-regular sm:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-0.5">
           <dt className="text-caption-1-medium text-text-secondary">
-            {formatMessage({ id: "feature.postprocessing.item.reads", defaultMessage: "Reads" })}
+            {formatMessage({ id: "feature.postprocessing.item.reads", defaultMessage: "Inputs" })}
           </dt>
           {slots.map((slot) => {
             const bound = postprocessing.input_bindings[slot];
@@ -119,7 +118,7 @@ export function PostprocessingItem({
         </div>
         <div className="flex min-w-0 flex-col gap-0.5">
           <dt className="text-caption-1-medium text-text-secondary">
-            {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Writes" })}
+            {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Outputs" })}
           </dt>
           {postprocessing.outputs.map((output) => (
             <dd key={output.measurement_id} className="min-w-0 break-words font-mono text-text-primary">
@@ -129,9 +128,9 @@ export function PostprocessingItem({
           ))}
         </div>
       </dl>
-      {problems.length ? (
+      {postprocessing.problems.length ? (
         <ul className="flex flex-col gap-0.5">
-          {problems.map((problem) => (
+          {postprocessing.problems.map((problem) => (
             <li key={problem} className="text-caption-1-regular text-text-secondary">
               {problem}
             </li>
@@ -143,7 +142,7 @@ export function PostprocessingItem({
           {formatMessage(
             {
               id: "feature.postprocessing.item.newerVersion",
-              defaultMessage: "Version {number} is available. Move to it from Wiring.",
+              defaultMessage: "Version {number} is available. Move to it from Settings.",
             },
             { number: latestVersion },
           )}
@@ -152,7 +151,7 @@ export function PostprocessingItem({
       <div className="flex flex-wrap gap-2">
         {canEdit ? (
           <Button type="button" size="xs" variant="secondary" onClick={onWire}>
-            {formatMessage({ id: "feature.postprocessing.item.wiring", defaultMessage: "Wiring" })}
+            {formatMessage({ id: "feature.postprocessing.item.wiring", defaultMessage: "Settings" })}
           </Button>
         ) : null}
         {calibrates ? (
@@ -175,6 +174,12 @@ export function PostprocessingItem({
           />
         ) : null}
       </div>
+      <StartRefusedDialog
+        reasons={refused}
+        blueprintName={postprocessing.blueprint_name}
+        onCalibrate={calibrates ? onCalibrate : undefined}
+        onClose={() => setRefused([])}
+      />
     </li>
   );
 }

@@ -157,7 +157,7 @@ export function DeviceSettingsDialog({
               {formatMessage({
                 id: "feature.device.settingsDialog.alarmsHint",
                 defaultMessage:
-                  "Fires when this device stops publishing. Per-channel detectors an be configured independently.",
+                  "Detects when this device stops publishing. Per-channel detectors can be configured independently.",
               })}
             </p>
           </div>

@@ -120,7 +120,7 @@ export function OperatorRequestsPage(): ReactElement {
             {requests.error
               ? formatMessage({
                   id: "page.operatorRequests.panel.error",
-                  defaultMessage: "Requests didn't load. Check your connection to the API and try again.",
+                  defaultMessage: "Requests didn't load. Check your connection and try again.",
                 })
               : formatMessage({
                   id: "page.operatorRequests.panel.description",

@@ -88,7 +88,7 @@ export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsD
               defaultChecked={blueprint.is_public}
               label={formatMessage({
                 id: "feature.blueprint.dialog.public",
-                defaultMessage: "Public: anyone can attach it to their devices",
+                defaultMessage: "Public: anyone can attach this blueprint to their devices",
               })}
             />
           </FieldGroup>

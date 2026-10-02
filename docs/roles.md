@@ -28,6 +28,8 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 | Crear / editar malla o device | `canWriteMesh` | las suyas | las suyas | no | sí |
 | Crear blueprint | `canWriteCatalog` | sí (queda a su nombre) | sí | no | sí |
 | Gestionar fuentes (`/sources`) | `canManageSources` / `visibleSources` | no (403) | solo las suyas; ajenas 404 | no (403) | todas |
+| Gestionar destinos (`/sinks`) | `canManageSinks` / `visibleSinks` | no (403) | solo los suyos; ajenos 404 | no (403) | todos |
+| Asociar una malla o device a un destino | `canWriteMesh` + `archivesFor` (dueño de la malla) | — | en sus mallas | no | en mallas de un operator |
 | Ver `source_id` de una malla | `canSeeMeshSource` | solo en las suyas | solo en las suyas | no | todas (solo lectura en ajenas) |
 | Cambiar `source_id` de una malla | — | — | en las suyas, solo a una fuente propia | no | en las suyas |
 | Ver el ajuste de archivo de un device | `canSeeArchiveSetting` | en sus mallas | en sus mallas | no | todos |
@@ -57,6 +59,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 - `GET/POST /postprocessing-blueprints`: propias + públicas; staff no crea. Postprocesados, calibraciones y backfills de un device: leer con la malla, escribir con `canWriteMesh`.
 - `GET/POST /sources`, `GET/PUT/DELETE /sources/{id}`: solo operator/superuser. 400 con errores por campo estilo DRF (`{ "server": ["Must be host:port."] }`); `#` como topic está bloqueado. Un host `*.invalid` simula que EMQX falla (502, no se guarda nada). `DELETE` con mallas asociadas: 409.
 - Condiciones (la API pone versión y texto, en `en`/`es`): cuenta `GET /terms` (sin sesión; `POST /owners` y `POST /owners/me/terms-acceptance`, no caducan), malla `GET /meshes/terms` (`POST /meshes` sin fuente, `PUT /meshes/{id}` al pasar al broker por defecto, `POST /meshes/{id}/terms-acceptance` solo el dueño) y fuente `GET /sources/terms` (`POST /sources`, `POST /sources/{id}/terms-acceptance` solo quien la creó). `terms_version` actual obligatoria (400 si falta o es antigua), `terms_locale` opcional; cada aceptación se guarda. El owner expone `terms_accepted_version` (cuenta); la malla, `terms_accepted_version`, `terms_expires_at`, `paused_at` (dueño y superuser); la fuente, lo mismo y `status` (`paused` si caducó). El mock usa 365 días de validez (`MOCK_DATA_RETENTION_DAYS`, vacío = sin límite). Con `MOCK_TERMS_ENFORCED=false` imita una instancia lite (`REGISTRY__TERMS_ENFORCED=false`): 404 en todas las rutas de condiciones, `terms_version` opcional e ignorado, nada se registra ni caduca.
+- `GET/POST /sinks`, `GET/PUT/DELETE /sinks/{id}`, `POST /sinks/{id}/credentials`: solo operator/superuser; la contraseña solo sale al crear y al rotar. 400 por campo en `mesh_ids`/`device_ids` si la malla no es editable o no es de un operator, y en `streams` si va vacío. `DELETE` con mallas o devices asociados: 409. `MOCK_SINKS=false`: 404 en todas. Condiciones `GET /sinks/terms` y `POST /sinks/{id}/terms-acceptance` (solo quien lo creó; reanuda un destino en pausa).
 - `GET /meshes?source_id=`, `POST/PUT /meshes` con `source_id`: ver arriba.
 - `GET/POST /owners/me/operator-request`: la última petición propia (404 si no hay) / pedir el rol con `reason`. 409 si ya es operator o ya hay una pendiente.
 - `GET /operator-requests?status=pending|approved|rejected|all`, `GET/PUT /operator-requests/{id}` (`decision`, `note`): solo superuser. Aprobar convierte al owner en operator. 409 si ya se decidió.
@@ -72,7 +75,7 @@ Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/healt
 | `owner@sensical.test` | `mesh-owner-12` | owner | Hill + porch + gateway |
 | `river@sensical.test` | `mesh-owner-12` | owner | River (pública) + river gateway |
 | `admin@sensical.test` | `mesh-admin-12` | superuser | Todo |
-| `operator@sensical.test` | `mesh-operator-12` | operator | Fuente "Meshtastic public EU" + Valley (malla con esa fuente); Brook con tres devices: Brook GW archivado, Buoy archivado unos días y apagado, Weir sin archivar |
+| `operator@sensical.test` | `mesh-operator-12` | operator | Fuente "Meshtastic public EU" + Valley (malla con esa fuente); destinos "Partner dashboard" (Valley + Buoy, un consumidor) y "Old partner" (en pausa); Brook con tres devices: Brook GW archivado, Buoy archivado unos días y apagado, Weir sin archivar |
 | `staff@sensical.test` | `mesh-staff-12` | staff | Lectura, sin PSK |
 
 `river@sensical.test` tiene además una petición de operator pendiente (pestaña *Requests* como superuser) y la malla River con sus condiciones caducadas (banner, chip y renovación en la página de la malla). La fuente del operator caduca en 10 días (“Renovar pronto” en *Sources*).

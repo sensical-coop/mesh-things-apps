@@ -2,6 +2,8 @@ import {
   meshesTermsAcceptanceCreateMutation,
   meshesTermsRetrieveOptions,
   ownersMeTermsAcceptanceCreateMutation,
+  sinksTermsAcceptanceCreateMutation,
+  sinksTermsRetrieveOptions,
   sourcesTermsAcceptanceCreateMutation,
   sourcesTermsRetrieveOptions,
   termsRetrieveOptions,
@@ -17,9 +19,12 @@ export const termsRepository = {
   mesh: meshesTermsRetrieveOptions,
   /** Source terms, accepted per source; operators only. */
   source: sourcesTermsRetrieveOptions,
+  /** Sink terms, accepted per sink; operators only. */
+  sink: sinksTermsRetrieveOptions,
   acceptAccount: ownersMeTermsAcceptanceCreateMutation,
   renewMesh: meshesTermsAcceptanceCreateMutation,
   renewSource: sourcesTermsAcceptanceCreateMutation,
+  renewSink: sinksTermsAcceptanceCreateMutation,
 };
 
 /**

@@ -71,7 +71,7 @@ export function CalibrationDialog({
           ? [
               formatMessage({
                 id: "feature.postprocessing.calibration.removeRefused",
-                defaultMessage: "That would leave a running postprocessing uncalibrated. Stop it first, or record a new calibration.",
+                defaultMessage: "Performing this action would leave a running postprocessing uncalibrated. Stop it first, or record a new calibration.",
               }),
             ]
           : errorMessages(error),
@@ -103,7 +103,7 @@ export function CalibrationDialog({
       description={formatMessage({
         id: "feature.postprocessing.calibration.description",
         defaultMessage:
-          "Constants of this device's own sensor. A new calibration applies from its start date; earlier readings keep the one in force when they were taken.",
+          "Calibrations for this device. A new calibration applies from its start date; earlier readings keep the one in force when they were taken.",
       })}
       onClose={onClose}
     >

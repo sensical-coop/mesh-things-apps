@@ -47,7 +47,7 @@ Una fuente es un broker MQTT remoto + filtro de topic que EMQX trae a esta insta
 **US-14 · Añadir una fuente**
 Como operator, doy de alta un broker remoto para asociarle mallas.
 
-- **Ruta:** `/console/sources`, en el menú “Data” de la cabecera (`components/data-menu.tsx`, con Sources y Archive), oculto para el resto; la URL directa redirige a mallas. Data agrupará también los *sinks* (reenviar datos a otras instancias) cuando existan.
+- **Ruta:** `/console/sources`, en el menú “Data” de la cabecera (`components/data-menu.tsx`, con Sources y Archive), oculto para el resto; la URL directa redirige a mallas. Data agrupa también los *sinks* (US-19).
 - **Paso previo (condiciones):** antes del formulario, `SourceTermsDialog` muestra lo que devuelve `GET /sources/terms` (la API es dueña de la versión y del texto, en el idioma de la consola): una casilla por afirmación, todas obligatorias. El operator es responsable del tratamiento del tráfico traído y Sensical su encargado (RGPD art. 28); aceptar es un contrato con el operator, no consentimiento de los interesados. Sin aceptar todas no se abre el formulario. El `POST` lleva `terms_version`; la API rechaza una versión ausente o antigua y guarda la aceptación. Se acepta en cada alta, nunca al editar. El backend real aún no tiene este endpoint (ver `plans/sources.md` en meshtastic-things).
 - **Campos:** label, server (`host:port`), topic, TLS (por defecto sí), usuario, password (write-only, nunca vuelve), QoS 0/1 (por defecto 1)
 - **Validación:** Zod de `POST /sources` + reglas del backend sin configuración (`validateSourceFields`: `host:port`, sin `$share`/`$SYS`, QoS 0/1). Los 400 del servidor (broker propio, listas de bloqueo) se pintan en su campo.
@@ -72,6 +72,18 @@ Como operator, elijo qué dispositivos de mis mallas se guardan a largo plazo y 
 - **Instancia sin archivo (lite):** el listado responde 404 y la página lo dice. Sin STS, emitir credenciales responde 404 y se ofrece la descarga por ficheros.
 - **Contrato:** `GET /readings/archive/meshes/{id}` (`start`/`stop`), `POST /readings/archive/meshes/{id}/credentials`, `GET /readings/archive/meshes/{id}/partitions/{day}/{hour}` (302). `GET /readings/archive/meshes/{id}/zip` (`start`/`stop`). Mock: `MOCK_ARCHIVE=false` imita lite, `MOCK_ARCHIVE_STS=false` un proveedor sin STS; el enlace firmado apunta a `/mock-s3/…` y descarga un fichero de relleno, no Parquet real.
 
+**US-19 · Destinos (sinks)**
+Como operator, publico lecturas de mis mallas en el bróker de la instancia para que un servicio que elijo se suscriba con sus propias credenciales.
+
+- **Ruta:** `/console/sinks`, en el menú “Data” (Sources · Sinks · Archive), solo operators; la URL directa redirige a mallas. Espeja *Sources*.
+- **Paso previo (condiciones):** `TermsDialog` con `GET /sinks/terms` antes de cada alta, como en fuentes; el operator es responsable de lo que envía el destino y de a quién da las credenciales. El `POST` lleva `terms_version`.
+- **Alta y edición:** `SinkDialog` (grande, dos columnas en escritorio): etiqueta y qué enviar (`decoded`, `derived`, `alarms`, al menos uno; se guardan en ese orden) a la izquierda; a la derecha “Send from”, una sola lista con cada malla que el actor puede editar y sus dispositivos debajo. Marcar la malla la envía entera (todos sus nodos, también los que se unan) y sus dispositivos quedan marcados y deshabilitados (“included with the mesh”); si no, se marcan dispositivos sueltos. Las elecciones sueltas se conservan al marcar y desmarcar la malla, pero no se envían mientras la malla va entera. Al editar, cada lista enviada sustituye la actual; las credenciales no cambian.
+- **Credenciales:** el alta y “Issue a new password” (`POST /sinks/{id}/credentials`, desconecta a los consumidores) devuelven la contraseña una sola vez: `SinkCredentialsDialog` muestra broker, usuario, contraseña y filtro de tema, más un `mosquitto_sub` por TLS con sesión persistente (`-i` + `-c`) listo para copiar.
+- **Lista:** destino, qué envía, desde cuántas mallas/dispositivos, consumidores conectados ahora (`connections`, “—” si el bróker no responde), estado (“Sending” / “Paused” si caducaron sus condiciones) y “Terms” con “Renew” para quien lo creó. Acciones: editar, nueva contraseña, eliminar.
+- **Eliminar:** la API responde 409 con mallas o dispositivos asociados; el diálogo lo dice y ofrece editarlo para desmarcarlos. Eliminar revoca las credenciales.
+- **Instancia sin EMQX:** todas las rutas responden 404 y la página lo dice, sin botón de alta.
+- **Contrato:** `GET/POST /sinks`, `GET/PUT/DELETE /sinks/{id}`, `POST /sinks/{id}/credentials`, `GET /sinks/terms`, `POST /sinks/{id}/terms-acceptance`. Mock: `MOCK_SINKS=false` imita una instancia sin EMQX; `MOCK_SINKS_BROKER` cambia el `broker` que se muestra. Borrar una malla o un dispositivo lo quita de sus destinos; borrar la cuenta borra sus destinos.
+
 **US-16 · Pedir y conceder el rol operator**
 Como member, pido el rol operator explicando para qué; como superuser, lo apruebo o rechazo.
 
@@ -88,7 +100,7 @@ Registrarse no crea mallas, así que las condiciones se aceptan donde empiezan l
 - **Renovar:** el aviso de la página de la malla lleva el botón de renovar para su dueño (`POST /meshes/{id}/terms-acceptance`). Un banner cuenta las mallas propias caducadas.
 - **Fuentes:** columnas “Status” y “Terms”; “Renew” para quien creó la fuente cuando está en pausa, caduca pronto o las condiciones cambiaron.
 - **Borrado de datos:** borrar una malla, o sacarla de su fuente, avisa de que sus lecturas se borran tras el periodo de gracia.
-- **Superuser:** pestaña “Deletions” (`/console/data-deletions`, `GET /data-deletions`): borrados programados por defecto, filtro por estado; los vencidos sin completar salen como “Overdue” con intentos y último error. La cabecera agrupa páginas en menús (`components/nav-menu.tsx`): “Automation” para todos (Alarms, “qué vigilar en cada medida”; Blueprints, “qué calcular a partir de las lecturas entrantes”) y, solo para superusers, “Management” (“Operator requests”, “Scheduled deletions”). Quedan: Meshes · Devices · Automation ▾ · Data ▾ (operators: Sources, Archive; más adelante Sinks) · Management ▾. En Management: el disparador muestra el total pendiente y cada elemento su contador (peticiones pendientes, borrados vencidos), ocultos si son cero. En móvil es un encabezado con sus dos enlaces.
+- **Superuser:** pestaña “Deletions” (`/console/data-deletions`, `GET /data-deletions`): borrados programados por defecto, filtro por estado; los vencidos sin completar salen como “Overdue” con intentos y último error. La cabecera agrupa páginas en menús (`components/nav-menu.tsx`): “Automation” para todos (Alarms, “qué vigilar en cada medida”; Blueprints, “qué calcular a partir de las lecturas entrantes”) y, solo para superusers, “Management” (“Operator requests”, “Scheduled deletions”). Quedan: Meshes · Devices · Automation ▾ · Data ▾ (operators: Sources, Sinks, Archive) · Management ▾. En Management: el disparador muestra el total pendiente y cada elemento su contador (peticiones pendientes, borrados vencidos), ocultos si son cero. En móvil es un encabezado con sus dos enlaces.
 - **Instancia lite** (`REGISTRY__TERMS_ENFORCED=false`): la consola lo detecta sola (`GET /terms` responde 404) y oculta todo lo anterior: sin bloque en el registro, sin paso de condiciones al crear malla o fuente, sin paso de origen, sin columna, chips, avisos, banner ni panel. No envía `terms_version`. Si no sabe (cargando o error de red), actúa como si se aplicaran.
 - **Contrato:** `docs/openapi.yaml`, sincronizado con la API (ver `plans/sources.md`, “Terms per mesh”).
 
@@ -158,6 +170,7 @@ Como owner, elijo canal, rango y agregación y veo la serie.
 | `/console/devices/$deviceUuid` | US-22, US-30, US-31 |
 | `/console/blueprints`, `/console/blueprints/$blueprintId` | US-42 |
 | `/console/sources` | US-14, US-15 (operator) |
+| `/console/sinks` | US-19 (operator) |
 | `/console/archive` | US-18 (operator) |
 | `/console/operator-requests`, `/console/operator-requests/$requestId` | US-16 (superuser) |
 | `/console/data-deletions` | US-17 (superuser) |

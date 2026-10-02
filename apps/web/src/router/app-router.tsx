@@ -9,6 +9,7 @@ import { authResetPasswordPage } from "@/pages/reset-password/route";
 import { authVerifyPendingPage } from "@/pages/verify-pending/route";
 import { authVerifyEmailPage } from "@/pages/verify-email/route";
 import { legalTermsPage } from "@/pages/terms/route";
+import { legalDpaPage } from "@/pages/dpa/route";
 import { alarmListPage } from "@/pages/alarms/list/route";
 import { blueprintDetailPage } from "@/pages/blueprints/detail/route";
 import { blueprintListPage } from "@/pages/blueprints/list/route";
@@ -18,6 +19,7 @@ import { meshDetailPage } from "@/pages/meshes/detail/route";
 import { meshListPage } from "@/pages/meshes/list/route";
 import { profilePage } from "@/pages/profile/route";
 import { sourceListPage } from "@/pages/sources/list/route";
+import { sinkListPage } from "@/pages/sinks/list/route";
 import { archivePage } from "@/pages/archive/route";
 import { operatorRequestDetailPage } from "@/pages/operator-requests/detail/route";
 import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
@@ -67,6 +69,11 @@ const verifyEmailRoute = createRoute({
 const termsRoute = createRoute({
   getParentRoute: () => rootRoute,
   ...legalTermsPage,
+});
+
+const dpaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  ...legalDpaPage,
 });
 
 const consoleRoute = createRoute({
@@ -123,6 +130,11 @@ const sourcesRoute = createRoute({
   ...sourceListPage,
 });
 
+const sinksRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...sinkListPage,
+});
+
 const archiveRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...archivePage,
@@ -157,6 +169,7 @@ const routeTree = rootRoute.addChildren([
   verifyPendingRoute,
   verifyEmailRoute,
   termsRoute,
+  dpaRoute,
   consoleRoute.addChildren([
     consoleIndexRoute,
     meshesRoute,
@@ -167,6 +180,7 @@ const routeTree = rootRoute.addChildren([
     blueprintsRoute,
     blueprintRoute,
     sourcesRoute,
+    sinksRoute,
     archiveRoute,
     operatorRequestsRoute,
     operatorRequestRoute,

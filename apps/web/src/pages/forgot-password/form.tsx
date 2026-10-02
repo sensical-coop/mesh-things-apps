@@ -51,7 +51,7 @@ export function ForgotPasswordForm(): ReactElement {
             <StatusCopy>
               <FormattedMessage
                 id="page.forgotPassword.sent.body"
-                defaultMessage="If an account exists for {email}, we've sent a link to reset the password."
+                defaultMessage="If an account exists for {email}, we'll send a link to reset the password."
                 values={{ email: submittedEmail }}
               />
             </StatusCopy>
@@ -74,7 +74,7 @@ export function ForgotPasswordForm(): ReactElement {
           <p className="text-body-regular text-text-secondary">
             {formatMessage({
               id: "page.forgotPassword.form.subtitle",
-              defaultMessage: "Enter the email on your owner account and we'll send you a reset link.",
+              defaultMessage: "Enter your email and we'll send you a reset link if it exists.",
             })}
           </p>
         </div>

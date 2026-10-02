@@ -89,11 +89,11 @@ export function ArchiveMeshesFrame({ rows, pending, selectedId, onSelect }: Arch
   return (
     <Frame className="shadow-card">
       <FrameHeader>
-        <FrameTitle>{formatMessage({ id: "feature.archive.meshes.title", defaultMessage: "Your meshes" })}</FrameTitle>
+        <FrameTitle>{formatMessage({ id: "feature.archive.meshes.title", defaultMessage: "Meshes" })}</FrameTitle>
         <FrameDescription>
           {formatMessage({
             id: "feature.archive.meshes.description",
-            defaultMessage: "Each mesh keeps its archive under its own path in the bucket, one Parquet file per hour.",
+            defaultMessage: "Each mesh has an archive under its own path in the bucket.",
           })}
         </FrameDescription>
       </FrameHeader>

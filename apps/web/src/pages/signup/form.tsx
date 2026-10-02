@@ -250,13 +250,14 @@ export function SignupForm(): ReactElement {
                     <StatusCopy>
                       {formatMessage({
                         id: "page.signup.form.termsLoadError",
-                        defaultMessage: "The terms didn't load, so the account can't be created yet. Reload the page to try again.",
+                        defaultMessage: "The terms didn't load, and the account can't be created yet. Reload the page to try again.",
                       })}
                     </StatusCopy>
                   ) : null}
                   {terms.data ? (
                     <TermsChecklist
                       terms={terms.data}
+                      kind="account"
                       accepted={accepted}
                       idPrefix="signup-terms"
                       onToggle={(id, checked) =>

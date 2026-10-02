@@ -61,7 +61,7 @@ export function VersionSummary({ version }: VersionSummaryProps): ReactElement {
                 </p>
                 <p className="min-w-0 break-words pl-4 text-caption-1-regular text-text-secondary">
                   {formatMessage(
-                    { id: "feature.blueprint.summary.flow", defaultMessage: "Reads {inputs} → writes {outputs}" },
+                    { id: "feature.blueprint.summary.flow", defaultMessage: "Inputs: {inputs}. Outputs: {outputs}" },
                     {
                       inputs: inputs.map(([, ref]) => refText(ref)).join(", ") || "—",
                       outputs: outputs.map((field) => `derived.${field}`).join(", ") || "—",

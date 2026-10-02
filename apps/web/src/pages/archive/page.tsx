@@ -87,7 +87,7 @@ export function ArchivePage(): ReactElement {
             {formatMessage({
               id: "page.archive.description",
               defaultMessage:
-                "Long-term storage of the devices you choose, as Parquet files you can download or query where they are.",
+                "Long-term storage (S3) for devices of your choice.",
             })}
           </p>
         </div>
@@ -106,7 +106,7 @@ export function ArchivePage(): ReactElement {
             {formatMessage({
               id: "page.archive.unavailable",
               defaultMessage:
-                "This instance doesn't run the archive. Ask whoever runs it to enable the full profile with object storage.",
+                "This instance doesn't run the archive. Ask the administrator to enable the full profile with object storage.",
             })}
           </StatusCopy>
         ) : (

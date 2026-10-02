@@ -3,6 +3,8 @@ import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { LatestReading } from "@mtt/domain/readings/Readings";
 import type { Source } from "@mtt/domain/source/Source";
+import type { Sink } from "@mtt/domain/sink/Sink";
+import { SINKS_BROKER, sinkTopicFilter, sinkUsername } from "./features/sink/repository";
 import type { OperatorRequestRow } from "./features/operator-request/repository";
 import type { DataDeletionRow } from "./features/data-deletion/repository";
 import { latestVersion, type BlueprintRow, type BlueprintVersionRow } from "./features/blueprint/repository";
@@ -56,6 +58,32 @@ export function sourceReadJson(source: Source, status = "connected") {
   // An `offline.` host stands in for a remote broker the bridge can't reach.
   const bridge = source.server.startsWith("offline.") ? "disconnected" : status;
   return { ...sourceJson(source), status: source.pausedAt ? "paused" : bridge };
+}
+
+/** As SinkReadSerializer: never the password. `connections` is null when the broker can't be asked. */
+export function sinkReadJson(sink: Sink, connections: number | null) {
+  return {
+    id: sink.id,
+    label: sink.label,
+    streams: sink.streams,
+    mesh_ids: sink.meshIds,
+    device_ids: sink.deviceIds,
+    broker: SINKS_BROKER,
+    username: sinkUsername(sink.id),
+    topic_filter: sinkTopicFilter(sink.id),
+    connections,
+    paused_at: sink.pausedAt,
+    terms_accepted_version: sink.termsAcceptedVersion,
+    terms_expires_at: sink.termsExpiresAt,
+    created_by_id: sink.createdById,
+    created_at: sink.createdAt,
+    updated_at: sink.updatedAt,
+  };
+}
+
+/** Creating a sink or rotating its credentials: the one response that carries the password. */
+export function sinkCredentialsJson(sink: Sink, connections: number | null) {
+  return { ...sinkReadJson(sink, connections), password: sink.password };
 }
 
 /** `archive`: whether the viewer may see the archive setting, the mesh's owner or a superuser. */
