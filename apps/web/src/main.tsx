@@ -7,7 +7,6 @@ import { TooltipProvider } from "@mtt/ui/components/ui/tooltip";
 import { AppProviders } from "./app-providers";
 import { Layout } from "./layout";
 import { authRepository } from "@/features/auth/repository";
-import { getPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { router } from "@/router/app-router";
 import { API_URL } from "@/lib/api-url";
 import "./styles.css";
@@ -17,11 +16,6 @@ client.setConfig({
   credentials: "include",
 });
 client.interceptors.request.use(attachCsrfHeader);
-client.interceptors.request.use((request) => {
-  const key = getPendingOwnerKey();
-  if (key) request.headers.set("Authorization", `Bearer ${key}`);
-  return request;
-});
 client.interceptors.error.use(attachErrorStatus);
 // csrftoken cookie for a returning user with valid session
 void authRepository.csrf().catch(() => {});

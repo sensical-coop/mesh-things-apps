@@ -10,7 +10,6 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
 
 const MOCK_API_DISABLED = import.meta.env.VITE_DISABLE_MOCK_API === "true";
 
@@ -23,7 +22,6 @@ export function LoginForm(): ReactElement {
   const login = useMutation({
     ...authRepository.login(),
     onSuccess: async () => {
-      clearPendingOwnerKey();
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
       await navigate({ to: routes.meshes });
     },

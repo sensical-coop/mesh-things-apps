@@ -14,7 +14,6 @@ import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
-import { setPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { allStatementsAccepted, termsLocale } from "@/features/terms/model";
 import { accountTermsQuery } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
@@ -106,12 +105,9 @@ export function SignupForm(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const signup = useMutation({
     ...authRepository.signup(),
-    onSuccess: async (data) => {
-      // A freshly-created owner has no session cookie yet (the account is
-      // inactive until the email is verified, and login is refused until
-      // then), so the one-time api_key is used as a Bearer token to
-      // authenticate the verify-pending page in the meantime.
-      setPendingOwnerKey(data.api_key);
+    // Signup signs the new owner in with a session cookie; the api_key in the
+    // response is for scripts and is not kept.
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
       await navigate({ to: routes.verifyPending });
     },

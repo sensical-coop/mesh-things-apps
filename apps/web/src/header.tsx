@@ -1,5 +1,4 @@
 import { authRepository } from "@/features/auth/repository";
-import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils";
 import { getTheme, toggleTheme } from "@mtt/ui/theme";
@@ -82,7 +81,6 @@ export function Header(): ReactElement {
   const logout = useMutation({
     ...authRepository.logout(),
     onSuccess: async () => {
-      clearPendingOwnerKey();
       setMenuOpen(false);
       queryClient.clear();
       await navigate({ to: routes.login });
