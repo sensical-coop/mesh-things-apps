@@ -30,7 +30,6 @@ export function OperatorRolePanel(): ReactElement | null {
   const queryClient = useQueryClient();
   const { me, isOperator } = useMe();
   const canRequest = canRequestOperator(me);
-  // 404 means "never asked", so don't retry it.
   // While pending, check back now and then, so an approval shows up without a reload.
   const mine = useQuery({
     ...operatorRequestRepository.mine(),
@@ -79,7 +78,7 @@ export function OperatorRolePanel(): ReactElement | null {
   }
 
   const request = mine.data;
-  const neverAsked = mine.error ? readApiError(mine.error).status === 404 : false;
+  const neverAsked = mine.data === null;
   const canAskAgain = neverAsked || request?.status === "rejected";
   const createStatus = create.error ? readApiError(create.error).status : undefined;
 
@@ -136,7 +135,7 @@ export function OperatorRolePanel(): ReactElement | null {
                 ) : null}
               </div>
             ) : null}
-            {mine.error && !neverAsked ? (
+            {mine.error ? (
               <StatusCopy>
                 {formatMessage({
                   id: "feature.operatorRequest.panel.loadError",
