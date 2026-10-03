@@ -705,6 +705,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.json({ detail: "Your email address has been verified." });
   });
 
+  app.post("/owners/me/rotate-key", (c) => {
+    const actor = c.get("actor");
+    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${newId()}`, ownerTerms(actor.id)));
+  });
+
   app.post("/owners/me/resend-verification", (c) => {
     const actor = c.get("actor");
     const info = db.verifications.get(actor.id) ?? NO_VERIFICATION;

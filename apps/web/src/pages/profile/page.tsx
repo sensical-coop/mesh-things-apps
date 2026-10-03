@@ -23,6 +23,7 @@ import { OperatorRolePanel } from "@/features/operator-request/ui/operator-role-
 import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
+import { ApiKeyPanel } from "@/features/auth/ui/api-key-panel";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
 import { NotificationsPanel } from "@/features/auth/ui/notifications-panel";
 import { routes } from "@/router";
@@ -126,6 +127,7 @@ export function ProfilePage(): ReactElement {
             )}
           </FramePanel>
         </Frame>
+        <ApiKeyPanel />
         <AccountTermsPanel />
         <OperatorRolePanel />
         <NotificationsPanel />
