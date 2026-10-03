@@ -1414,5 +1414,8 @@
   "feature.archive.downloadAll.zip": "Download as one zip file",
   "feature.archive.downloadAll.zipButton": "Download ZIP",
   "feature.archive.downloadAll.zipHint": "Download includes a folder per day. Each file is named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet.",
-  "feature.archive.files.commandLine": "Command line"
+  "feature.archive.files.commandLine": "Command line",
+
+  "components.mapUnsupported.title": "This map needs WebGL2.",
+  "components.mapUnsupported.hint": "Turn on hardware acceleration or try another browser."
 }

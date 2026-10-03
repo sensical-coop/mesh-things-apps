@@ -56,6 +56,7 @@ import { termsLocale } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
+import { MapUnsupported } from "@/components/map-unsupported";
 
 const col = legacyCreateColumnHelper<DeviceRead>();
 
@@ -352,6 +353,7 @@ export function MeshDetailPage(): ReactElement {
                 <Map
                   center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
                   zoom={12}
+                  unsupported={<MapUnsupported />}
                   className="h-full min-h-80 w-full"
                 >
                   <MapControls />

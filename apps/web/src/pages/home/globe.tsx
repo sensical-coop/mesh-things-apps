@@ -3,6 +3,7 @@ import { useMemo, type ReactElement } from "react";
 import { Map, MapArc, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { DeviceDot } from "@/features/device/ui/device-dot";
 import { landingHops, landingNodes } from "./mesh";
+import { MapUnsupported } from "@/components/map-unsupported";
 
 const OPEN_FREE_MAP = {
   light: "https://tiles.openfreemap.org/styles/positron",
@@ -47,6 +48,7 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
         zoom={4.2}
         pitch={0}
         bearing={0}
+        unsupported={<MapUnsupported />}
       >
         <MapArc
           data={arcs}

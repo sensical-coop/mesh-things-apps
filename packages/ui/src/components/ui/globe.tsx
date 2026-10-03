@@ -71,22 +71,29 @@ export function Globe({
     window.addEventListener("resize", onResize);
     onResize();
 
-    const globe = createGlobe(canvas, {
-      ...config,
-      width: widthRef.current * 2,
-      height: widthRef.current * 2,
-      onRender: (state) => {
-        if (!pointerInteracting.current && !reduced) phiRef.current += 0.005;
-        state.phi = phiRef.current + rs.get();
-        state.width = widthRef.current * 2;
-        state.height = widthRef.current * 2;
-        config.onRender(state);
-      },
-    });
+    // cobe assumes a WebGL context and throws on `null` (hardware acceleration
+    // off, blocked GPU). The globe is decoration: leave the canvas hidden.
+    let globe: ReturnType<typeof createGlobe> | null = null;
+    try {
+      globe = createGlobe(canvas, {
+        ...config,
+        width: widthRef.current * 2,
+        height: widthRef.current * 2,
+        onRender: (state) => {
+          if (!pointerInteracting.current && !reduced) phiRef.current += 0.005;
+          state.phi = phiRef.current + rs.get();
+          state.width = widthRef.current * 2;
+          state.height = widthRef.current * 2;
+          config.onRender(state);
+        },
+      });
+      canvas.style.opacity = "1";
+    } catch (error) {
+      console.warn("Globe needs WebGL, which this browser can't start.", error);
+    }
 
-    canvas.style.opacity = "1";
     return () => {
-      globe.destroy();
+      globe?.destroy();
       window.removeEventListener("resize", onResize);
     };
   }, [rs, config]);
