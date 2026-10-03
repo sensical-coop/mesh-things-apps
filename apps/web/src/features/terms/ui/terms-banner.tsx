@@ -28,6 +28,8 @@ export function TermsBanner(): ReactElement | null {
   const meshTerms = useQuery({
     ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
     enabled: me !== undefined && enforced,
+    // The current version changes only when the terms are republished.
+    staleTime: 5 * 60_000,
   });
   const now = new Date();
   const lapsed = (enforced ? (owned.data ?? []) : []).filter(

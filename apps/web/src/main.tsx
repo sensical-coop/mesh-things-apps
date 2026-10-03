@@ -21,6 +21,9 @@ client.interceptors.error.use(attachErrorStatus);
 void authRepository.csrf().catch(() => {});
 
 const queryClient = new QueryClient({
+  // Data a page just loaded counts as fresh for a while, so moving between pages, or
+  // back to the tab, doesn't refetch it. Mutations still invalidate what they change.
+  defaultOptions: { queries: { staleTime: 30_000 } },
   queryCache: new QueryCache({
     onError: (error, query) => console.error(`Query failed: ${query.queryKey.join("/")}`, error),
   }),
