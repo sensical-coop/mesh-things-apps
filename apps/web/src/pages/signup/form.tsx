@@ -80,12 +80,14 @@ export function SignupForm(): ReactElement {
   const termsOff = useTermsEnforced() === false;
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
   // The terms stay folded until the email and password are in, then open once by themselves.
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({ email: "", password: "", confirm: "" });
   const [termsOpen, setTermsOpen] = useState(false);
   const autoOpened = useRef(false);
   const credentialsReady = credentials.email.trim() !== "" && credentials.password !== "";
+  const passwordMismatch = credentials.confirm !== "" && credentials.confirm !== credentials.password;
+  const mismatchMessage = formatMessage({ id: "page.signup.form.error.mismatch", defaultMessage: "Passwords don't match." });
 
-  function onCredential(field: "email" | "password", value: string) {
+  function onCredential(field: "email" | "password" | "confirm", value: string) {
     const next = { ...credentials, [field]: value };
     setCredentials(next);
     if (!autoOpened.current && next.email.trim() !== "" && next.password !== "") {
@@ -125,6 +127,10 @@ export function SignupForm(): ReactElement {
           defaultMessage: "Accept each statement to create your account.",
         }),
       );
+      return;
+    }
+    if (form.get("password") !== form.get("confirm_password")) {
+      setError(mismatchMessage);
       return;
     }
     await authRepository.csrf();
@@ -195,6 +201,22 @@ export function SignupForm(): ReactElement {
                 minLength={8}
                 autoComplete="new-password"
                 onChange={(event) => onCredential("password", event.currentTarget.value)}
+              />
+            </FormField>
+            <FormField
+              id="signup-confirm-password"
+              label={formatMessage({ id: "page.signup.form.confirmPassword", defaultMessage: "Confirm password" })}
+              error={passwordMismatch ? mismatchMessage : undefined}
+            >
+              <Input
+                id="signup-confirm-password"
+                name="confirm_password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                aria-invalid={passwordMismatch || undefined}
+                onChange={(event) => onCredential("confirm", event.currentTarget.value)}
               />
             </FormField>
           </FieldGroup>

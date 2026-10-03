@@ -511,6 +511,8 @@
   "page.signup.form.name": "Nombre",
   "page.signup.form.email": "Correo electrónico",
   "page.signup.form.password": "Contraseña",
+  "page.signup.form.confirmPassword": "Confirma la contraseña",
+  "page.signup.form.error.mismatch": "Las contraseñas no coinciden.",
   "page.signup.form.error.throttled": "{minutes,plural,one{Demasiados intentos. Inténtalo de nuevo en # minuto.} other{Demasiados intentos. Inténtalo de nuevo en # minutos.}}",
   "page.signup.form.error.throttledGeneric": "Demasiados intentos. Inténtalo de nuevo más tarde.",
   "page.signup.form.error.duplicateEmail": "Ese correo ya está registrado. Prueba a iniciar sesión.",
