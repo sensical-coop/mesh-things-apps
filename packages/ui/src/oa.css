@@ -160,22 +160,22 @@
 
 /* App plates: continuous curvature without clipping box-shadow. */
 .oa-squircle {
-  border-radius: 26px;
+  border-radius: 20px;
   corner-shape: squircle;
 }
 
 .oa-squircle-inset {
-  border-radius: 22px;
+  border-radius: 16px;
   corner-shape: squircle;
 }
 
 @media (min-width: 640px) {
   .oa-squircle {
-    border-radius: 32px;
+    border-radius: 24px;
   }
 
   .oa-squircle-inset {
-    border-radius: 26px;
+    border-radius: 20px;
   }
 }
 
