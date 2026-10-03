@@ -316,6 +316,7 @@ export type DeviceRead = {
     readonly reading_interval_seconds: number | null;
     readonly publish_interval_seconds: number | null;
     readonly last_seen: string | null;
+    readonly discovered_at: string | null;
     /**
      * Telemetry variants this device has been seen reporting.
      */
@@ -449,6 +450,10 @@ export type Mesh = {
      * Set while its mesh terms have lapsed; the mesh stores no new data.
      */
     readonly paused_at?: string | null;
+    /**
+     * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
+     */
+    discover_gateways?: boolean;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -467,10 +472,14 @@ export type MeshCreate = {
      * Source the mesh's traffic is bridged from. Null for this instance's own broker.
      */
     source_id?: string | null;
+    /**
+     * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
+     */
+    discover_gateways?: boolean;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -484,6 +493,10 @@ export type MeshUpdate = {
      * Source the mesh's traffic is bridged from. Null for this instance's own broker.
      */
     source_id?: string | null;
+    /**
+     * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
+     */
+    discover_gateways?: boolean;
 };
 
 export type MetricsResponse = {
@@ -1248,6 +1261,10 @@ export type MeshWritable = {
      * Source the mesh's traffic is bridged from. Null for this instance's own broker.
      */
     source_id?: string | null;
+    /**
+     * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
+     */
+    discover_gateways?: boolean;
 };
 
 /**
@@ -1272,10 +1289,14 @@ export type MeshCreateWritable = {
      * Source the mesh's traffic is bridged from. Null for this instance's own broker.
      */
     source_id?: string | null;
+    /**
+     * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
+     */
+    discover_gateways?: boolean;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -1293,6 +1314,10 @@ export type MeshUpdateWritable = {
      * Source the mesh's traffic is bridged from. Null for this instance's own broker.
      */
     source_id?: string | null;
+    /**
+     * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
+     */
+    discover_gateways?: boolean;
     /**
      * Version of the mesh terms accepted, from /meshes/terms. Required when the mesh uses the default broker (no source) and has no current acceptance; ignored otherwise.
      */

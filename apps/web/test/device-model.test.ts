@@ -31,6 +31,7 @@ const device = {
   publish_interval_seconds: 300,
   telemetry_variant_ids: [],
   last_seen: null,
+  discovered_at: null,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
 } satisfies DeviceRead;

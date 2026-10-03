@@ -20,6 +20,7 @@ export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includ
     label: mesh.label,
     owner_id: mesh.ownerId,
     is_public: mesh.isPublic,
+    discover_gateways: mesh.discoverGateways,
     created_at: mesh.createdAt,
     updated_at: mesh.updatedAt,
   };
@@ -119,6 +120,8 @@ export function deviceJson(
         }
       : {}),
     last_seen: device.lastSeen,
+    // The mock registers every gateway by hand.
+    discovered_at: null,
     created_at: device.createdAt,
     updated_at: device.updatedAt,
   };
