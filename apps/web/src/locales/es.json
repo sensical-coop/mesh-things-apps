@@ -474,6 +474,8 @@
   "page.login.form.signingIn": "Iniciando sesión",
   "page.login.form.signIn": "Iniciar sesión",
   "page.login.form.error": "Esas credenciales no fueron aceptadas. Comprueba el correo y la contraseña e inténtalo de nuevo.",
+  "page.login.form.error.throttled": "Demasiados intentos de inicio de sesión. Espera un minuto e inténtalo de nuevo.",
+  "page.login.form.error.generic": "No hemos podido iniciar tu sesión. Inténtalo de nuevo en un momento.",
   "page.login.form.mockAccounts": "Cuentas de prueba: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (todas las mallas), staff@sensical.test (solo lectura, sin PSK). Contraseña mesh-owner-12, excepto admin mesh-admin-12 y staff mesh-staff-12.",
   "page.login.form.noAccount": "¿No tienes cuenta? <link>Regístrate</link>.",
   "page.login.form.forgotPassword": "¿Olvidaste tu contraseña?",
