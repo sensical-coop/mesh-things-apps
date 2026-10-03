@@ -10,7 +10,7 @@ import { useIntl } from "react-intl";
 import { BrandMark, pageWidth } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { AutomationMenu } from "@/components/automation-menu";
 import { DataMenu } from "@/components/data-menu";
 import { ManagementMenu } from "@/components/management-menu";
@@ -32,7 +32,7 @@ function NavLinks({
   stacked?: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();
-  const { isOperator, isSuperuser } = useOwnerDirectory();
+  const { isOperator, isSuperuser } = useMe();
   const linkClass = stacked ? cx(headerLinkClass, "block w-full px-3 py-2") : headerLinkClass;
   const activeClass = stacked
     ? cx(headerLinkClass, "block w-full bg-background-secondary-default px-3 py-2 text-text-primary")

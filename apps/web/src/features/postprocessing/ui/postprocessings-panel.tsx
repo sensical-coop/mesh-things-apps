@@ -7,7 +7,7 @@ import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { canAttachBlueprint } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
@@ -32,7 +32,7 @@ type Open =
 /** The blueprints attached to a device. */
 export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, canEdit }: PostprocessingsPanelProps): ReactElement | null {
   const { formatMessage } = useIntl();
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   const attached = useQuery(postprocessingRepository.list({ path: { device_uuid: deviceUuid } }));
   const blueprints = useQuery(blueprintRepository.list());
   const algorithms = useQuery(blueprintRepository.algorithms());

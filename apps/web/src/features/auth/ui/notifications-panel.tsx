@@ -11,7 +11,7 @@ import { SaveButton } from "@/components/form/save-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
@@ -32,7 +32,7 @@ const sectionTitleClass = "text-body-medium text-text-primary";
 export function NotificationsPanel(): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
-  const { me, isOperator } = useOwnerDirectory();
+  const { me, isOperator } = useMe();
   const [error, setError] = useState<string | null>(null);
   const update = useMutation({
     ...authRepository.update(),

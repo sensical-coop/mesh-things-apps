@@ -17,7 +17,7 @@ import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { isChartableMeasurement } from "@/lib/measurement";
@@ -36,7 +36,7 @@ export function AlarmsPage(): ReactElement {
     () => new globalThis.Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)])),
     [meshes.data],
   );
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   // Alarms are configuration, so devices on public meshes don't belong here.
   const editableDevices = useMemo(() => {
     const editableMeshIds = new Set((meshes.data ?? []).filter((m) => canEditMesh(m, me)).map((m) => m.id));

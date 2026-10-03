@@ -12,7 +12,7 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { issueErrors, readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
 import { meshTitle } from "@/features/mesh/model";
@@ -47,7 +47,7 @@ function toggled(set: ReadonlySet<string>, id: string, on: boolean): Set<string>
 export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, onSaved }: SinkDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   const editing = sink !== undefined;
   // A self-hosted instance asks for no terms; unknown counts as enforced.
   const termsEnforced = useTermsEnforced() !== false;

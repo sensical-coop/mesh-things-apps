@@ -11,7 +11,7 @@ import { useIntl } from "react-intl";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
@@ -35,7 +35,7 @@ const col = legacyCreateColumnHelper<SourceRow>();
 export function SourcesPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();
-  const { me, meId, isOperator } = useOwnerDirectory();
+  const { me, meId, isOperator } = useMe();
   // A self-hosted instance asks for no terms: no terms step, column or renewals.
   // Flows treat "unknown" as enforced; the version lookup waits for a definite yes.
   const enforced = useTermsEnforced();

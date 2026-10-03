@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { meshTermsStanding } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { termsLocale } from "@/features/terms/model";
@@ -17,7 +17,7 @@ import { RouterButtonLink } from "@/components/router-button-link";
  */
 export function TermsBanner(): ReactElement | null {
   const { formatMessage, locale } = useIntl();
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   const account = useAccountTermsStanding();
   // Nothing lapses on an instance that asks for no terms.
   const enforced = useTermsEnforced() === true;

@@ -10,7 +10,7 @@ import { FormField } from "@/components/form/form-field";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { canRequestOperator } from "@/features/operator-request/model";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
@@ -28,7 +28,7 @@ export function OperatorRolePanel(): ReactElement | null {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
   const queryClient = useQueryClient();
-  const { me, isOperator } = useOwnerDirectory();
+  const { me, isOperator } = useMe();
   const canRequest = canRequestOperator(me);
   // 404 means "never asked", so don't retry it.
   // While pending, check back now and then, so an approval shows up without a reload.
