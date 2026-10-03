@@ -34,7 +34,15 @@ export function EditMeshDialog({
 }: {
   mesh: Pick<
     Mesh,
-    "id" | "label" | "channel_id" | "is_public" | "owner_id" | "source_id" | "terms_accepted_version" | "terms_expires_at"
+    | "id"
+    | "label"
+    | "channel_id"
+    | "is_public"
+    | "owner_id"
+    | "source_id"
+    | "discover_gateways"
+    | "terms_accepted_version"
+    | "terms_expires_at"
   >;
   open: boolean;
   onClose: () => void;
@@ -112,12 +120,16 @@ export function EditMeshDialog({
       is_public: boolean;
       psk_b64?: string;
       source_id?: string | null;
+      discover_gateways?: boolean;
     } = {
       label: label === "" ? null : label,
       channel_id: channelId,
       is_public: form.get("is_public") === "on",
     };
     if (psk !== "") body.psk_b64 = psk;
+    // Sent only on a change, so saving other fields isn't refused over a default PSK.
+    const discover = form.get("discover_gateways") === "on";
+    if (discover !== (mesh.discover_gateways ?? false)) body.discover_gateways = discover;
     if (canPickSource) {
       const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
       const sourceId = picked === DEFAULT_BROKER ? null : picked;
@@ -195,6 +207,24 @@ export function EditMeshDialog({
                 id: "feature.mesh.editDialog.publicHint",
                 defaultMessage:
                   "Anyone signed in can view its devices and readings. The PSK is private, and only you can change the mesh.",
+              })}
+            </p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <FormCheckbox
+              id="mesh-edit-discover-gateways"
+              name="discover_gateways"
+              label={formatMessage({
+                id: "feature.mesh.editDialog.discoverGateways",
+                defaultMessage: "Add gateways automatically",
+              })}
+              defaultChecked={mesh.discover_gateways ?? false}
+            />
+            <p className="pl-7 text-caption-1-regular text-text-tertiary">
+              {formatMessage({
+                id: "feature.mesh.editDialog.discoverGatewaysHint",
+                defaultMessage:
+                  "Registers any gateway whose packets decode with this channel and PSK. Switching it off keeps the gateways already added. Only an operator can use it with a default or blank PSK.",
               })}
             </p>
           </div>

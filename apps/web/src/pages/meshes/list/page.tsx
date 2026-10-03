@@ -17,6 +17,7 @@ import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
+import { FormCheckbox } from "@/components/form/form-checkbox";
 import { FormField } from "@/components/form/form-field";
 import { FormSelect } from "@/components/form/form-select";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
@@ -499,6 +500,7 @@ function CreateMeshDialog({
         channel_id: String(form.get("channel_id") ?? "").trim(),
         psk_b64: String(form.get("psk_b64") ?? ""),
         label: label === "" ? null : label,
+        discover_gateways: form.get("discover_gateways") === "on",
         ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
         // Required on the default broker; a mesh on a source is covered by the source's terms.
         ...(picked === DEFAULT_BROKER && termsAcceptance
@@ -563,6 +565,23 @@ function CreateMeshDialog({
           >
             <Input id="mesh-psk" name="psk_b64" type="password" required autoComplete="new-password" />
           </FormField>
+          <div className="flex flex-col gap-1">
+            <FormCheckbox
+              id="mesh-discover-gateways"
+              name="discover_gateways"
+              label={formatMessage({
+                id: "page.meshes.list.createDialog.discoverGateways",
+                defaultMessage: "Add gateways automatically",
+              })}
+            />
+            <p className="pl-7 text-caption-1-regular text-text-tertiary">
+              {formatMessage({
+                id: "page.meshes.list.createDialog.discoverGatewaysHint",
+                defaultMessage:
+                  "Registers any gateway whose packets decode with this channel and PSK, so you don't add them one by one. Only an operator can use it with a default or blank PSK.",
+              })}
+            </p>
+          </div>
           {isOperator ? (
             <FormField
               id="mesh-source"
