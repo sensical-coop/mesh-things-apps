@@ -8,7 +8,7 @@ import { Link, Navigate } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import {
   OPERATOR_REQUEST_STATUSES,
   canDecideOperatorRequests,
@@ -29,7 +29,7 @@ const col = legacyCreateColumnHelper<OperatorRequestAdmin>();
 export function OperatorRequestsPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   const allowed = canDecideOperatorRequests(me);
   const [status, setStatus] = useState<OperatorRequestStatusFilter>("pending");
   const requests = useQuery({ ...operatorRequestRepository.list({ query: { status } }), enabled: allowed });

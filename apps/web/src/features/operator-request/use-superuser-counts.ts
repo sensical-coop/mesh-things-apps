@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { isOverdue } from "@/features/data-deletion/model";
 import { dataDeletionRepository } from "@/features/data-deletion/repository";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
@@ -9,7 +9,7 @@ import { operatorRequestRepository } from "@/features/operator-request/repositor
  * scheduled deletions past their date. Zero for everyone else, who never fetch them.
  */
 export function useSuperuserCounts(): { pendingRequests: number; overdueDeletions: number } {
-  const { isSuperuser } = useOwnerDirectory();
+  const { isSuperuser } = useMe();
   const requests = useQuery({
     ...operatorRequestRepository.list({ query: { status: "pending" } }),
     enabled: isSuperuser,

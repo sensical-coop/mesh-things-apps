@@ -11,7 +11,7 @@ import { useIntl } from "react-intl";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 import { DeleteSinkDialog } from "@/features/sink/ui/delete-sink-dialog";
@@ -35,7 +35,7 @@ const col = legacyCreateColumnHelper<SinkRead>();
 export function SinksPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();
-  const { me, meId, isOperator } = useOwnerDirectory();
+  const { me, meId, isOperator } = useMe();
   // A self-hosted instance asks for no terms: no terms step, column or renewals.
   const enforced = useTermsEnforced();
   const termsEnforced = enforced !== false;

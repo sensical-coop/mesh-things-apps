@@ -37,7 +37,7 @@ export function RotateApiKeyDialog({ open, onClose }: { open: boolean; onClose: 
           : formatMessage({
               id: "feature.auth.rotateKey.description",
               defaultMessage:
-                "Any service using your current key will stop working until you update it with the key below.",
+                "Any service using your current key will stop working until you update it with the new key.",
             })
       }
       onClose={close}

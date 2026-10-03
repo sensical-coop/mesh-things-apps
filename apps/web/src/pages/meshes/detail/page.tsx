@@ -1,6 +1,6 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { zDevicesCreateData } from "@mtt/contracts/zod";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -36,7 +36,7 @@ import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels"
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { matchesListQuery } from "@/lib/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
-import { href, routes } from "@/router";
+import { routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
@@ -57,6 +57,7 @@ import { termsRepository } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
 import { MapUnsupported } from "@/components/map-unsupported";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 const col = legacyCreateColumnHelper<DeviceRead>();
 
@@ -214,9 +215,9 @@ export function MeshDetailPage(): ReactElement {
         header: formatMessage({ id: "page.meshes.detail.devices.columns.actions", defaultMessage: "Actions" }),
         cell: ({ row }) => (
           <div className="flex justify-start gap-2">
-            <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
+            <RouterButtonLink to={routes.device} params={{ deviceUuid: row.original.uuid }} size="xs" variant="secondary">
               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
-            </ButtonLink>
+            </RouterButtonLink>
             {canEdit ? (
               <SettingsButton
                 label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}

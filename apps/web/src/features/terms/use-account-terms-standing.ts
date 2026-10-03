@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { termsLocale, termsStanding, type TermsStanding } from "@/features/terms/model";
 import { accountTermsQuery } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
@@ -11,7 +11,7 @@ import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
  */
 export function useAccountTermsStanding(): TermsStanding | undefined {
   const { locale } = useIntl();
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   const enforced = useTermsEnforced();
   const current = useQuery(accountTermsQuery(termsLocale(locale)));
   if (!me || enforced !== true) return undefined;

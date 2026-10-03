@@ -25,7 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/
 import { useFormatters, type Formatters } from "@/hooks/use-formatters";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { readingsRepository } from "@/features/readings/repository";
 import { routes } from "@/router";
 import { Kpi } from "@/components/kpi/kpi";
@@ -86,7 +86,7 @@ export function DeviceDetailPage(): ReactElement {
     () => new globalThis.Map((catalog.data ?? []).map((m: MeasurementTypeRead) => [m.channel, m])),
     [catalog.data],
   );
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   // A device on someone else's public mesh is read-only: no settings, no alarms.
   // False until the mesh loads, so write chrome never flashes for a viewer.
   const canEdit = mesh.data != null && canEditMesh(mesh.data, me);

@@ -1,8 +1,7 @@
-import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { meshTermsStanding } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { termsLocale } from "@/features/terms/model";
@@ -10,6 +9,7 @@ import { termsRepository } from "@/features/terms/repository";
 import { useAccountTermsStanding } from "@/features/terms/use-account-terms-standing";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { routes } from "@/router";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 /**
  * Across the console: meshes of the owner's that stopped storing data because
@@ -17,7 +17,7 @@ import { routes } from "@/router";
  */
 export function TermsBanner(): ReactElement | null {
   const { formatMessage, locale } = useIntl();
-  const { me } = useOwnerDirectory();
+  const { me } = useMe();
   const account = useAccountTermsStanding();
   // Nothing lapses on an instance that asks for no terms.
   const enforced = useTermsEnforced() === true;
@@ -28,6 +28,8 @@ export function TermsBanner(): ReactElement | null {
   const meshTerms = useQuery({
     ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
     enabled: me !== undefined && enforced,
+    // The current version changes only when the terms are republished.
+    staleTime: 5 * 60_000,
   });
   const now = new Date();
   const lapsed = (enforced ? (owned.data ?? []) : []).filter(
@@ -65,9 +67,9 @@ export function TermsBanner(): ReactElement | null {
       className="oa-squircle mb-6 flex flex-wrap items-center justify-between gap-3 bg-background-secondary-default px-4 py-3 shadow-card"
     >
       <p className="text-body-regular text-text-primary">{shown.message}</p>
-      <ButtonLink href={shown.href} size="small">
+      <RouterButtonLink to={shown.href} size="small">
         {shown.action}
-      </ButtonLink>
+      </RouterButtonLink>
     </div>
   );
 }

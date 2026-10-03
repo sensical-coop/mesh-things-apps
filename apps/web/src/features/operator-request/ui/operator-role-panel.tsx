@@ -1,5 +1,5 @@
 import { zOwnersMeOperatorRequestCreateData } from "@mtt/contracts/zod";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
@@ -10,7 +10,7 @@ import { FormField } from "@/components/form/form-field";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { canRequestOperator } from "@/features/operator-request/model";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
@@ -18,6 +18,7 @@ import { useFormatters } from "@/hooks/use-formatters";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { routes } from "@/router";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 /**
  * The profile's "Operator role" panel: operators get a way to their sources,
@@ -27,9 +28,8 @@ export function OperatorRolePanel(): ReactElement | null {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
   const queryClient = useQueryClient();
-  const { me, isOperator } = useOwnerDirectory();
+  const { me, isOperator } = useMe();
   const canRequest = canRequestOperator(me);
-  // 404 means "never asked", so don't retry it.
   // While pending, check back now and then, so an approval shows up without a reload.
   const mine = useQuery({
     ...operatorRequestRepository.mine(),
@@ -78,7 +78,7 @@ export function OperatorRolePanel(): ReactElement | null {
   }
 
   const request = mine.data;
-  const neverAsked = mine.error ? readApiError(mine.error).status === 404 : false;
+  const neverAsked = mine.data === null;
   const canAskAgain = neverAsked || request?.status === "rejected";
   const createStatus = create.error ? readApiError(create.error).status : undefined;
 
@@ -101,9 +101,9 @@ export function OperatorRolePanel(): ReactElement | null {
       </FrameHeader>
       <FramePanel>
         {isOperator ? (
-          <ButtonLink href={routes.sources} size="small" variant="secondary">
+          <RouterButtonLink to={routes.sources} size="small" variant="secondary">
             {formatMessage({ id: "feature.operatorRequest.panel.openSources", defaultMessage: "Open sources" })}
-          </ButtonLink>
+          </RouterButtonLink>
         ) : mine.isPending ? (
           <SkeletonRows />
         ) : (
@@ -135,7 +135,7 @@ export function OperatorRolePanel(): ReactElement | null {
                 ) : null}
               </div>
             ) : null}
-            {mine.error && !neverAsked ? (
+            {mine.error ? (
               <StatusCopy>
                 {formatMessage({
                   id: "feature.operatorRequest.panel.loadError",

@@ -1,5 +1,4 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -17,7 +16,7 @@ import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/co
 import { useFormatters } from "@/hooks/use-formatters";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { href, routes } from "@/router";
+import { routes } from "@/router";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { listQueryBoolean, matchesListQuery } from "@/lib/list-filter";
 import { SettingsButton } from "@/components/settings-button";
@@ -34,6 +33,7 @@ import { canArchiveDevice } from "@/features/archive/model";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 type DeviceRow = DeviceRead & { meshLabel: string; ownerId: string };
 
@@ -277,9 +277,9 @@ export function DevicesPage(): ReactElement {
         ),
         cell: ({ row }) => (
           <div className="flex justify-start gap-2 whitespace-nowrap">
-            <ButtonLink href={href(routes.device, { deviceUuid: row.original.uuid })} size="xs" variant="secondary">
+            <RouterButtonLink to={routes.device} params={{ deviceUuid: row.original.uuid }} size="xs" variant="secondary">
               {formatMessage({ id: "page.devices.list.open", defaultMessage: "Open" })}
-            </ButtonLink>
+            </RouterButtonLink>
             {canEditMesh({ owner_id: row.original.ownerId }, me) ? (
               <SettingsButton
                 label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}

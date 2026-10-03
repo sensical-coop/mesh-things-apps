@@ -13,7 +13,7 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
@@ -42,7 +42,7 @@ export function EditMeshDialog({
 }): ReactElement {
   const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
-  const { isOperator, meId } = useOwnerDirectory();
+  const { isOperator, meId } = useMe();
   // The API shows and accepts a source only from the mesh's owner, and only
   // operators have sources to pick; `/sources` lists just the caller's own.
   const canPickSource = isOperator && mesh.owner_id === meId;

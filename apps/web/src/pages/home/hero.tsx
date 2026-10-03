@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { richTextValues } from "@/lib/intl-tags";
 import { LandingCobe } from "./cobe";
 import { LandingReveal } from "./reveal";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 export function LandingHero(): ReactElement {
   const { formatMessage } = useIntl();
@@ -29,9 +30,9 @@ export function LandingHero(): ReactElement {
             />
           </p>
           <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-            <ButtonLink href={routes.login} size="medium">
+            <RouterButtonLink to={routes.login} size="medium">
               {formatMessage({ id: "page.home.hero.signIn", defaultMessage: "Sign in" })}
-            </ButtonLink>
+            </RouterButtonLink>
             <ButtonLink href="#proof" variant="secondary" size="medium">
               {formatMessage({ id: "page.home.hero.howItWorks", defaultMessage: "How it works" })}
             </ButtonLink>

@@ -6,7 +6,7 @@ import { useIntl } from "react-intl";
 import { StatusCopy } from "@/components/status-copy";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { readApiError } from "@/lib/api-errors";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
+import { useMe } from "@/features/auth/use-me";
 import { canUseArchive, summarizeArchive } from "@/features/archive/model";
 import { archiveRepository } from "@/features/archive/repository";
 import { useArchiveCredentials } from "@/features/archive/use-archive-credentials";
@@ -21,7 +21,7 @@ import { routes } from "@/router";
 
 export function ArchivePage(): ReactElement {
   const { formatMessage } = useIntl();
-  const { me, meId, isOperator } = useOwnerDirectory();
+  const { me, meId, isOperator } = useMe();
   const [selected, setSelected] = useQueryState("mesh", parseAsString);
   const meshes = useQuery({ ...meshRepository.list(), enabled: isOperator });
   const devices = useQuery({ ...deviceRepository.list(), enabled: isOperator });

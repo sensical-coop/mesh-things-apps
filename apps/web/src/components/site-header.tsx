@@ -1,12 +1,13 @@
 import { BrandMark } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import { getTheme, toggleTheme } from "@mtt/ui/theme";
 import { RiMoonLine, RiSunLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement, useEffect, useState, useSyncExternalStore } from "react";
 import { useIntl } from "react-intl";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 function subscribeTheme(onStoreChange: () => void): () => void {
   globalThis.addEventListener("boardui-theme", onStoreChange);
@@ -54,9 +55,9 @@ export function SiteHeader(): ReactElement {
               toggleTheme();
             }}
           />
-          <ButtonLink href={routes.login} size="small">
+          <RouterButtonLink to={routes.login} size="small">
             {formatMessage({ id: "page.home.header.signIn", defaultMessage: "Sign in" })}
-          </ButtonLink>
+          </RouterButtonLink>
         </div>
       </div>
     </header>
