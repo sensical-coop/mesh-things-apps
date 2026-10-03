@@ -964,16 +964,18 @@ export const ownersListOptions = (options?: Options<OwnersListData>) => queryOpt
 });
 
 /**
- * Register an owner and return its API key.
+ * Register an owner, sign it in and return its API key.
  *
  * Signing up accepts the current account terms, which are recorded. The
- * key is shown in this response and cannot be retrieved again afterwards.
- * A new owner stays inactive until its email address is verified.
+ * key is for scripts and is shown in this response only; it cannot be
+ * retrieved again afterwards. A browser uses the session cookie set by
+ * this response instead. A new owner stays inactive until its email
+ * address is verified, and until then can only reach its own account.
  *
  * Args:
  * terms_version: The `version` of the account terms accepted, as
  * served by the terms endpoint. Required, and refused once the
- * terms have changed.
+ * terms have changed, unless the instance does not enforce terms.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
@@ -1077,7 +1079,10 @@ export const ownersCsrfCookieRetrieveOptions = (options?: Options<OwnersCsrfCook
 /**
  * Sign in with email and password, returning the owner profile and a session cookie.
  *
- * Repeated failures from the same address are rate limited.
+ * An owner whose email is not verified yet is signed in too, with `is_active`
+ * false in the profile, and can only reach its own account until it verifies.
+ * Attempts are limited per email and source address; once the limit is
+ * reached even the correct password is refused with `429` for about a minute.
  */
 export const ownersLoginCreateMutation = (options?: Partial<Options<OwnersLoginCreateData>>): UseMutationOptions<OwnersLoginCreateResponse, DefaultError, Options<OwnersLoginCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersLoginCreateResponse, DefaultError, Options<OwnersLoginCreateData>> = {
@@ -1326,7 +1331,14 @@ export const ownersRequestPasswordResetCreateMutation = (options?: Partial<Optio
 };
 
 /**
- * Set a new password using the token from a reset link.
+ * Set a new password using the token from the password reset link.
+ *
+ * The token works once and expires after one hour by default. An invalid or
+ * expired token is refused with `400`; request a new link to try again.
+ *
+ * Args:
+ * token: The token from the password reset link. Required.
+ * new_password: The new password. Required.
  */
 export const ownersResetPasswordCreateMutation = (options?: Partial<Options<OwnersResetPasswordCreateData>>): UseMutationOptions<OwnersResetPasswordCreateResponse, DefaultError, Options<OwnersResetPasswordCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersResetPasswordCreateResponse, DefaultError, Options<OwnersResetPasswordCreateData>> = {

@@ -664,6 +664,7 @@ export type OwnerRequestPasswordReset = {
  * POST /owners/reset-password input
  */
 export type OwnerResetPassword = {
+    token: string;
     new_password: string;
 };
 
