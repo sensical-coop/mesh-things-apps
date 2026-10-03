@@ -28,7 +28,7 @@ import { DeviceMapLegend } from "@/features/device/ui/map-legend";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
-import { deviceTitle } from "@/features/device/model";
+import { deviceLastSeen, deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { NodeIdField } from "@/features/device/ui/node-id-field";
 import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
@@ -205,7 +205,8 @@ export function MeshDetailPage(): ReactElement {
         header: formatMessage({ id: "page.meshes.detail.devices.columns.radio", defaultMessage: "Radio" }),
         cell: (info) => <DeviceSilentBadge device={info.row.original} />,
       }),
-      col.accessor("last_seen", {
+      col.accessor(deviceLastSeen, {
+        id: "last_seen",
         header: formatMessage({ id: "page.meshes.detail.devices.columns.lastSeen", defaultMessage: "Last seen" }),
         cell: (info) => <span className="tabular-nums text-text-secondary">{formatLastSeen(info.getValue())}</span>,
       }),

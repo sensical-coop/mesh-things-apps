@@ -46,7 +46,7 @@ import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRa
 import { CHART_AGG_OPTIONS, availableResolutions, type ChartAgg } from "./chart-resolution";
 import { DeviceChartResolutionPicker } from "./chart-resolution-picker";
 import { deviceRepository } from "@/features/device/repository";
-import { deviceTitle } from "@/features/device/model";
+import { deviceLastSeen, deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceChartRangePicker } from "./chart-range-picker";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
@@ -362,7 +362,7 @@ function DeviceStatusTab({
                 />
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.lastSeen", defaultMessage: "Last seen" })}
-                  value={formatLastSeen(device.data.last_seen)}
+                  value={formatLastSeen(deviceLastSeen(device.data))}
                 />
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.hardware", defaultMessage: "Hardware" })}

@@ -55,17 +55,23 @@ export function deviceRoleLabel(
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
+/** When the device was last heard; a discovered gateway counts from its discovery until its own packets arrive. */
+export function deviceLastSeen(device: Pick<DeviceRead, "last_seen" | "discovered_at">): string | null {
+  return device.last_seen ?? device.discovered_at ?? null;
+}
+
 export function deviceSilent(
-  device: Pick<DeviceRead, "last_seen" | "publish_interval_seconds">,
+  device: Pick<DeviceRead, "last_seen" | "discovered_at" | "publish_interval_seconds">,
   nowMs = Date.now(),
   missed = 5,
 ): boolean {
-  if (!device.last_seen) return true;
+  const lastSeen = deviceLastSeen(device);
+  if (!lastSeen) return true;
   const intervalMs =
     (device.publish_interval_seconds && device.publish_interval_seconds > 0
       ? device.publish_interval_seconds
       : 300) * 1000;
-  const seen = Date.parse(device.last_seen);
+  const seen = Date.parse(lastSeen);
   if (!Number.isFinite(seen)) return true;
   return seen + missed * intervalMs < nowMs;
 }

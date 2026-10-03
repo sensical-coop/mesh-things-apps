@@ -23,7 +23,7 @@ import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
-import { deviceTitle } from "@/features/device/model";
+import { deviceLastSeen, deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
@@ -255,7 +255,8 @@ export function DevicesPage(): ReactElement {
             }),
           ]
         : []),
-      col.accessor("last_seen", {
+      col.accessor(deviceLastSeen, {
+        id: "last_seen",
         header: formatMessage({ id: "page.devices.list.columns.lastSeen", defaultMessage: "Last seen" }),
         // Relative only, to keep the row narrow; the exact time is in the tooltip.
         cell: (info) => {
