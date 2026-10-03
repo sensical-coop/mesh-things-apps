@@ -1,4 +1,3 @@
-import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
@@ -10,6 +9,7 @@ import { termsRepository } from "@/features/terms/repository";
 import { useAccountTermsStanding } from "@/features/terms/use-account-terms-standing";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { routes } from "@/router";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 /**
  * Across the console: meshes of the owner's that stopped storing data because
@@ -65,9 +65,9 @@ export function TermsBanner(): ReactElement | null {
       className="oa-squircle mb-6 flex flex-wrap items-center justify-between gap-3 bg-background-secondary-default px-4 py-3 shadow-card"
     >
       <p className="text-body-regular text-text-primary">{shown.message}</p>
-      <ButtonLink href={shown.href} size="small">
+      <RouterButtonLink to={shown.href} size="small">
         {shown.action}
-      </ButtonLink>
+      </RouterButtonLink>
     </div>
   );
 }

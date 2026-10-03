@@ -1,6 +1,6 @@
 import type { Mesh } from "@mtt/contracts";
 import { zMeshesCreateData } from "@mtt/contracts/zod";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -27,7 +27,7 @@ import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { matchesListQuery } from "@/lib/list-filter";
-import { href, routes } from "@/router";
+import { routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
@@ -47,6 +47,7 @@ import { MeshOriginDialog } from "@/features/mesh/ui/mesh-origin-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { sourceRepository } from "@/features/source/repository";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 type MeshRow = Mesh & { devices: number };
 
@@ -320,9 +321,9 @@ export function MeshesPage(): ReactElement {
           const canEdit = canEditMesh(row.original, me);
           return (
             <div className="flex justify-start gap-2 whitespace-nowrap">
-              <ButtonLink href={href(routes.mesh, { meshId: row.original.id })} size="xs" variant="secondary">
+              <RouterButtonLink to={routes.mesh} params={{ meshId: row.original.id }} size="xs" variant="secondary">
                 {formatMessage({ id: "page.meshes.list.open", defaultMessage: "Open" })}
-              </ButtonLink>
+              </RouterButtonLink>
               {canEdit ? (
                 <SettingsButton
                   label={formatMessage({ id: "page.meshes.list.edit", defaultMessage: "Edit mesh" })}

@@ -1,5 +1,5 @@
 import { authRepository } from "@/features/auth/repository";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils";
 import { getTheme, toggleTheme } from "@mtt/ui/theme";
 import { RiCloseLine, RiMenuLine, RiMoonLine, RiSunLine, RiUserLine } from "@remixicon/react";
@@ -14,6 +14,7 @@ import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { AutomationMenu } from "@/components/automation-menu";
 import { DataMenu } from "@/components/data-menu";
 import { ManagementMenu } from "@/components/management-menu";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 const headerLinkClass =
   "rounded-full px-3 py-1 text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
@@ -112,8 +113,8 @@ export function Header(): ReactElement {
             {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
           </button>
           <LanguageSwitcher />
-          <ButtonLink
-            href={routes.profile}
+          <RouterButtonLink
+            to={routes.profile}
             variant="secondary"
             size="small"
             iconOnly

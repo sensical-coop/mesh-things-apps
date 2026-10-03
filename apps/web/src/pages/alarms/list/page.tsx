@@ -1,5 +1,5 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -22,7 +22,8 @@ import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { isChartableMeasurement } from "@/lib/measurement";
 import { pageHeadingClass } from "@/lib/page-heading";
-import { href, routes } from "@/router";
+import { routes } from "@/router";
+import { RouterButtonLink } from "@/components/router-button-link";
 
 type MeasurementGroup = { key: string; title: string; channel: string; label: string; detectors: string[] }[];
 type VariantGroup = { key: string; title: string; measurements: MeasurementGroup };
@@ -147,9 +148,9 @@ export function AlarmsPage(): ReactElement {
                           {deviceTitle(device)}
                         </Link>
                         <div className="flex gap-2">
-                          <ButtonLink href={href(routes.device, { deviceUuid: device.uuid })} size="xs" variant="secondary">
+                          <RouterButtonLink to={routes.device} params={{ deviceUuid: device.uuid }} size="xs" variant="secondary">
                             {formatMessage({ id: "page.alarms.list.open", defaultMessage: "Open" })}
-                          </ButtonLink>
+                          </RouterButtonLink>
                           <DeviceAlarmsToggle device={device} />
                         </div>
                       </div>
