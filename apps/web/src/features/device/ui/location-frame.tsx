@@ -15,6 +15,7 @@ import { deviceRepository } from "@/features/device/repository";
 import { DeviceDot } from "@/features/device/ui/device-dot";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceLocationSourceBadge } from "@/features/device/ui/location-source-badge";
+import { MapUnsupported } from "@/components/map-unsupported";
 
 type LngLat = { lng: number; lat: number };
 
@@ -155,6 +156,7 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
             <Map
               center={saved ? [saved.lng, saved.lat] : WORLD_VIEW.center}
               zoom={saved ? 14 : WORLD_VIEW.zoom}
+              unsupported={<MapUnsupported />}
               className="h-full min-h-80 w-full"
             >
               <MapControls showLocate={editing} onLocate={(coords) => pick({ lng: coords.longitude, lat: coords.latitude })} />

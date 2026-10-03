@@ -188,6 +188,11 @@ type MapProps = {
   onViewportChange?: (viewport: MapViewport) => void;
   /** Show a loading indicator on the map */
   loading?: boolean;
+  /**
+   * Rendered in place of the map when MapLibre can't start, e.g. the browser
+   * has no WebGL2.
+   */
+  unsupported?: ReactNode;
 } & Omit<MapLibreGL.MapOptions, "container" | "style">;
 
 function DefaultLoader() {
@@ -198,6 +203,16 @@ function DefaultLoader() {
         <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:150ms]" />
         <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:300ms]" />
       </div>
+    </div>
+  );
+}
+
+function DefaultUnsupported() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
+      <p className="text-body-medium text-text-primary">
+        This map needs WebGL2.
+      </p>
     </div>
   );
 }
@@ -223,6 +238,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     viewport,
     onViewportChange,
     loading = false,
+    unsupported,
     ...props
   },
   ref,
@@ -231,6 +247,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const [mapInstance, setMapInstance] = useState<MapLibreGL.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isStyleLoaded, setIsStyleLoaded] = useState(false);
+  const [unsupportedBrowser, setUnsupportedBrowser] = useState(false);
   const [pendingStyle, setPendingStyle] = useState<MapStyleOption | null>(null);
   const currentStyleRef = useRef<MapStyleOption | null>(null);
   const styleSwapInFlightRef = useRef(false);
@@ -270,16 +287,25 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       resolvedTheme === "dark" ? mapStyles.dark : mapStyles.light;
     currentStyleRef.current = initialStyle;
 
-    const map = new MapLibreGL.Map({
-      container: containerRef.current,
-      style: initialStyle,
-      renderWorldCopies: false,
-      attributionControl: {
-        compact: true,
-      },
-      ...props,
-      ...viewport,
-    });
+    let map: MapLibreGL.Map;
+    try {
+      map = new MapLibreGL.Map({
+        container: containerRef.current,
+        style: initialStyle,
+        renderWorldCopies: false,
+        attributionControl: {
+          compact: true,
+        },
+        ...props,
+        ...viewport,
+      });
+    } catch {
+      // No WebGL2 (or a blocked GPU): show the fallback instead of taking
+      // down the whole route.
+      setUnsupportedBrowser(true);
+      return;
+    }
+    setUnsupportedBrowser(false);
 
     const styleLoadHandler = () => {
       styleSwapInFlightRef.current = false;
@@ -385,7 +411,9 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
         ref={containerRef}
         className={cn("relative h-full w-full", className)}
       >
-        {(!isLoaded || loading) && <DefaultLoader />}
+        {unsupportedBrowser
+          ? (unsupported ?? <DefaultUnsupported />)
+          : (!isLoaded || loading) && <DefaultLoader />}
         {/* SSR-safe: children render only when map is loaded on client */}
         {mapInstance && children}
       </div>

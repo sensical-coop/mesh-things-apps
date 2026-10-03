@@ -545,7 +545,7 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.channelIdHint",
-              defaultMessage: "The Meshtastic channel name your gateways use.",
+              defaultMessage: "The Meshtastic channel name.",
             })}
             error={errors.channel_id}
           >

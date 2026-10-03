@@ -1414,5 +1414,8 @@
   "feature.archive.downloadAll.zip": "Descargar como un único zip",
   "feature.archive.downloadAll.zipButton": "Descargar ZIP",
   "feature.archive.downloadAll.zipHint": "La descarga incluye una carpeta por día. Cada fichero lleva su fecha y hora en el nombre, p. ej. 2026-09-28/2026-09-28_09.parquet.",
-  "feature.archive.files.commandLine": "Línea de comandos"
+  "feature.archive.files.commandLine": "Línea de comandos",
+
+  "components.mapUnsupported.title": "Este mapa necesita WebGL2.",
+  "components.mapUnsupported.hint": "Activa la aceleración por hardware o prueba otro navegador."
 }
