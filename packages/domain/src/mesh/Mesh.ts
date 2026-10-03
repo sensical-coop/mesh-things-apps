@@ -7,6 +7,8 @@ export type MeshProps = {
   isPublic?: boolean;
   /** Null when the traffic arrives on this instance's own broker. */
   sourceId?: string | null;
+  /** Registers gateways whose packets decode with the mesh's channel and PSK. */
+  discoverGateways?: boolean;
   /** Mesh terms on the default broker: version accepted, when they lapse, and since when paused. */
   termsAcceptedVersion?: string | null;
   termsExpiresAt?: string | null;
@@ -22,6 +24,7 @@ export type MeshCreate = {
   ownerId: string;
   isPublic?: boolean;
   sourceId?: string | null;
+  discoverGateways?: boolean;
 };
 
 /** Public list row: PSK stays off this shape. */
@@ -35,6 +38,7 @@ export class Mesh implements MeshProps {
   readonly ownerId: string;
   isPublic: boolean;
   sourceId: string | null;
+  discoverGateways: boolean;
   termsAcceptedVersion: string | null;
   termsExpiresAt: string | null;
   pausedAt: string | null;
@@ -51,6 +55,7 @@ export class Mesh implements MeshProps {
     this.ownerId = props.ownerId;
     this.isPublic = props.isPublic ?? false;
     this.sourceId = props.sourceId ?? null;
+    this.discoverGateways = props.discoverGateways ?? false;
     this.termsAcceptedVersion = props.termsAcceptedVersion ?? null;
     this.termsExpiresAt = props.termsExpiresAt ?? null;
     this.pausedAt = props.pausedAt ?? null;

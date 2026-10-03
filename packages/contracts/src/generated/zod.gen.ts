@@ -323,6 +323,10 @@ export const zDeviceRead = z.object({
         z.iso.datetime().readonly(),
         z.null()
     ]).readonly(),
+    discovered_at: z.union([
+        z.iso.datetime().readonly(),
+        z.null()
+    ]).readonly(),
     telemetry_variant_ids: z.array(z.uuid()).readonly(),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
@@ -427,6 +431,7 @@ export const zMesh = z.object({
         z.iso.datetime().readonly(),
         z.null()
     ]).readonly()),
+    discover_gateways: z.optional(z.boolean()),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
 });
@@ -444,11 +449,12 @@ export const zMeshCreate = z.object({
     source_id: z.optional(z.union([
         z.uuid(),
         z.null()
-    ]))
+    ])),
+    discover_gateways: z.optional(z.boolean())
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -464,7 +470,8 @@ export const zMeshUpdate = z.object({
     source_id: z.optional(z.union([
         z.uuid(),
         z.null()
-    ]))
+    ])),
+    discover_gateways: z.optional(z.boolean())
 });
 
 export const zMetricsResponse = z.object({
@@ -1471,7 +1478,8 @@ export const zMeshWritable = z.object({
     source_id: z.optional(z.union([
         z.uuid(),
         z.null()
-    ]))
+    ])),
+    discover_gateways: z.optional(z.boolean())
 });
 
 /**
@@ -1489,11 +1497,12 @@ export const zMeshCreateWritable = z.object({
     source_id: z.optional(z.union([
         z.uuid(),
         z.null()
-    ]))
+    ])),
+    discover_gateways: z.optional(z.boolean())
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -1511,6 +1520,7 @@ export const zMeshUpdateWritable = z.object({
         z.uuid(),
         z.null()
     ])),
+    discover_gateways: z.optional(z.boolean()),
     terms_version: z.optional(z.string()),
     terms_locale: z.optional(zTermsLocaleEnum)
 });

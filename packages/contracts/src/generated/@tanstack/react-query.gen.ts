@@ -786,6 +786,13 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
  * Null moves it to the default broker. Moving a mesh off a source
  * schedules the readings stored until then for deletion after the
  * grace period; moving it back within that period cancels it.
+ * discover_gateways: Register gateways automatically once one of their
+ * packets decodes with this mesh's channel and pre-shared key. A
+ * gateway is skipped when another mesh shares the same source,
+ * channel and key, when it is registered elsewhere, or when it was
+ * rejected on this mesh. Switching it off keeps the gateways
+ * already found. Only an operator may switch it on for a mesh with
+ * a default or blank key.
  * terms_version: The `version` of the mesh terms accepted. Required when
  * moving the mesh onto the default broker unless it already holds a
  * current acceptance; ignored otherwise.

@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
 import {
+  deviceLastSeen,
   deviceRoleLabel,
+  deviceSilent,
   deviceTitle,
   formatNodeId,
   parseCoordinate,
@@ -31,6 +33,7 @@ const device = {
   publish_interval_seconds: 300,
   telemetry_variant_ids: [],
   last_seen: null,
+  discovered_at: null,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
 } satisfies DeviceRead;
@@ -93,4 +96,17 @@ test("formatNodeId writes Meshtastic's !hex form", () => {
   assert.equal(formatNodeId(2130636288, "hex"), "!7efeee00");
   assert.equal(formatNodeId(255, "hex"), "!000000ff");
   assert.equal(formatNodeId(255, "decimal"), "255");
+});
+
+test("deviceLastSeen falls back to discovery until the gateway's own packets arrive", () => {
+  const discovered = { ...device, discovered_at: "2026-01-02T00:00:00Z" };
+  assert.equal(deviceLastSeen(discovered), "2026-01-02T00:00:00Z");
+  assert.equal(deviceLastSeen({ ...discovered, last_seen: "2026-01-03T00:00:00Z" }), "2026-01-03T00:00:00Z");
+  assert.equal(deviceLastSeen(device), null);
+});
+
+test("deviceSilent counts a just discovered gateway as heard", () => {
+  const now = Date.parse("2026-01-02T00:01:00Z");
+  assert.equal(deviceSilent(device, now), true);
+  assert.equal(deviceSilent({ ...device, discovered_at: "2026-01-02T00:00:00Z" }, now), false);
 });

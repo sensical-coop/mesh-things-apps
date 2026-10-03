@@ -5,7 +5,7 @@ import { Flag } from "@/components/flag";
 import { deviceSilent } from "../model";
 
 export type DeviceSilentBadgeProps = {
-  device: Pick<DeviceRead, "last_seen" | "publish_interval_seconds">;
+  device: Pick<DeviceRead, "last_seen" | "discovered_at" | "publish_interval_seconds">;
 };
 
 export function DeviceSilentBadge({ device }: DeviceSilentBadgeProps): ReactElement {

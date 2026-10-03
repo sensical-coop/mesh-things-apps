@@ -860,6 +860,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       label: parsed.data.body.label ?? null,
       ownerId: actor.id,
       sourceId,
+      discoverGateways: parsed.data.body.discover_gateways ?? false,
     });
     if (sourceId === null) {
       mesh.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
@@ -942,6 +943,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       label: patch.label,
       isPublic: patch.is_public,
       sourceId: patch.source_id,
+      discoverGateways: patch.discover_gateways,
     });
     if (!updated) return c.json({ detail: "Not found" }, 404);
     if (toDefault && patch.terms_version === TERMS_VERSIONS.mesh) {

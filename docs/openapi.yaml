@@ -1117,6 +1117,13 @@ paths:
                 Null moves it to the default broker. Moving a mesh off a source
                 schedules the readings stored until then for deletion after the
                 grace period; moving it back within that period cancels it.
+            discover_gateways: Register gateways automatically once one of their
+                packets decodes with this mesh's channel and pre-shared key. A
+                gateway is skipped when another mesh shares the same source,
+                channel and key, when it is registered elsewhere, or when it was
+                rejected on this mesh. Switching it off keeps the gateways
+                already found. Only an operator may switch it on for a mesh with
+                a default or blank key.
             terms_version: The `version` of the mesh terms accepted. Required when
                 moving the mesh onto the default broker unless it already holds a
                 current acceptance; ignored otherwise.
@@ -4150,6 +4157,11 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        discovered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         telemetry_variant_ids:
           type: array
           items:
@@ -4168,6 +4180,7 @@ components:
       required:
       - absence_detection_enabled
       - created_at
+      - discovered_at
       - hardware_type
       - is_allowed
       - is_gateway
@@ -4502,6 +4515,11 @@ components:
           nullable: true
           description: Set while its mesh terms have lapsed; the mesh stores no new
             data.
+        discover_gateways:
+          type: boolean
+          description: Register gateways whose packets decode with this mesh's channel
+            and PSK automatically. Only an operator may switch it on for a mesh with
+            a default or blank PSK.
         created_at:
           type: string
           format: date-time
@@ -4549,13 +4567,18 @@ components:
           nullable: true
           description: Source the mesh's traffic is bridged from. Null for this instance's
             own broker.
+        discover_gateways:
+          type: boolean
+          description: Register gateways whose packets decode with this mesh's channel
+            and PSK automatically. Only an operator may switch it on for a mesh with
+            a default or blank PSK.
       required:
       - channel_id
       - psk_b64
     MeshUpdate:
       type: object
       description: |-
-        PUT /meshes/{id}: channel_id, psk_b64, label, is_public and source_id are editable.
+        PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
 
         channel_id/psk_b64 are a pair configured together on the physical
         devices, so both can change here the same way - the pipeline decrypts by
@@ -4580,6 +4603,11 @@ components:
           nullable: true
           description: Source the mesh's traffic is bridged from. Null for this instance's
             own broker.
+        discover_gateways:
+          type: boolean
+          description: Register gateways whose packets decode with this mesh's channel
+            and PSK automatically. Only an operator may switch it on for a mesh with
+            a default or blank PSK.
         terms_version:
           type: string
           writeOnly: true
