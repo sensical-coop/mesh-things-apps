@@ -314,7 +314,7 @@
   "feature.auth.apiKey.description": "Generating an API here will replace your current one.",
   "feature.auth.apiKey.generate": "Generate new key",
   "feature.auth.rotateKey.title": "Generate a new API key",
-  "feature.auth.rotateKey.description": "Any service using your current key will stop working until you update it with the key below.",
+  "feature.auth.rotateKey.description": "Any service using your current key will stop working until you update it with the new key.",
   "feature.auth.rotateKey.cancel": "Cancel",
   "feature.auth.rotateKey.confirm": "Generate new key",
   "feature.auth.rotateKey.generating": "Generating",
