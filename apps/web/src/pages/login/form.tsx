@@ -10,9 +10,30 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
+import { readApiError } from "@/lib/api-errors";
 
 const MOCK_API_DISABLED = import.meta.env.VITE_DISABLE_MOCK_API === "true";
+
+type FormatMessage = ReturnType<typeof useIntl>["formatMessage"];
+
+function loginErrorMessage(status: number | undefined, formatMessage: FormatMessage): string {
+  if (status === 401) {
+    return formatMessage({
+      id: "page.login.form.error",
+      defaultMessage: "Those credentials were not accepted. Check the email and password and try again.",
+    });
+  }
+  if (status === 429) {
+    return formatMessage({
+      id: "page.login.form.error.throttled",
+      defaultMessage: "Too many sign-in attempts. Wait a minute and try again.",
+    });
+  }
+  return formatMessage({
+    id: "page.login.form.error.generic",
+    defaultMessage: "We couldn't sign you in right now. Try again in a moment.",
+  });
+}
 
 export function LoginForm(): ReactElement {
   const { formatMessage } = useIntl();
@@ -22,10 +43,10 @@ export function LoginForm(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const login = useMutation({
     ...authRepository.login(),
-    onSuccess: async () => {
-      clearPendingOwnerKey();
+    // An unverified owner is signed in too, and only has the verify-pending page.
+    onSuccess: async (owner) => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
-      await navigate({ to: routes.meshes });
+      await navigate({ to: owner.is_active ? routes.meshes : routes.verifyPending });
     },
   });
 
@@ -33,21 +54,16 @@ export function LoginForm(): ReactElement {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setError(null);
-    await authRepository.csrf();
     try {
+      await authRepository.csrf();
       await login.mutateAsync({
         body: {
           email: String(form.get("email") ?? ""),
           password: String(form.get("password") ?? ""),
         },
       });
-    } catch {
-      setError(
-        formatMessage({
-          id: "page.login.form.error",
-          defaultMessage: "Those credentials were not accepted. Check the email and password and try again.",
-        }),
-      );
+    } catch (caught) {
+      setError(loginErrorMessage(readApiError(caught).status, formatMessage));
     }
   }
 

@@ -6,7 +6,6 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { authRepository } from "@/features/auth/repository";
-import { clearPendingOwnerKey } from "@/features/auth/pending-owner-key";
 
 export function DeleteAccountDialog({
   open,
@@ -22,7 +21,6 @@ export function DeleteAccountDialog({
   const destroy = useMutation({
     ...authRepository.destroy(),
     onSuccess: async () => {
-      clearPendingOwnerKey();
       queryClient.clear();
       onClose();
       await onDeleted();

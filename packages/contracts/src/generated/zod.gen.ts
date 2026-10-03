@@ -583,6 +583,7 @@ export const zOwnerRequestPasswordReset = z.object({
  * POST /owners/reset-password input
  */
 export const zOwnerResetPassword = z.object({
+    token: z.string(),
     new_password: z.string()
 });
 

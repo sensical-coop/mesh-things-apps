@@ -27,7 +27,7 @@ No usar la API key del owner en `localStorage`. El UI va por **cookie de sesión
 ## 2. Auth (navegador)
 
 1. `GET /owners/csrf-cookie` → cookie CSRF.
-2. `POST /owners/login` → `OwnerProfile` + cookie de sesión.
+2. `POST /owners/login` (o el registro, `POST /owners`) → `OwnerProfile` + cookie de sesión. Un owner sin verificar también entra, con `is_active: false`, y solo ve `/verify-pending` hasta verificar. La app nunca envía `Authorization: Bearer`.
 3. Resto de llamadas con `credentials: 'include'` y header CSRF en métodos no-GET.
 4. Rutas públicas: login, registro, reset, verify-email.
 5. Resto detrás de `GET /owners/me`.
@@ -261,10 +261,10 @@ Auth salvo nota: `bearerAuth` o cookie. DELETE → **204**. Resto de éxito → 
 | Método | Ruta | Respuesta |
 |---|---|---|
 | GET | `/owners` | **200** `OwnerPublic[]` (superuser: registro completo) |
-| POST | `/owners` | **201** `OwnerWithApiKey`. Sin auth. Key no se recupera |
+| POST | `/owners` | **201** `OwnerWithApiKey` + cookie sesión. Sin auth. La key es para scripts: la app no la guarda y no se recupera |
 | GET | `/owners/{ownerid}` | **200** público o completo si eres tú / superuser |
 | GET | `/owners/csrf-cookie` | **200** `Detail` + cookie CSRF. Sin auth |
-| POST | `/owners/login` | **200** `OwnerProfile` + cookie sesión |
+| POST | `/owners/login` | **200** `OwnerProfile` + cookie sesión, también sin verificar. **401** credenciales; **429** tras 10 intentos/min por email e IP |
 | POST | `/owners/logout` | **200** `Detail` |
 | GET | `/owners/me` | **200** `OwnerProfile` (incluye devices) |
 | PUT | `/owners/me` | **200** `OwnerRead` (cambiar email desactiva hasta verificar) |
@@ -274,7 +274,7 @@ Auth salvo nota: `bearerAuth` o cookie. DELETE → **204**. Resto de éxito → 
 | POST | `/owners/me/resend-verification` | **200** `Detail` |
 | POST | `/owners/me/rotate-key` | **200** `OwnerWithApiKey` |
 | POST | `/owners/request-password-reset` | **200** `Detail`. Sin auth. Misma respuesta exista o no el email |
-| POST | `/owners/reset-password` | **200** `Detail`. Sin auth |
+| POST | `/owners/reset-password` | **200** `Detail`. Sin auth: `token` del enlace va en el body. **400** en `token` si caducó o no vale |
 | GET | `/owners/verify-email?token=` | **200** `Detail`. Sin auth |
 
 ### Postprocessing blueprints

@@ -14,7 +14,6 @@ import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
-import { setPendingOwnerKey } from "@/features/auth/pending-owner-key";
 import { allStatementsAccepted, termsLocale } from "@/features/terms/model";
 import { accountTermsQuery } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
@@ -81,12 +80,14 @@ export function SignupForm(): ReactElement {
   const termsOff = useTermsEnforced() === false;
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
   // The terms stay folded until the email and password are in, then open once by themselves.
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({ email: "", password: "", confirm: "" });
   const [termsOpen, setTermsOpen] = useState(false);
   const autoOpened = useRef(false);
   const credentialsReady = credentials.email.trim() !== "" && credentials.password !== "";
+  const passwordMismatch = credentials.confirm !== "" && credentials.confirm !== credentials.password;
+  const mismatchMessage = formatMessage({ id: "page.signup.form.error.mismatch", defaultMessage: "Passwords don't match." });
 
-  function onCredential(field: "email" | "password", value: string) {
+  function onCredential(field: "email" | "password" | "confirm", value: string) {
     const next = { ...credentials, [field]: value };
     setCredentials(next);
     if (!autoOpened.current && next.email.trim() !== "" && next.password !== "") {
@@ -106,12 +107,9 @@ export function SignupForm(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const signup = useMutation({
     ...authRepository.signup(),
-    onSuccess: async (data) => {
-      // A freshly-created owner has no session cookie yet (the account is
-      // inactive until the email is verified, and login is refused until
-      // then), so the one-time api_key is used as a Bearer token to
-      // authenticate the verify-pending page in the meantime.
-      setPendingOwnerKey(data.api_key);
+    // Signup signs the new owner in with a session cookie; the api_key in the
+    // response is for scripts and is not kept.
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
       await navigate({ to: routes.verifyPending });
     },
@@ -129,6 +127,10 @@ export function SignupForm(): ReactElement {
           defaultMessage: "Accept each statement to create your account.",
         }),
       );
+      return;
+    }
+    if (form.get("password") !== form.get("confirm_password")) {
+      setError(mismatchMessage);
       return;
     }
     await authRepository.csrf();
@@ -199,6 +201,22 @@ export function SignupForm(): ReactElement {
                 minLength={8}
                 autoComplete="new-password"
                 onChange={(event) => onCredential("password", event.currentTarget.value)}
+              />
+            </FormField>
+            <FormField
+              id="signup-confirm-password"
+              label={formatMessage({ id: "page.signup.form.confirmPassword", defaultMessage: "Confirm password" })}
+              error={passwordMismatch ? mismatchMessage : undefined}
+            >
+              <Input
+                id="signup-confirm-password"
+                name="confirm_password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                aria-invalid={passwordMismatch || undefined}
+                onChange={(event) => onCredential("confirm", event.currentTarget.value)}
               />
             </FormField>
           </FieldGroup>

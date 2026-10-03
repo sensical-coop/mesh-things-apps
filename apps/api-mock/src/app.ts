@@ -603,14 +603,15 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
         headers: c.req.raw.headers,
         returnHeaders: true,
       });
-      applySetCookie(c, result.headers);
       const actor = db.actors.get(result.response.user.id);
-      if (!actor?.isActive) return c.json({ detail: "Invalid credentials" }, 400);
+      if (!actor) return c.json({ detail: "Invalid email or password" }, 401);
+      // Like the API, an unverified owner is signed in and only reaches its own account.
+      applySetCookie(c, result.headers);
       stampLogin(actor);
       const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
       return c.json(ownerProfileJson(actor, await devicesJson(actor, await devicesFor(db, actor)), verification, ownerTerms(actor.id)));
     } catch {
-      return c.json({ detail: "Invalid credentials" }, 400);
+      return c.json({ detail: "Invalid email or password" }, 401);
     }
   });
 
@@ -631,24 +632,17 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   });
 
   app.post("/owners/reset-password", async (c) => {
-    const authHeader = c.req.header("Authorization") ?? "";
-    const [scheme, token] = authHeader.split(" ");
-    if (scheme?.toLowerCase() !== "bearer" || !token) {
-      return c.json({ detail: "Authentication credentials were not provided." }, 401);
-    }
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersResetPasswordCreateData.safeParse({ body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const { token, new_password: newPassword } = parsed.data.body;
     const entry = db.passwordResetTokens.get(token);
     const expired =
       !entry || Date.now() > Date.parse(entry.sentAt) + PASSWORD_RESET_TTL_HOURS * 60 * 60 * 1000;
     if (expired) {
-      return c.json(
-        { detail: "Invalid or expired reset link - request a new one via POST /owners/request-password-reset" },
-        401,
-      );
+      return c.json({ token: ["Invalid or expired reset link, request a new one"] }, 400);
     }
-    const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersResetPasswordCreateData.safeParse({ body });
-    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    await setOwnerPassword(auth, entry.ownerId, parsed.data.body.new_password);
+    await setOwnerPassword(auth, entry.ownerId, newPassword);
     db.passwordResetTokens.delete(token);
     return c.json({ detail: "Password reset" });
   });
@@ -679,7 +673,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       role: "owner",
       isActive: false,
       createdAt: now,
-      lastLogin: null,
+      // Signup is a session sign-in, as in the API.
+      lastLogin: now,
       alarmEmailCooldownSeconds: null,
       statusAlertsEnabled: false,
     };
@@ -708,6 +703,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const previous = db.verifications.get(ownerId) ?? NO_VERIFICATION;
     db.verifications.set(ownerId, { ...previous, emailVerifiedAt: now });
     return c.json({ detail: "Your email address has been verified." });
+  });
+
+  app.post("/owners/me/rotate-key", (c) => {
+    const actor = c.get("actor");
+    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${newId()}`, ownerTerms(actor.id)));
   });
 
   app.post("/owners/me/resend-verification", (c) => {

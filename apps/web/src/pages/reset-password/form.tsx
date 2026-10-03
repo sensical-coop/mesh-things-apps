@@ -21,9 +21,8 @@ function fieldErrorMessages(body: Record<string, unknown>): string[] {
 
 function formatResetError(error: unknown, formatMessage: FormatMessage): { message: string; expired: boolean } {
   const body = typeof error === "object" && error !== null ? (error as Record<string, unknown>) : {};
-  const status = typeof body.status === "number" ? body.status : undefined;
 
-  if (status === 401) {
+  if (body.token !== undefined) {
     return {
       expired: true,
       message: formatMessage({
@@ -120,12 +119,8 @@ export function ResetPasswordForm({ token }: { token: string | null }): ReactEle
       return;
     }
 
-    await authRepository.csrf();
     try {
-      await resetPassword.mutateAsync({
-        headers: { Authorization: `Bearer ${token}` },
-        body: { new_password: newPassword },
-      });
+      await resetPassword.mutateAsync({ body: { token, new_password: newPassword } });
       setSucceeded(true);
     } catch (caught) {
       const formatted = formatResetError(caught, formatMessage);
