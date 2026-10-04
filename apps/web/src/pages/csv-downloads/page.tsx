@@ -13,6 +13,7 @@ import { daysInRange, lastDays, pollInterval, requestOf, shiftDay, utcToday } fr
 import { exportRepository } from "@/features/export/repository";
 import { useRequestExport } from "@/features/export/use-request-export";
 import { CsvRequestForm, type CsvRequestDraft } from "@/features/export/ui/csv-request-form";
+import { ExportHistoryHeading } from "@/features/export/ui/export-history-heading";
 import { ExportLimits } from "@/features/export/ui/export-limits";
 import { ExportsTable } from "@/features/export/ui/exports-table";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
@@ -114,18 +115,13 @@ export function CsvDownloadsPage(): ReactElement {
               {own.length ? (
                 <CsvRequestForm key={draft?.key ?? 0} meshes={own} initial={initial} requested={requested} />
               ) : null}
-              <div className="flex flex-col gap-1 border-t border-separator-border pt-6">
-                <h2 className="text-body-medium text-text-primary">
-                  {formatMessage({ id: "page.csvDownloads.history.title", defaultMessage: "History of downloads" })}
-                </h2>
-                <p className="max-w-2xl text-body-regular text-text-secondary">
-                  {formatMessage({
-                    id: "page.csvDownloads.history.description",
-                    defaultMessage:
-                      "Download gets the file while it's available. Once it expires, Request again prepares the same download anew. The calendar button fills the form above with the same devices, so you can choose other days.",
-                  })}
-                </p>
-              </div>
+              <ExportHistoryHeading
+                description={formatMessage({
+                  id: "page.csvDownloads.history.description",
+                  defaultMessage:
+                    "Download gets the file while it's available. Once it expires, Request again prepares the same download anew. The calendar button fills the form above with the same devices, so you can choose other days.",
+                })}
+              />
               {exports.isPending ? <SkeletonRows rows={3} /> : null}
               {exports.isError ? (
                 <StatusCopy>
@@ -137,7 +133,7 @@ export function CsvDownloadsPage(): ReactElement {
               ) : null}
               {exports.data && rows.length === 0 ? (
                 <StatusCopy>
-                  {formatMessage({ id: "page.csvDownloads.list.empty", defaultMessage: "No downloads yet." })}
+                  {formatMessage({ id: "feature.export.history.empty", defaultMessage: "No downloads yet." })}
                 </StatusCopy>
               ) : null}
               {requestedAgain.error ? <StatusCopy>{requestedAgain.error}</StatusCopy> : null}

@@ -10,7 +10,7 @@ import { StatusCopy } from "@/components/status-copy";
 import { EXPORT_MAX_DAYS, pollInterval, rangeProblem, requestOf, shiftDay } from "@/features/export/model";
 import { exportRepository } from "@/features/export/repository";
 import type { RequestExportState } from "@/features/export/use-request-export";
-import { ExportLimits } from "@/features/export/ui/export-limits";
+import { ExportHistoryHeading } from "@/features/export/ui/export-history-heading";
 import { ExportRangeFields, type ExportRange } from "@/features/export/ui/export-range-fields";
 import { ExportsTable } from "@/features/export/ui/exports-table";
 
@@ -58,13 +58,12 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
           {formatMessage({
             id: "feature.archive.exports.description",
             defaultMessage:
-              "Trigger a new export of a range of days. Each zip has a folder per day with a Parquet file per hour in it. Note: If you have already requested a certain period, and you want to request another one, use its calendar button below.",
+              "Trigger a new export of a range of days. Each zip has a folder per day with a Parquet file per hour in it.",
           })}
         </FrameDescription>
       </FrameHeader>
       <FramePanel className="flex flex-col gap-6">
         {picker}
-        <ExportLimits />
         {!manifest ? null : empty ? (
           <StatusCopy>
             {formatMessage({
@@ -97,7 +96,19 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
             </div>
           </form>
         )}
+        <ExportHistoryHeading
+          description={formatMessage({
+            id: "feature.archive.exports.history",
+            defaultMessage:
+              "Download gets the file while it's available. Once it expires, Request again prepares the same download anew. The calendar button puts its days in the form above, so you can change them.",
+          })}
+        />
         {exports.isPending ? <SkeletonRows rows={2} /> : null}
+        {exports.data && rows.length === 0 ? (
+          <StatusCopy>
+            {formatMessage({ id: "feature.export.history.empty", defaultMessage: "No downloads yet." })}
+          </StatusCopy>
+        ) : null}
         {rows.length ? (
           <ExportsTable
             rows={rows}

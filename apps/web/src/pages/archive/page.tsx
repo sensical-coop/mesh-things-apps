@@ -15,6 +15,7 @@ import { ArchiveConnectFrame } from "@/features/archive/ui/archive-connect-frame
 import { ArchiveExportsFrame } from "@/features/archive/ui/archive-exports-frame";
 import { ArchiveFilesFrame } from "@/features/archive/ui/archive-files-frame";
 import { ArchiveMeshSummary } from "@/features/archive/ui/archive-mesh-summary";
+import { ExportLimits } from "@/features/export/ui/export-limits";
 import { useRequestExport } from "@/features/export/use-request-export";
 import { deviceRepository } from "@/features/device/repository";
 import { meshRepository } from "@/features/mesh/repository";
@@ -110,6 +111,7 @@ export function ArchivePage(): ReactElement {
             ) : null}
             {current ? (
               <>
+                <ExportLimits />
                 <ArchiveExportsFrame
                   // Remounted once the file list is in, so the range starts from what's stored.
                   key={`exports-${current.id}-${currentManifest.isSuccess}`}
