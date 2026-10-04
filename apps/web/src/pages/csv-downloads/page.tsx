@@ -112,7 +112,7 @@ export function CsvDownloadsPage(): ReactElement {
                 description={formatMessage({
                   id: "page.csvDownloads.history.description",
                   defaultMessage:
-                    "Download gets the file while it's available. Once it expires, Request again prepares the same download anew. The calendar button fills the form above with the same devices, so you can choose other days.",
+                    "History of downloads. Once they expire, you will be able to request them again. For downloading different date ranges, use the calendar icon.",
                 })}
               />
               {exports.isPending ? <SkeletonRows rows={3} /> : null}

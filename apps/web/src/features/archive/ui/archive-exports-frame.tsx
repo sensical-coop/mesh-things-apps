@@ -58,7 +58,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
           {formatMessage({
             id: "feature.archive.exports.description",
             defaultMessage:
-              "Trigger a new export of a range of days. Each zip has a folder per day with a Parquet file per hour in it.",
+              "Trigger a new Parquet file export. Each export contains a folder per day with hourly Parquet files on each.",
           })}
         </FrameDescription>
       </FrameHeader>
@@ -100,7 +100,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
           description={formatMessage({
             id: "feature.archive.exports.history",
             defaultMessage:
-              "Download gets the file while it's available. Once it expires, Request again prepares the same download anew. The calendar button puts its days in the form above, so you can change them.",
+              "History of downloads. Once they expire, you will be able to request them again. For downloading different date ranges, use the calendar icon.",
           })}
         />
         {exports.isPending ? <SkeletonRows rows={2} /> : null}
