@@ -89,7 +89,7 @@ export function CsvDownloadsPage(): ReactElement {
               <FrameDescription>
                 {formatMessage({
                   id: "page.csvDownloads.new.description",
-                  defaultMessage: "Trigger a new CSV download. Note: If you have already requested a certain device, and you want to request another period, use its calendar button below.",
+                  defaultMessage: "Trigger a new CSV download.",
                 })}
               </FrameDescription>
             </FrameHeader>
@@ -114,6 +114,18 @@ export function CsvDownloadsPage(): ReactElement {
               {own.length ? (
                 <CsvRequestForm key={draft?.key ?? 0} meshes={own} initial={initial} requested={requested} />
               ) : null}
+              <div className="flex flex-col gap-1 border-t border-separator-border pt-6">
+                <h2 className="text-body-medium text-text-primary">
+                  {formatMessage({ id: "page.csvDownloads.history.title", defaultMessage: "History of downloads" })}
+                </h2>
+                <p className="max-w-2xl text-body-regular text-text-secondary">
+                  {formatMessage({
+                    id: "page.csvDownloads.history.description",
+                    defaultMessage:
+                      "Download gets the file while it's available. Once it expires, Request again prepares the same download anew. The calendar button fills the form above with the same devices, so you can choose other days.",
+                  })}
+                </p>
+              </div>
               {exports.isPending ? <SkeletonRows rows={3} /> : null}
               {exports.isError ? (
                 <StatusCopy>
