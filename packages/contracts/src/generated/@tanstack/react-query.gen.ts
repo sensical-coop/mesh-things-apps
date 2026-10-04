@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsArchiveMeshesZipRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
-import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsArchiveMeshesZipRetrieveData, ReadingsArchiveMeshesZipRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
+import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsExportsList, readingsMeshesExportsCreate, readingsMeshesExportsList, readingsMeshesExportsRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
+import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsExportsListData, ReadingsExportsListResponse, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateResponse, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponse, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1691,71 +1691,6 @@ export const readingsArchiveMeshesPartitionsRetrieveOptions = (options: Options<
     queryKey: readingsArchiveMeshesPartitionsRetrieveQueryKey(options)
 });
 
-export const readingsArchiveMeshesZipRetrieveQueryKey = (options: Options<ReadingsArchiveMeshesZipRetrieveData>) => createQueryKey('readingsArchiveMeshesZipRetrieve', options);
-
-/**
- * Download a range of a mesh's archive as one zip, a folder per day.
- *
- * Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole
- * archive is one download. The zip streams as the files are read, and holds
- * what the file list shows at the time of the request. For querying in place,
- * issue credentials instead. Available to the mesh's owner while they are an
- * operator, and to superusers.
- *
- * Args:
- * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
- * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
- */
-export const readingsArchiveMeshesZipRetrieveOptions = (options: Options<ReadingsArchiveMeshesZipRetrieveData>) => queryOptions<ReadingsArchiveMeshesZipRetrieveResponse, DefaultError, ReadingsArchiveMeshesZipRetrieveResponse, ReturnType<typeof readingsArchiveMeshesZipRetrieveQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await readingsArchiveMeshesZipRetrieve({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsArchiveMeshesZipRetrieveQueryKey(options)
-});
-
-export const readingsArchiveMeshesZipRetrieveInfiniteQueryKey = (options: Options<ReadingsArchiveMeshesZipRetrieveData>): QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>> => createQueryKey('readingsArchiveMeshesZipRetrieve', options, true);
-
-/**
- * Download a range of a mesh's archive as one zip, a folder per day.
- *
- * Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole
- * archive is one download. The zip streams as the files are read, and holds
- * what the file list shows at the time of the request. For querying in place,
- * issue credentials instead. Available to the mesh's owner while they are an
- * operator, and to superusers.
- *
- * Args:
- * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
- * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
- */
-export const readingsArchiveMeshesZipRetrieveInfiniteOptions = (options: Options<ReadingsArchiveMeshesZipRetrieveData>) => infiniteQueryOptions<ReadingsArchiveMeshesZipRetrieveResponse, DefaultError, InfiniteData<ReadingsArchiveMeshesZipRetrieveResponse>, QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>>, string | Pick<QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReadingsArchiveMeshesZipRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                start: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await readingsArchiveMeshesZipRetrieve({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsArchiveMeshesZipRetrieveInfiniteQueryKey(options)
-});
-
 export const readingsDevicesRetrieveQueryKey = (options: Options<ReadingsDevicesRetrieveData>) => createQueryKey('readingsDevicesRetrieve', options);
 
 /**
@@ -1862,6 +1797,102 @@ export const readingsDevicesQualityRetrieveInfiniteOptions = (options: Options<R
         return data;
     },
     queryKey: readingsDevicesQualityRetrieveInfiniteQueryKey(options)
+});
+
+export const readingsExportsListQueryKey = (options?: Options<ReadingsExportsListData>) => createQueryKey('readingsExportsList', options);
+
+/**
+ * List the caller's exports of every mesh from the last 30 days, newest first.
+ *
+ * A ready export becomes `expired` 24 hours after it finished, when its file
+ * is deleted; request it again to rebuild it. Empty on an instance without
+ * object storage.
+ */
+export const readingsExportsListOptions = (options?: Options<ReadingsExportsListData>) => queryOptions<ReadingsExportsListResponse, DefaultError, ReadingsExportsListResponse, ReturnType<typeof readingsExportsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsExportsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsExportsListQueryKey(options)
+});
+
+export const readingsMeshesExportsListQueryKey = (options: Options<ReadingsMeshesExportsListData>) => createQueryKey('readingsMeshesExportsList', options);
+
+/**
+ * List the caller's exports of a mesh from the last 30 days, newest first.
+ *
+ * A ready export becomes `expired` 24 hours after it finished, when its file
+ * is deleted. Available to the mesh's owner and to superusers.
+ */
+export const readingsMeshesExportsListOptions = (options: Options<ReadingsMeshesExportsListData>) => queryOptions<ReadingsMeshesExportsListResponse, DefaultError, ReadingsMeshesExportsListResponse, ReturnType<typeof readingsMeshesExportsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsMeshesExportsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsMeshesExportsListQueryKey(options)
+});
+
+/**
+ * Request a download of a mesh's readings over a range of days, as one zip.
+ *
+ * The zip is built in the background: poll the export until its status is
+ * `ready`, then download it from `url`. The owner is also emailed when it is
+ * ready or has failed. A CSV export reads every stored reading, a file per
+ * measurement and day with a column per field, plus `channels.csv` with each
+ * channel's unit. A Parquet export holds the hourly archive files, only for
+ * devices whose archive is on. Each owner has one export queued or running at a
+ * time, and repeating that same request returns it. Available to the mesh's
+ * owner and to superusers; Parquet also needs the operator role.
+ *
+ * Args:
+ * format: `csv` or `parquet`. Required.
+ * start: First day, as `YYYY-MM-DD` in UTC. Required.
+ * stop: Last day, included, as `YYYY-MM-DD` in UTC. Required. At most a year after `start`.
+ * node_ids: Node numbers to limit a CSV export to. Defaults to every device of the mesh.
+ */
+export const readingsMeshesExportsCreateMutation = (options?: Partial<Options<ReadingsMeshesExportsCreateData>>): UseMutationOptions<ReadingsMeshesExportsCreateResponse, DefaultError, Options<ReadingsMeshesExportsCreateData>> => {
+    const mutationOptions: UseMutationOptions<ReadingsMeshesExportsCreateResponse, DefaultError, Options<ReadingsMeshesExportsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await readingsMeshesExportsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const readingsMeshesExportsRetrieveQueryKey = (options: Options<ReadingsMeshesExportsRetrieveData>) => createQueryKey('readingsMeshesExportsRetrieve', options);
+
+/**
+ * Return one of the caller's exports: its status, progress in days and, once ready, a download link.
+ *
+ * The link is valid until `expires_at`, 24 hours after the export finished,
+ * and works for anyone who has it. The status then becomes `expired`.
+ */
+export const readingsMeshesExportsRetrieveOptions = (options: Options<ReadingsMeshesExportsRetrieveData>) => queryOptions<ReadingsMeshesExportsRetrieveResponse, DefaultError, ReadingsMeshesExportsRetrieveResponse, ReturnType<typeof readingsMeshesExportsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readingsMeshesExportsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readingsMeshesExportsRetrieveQueryKey(options)
 });
 
 export const readingsMeshesNodesRetrieveQueryKey = (options: Options<ReadingsMeshesNodesRetrieveData>) => createQueryKey('readingsMeshesNodesRetrieve', options);

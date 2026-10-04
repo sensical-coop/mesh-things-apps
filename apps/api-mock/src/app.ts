@@ -27,6 +27,7 @@ import {
   zSinksTermsAcceptanceCreateData,
   zSinksUpdateData,
   zTelemetryVariantsMeasurementsUpdateData,
+  zReadingsMeshesExportsCreateData,
 } from "@mtt/contracts/zod";
 import { matchesDeviceFilter, type Device } from "@mtt/domain/device/Device";
 import {
@@ -101,6 +102,16 @@ import {
   partitionKey,
 } from "./features/archive/repository";
 import { storedZip } from "./features/archive/zip";
+import {
+  EXPORT_MAX_DAYS,
+  daysBetween,
+  daysDone,
+  expiresAt,
+  exportFilename,
+  finishedAt,
+  statusOf,
+  type ExportRow,
+} from "./features/export/repository";
 import {
   latestVersion,
   versionNumbered,
@@ -2119,29 +2130,145 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.redirect(url.toString(), 302);
   });
 
-  app.get("/readings/archive/meshes/:mesh_id/zip", async (c) => {
+  /** An export as the API returns it, with a link while its file is kept. */
+  function exportJson(row: ExportRow, requestUrl: string) {
+    const status = statusOf(row);
+    const url =
+      status === "ready"
+        ? new URL(`${MOCK_S3_PATH}${ARCHIVE_BUCKET}/exports/${row.meshId}/${row.id}.zip?X-Amz-Signature=mock`, requestUrl).toString()
+        : null;
+    const finished = status === "queued" || status === "running" ? null : new Date(finishedAt(row)).toISOString();
+    return {
+      id: row.id,
+      mesh_id: row.meshId,
+      format: row.format,
+      start: row.start,
+      stop: row.stop,
+      node_ids: row.nodeIds,
+      status,
+      days_done: daysDone(row),
+      days_total: daysBetween(row.start, row.stop),
+      size: finished && !row.error ? row.size : null,
+      error: status === "failed" ? row.error : null,
+      created_at: new Date(row.createdAt).toISOString(),
+      finished_at: finished,
+      expires_at: new Date(expiresAt(row)).toISOString(),
+      filename: exportFilename(row),
+      url,
+    };
+  }
+
+  /** The mesh's owner and superusers, public or not; everyone else is told it doesn't exist. */
+  async function exportRefusal(actor: Actor, meshId: string) {
+    if (!ARCHIVE_ENABLED) return { detail: "Not found" };
+    const mesh = await db.meshes.get(meshId);
+    if (!mesh || !actor.isActive || (actor.role !== "superuser" && mesh.ownerId !== actor.id)) return { detail: "Mesh not found" };
+    return null;
+  }
+
+  app.get("/readings/exports", (c) => {
+    if (!ARCHIVE_ENABLED) return c.json([]);
+    return c.json(db.exports.listFor(c.get("actor").id).map((row) => exportJson(row, c.req.url)));
+  });
+
+  app.get("/readings/meshes/:mesh_id/exports", async (c) => {
     const meshId = c.req.param("mesh_id");
-    const refusal = await archiveRefusal(c.get("actor"), meshId);
+    const refusal = await exportRefusal(c.get("actor"), meshId);
     if (refusal) return c.json(refusal, 404);
-    const [start, stop] = [c.req.query("start"), c.req.query("stop")];
-    for (const [name, value] of [["start", start], ["stop", stop]] as const) {
-      if (value && !DAY_PATTERN.test(value)) return c.json({ [name]: ["Expected a date as YYYY-MM-DD."] }, 400);
+    return c.json(db.exports.listFor(c.get("actor").id, meshId).map((row) => exportJson(row, c.req.url)));
+  });
+
+  app.post("/readings/meshes/:mesh_id/exports", async (c) => {
+    const actor = c.get("actor");
+    const meshId = c.req.param("mesh_id");
+    const refusal = await exportRefusal(actor, meshId);
+    if (refusal) return c.json(refusal, 404);
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zReadingsMeshesExportsCreateData.safeParse({ body, path: { mesh_id: meshId } });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const { format, start, stop } = parsed.data.body;
+    const nodeIds = parsed.data.body.node_ids?.length ? [...parsed.data.body.node_ids].sort((a, b) => a - b) : null;
+    if (stop < start) return c.json({ stop: ["Must not be before start."] }, 400);
+    if (daysBetween(start, stop) > EXPORT_MAX_DAYS) {
+      return c.json({ stop: [`An export covers at most ${EXPORT_MAX_DAYS} days.`] }, 400);
     }
-    const partitions = db.archive.partitions(meshId, start, stop);
-    if (!partitions.length) return c.json({ detail: "Nothing archived in that range" }, 404);
-    const first = partitions[0]!.dt;
-    const last = partitions.at(-1)!.dt;
+    if (format === "parquet") {
+      if (nodeIds) return c.json({ node_ids: ["Only CSV exports can be limited to devices; Parquet files hold the whole mesh."] }, 400);
+      if (actor.role !== "superuser" && actor.role !== "operator") return c.json({ detail: "Parquet exports need the operator role" }, 403);
+      if (!db.archive.partitions(meshId, start, stop).length) return c.json({ detail: "Nothing archived in that range" }, 404);
+    }
+    const active = db.exports.active(actor.id);
+    if (active) {
+      const same =
+        active.meshId === meshId && active.format === format && active.start === start && active.stop === stop &&
+        JSON.stringify(active.nodeIds) === JSON.stringify(nodeIds);
+      if (same) return c.json(exportJson(active, c.req.url), 200);
+      return c.json({ detail: "You already have an export queued or running. Request another once it has finished." }, 429);
+    }
+    const devices = nodeIds?.length ?? (await db.devices.list({ meshId })).length;
+    const days = daysBetween(start, stop);
+    const row = db.exports.add({
+      ownerId: actor.id,
+      meshId,
+      format,
+      start,
+      stop,
+      nodeIds,
+      createdAt: Date.now(),
+      // The mock stores no readings: a range wholly in the future is the one way to get nothing.
+      error: start > new Date().toISOString().slice(0, 10) ? "No readings in that range" : null,
+      size: format === "csv" ? Math.max(1, devices) * days * 11_800 : db.archive.partitions(meshId, start, stop).length * 15_300,
+    });
+    console.info(`[mock] ${format} export ${row.id} queued for ${actor.email}`);
+    return c.json(exportJson(row, c.req.url), 202);
+  });
+
+  app.get("/readings/meshes/:mesh_id/exports/:export_id", async (c) => {
+    const meshId = c.req.param("mesh_id");
+    const refusal = await exportRefusal(c.get("actor"), meshId);
+    if (refusal) return c.json(refusal, 404);
+    const row = db.exports.get(c.req.param("export_id"));
+    if (!row || row.ownerId !== c.get("actor").id || row.meshId !== meshId) return c.json({ detail: "Export not found" }, 404);
+    return c.json(exportJson(row, c.req.url));
+  });
+
+  // The zip a ready export's link names. CSV holds one sample file per day; Parquet the archive's hours.
+  app.get(`${MOCK_S3_PATH}${ARCHIVE_BUCKET}/exports/:mesh_id/:file`, (c) => {
+    const row = db.exports.get(c.req.param("file").replace(/\.zip$/, ""));
+    if (!row || statusOf(row) !== "ready") return c.json({ detail: "Not found" }, 404);
+    const encoder = new TextEncoder();
+    const modified = new Date(finishedAt(row));
     const hour = (h: number) => String(h).padStart(2, "0");
-    const zip = storedZip(
-      partitions.map((p) => ({
-        name: `${p.dt}/${p.dt}_${hour(p.hour)}.parquet`,
-        data: new TextEncoder().encode(`PAR1 mock ${partitionKey(meshId, p.dt, p.hour)} PAR1`),
-        modified: new Date(p.last_modified),
-      })),
-    );
-    return c.body(zip, 200, {
+    const entries =
+      row.format === "parquet"
+        ? db.archive.partitions(row.meshId, row.start, row.stop).map((p) => ({
+            name: `${p.dt}/${p.dt}_${hour(p.hour)}.parquet`,
+            data: encoder.encode(`PAR1 mock ${partitionKey(row.meshId, p.dt, p.hour)} PAR1`),
+            modified,
+          }))
+        : [
+            ...Array.from({ length: daysBetween(row.start, row.stop) }, (_, i) => {
+              const day = new Date(Date.parse(`${row.start}T00:00:00Z`) + i * 86_400_000).toISOString().slice(0, 10);
+              const node = row.nodeIds?.[0] ?? 1;
+              return {
+                name: `${day}/environment_metrics.csv`,
+                data: encoder.encode(`time,node_id,relative_humidity,temperature\n${day}T12:00:00Z,${node},55.0,21.4\n`),
+                modified,
+              };
+            }),
+            {
+              name: "channels.csv",
+              data: encoder.encode(
+                "channel,name,unit,description,telemetry_variant,derived,quantity_kind,vocabulary_uri\n" +
+                  "environment_metrics.relative_humidity,relative_humidity,%,Relative humidity percent measured,telemetry:environment_metrics,false,ratio,\n" +
+                  "environment_metrics.temperature,temperature,degC,Temperature measured,telemetry:environment_metrics,false,physical_property,\n",
+              ),
+              modified,
+            },
+          ];
+    return c.body(storedZip(entries), 200, {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="mesh-${meshId.slice(0, 8)}_${first === last ? first : `${first}_${last}`}.zip"`,
+      "Content-Disposition": `attachment; filename="${exportFilename(row)}"`,
     });
   });
 
