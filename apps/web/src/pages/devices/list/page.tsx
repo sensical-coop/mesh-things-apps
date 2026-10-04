@@ -193,7 +193,6 @@ export function DevicesPage(): ReactElement {
   );
   // Devices on public meshes can belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.ownerId !== meId);
-  const showArchive = rows.some((row) => canArchiveDevice(row, me, row.ownerId));
 
   const columns = useMemo(
     () => [
@@ -245,16 +244,6 @@ export function DevicesPage(): ReactElement {
             }),
           ]
         : []),
-      ...(showArchive
-        ? [
-            col.accessor((row) => row.archive_enabled === true, {
-              id: "archive",
-              header: formatMessage({ id: "page.devices.list.columns.archive", defaultMessage: "S3 storage" }),
-              cell: ({ row }) =>
-                canArchiveDevice(row.original, me, row.original.ownerId) ? <ArchiveButton device={row.original} /> : null,
-            }),
-          ]
-        : []),
       col.accessor(deviceLastSeen, {
         id: "last_seen",
         header: formatMessage({ id: "page.devices.list.columns.lastSeen", defaultMessage: "Last seen" }),
@@ -287,11 +276,12 @@ export function DevicesPage(): ReactElement {
                 onClick={() => setSettingsDevice(row.original)}
               />
             ) : null}
+            {canArchiveDevice(row.original, me, row.original.ownerId) ? <ArchiveButton device={row.original} /> : null}
           </div>
         ),
       }),
     ],
-    [formatMessage, formatLastSeen, formatWhen, toRelative, me, meId, ownerName, showOwner, showArchive],
+    [formatMessage, formatLastSeen, formatWhen, toRelative, me, meId, ownerName, showOwner],
   );
 
   return (
