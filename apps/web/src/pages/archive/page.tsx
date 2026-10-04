@@ -12,7 +12,6 @@ import { canUseArchive, summarizeArchive } from "@/features/archive/model";
 import { archiveRepository } from "@/features/archive/repository";
 import { useArchiveCredentials } from "@/features/archive/use-archive-credentials";
 import { ArchiveConnectFrame } from "@/features/archive/ui/archive-connect-frame";
-import { ArchiveDevicesFrame } from "@/features/archive/ui/archive-devices-frame";
 import { ArchiveExportsFrame } from "@/features/archive/ui/archive-exports-frame";
 import { ArchiveFilesFrame } from "@/features/archive/ui/archive-files-frame";
 import { ArchiveMeshSummary } from "@/features/archive/ui/archive-mesh-summary";
@@ -59,10 +58,6 @@ export function ArchivePage(): ReactElement {
     retry: false,
   });
   const noArchive = readApiError(currentManifest.error).status === 404;
-  const meshDevices = useQuery({
-    ...meshRepository.devices({ path: { mesh_id: current?.id ?? "00000000-0000-4000-8000-000000000000" } }),
-    enabled: current != null,
-  });
   const access = useArchiveCredentials(current?.id);
   const requested = useRequestExport();
 
@@ -115,22 +110,24 @@ export function ArchivePage(): ReactElement {
             ) : null}
             {current ? (
               <>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <MeshPicker meshes={archivable} value={current.id} onChange={(meshId) => void setSelected(meshId)} />
-                  <ArchiveMeshSummary
-                    devices={archivedByMesh.get(current.id)?.devices ?? 0}
-                    archived={archivedByMesh.get(current.id)?.archived ?? 0}
-                    summary={currentManifest.data ? summarizeArchive(currentManifest.data.partitions) : null}
-                  />
-                </div>
-                {currentManifest.data ? (
-                  <ArchiveExportsFrame
-                    key={`exports-${current.id}`}
-                    meshId={current.id}
-                    manifest={currentManifest.data}
-                    requested={requested}
-                  />
-                ) : null}
+                <ArchiveExportsFrame
+                  // Remounted once the file list is in, so the range starts from what's stored.
+                  key={`exports-${current.id}-${currentManifest.isSuccess}`}
+                  meshId={current.id}
+                  manifest={currentManifest.data}
+                  requested={requested}
+                  picker={
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                      <MeshPicker meshes={archivable} value={current.id} onChange={(meshId) => void setSelected(meshId)} />
+                      <ArchiveMeshSummary
+                        devices={archivedByMesh.get(current.id)?.devices ?? 0}
+                        archived={archivedByMesh.get(current.id)?.archived ?? 0}
+                        summary={currentManifest.data ? summarizeArchive(currentManifest.data.partitions) : null}
+                      />
+                    </div>
+                  }
+                />
+                <ArchiveConnectFrame access={access} prefix={currentManifest.data?.prefix} />
                 <ArchiveFilesFrame
                   key={current.id}
                   meshId={current.id}
@@ -141,13 +138,6 @@ export function ArchivePage(): ReactElement {
                   failed={currentManifest.isError}
                   requested={requested}
                 />
-                <ArchiveDevicesFrame
-                  meshTitle={meshTitle(current)}
-                  devices={meshDevices.data}
-                  pending={meshDevices.isPending}
-                  failed={meshDevices.isError}
-                />
-                <ArchiveConnectFrame access={access} prefix={currentManifest.data?.prefix} />
               </>
             ) : null}
           </>

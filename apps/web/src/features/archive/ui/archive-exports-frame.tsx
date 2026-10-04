@@ -3,7 +3,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiFolderZipLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, useState } from "react";
+import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
@@ -18,6 +18,8 @@ export type ArchiveExportsFrameProps = {
   meshId: string;
   manifest: ArchiveManifest | undefined;
   requested: RequestExportState;
+  /** The mesh picker, which heads the frame like the CSV form's. */
+  picker: ReactNode;
 };
 
 /** The whole archive, or its last EXPORT_MAX_DAYS days when it holds more. */
@@ -33,7 +35,7 @@ function wholeArchive(manifest: ArchiveManifest | undefined): ExportRange {
  * A range of the archive as one zip of its hourly files, prepared in the background,
  * and the mesh's Parquet exports so far.
  */
-export function ArchiveExportsFrame({ meshId, manifest, requested }: ArchiveExportsFrameProps): ReactElement {
+export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: ArchiveExportsFrameProps): ReactElement {
   const { formatMessage } = useIntl();
   const [range, setRange] = useState<ExportRange>(() => wholeArchive(manifest));
   const exports = useQuery({
@@ -51,7 +53,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested }: ArchiveExpo
   return (
     <Frame className="shadow-card" id="archive-exports">
       <FrameHeader>
-        <FrameTitle>{formatMessage({ id: "feature.archive.exports.title", defaultMessage: "Exports" })}</FrameTitle>
+        <FrameTitle>{formatMessage({ id: "feature.archive.exports.title", defaultMessage: "New download" })}</FrameTitle>
         <FrameDescription>
           {formatMessage({
             id: "feature.archive.exports.description",
@@ -61,8 +63,9 @@ export function ArchiveExportsFrame({ meshId, manifest, requested }: ArchiveExpo
         </FrameDescription>
       </FrameHeader>
       <FramePanel className="flex flex-col gap-6">
+        {picker}
         <ExportLimits />
-        {empty ? (
+        {!manifest ? null : empty ? (
           <StatusCopy>
             {formatMessage({
               id: "feature.archive.exports.nothing",

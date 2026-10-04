@@ -69,7 +69,7 @@ export function ArchiveDownloadDialog({
             {formatMessage({
               id: "feature.archive.downloadAll.zipExport",
               defaultMessage:
-                "Request an export under Exports on this page: a folder per day, each file named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet. It's prepared in the background and kept for 24 hours.",
+                "Request it under New download on this page: a folder per day, each file named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet. It's prepared in the background and kept for 24 hours.",
             })}
           </p>
         </section>

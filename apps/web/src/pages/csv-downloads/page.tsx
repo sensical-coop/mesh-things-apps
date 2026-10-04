@@ -93,7 +93,7 @@ export function CsvDownloadsPage(): ReactElement {
                 })}
               </FrameDescription>
             </FrameHeader>
-            <FramePanel>
+            <FramePanel className="flex flex-col gap-6">
               {meshes.isPending ? <SkeletonRows rows={3} /> : null}
               {meshes.isError ? (
                 <StatusCopy>
@@ -114,50 +114,37 @@ export function CsvDownloadsPage(): ReactElement {
               {own.length ? (
                 <CsvRequestForm key={draft?.key ?? 0} meshes={own} initial={initial} requested={requested} />
               ) : null}
+              {exports.isPending ? <SkeletonRows rows={3} /> : null}
+              {exports.isError ? (
+                <StatusCopy>
+                  {formatMessage({
+                    id: "page.csvDownloads.list.error",
+                    defaultMessage: "Your downloads didn't load. Try again shortly.",
+                  })}
+                </StatusCopy>
+              ) : null}
+              {exports.data && rows.length === 0 ? (
+                <StatusCopy>
+                  {formatMessage({ id: "page.csvDownloads.list.empty", defaultMessage: "No downloads yet." })}
+                </StatusCopy>
+              ) : null}
+              {requestedAgain.error ? <StatusCopy>{requestedAgain.error}</StatusCopy> : null}
+              {rows.length ? (
+                <ExportsTable
+                  rows={rows}
+                  meshTitles={meshTitles}
+                  deviceTitles={deviceTitles}
+                  requesting={requestedAgain.pending}
+                  onRequestAgain={(row) => {
+                    requested.reset();
+                    requestedAgain.request(row.mesh_id, requestOf(row));
+                  }}
+                  onAnotherInterval={anotherInterval}
+                />
+              ) : null}
             </FramePanel>
           </Frame>
         </div>
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.csvDownloads.list.title", defaultMessage: "Your downloads" })}</FrameTitle>
-            <FrameDescription>
-              {formatMessage({
-                id: "page.csvDownloads.list.description",
-                defaultMessage: "Below you have a list of the last days of requests.",
-              })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            {exports.isPending ? <SkeletonRows rows={3} /> : null}
-            {exports.isError ? (
-              <StatusCopy>
-                {formatMessage({
-                  id: "page.csvDownloads.list.error",
-                  defaultMessage: "Your downloads didn't load. Try again shortly.",
-                })}
-              </StatusCopy>
-            ) : null}
-            {exports.data && rows.length === 0 ? (
-              <StatusCopy>
-                {formatMessage({ id: "page.csvDownloads.list.empty", defaultMessage: "No downloads yet." })}
-              </StatusCopy>
-            ) : null}
-            {requestedAgain.error ? <StatusCopy className="mb-3">{requestedAgain.error}</StatusCopy> : null}
-            {rows.length ? (
-              <ExportsTable
-                rows={rows}
-                meshTitles={meshTitles}
-                deviceTitles={deviceTitles}
-                requesting={requestedAgain.pending}
-                onRequestAgain={(row) => {
-                  requested.reset();
-                  requestedAgain.request(row.mesh_id, requestOf(row));
-                }}
-                onAnotherInterval={anotherInterval}
-              />
-            ) : null}
-          </FramePanel>
-        </Frame>
       </div>
     </>
   );
