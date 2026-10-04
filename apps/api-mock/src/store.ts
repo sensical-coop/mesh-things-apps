@@ -12,6 +12,7 @@ import { MemoryReadings } from "./features/readings/repository";
 import { MemorySources } from "./features/source/repository";
 import { MemorySinks } from "./features/sink/repository";
 import { MemoryArchive } from "./features/archive/repository";
+import { MemoryExports } from "./features/export/repository";
 import {
   DATA_RETENTION_DAYS,
   TERMS_ENFORCED,
@@ -195,6 +196,7 @@ export type Store = {
   operatorRequests: OperatorRequestRow[];
   devices: MemoryDevices;
   archive: MemoryArchive;
+  exports: MemoryExports;
   measurements: MemoryMeasurements;
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
@@ -479,6 +481,21 @@ export function createStore(owners: StoreOwners = {}): Store {
     }),
   );
   const archive = new MemoryArchive();
+  const exports = new MemoryExports();
+  const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+  // Past exports, so the downloads page shows a file that expired and a range that failed.
+  exports.add({
+    ownerId: adaId, meshId: MESH_HILL_ID, format: "csv", start: day(-10), stop: day(-4), nodeIds: null,
+    createdAt: Date.now() - 3 * 86_400_000, error: null, size: 165_200,
+  });
+  exports.add({
+    ownerId: adaId, meshId: MESH_HILL_ID, format: "csv", start: day(-60), stop: day(-58), nodeIds: [2],
+    createdAt: Date.now() - 2 * 86_400_000, error: "No readings in that range", size: 0,
+  });
+  exports.add({
+    ownerId: operatorId, meshId: MESH_BROOK_ID, format: "parquet", start: day(-6), stop: day(-5), nodeIds: null,
+    createdAt: Date.now() - 2 * 86_400_000, error: null, size: 734_400,
+  });
   const brook: [string, number, string, boolean, string, number | null, number | null][] = [
     // uuid, node, name, gateway, hardware, archived since (days), until (days)
     [DEVICE_BROOK_GW_ID, 0x0b700001, "Brook GW", true, "tbeam", -9, null],
@@ -586,6 +603,7 @@ export function createStore(owners: StoreOwners = {}): Store {
     ],
     devices,
     archive,
+    exports,
     measurements,
     readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID, DEVICE_BROOK_GW_ID, DEVICE_BROOK_BUOY_ID]), t0),
     actors,

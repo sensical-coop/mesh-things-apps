@@ -58,9 +58,13 @@ function NavLinks({
         {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
       </Link>
       <AutomationMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
-      {isOperator ? (
-        <DataMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
-      ) : null}
+      <DataMenu
+        stacked={stacked}
+        onNavigate={onNavigate}
+        linkClass={linkClass}
+        activeClass={activeClass}
+        isOperator={isOperator}
+      />
       {isSuperuser ? (
         <ManagementMenu
           stacked={stacked}

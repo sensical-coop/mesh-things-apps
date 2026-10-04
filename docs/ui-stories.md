@@ -68,9 +68,9 @@ Como operator, elijo en *Edit mesh* si la malla llega por el broker por defecto 
 Como operator, elijo qué dispositivos de mis mallas se guardan a largo plazo y me llevo sus lecturas como ficheros Parquet.
 
 - **Ajuste por dispositivo:** `archive_enabled` en `PUT /devices/{uuid}`; la API solo lo envía (`archive_enabled`, `_at`, `_by`) al dueño de la malla y a superusers, y solo lo acepta en mallas de un operator (400 en `archive_enabled` si no, o si la instancia no tiene archivo). Apagarlo deja de guardar y conserva lo guardado. `ArchiveSettingsDialog` (una casilla y su explicación) se abre desde el icono de archivo (`ArchiveButton`, relleno en acento si está activo): columna “S3 storage” en el inventario de dispositivos y en las tablas de variantes de la ficha (junto a “Alarms”), y en las tarjetas de últimos valores desde el menú “⋯” (`ChannelActionsMenu`: Alarms + S3 storage). Quien no puede archivar ve la campana sola. La ficha muestra “S3 storage: On since …” en Identidad. En la interfaz el ajuste del dispositivo se llama “S3 storage” (“Archive” sonaba a retirar el dispositivo); la página y el menú siguen siendo “Archive”. El inventario tiene un filtro “S3 storage” (On/Off) para operators; los dispositivos cuyo ajuste la API no envía no pasan ninguno de los dos.
-- **Página:** `/console/archive` (menú Data, solo operators; la URL directa redirige a mallas). “Your meshes”: una fila por malla propia (superuser: además las que archivan algo) con dispositivos archivados, ficheros, tamaño y última hora. Para la malla elegida (`?mesh=`): sus dispositivos con el ajuste; “Files” con resumen y una fila por día UTC (más reciente primero; 14 días y “Show all”), que se despliega en un botón por hora (el 302 de la API) y descarga el día como un zip. “Download all (ZIP)” baja todo el archivo en un zip; los dos usan `GET /readings/archive/meshes/{id}/zip?start=&stop=`, que la API arma al vuelo con una carpeta por día y cada hora como `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (el fichero se llama `mesh-<id corto>_<días>.zip`: readings no puede leer la etiqueta de la malla). “Command line” abre un diálogo ancho con las mismas credenciales temporales: DuckDB `COPY` a un único Parquet, o `aws s3 sync` de las carpetas tal cual; “Query with DuckDB”: emite credenciales temporales (se muestran una vez, no se revocan) y rellena un comando DuckDB listo para copiar (path-style y `USE_SSL false` según el endpoint; sin endpoint en AWS). Antes de emitir, el comando lleva marcadores.
+- **Página:** `/console/archive` (menú Data, solo operators; la URL directa redirige a mallas). “Your meshes”: una fila por malla propia (superuser: además las que archivan algo) con dispositivos archivados, ficheros, tamaño y última hora. Para la malla elegida (`?mesh=`): sus dispositivos con el ajuste; “Files” con resumen y una fila por día UTC (más reciente primero; 14 días y “Show all”), que se despliega en un botón por hora (el 302 de la API); el botón “Export” de cada día pide esa jornada como exportación Parquet. “Exports” pide un rango (por defecto todo el archivo, hasta 366 días) como un zip con una carpeta por día y cada hora como `YYYY-MM-DD/YYYY-MM-DD_HH.parquet`, lo prepara la API en segundo plano y la tabla lo sigue hasta que se puede descargar (US-32 para estados y límites). “Command line” abre un diálogo ancho que remite a “Exports” para el zip y ofrece, con las mismas credenciales temporales, DuckDB `COPY` a un único Parquet, o `aws s3 sync` de las carpetas tal cual; “Query with DuckDB”: emite credenciales temporales (se muestran una vez, no se revocan) y rellena un comando DuckDB listo para copiar (path-style y `USE_SSL false` según el endpoint; sin endpoint en AWS). Antes de emitir, el comando lleva marcadores.
 - **Instancia sin archivo (lite):** el listado responde 404 y la página lo dice. Sin STS, emitir credenciales responde 404 y se ofrece la descarga por ficheros.
-- **Contrato:** `GET /readings/archive/meshes/{id}` (`start`/`stop`), `POST /readings/archive/meshes/{id}/credentials`, `GET /readings/archive/meshes/{id}/partitions/{day}/{hour}` (302). `GET /readings/archive/meshes/{id}/zip` (`start`/`stop`). Mock: `MOCK_ARCHIVE=false` imita lite, `MOCK_ARCHIVE_STS=false` un proveedor sin STS; el enlace firmado apunta a `/mock-s3/…` y descarga un fichero de relleno, no Parquet real.
+- **Contrato:** `GET /readings/archive/meshes/{id}` (`start`/`stop`), `POST /readings/archive/meshes/{id}/credentials`, `GET /readings/archive/meshes/{id}/partitions/{day}/{hour}` (302). Exportaciones Parquet: `POST`/`GET /readings/meshes/{id}/exports` con `format: parquet`. Mock: `MOCK_ARCHIVE=false` imita lite, `MOCK_ARCHIVE_STS=false` un proveedor sin STS; el enlace firmado apunta a `/mock-s3/…` y descarga un fichero de relleno, no Parquet real.
 
 **US-19 · Destinos (sinks)**
 Como operator, publico lecturas de mis mallas en el bróker de la instancia para que un servicio que elijo se suscriba con sus propias credenciales.
@@ -155,6 +155,15 @@ Como owner, elijo canal, rango y agregación y veo la serie.
 - **UI:** line/area (EvilCharts cuando se añada el registry)
 - **Contrato:** `GET /readings/devices/{device_uuid}` query `channel`, `start`, `stop`, `window`, `agg`
 
+**US-32 · Descargas CSV**
+Como owner, me llevo las lecturas de mis mallas como CSV, un zip por descarga, y sigo cada descarga hasta que está lista.
+
+- **Ficha de dispositivo:** “Download CSV” en la cabecera (dueño de la malla y superusers), nunca en las tablas, que se llenarían de botones. Abre `DeviceCsvDialog`: límites, rango de días (por defecto los últimos 7) y “Prepare CSV”; debajo, la última descarga de ese dispositivo con su estado, progreso y “Download” o “Request again”, y un enlace a la página.
+- **Página:** `/console/csv-downloads`, en el menú “Data” para todos (operators ven además Sources · Sinks · Archive). “New download”: malla propia, todos sus dispositivos o algunos, y rango. “Your downloads”: las de los últimos 30 días, más recientes primero, con malla, dispositivos, días, estado (con barra mientras se prepara y motivo si falla), tamaño y “Available until”. Acciones: “Download” si está lista; “Request again” si caducó o falló; el botón de calendario rellena el formulario con la misma malla y dispositivos y los días anteriores de igual duración. La lista se refresca cada 3 s mientras algo se prepara.
+- **Límites, siempre a la vista (`ExportLimits`):** hasta 366 días por descarga; una descarga en preparación a la vez (la API responde 429 y se explica); cada fichero se descarga durante 24 horas y llega un email cuando está listo; la lista guarda 30 días para pedirlas de nuevo. El rango se valida antes de enviar.
+- **Estados:** `queued`, `running` (`days_done` de `days_total`), `ready` (con `url` firmada hasta `expires_at`), `failed` (`error`), `expired` (sin fichero).
+- **Contrato:** `GET /readings/exports`, `GET`/`POST /readings/meshes/{id}/exports`, `GET /readings/meshes/{id}/exports/{export_id}`. Mock: los trabajos avanzan solos con el tiempo; Ada tiene una descarga caducada y otra fallida, el operator una exportación Parquet caducada; un rango en el futuro falla con “No readings in that range”.
+
 ---
 
 ## Mapa de rutas (fase 1)
@@ -167,11 +176,12 @@ Como owner, elijo canal, rango y agregación y veo la serie.
 | `/console/meshes` | US-10, US-11 |
 | `/console/meshes/$meshId` | US-12, US-20 |
 | `/console/devices` | US-21 |
-| `/console/devices/$deviceUuid` | US-22, US-30, US-31 |
+| `/console/devices/$deviceUuid` | US-22, US-30, US-31, US-32 |
 | `/console/blueprints`, `/console/blueprints/$blueprintId` | US-42 |
 | `/console/sources` | US-14, US-15 (operator) |
 | `/console/sinks` | US-19 (operator) |
 | `/console/archive` | US-18 (operator) |
+| `/console/csv-downloads` | US-32 |
 | `/console/operator-requests`, `/console/operator-requests/$requestId` | US-16 (superuser) |
 | `/console/data-deletions` | US-17 (superuser) |
 

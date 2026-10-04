@@ -378,6 +378,68 @@ export const zDeviceUpdate = z.object({
     ]))
 });
 
+/**
+ * * `queued` - queued
+ * * `running` - running
+ * * `ready` - ready
+ * * `failed` - failed
+ * * `expired` - expired
+ */
+export const zExportStatusEnum = z.enum([
+    'queued',
+    'running',
+    'ready',
+    'failed',
+    'expired'
+]);
+
+/**
+ * * `csv` - csv
+ * * `parquet` - parquet
+ */
+export const zFormatEnum = z.enum(['csv', 'parquet']);
+
+export const zExport = z.object({
+    id: z.uuid(),
+    mesh_id: z.uuid(),
+    format: zFormatEnum,
+    start: z.iso.date(),
+    stop: z.iso.date(),
+    node_ids: z.union([
+        z.array(z.int()),
+        z.null()
+    ]),
+    status: zExportStatusEnum,
+    days_done: z.int(),
+    days_total: z.int(),
+    size: z.union([
+        z.int(),
+        z.null()
+    ]),
+    error: z.union([
+        z.string(),
+        z.null()
+    ]),
+    created_at: z.iso.datetime(),
+    finished_at: z.union([
+        z.iso.datetime(),
+        z.null()
+    ]),
+    expires_at: z.iso.datetime(),
+    filename: z.string(),
+    url: z.union([
+        z.string(),
+        z.null()
+    ])
+});
+
+export const zExportRequest = z.object({
+    format: zFormatEnum,
+    start: z.iso.date(),
+    stop: z.iso.date(),
+    node_ids: z.optional(z.array(z.int().gte(0)).max(100))
+});
+
 export const zLatestReading = z.object({
     payload_kind: z.string(),
     field_name: z.string(),
@@ -2371,22 +2433,6 @@ export const zReadingsArchiveMeshesPartitionsRetrieveData = z.object({
     query: z.optional(z.never())
 });
 
-export const zReadingsArchiveMeshesZipRetrieveData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        mesh_id: z.uuid()
-    }),
-    query: z.optional(z.object({
-        start: z.optional(z.iso.date()),
-        stop: z.optional(z.iso.date())
-    }))
-});
-
-/**
- * The hourly Parquet files of the range, as one zip.
- */
-export const zReadingsArchiveMeshesZipRetrieveResponse = z.string();
-
 export const zReadingsDevicesRetrieveData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -2440,6 +2486,48 @@ export const zReadingsDevicesQualityRetrieveData = z.object({
 });
 
 export const zReadingsDevicesQualityRetrieveResponse = zDeviceQualityResponse;
+
+export const zReadingsExportsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zReadingsExportsListResponse = z.array(zExport);
+
+export const zReadingsMeshesExportsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReadingsMeshesExportsListResponse = z.array(zExport);
+
+export const zReadingsMeshesExportsCreateData = z.object({
+    body: zExportRequest,
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The identical export already queued or running.
+ */
+export const zReadingsMeshesExportsCreateResponse = zExport;
+
+export const zReadingsMeshesExportsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        export_id: z.uuid(),
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReadingsMeshesExportsRetrieveResponse = zExport;
 
 export const zReadingsMeshesNodesRetrieveData = z.object({
     body: z.optional(z.never()),

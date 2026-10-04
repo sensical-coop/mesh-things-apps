@@ -361,6 +361,65 @@ export type DeviceUpdate = {
     publish_interval_seconds?: number | null;
 };
 
+export type Export = {
+    id: string;
+    mesh_id: string;
+    format: FormatEnum;
+    start: string;
+    stop: string;
+    node_ids: Array<number> | null;
+    status: ExportStatusEnum;
+    days_done: number;
+    days_total: number;
+    /**
+     * Zip size in bytes, once ready.
+     */
+    size: number | null;
+    error: string | null;
+    created_at: string;
+    finished_at: string | null;
+    /**
+     * When the file is deleted and the export becomes `expired`.
+     */
+    expires_at: string;
+    filename: string;
+    /**
+     * Download link while ready, valid until `expires_at`.
+     */
+    url: string | null;
+};
+
+export type ExportRequest = {
+    format: FormatEnum;
+    /**
+     * First day, as `YYYY-MM-DD` (UTC).
+     */
+    start: string;
+    /**
+     * Last day, included, as `YYYY-MM-DD` (UTC).
+     */
+    stop: string;
+    /**
+     * Limit a CSV export to these node numbers. Defaults to every device of the mesh.
+     */
+    node_ids?: Array<number>;
+};
+
+/**
+ * * `queued` - queued
+ * * `running` - running
+ * * `ready` - ready
+ * * `failed` - failed
+ * * `expired` - expired
+ */
+export type ExportStatusEnum = 'queued' | 'running' | 'ready' | 'failed' | 'expired';
+
+/**
+ * * `csv` - csv
+ * * `parquet` - parquet
+ */
+export type FormatEnum = 'csv' | 'parquet';
+
 export type LatestReading = {
     payload_kind: string;
     field_name: string;
@@ -2653,40 +2712,6 @@ export type ReadingsArchiveMeshesPartitionsRetrieveErrors = {
     404: unknown;
 };
 
-export type ReadingsArchiveMeshesZipRetrieveData = {
-    body?: never;
-    path: {
-        mesh_id: string;
-    };
-    query?: {
-        /**
-         * Earliest day, as `YYYY-MM-DD`.
-         */
-        start?: string;
-        /**
-         * Latest day, as `YYYY-MM-DD`.
-         */
-        stop?: string;
-    };
-    url: '/readings/archive/meshes/{mesh_id}/zip';
-};
-
-export type ReadingsArchiveMeshesZipRetrieveErrors = {
-    /**
-     * No such mesh, or nothing archived in the range.
-     */
-    404: unknown;
-};
-
-export type ReadingsArchiveMeshesZipRetrieveResponses = {
-    /**
-     * The hourly Parquet files of the range, as one zip.
-     */
-    200: Blob | File;
-};
-
-export type ReadingsArchiveMeshesZipRetrieveResponse = ReadingsArchiveMeshesZipRetrieveResponses[keyof ReadingsArchiveMeshesZipRetrieveResponses];
-
 export type ReadingsDevicesRetrieveData = {
     body?: never;
     path: {
@@ -2777,6 +2802,84 @@ export type ReadingsDevicesQualityRetrieveResponses = {
 };
 
 export type ReadingsDevicesQualityRetrieveResponse = ReadingsDevicesQualityRetrieveResponses[keyof ReadingsDevicesQualityRetrieveResponses];
+
+export type ReadingsExportsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/readings/exports';
+};
+
+export type ReadingsExportsListResponses = {
+    200: Array<Export>;
+};
+
+export type ReadingsExportsListResponse = ReadingsExportsListResponses[keyof ReadingsExportsListResponses];
+
+export type ReadingsMeshesExportsListData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/meshes/{mesh_id}/exports';
+};
+
+export type ReadingsMeshesExportsListResponses = {
+    200: Array<Export>;
+};
+
+export type ReadingsMeshesExportsListResponse = ReadingsMeshesExportsListResponses[keyof ReadingsMeshesExportsListResponses];
+
+export type ReadingsMeshesExportsCreateData = {
+    body: ExportRequest;
+    path: {
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/meshes/{mesh_id}/exports';
+};
+
+export type ReadingsMeshesExportsCreateErrors = {
+    /**
+     * Parquet exports need the operator role.
+     */
+    403: unknown;
+    /**
+     * No such mesh, or nothing archived in the range (Parquet).
+     */
+    404: unknown;
+    /**
+     * Another export is queued or running.
+     */
+    429: unknown;
+};
+
+export type ReadingsMeshesExportsCreateResponses = {
+    /**
+     * The identical export already queued or running.
+     */
+    200: Export;
+    202: Export;
+};
+
+export type ReadingsMeshesExportsCreateResponse = ReadingsMeshesExportsCreateResponses[keyof ReadingsMeshesExportsCreateResponses];
+
+export type ReadingsMeshesExportsRetrieveData = {
+    body?: never;
+    path: {
+        export_id: string;
+        mesh_id: string;
+    };
+    query?: never;
+    url: '/readings/meshes/{mesh_id}/exports/{export_id}';
+};
+
+export type ReadingsMeshesExportsRetrieveResponses = {
+    200: Export;
+};
+
+export type ReadingsMeshesExportsRetrieveResponse = ReadingsMeshesExportsRetrieveResponses[keyof ReadingsMeshesExportsRetrieveResponses];
 
 export type ReadingsMeshesNodesRetrieveData = {
     body?: never;

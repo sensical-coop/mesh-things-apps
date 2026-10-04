@@ -21,6 +21,7 @@ import { profilePage } from "@/pages/profile/route";
 import { sourceListPage } from "@/pages/sources/list/route";
 import { sinkListPage } from "@/pages/sinks/list/route";
 import { archivePage } from "@/pages/archive/route";
+import { csvDownloadsPage } from "@/pages/csv-downloads/route";
 import { operatorRequestDetailPage } from "@/pages/operator-requests/detail/route";
 import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
 import { dataDeletionListPage } from "@/pages/data-deletions/list/route";
@@ -140,6 +141,11 @@ const archiveRoute = createRoute({
   ...archivePage,
 });
 
+const csvDownloadsRoute = createRoute({
+  getParentRoute: () => consoleRoute,
+  ...csvDownloadsPage,
+});
+
 const operatorRequestsRoute = createRoute({
   getParentRoute: () => consoleRoute,
   ...operatorRequestListPage,
@@ -182,6 +188,7 @@ const routeTree = rootRoute.addChildren([
     sourcesRoute,
     sinksRoute,
     archiveRoute,
+    csvDownloadsRoute,
     operatorRequestsRoute,
     operatorRequestRoute,
     dataDeletionsRoute,

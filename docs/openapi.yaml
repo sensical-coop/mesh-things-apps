@@ -2293,51 +2293,6 @@ paths:
           description: Redirect to a temporary download link for the Parquet file.
         '404':
           description: No such mesh, or nothing archived for that hour.
-  /readings/archive/meshes/{mesh_id}/zip:
-    get:
-      operationId: readings_archive_meshes_zip_retrieve
-      description: "Download a range of a mesh's archive as one zip, a folder per day.\n\n\
-        Each hour is `YYYY-MM-DD/YYYY-MM-DD_HH.parquet` (UTC), so a day or the whole\narchive\
-        \ is one download. The zip streams as the files are read, and holds\nwhat the file\
-        \ list shows at the time of the request. For querying in place,\nissue credentials\
-        \ instead. Available to the mesh's owner while they are an\noperator, and to superusers.\n\
-        \nArgs:\n    start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first\
-        \ archived day.\n    stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the\
-        \ last archived day."
-      parameters:
-      - in: path
-        name: mesh_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: query
-        name: start
-        schema:
-          type: string
-          format: date
-        description: Earliest day, as `YYYY-MM-DD`.
-      - in: query
-        name: stop
-        schema:
-          type: string
-          format: date
-        description: Latest day, as `YYYY-MM-DD`.
-      tags:
-      - readings
-      security:
-      - bearerAuth: []
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-          description: The hourly Parquet files of the range, as one zip.
-        '404':
-          description: No such mesh, or nothing archived in the range.
   /readings/devices/{device_uuid}:
     get:
       operationId: readings_devices_retrieve
@@ -2480,6 +2435,153 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceQualityResponse'
+          description: ''
+  /readings/exports:
+    get:
+      operationId: readings_exports_list
+      description: |-
+        List the caller's exports of every mesh from the last 30 days, newest first.
+
+        A ready export becomes `expired` 24 hours after it finished, when its file
+        is deleted; request it again to rebuild it. Empty on an instance without
+        object storage.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Export'
+          description: ''
+  /readings/meshes/{mesh_id}/exports:
+    get:
+      operationId: readings_meshes_exports_list
+      description: |-
+        List the caller's exports of a mesh from the last 30 days, newest first.
+
+        A ready export becomes `expired` 24 hours after it finished, when its file
+        is deleted. Available to the mesh's owner and to superusers.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Export'
+          description: ''
+    post:
+      operationId: readings_meshes_exports_create
+      description: |-
+        Request a download of a mesh's readings over a range of days, as one zip.
+
+        The zip is built in the background: poll the export until its status is
+        `ready`, then download it from `url`. The owner is also emailed when it is
+        ready or has failed. A CSV export reads every stored reading, a file per
+        measurement and day with a column per field, plus `channels.csv` with each
+        channel's unit. A Parquet export holds the hourly archive files, only for
+        devices whose archive is on. Each owner has one export queued or running at a
+        time, and repeating that same request returns it. Available to the mesh's
+        owner and to superusers; Parquet also needs the operator role.
+
+        Args:
+            format: `csv` or `parquet`. Required.
+            start: First day, as `YYYY-MM-DD` in UTC. Required.
+            stop: Last day, included, as `YYYY-MM-DD` in UTC. Required. At most a year after `start`.
+            node_ids: Node numbers to limit a CSV export to. Defaults to every device of the mesh.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Export'
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Export'
+          description: The identical export already queued or running.
+        '403':
+          description: Parquet exports need the operator role.
+        '404':
+          description: No such mesh, or nothing archived in the range (Parquet).
+        '429':
+          description: Another export is queued or running.
+  /readings/meshes/{mesh_id}/exports/{export_id}:
+    get:
+      operationId: readings_meshes_exports_retrieve
+      description: |-
+        Return one of the caller's exports: its status, progress in days and, once ready, a download link.
+
+        The link is valid until `expires_at`, 24 hours after the export finished,
+        and works for anyone who has it. The status then becomes `expired`.
+      parameters:
+      - in: path
+        name: export_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Export'
           description: ''
   /readings/meshes/{mesh_id}/nodes/{node_id}:
     get:
@@ -4290,6 +4392,122 @@ components:
           maximum: 2147483647
           minimum: 0
           nullable: true
+    Export:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mesh_id:
+          type: string
+          format: uuid
+        format:
+          $ref: '#/components/schemas/FormatEnum'
+        start:
+          type: string
+          format: date
+        stop:
+          type: string
+          format: date
+        node_ids:
+          type: array
+          items:
+            type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ExportStatusEnum'
+        days_done:
+          type: integer
+        days_total:
+          type: integer
+        size:
+          type: integer
+          nullable: true
+          description: Zip size in bytes, once ready.
+        error:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          description: When the file is deleted and the export becomes `expired`.
+        filename:
+          type: string
+        url:
+          type: string
+          nullable: true
+          description: Download link while ready, valid until `expires_at`.
+      required:
+      - created_at
+      - days_done
+      - days_total
+      - error
+      - expires_at
+      - filename
+      - finished_at
+      - format
+      - id
+      - mesh_id
+      - node_ids
+      - size
+      - start
+      - status
+      - stop
+      - url
+    ExportRequest:
+      type: object
+      properties:
+        format:
+          $ref: '#/components/schemas/FormatEnum'
+        start:
+          type: string
+          format: date
+          description: First day, as `YYYY-MM-DD` (UTC).
+        stop:
+          type: string
+          format: date
+          description: Last day, included, as `YYYY-MM-DD` (UTC).
+        node_ids:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+          description: Limit a CSV export to these node numbers. Defaults to every
+            device of the mesh.
+          maxItems: 100
+      required:
+      - format
+      - start
+      - stop
+    ExportStatusEnum:
+      enum:
+      - queued
+      - running
+      - ready
+      - failed
+      - expired
+      type: string
+      description: |-
+        * `queued` - queued
+        * `running` - running
+        * `ready` - ready
+        * `failed` - failed
+        * `expired` - expired
+    FormatEnum:
+      enum:
+      - csv
+      - parquet
+      type: string
+      description: |-
+        * `csv` - csv
+        * `parquet` - parquet
     LatestReading:
       type: object
       properties:
