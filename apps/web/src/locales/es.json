@@ -1480,7 +1480,6 @@
   "feature.export.table.status": "Estado",
   "feature.export.table.waitHint": "Disponible cuando la descarga en preparación esté lista.",
   "page.csvDownloads.description": "Aquí puedes descargar tus datos en archivos CSV.",
-  "page.csvDownloads.zipDescription": "Cada zip tiene una carpeta por día con un archivo CSV por tipo de telemetría.",
   "page.csvDownloads.history.description": "Descargar obtiene el archivo mientras está disponible. Cuando caduca, Solicitar de nuevo prepara de nuevo la misma descarga. El botón de calendario rellena el formulario de arriba con los mismos dispositivos para que elijas otros días.",
   "page.csvDownloads.list.error": "Tus descargas no se han cargado. Inténtalo de nuevo en un momento.",
   "page.csvDownloads.meshesError": "Las mallas no se han cargado. Comprueba la conexión con la API e inténtalo de nuevo.",

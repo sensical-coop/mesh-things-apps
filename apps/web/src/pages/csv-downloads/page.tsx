@@ -72,13 +72,6 @@ export function CsvDownloadsPage(): ReactElement {
                 "Here you can download your data as CSV files.",
             })}
           </p>
-          <p className="max-w-2xl text-body-regular text-text-secondary">
-            {formatMessage({
-              id: "page.csvDownloads.zipDescription",
-              defaultMessage:
-                "Each zip has a folder per day with CSV files per telemetry type in them.",
-            })}
-          </p>
         </div>
       </div>
       <div className="flex flex-col gap-6">
