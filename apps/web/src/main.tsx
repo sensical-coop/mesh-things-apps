@@ -9,6 +9,7 @@ import { Layout } from "./layout";
 import { authRepository } from "@/features/auth/repository";
 import { router } from "@/router/app-router";
 import { API_URL } from "@/lib/api-url";
+import { readApiError } from "@/lib/api-errors";
 import "./styles.css";
 
 client.setConfig({
@@ -23,7 +24,13 @@ void authRepository.csrf().catch(() => {});
 const queryClient = new QueryClient({
   // Data a page just loaded counts as fresh for a while, so moving between pages, or
   // back to the tab, doesn't refetch it. Mutations still invalidate what they change.
-  defaultOptions: { queries: { staleTime: 30_000 } },
+  // A 429 means the account is over the API's rate limit; retrying only spends more of it.
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: (failureCount, error) => readApiError(error).status !== 429 && failureCount < 3,
+    },
+  },
   queryCache: new QueryCache({
     onError: (error, query) => console.error(`Query failed: ${query.queryKey.join("/")}`, error),
   }),
