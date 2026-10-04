@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   canArchiveDevice,
+  meshSlug,
   awsCliCommand,
   canUseArchive,
   duckdbCommand,
@@ -121,3 +122,8 @@ test("awsCliCommand exports the session and copies the mesh's folder", () => {
   assert.match(awsCliCommand(credentials, credentials.prefix, "it's"), /'it'\\''s'/);
 });
 
+
+test("a mesh's title becomes a plain file name, with a fallback when nothing is left", () => {
+  assert.equal(meshSlug("Barcelona Mesh!"), "barcelona-mesh");
+  assert.equal(meshSlug("¡¡!!"), "mesh");
+});

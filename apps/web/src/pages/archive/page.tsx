@@ -129,12 +129,10 @@ export function ArchivePage(): ReactElement {
                     </div>
                   }
                 />
-                <ArchiveConnectFrame access={access} prefix={currentManifest.data?.prefix} />
+                <ArchiveConnectFrame access={access} prefix={currentManifest.data?.prefix} meshTitle={meshTitle(current)} />
                 <ArchiveFilesFrame
                   key={current.id}
                   meshId={current.id}
-                  meshTitle={meshTitle(current)}
-                  access={access}
                   manifest={currentManifest.data}
                   pending={currentManifest.isPending}
                   failed={currentManifest.isError}

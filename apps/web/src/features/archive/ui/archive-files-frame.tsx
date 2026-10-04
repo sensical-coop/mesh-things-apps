@@ -1,7 +1,7 @@
 import type { ArchiveManifest } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
-import { RiArchiveStackLine, RiCalendarLine, RiHardDrive3Line, RiTerminalBoxLine } from "@remixicon/react";
+import { RiArchiveStackLine, RiCalendarLine, RiHardDrive3Line } from "@remixicon/react";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { Kpi } from "@/components/kpi/kpi";
@@ -9,17 +9,13 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { formatBytes, groupByDay, summarizeArchive } from "@/features/archive/model";
 import type { RequestExportState } from "@/features/export/use-request-export";
-import type { ArchiveCredentialsState } from "@/features/archive/use-archive-credentials";
 import { ArchiveDayRow } from "@/features/archive/ui/archive-day-row";
-import { ArchiveDownloadDialog } from "@/features/archive/ui/archive-download-dialog";
 
 export type ArchiveFilesFrameProps = {
   meshId: string;
-  meshTitle: string;
   manifest: ArchiveManifest | undefined;
   pending: boolean;
   failed: boolean;
-  access: ArchiveCredentialsState;
   requested: RequestExportState;
 };
 
@@ -29,14 +25,13 @@ const DAYS_SHOWN = 14;
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 
 /** What's stored for the mesh, a row per UTC day, newest first; each opens into its hours. */
-export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed, access, requested }: ArchiveFilesFrameProps): ReactElement {
+export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested }: ArchiveFilesFrameProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const partitions = manifest?.partitions ?? [];
   const summary = summarizeArchive(partitions);
   const days = useMemo(() => groupByDay(partitions), [partitions]);
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   const [showAll, setShowAll] = useState(false);
-  const [downloadOpen, setDownloadOpen] = useState(false);
   const shown = showAll ? days : days.slice(0, DAYS_SHOWN);
   const dash = formatMessage({ id: "common.format.emDash", defaultMessage: "—" });
 
@@ -68,13 +63,6 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
                 })}
           </FrameDescription>
         </div>
-        {manifest && partitions.length ? (
-          <div className="flex shrink-0 flex-wrap justify-end gap-2">
-            <Button type="button" size="small" variant="secondary" leadingIcon={RiTerminalBoxLine} onClick={() => setDownloadOpen(true)}>
-              {formatMessage({ id: "feature.archive.files.commandLine", defaultMessage: "Command line" })}
-            </Button>
-          </div>
-        ) : null}
       </FrameHeader>
       <FramePanel className="flex flex-col gap-6">
         {pending ? <SkeletonRows rows={4} /> : null}
@@ -180,17 +168,6 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
           </>
         ) : null}
       </FramePanel>
-      {manifest && downloadOpen ? (
-        <ArchiveDownloadDialog
-          open
-          onClose={() => setDownloadOpen(false)}
-          access={access}
-          prefix={manifest.prefix}
-          meshTitle={meshTitle}
-          files={summary.files}
-          bytes={summary.bytes}
-        />
-      ) : null}
     </Frame>
   );
 }

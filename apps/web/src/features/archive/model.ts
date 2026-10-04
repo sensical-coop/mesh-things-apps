@@ -163,3 +163,8 @@ export function awsCliCommand(credentials: ArchiveCredentials | null, prefix: st
     endpoint ? `${copy} \\\n  --endpoint-url ${shellString(endpoint)}` : copy,
   ].join("\n");
 }
+
+/** A mesh's title as a file or folder name for the commands: `Barcelona Mesh!` → `barcelona-mesh`. */
+export function meshSlug(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "mesh";
+}
