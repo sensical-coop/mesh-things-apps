@@ -93,7 +93,7 @@ export function ArchiveMeshesFrame({ rows, pending, selectedId, onSelect }: Arch
         <FrameDescription>
           {formatMessage({
             id: "feature.archive.meshes.description",
-            defaultMessage: "Each mesh has an archive under its own path in the bucket.",
+            defaultMessage: "Select a mesh below to see the data from its archive.",
           })}
         </FrameDescription>
       </FrameHeader>

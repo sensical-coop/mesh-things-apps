@@ -8,18 +8,18 @@ export function ExportLimits(): ReactElement {
   const { formatMessage } = useIntl();
   const items = [
     formatMessage(
-      { id: "feature.export.limits.days", defaultMessage: "Up to {days} days per download. Split longer periods into several." },
+      { id: "feature.export.limits.days", defaultMessage: "Up to {days} days per download. If you need longer periods of time, you will need to request several files." },
       { days: EXPORT_MAX_DAYS },
     ),
     formatMessage({
       id: "feature.export.limits.oneAtATime",
-      defaultMessage: "One download is prepared at a time. Request the next once the current one is ready.",
+      defaultMessage: "One download is prepared at a time. You will be able to request the next one once the current download is ready.",
     }),
     formatMessage(
       {
         id: "feature.export.limits.kept",
         defaultMessage:
-          "Each file can be downloaded for {hours} hours, and we email you when it's ready. Past downloads stay listed for {days} days so you can request them again.",
+          "Once you request the download, the file will be available for {hours} hours, and we email you when it's ready. Previous downloads stay listed for {days} days so you can request them again.",
       },
       { hours: EXPORT_FILE_HOURS, days: EXPORT_HISTORY_DAYS },
     ),

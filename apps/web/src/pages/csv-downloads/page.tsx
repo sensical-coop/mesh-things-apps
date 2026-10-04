@@ -68,7 +68,14 @@ export function CsvDownloadsPage(): ReactElement {
             {formatMessage({
               id: "page.csvDownloads.description",
               defaultMessage:
-                "Your readings as CSV files, one zip per download, for the meshes you own. Each zip holds a file per measurement and day, and channels.csv with every channel's unit.",
+                "Here you can download your data as CSV files.",
+            })}
+          </p>
+          <p className="max-w-2xl text-body-regular text-text-secondary">
+            {formatMessage({
+              id: "page.csvDownloads.zipDescription",
+              defaultMessage:
+                "Each zip has a folder per day with CSV files per telemetry type in them.",
             })}
           </p>
         </div>
@@ -82,7 +89,7 @@ export function CsvDownloadsPage(): ReactElement {
               <FrameDescription>
                 {formatMessage({
                   id: "page.csvDownloads.new.description",
-                  defaultMessage: "To download another period of a past download, use its calendar button below.",
+                  defaultMessage: "Trigger a new CSV download. Note: If you have already requested a certain device, and you want to request another period, use its calendar button below.",
                 })}
               </FrameDescription>
             </FrameHeader>
@@ -116,7 +123,7 @@ export function CsvDownloadsPage(): ReactElement {
             <FrameDescription>
               {formatMessage({
                 id: "page.csvDownloads.list.description",
-                defaultMessage: "The last 30 days, newest first. This list updates on its own while a download is being prepared.",
+                defaultMessage: "Below you have a list of the last days of requests.",
               })}
             </FrameDescription>
           </FrameHeader>

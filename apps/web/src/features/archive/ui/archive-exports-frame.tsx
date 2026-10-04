@@ -56,7 +56,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested }: ArchiveExpo
           {formatMessage({
             id: "feature.archive.exports.description",
             defaultMessage:
-              "A range of days as one zip, a folder per day with each hour's Parquet file. It's prepared in the background; follow it here.",
+              "Trigger a new export of a range of days. Each zip has a folder per day with a Parquet file per hour in it. Note: If you have already requested a certain period, and you want to request another one, use its calendar button below.",
           })}
         </FrameDescription>
       </FrameHeader>

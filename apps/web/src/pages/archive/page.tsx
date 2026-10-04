@@ -128,6 +128,14 @@ export function ArchivePage(): ReactElement {
                   pending={meshDevices.isPending}
                   failed={meshDevices.isError}
                 />
+                {currentManifest?.data ? (
+                  <ArchiveExportsFrame
+                    key={`exports-${current.id}`}
+                    meshId={current.id}
+                    manifest={currentManifest.data}
+                    requested={requested}
+                  />
+                ) : null}
                 <ArchiveFilesFrame
                   key={current.id}
                   meshId={current.id}
@@ -138,14 +146,6 @@ export function ArchivePage(): ReactElement {
                   failed={currentManifest?.isError ?? false}
                   requested={requested}
                 />
-                {currentManifest?.data ? (
-                  <ArchiveExportsFrame
-                    key={`exports-${current.id}`}
-                    meshId={current.id}
-                    manifest={currentManifest.data}
-                    requested={requested}
-                  />
-                ) : null}
                 <ArchiveConnectFrame access={access} prefix={currentManifest?.data?.prefix} />
               </>
             ) : null}
