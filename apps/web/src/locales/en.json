@@ -274,8 +274,7 @@
 
   "page.alarms.list.title": "Alarms",
   "page.alarms.list.panel.title": "Configured alarms",
-  "page.alarms.list.panel.descriptionByMesh": "Pick a mesh, then open a device to see and configure the alarms on each channel.",
-  "page.alarms.list.meshPicker": "Mesh",
+  "page.alarms.list.panel.descriptionByMesh": "Select a mesh to configure the alarms on each channel.",
   "page.alarms.list.meshesError": "Meshes didn't load. Check your connection to the API and try again.",
   "page.alarms.list.devicesError": "Devices didn't load. Check your connection to the API and try again.",
   "page.alarms.list.measurementsError": "Channels didn't load. Collapse and expand the device to try again.",

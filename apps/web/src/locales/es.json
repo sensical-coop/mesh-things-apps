@@ -274,8 +274,7 @@
 
   "page.alarms.list.title": "Alarmas",
   "page.alarms.list.panel.title": "Alarmas configuradas",
-  "page.alarms.list.panel.descriptionByMesh": "Elige una malla y abre un dispositivo para ver y configurar las alarmas de cada canal.",
-  "page.alarms.list.meshPicker": "Malla",
+  "page.alarms.list.panel.descriptionByMesh": "Selecciona una malla para configurar las alarmas de cada canal.",
   "page.alarms.list.meshesError": "No se han cargado las mallas. Comprueba la conexión con la API e inténtalo de nuevo.",
   "page.alarms.list.devicesError": "No se han cargado los dispositivos. Comprueba la conexión con la API e inténtalo de nuevo.",
   "page.alarms.list.measurementsError": "No se han cargado los canales. Contrae y despliega el dispositivo para reintentarlo.",

@@ -23,7 +23,7 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { matchesListQuery } from "@/lib/list-filter";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { MeshAlarmsList } from "./mesh-alarms-list";
-import { MeshPicker } from "./mesh-picker";
+import { MeshPicker } from "@/features/mesh/ui/mesh-picker";
 
 // One mesh at a time, its devices collapsed until opened: listing every device's channels
 // up front cost two requests per device and ran a large mesh into the API's rate limit.
@@ -122,7 +122,7 @@ export function AlarmsPage(): ReactElement {
           <FrameDescription>
             {formatMessage({
               id: "page.alarms.list.panel.descriptionByMesh",
-              defaultMessage: "Pick a mesh, then open a device to see and configure the alarms on each channel.",
+              defaultMessage: "Select a mesh to configure the alarms on each channel.",
             })}
           </FrameDescription>
         </FrameHeader>
