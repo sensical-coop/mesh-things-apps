@@ -12,7 +12,9 @@ import { archiveRepository } from "@/features/archive/repository";
 import { useArchiveCredentials } from "@/features/archive/use-archive-credentials";
 import { ArchiveConnectFrame } from "@/features/archive/ui/archive-connect-frame";
 import { ArchiveDevicesFrame } from "@/features/archive/ui/archive-devices-frame";
+import { ArchiveExportsFrame } from "@/features/archive/ui/archive-exports-frame";
 import { ArchiveFilesFrame } from "@/features/archive/ui/archive-files-frame";
+import { useRequestExport } from "@/features/export/use-request-export";
 import { ArchiveMeshesFrame, type ArchiveMeshRow } from "@/features/archive/ui/archive-meshes-frame";
 import { deviceRepository } from "@/features/device/repository";
 import { meshRepository } from "@/features/mesh/repository";
@@ -72,6 +74,7 @@ export function ArchivePage(): ReactElement {
     enabled: current != null,
   });
   const access = useArchiveCredentials(current?.id);
+  const requested = useRequestExport();
 
   // Wait for `me` before deciding; members never see this page, and a typed URL goes back to meshes.
   if (me && !isOperator) return <Navigate to={routes.meshes} replace />;
@@ -133,7 +136,16 @@ export function ArchivePage(): ReactElement {
                   manifest={currentManifest?.data}
                   pending={currentManifest?.isPending ?? true}
                   failed={currentManifest?.isError ?? false}
+                  requested={requested}
                 />
+                {currentManifest?.data ? (
+                  <ArchiveExportsFrame
+                    key={`exports-${current.id}`}
+                    meshId={current.id}
+                    manifest={currentManifest.data}
+                    requested={requested}
+                  />
+                ) : null}
                 <ArchiveConnectFrame access={access} prefix={currentManifest?.data?.prefix} />
               </>
             ) : null}

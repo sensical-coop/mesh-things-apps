@@ -1,5 +1,5 @@
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
-import { RiDownloadLine, RiKey2Line } from "@remixicon/react";
+import { Button } from "@mtt/ui/components/base/buttons/button";
+import { RiKey2Line } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { CodeBlock } from "@/components/code-block";
@@ -7,15 +7,13 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useFormatters } from "@/hooks/use-formatters";
-import { API_URL } from "@/lib/api-url";
-import { awsCliCommand, duckdbExportCommand, formatBytes, zipDownloadUrl } from "@/features/archive/model";
+import { awsCliCommand, duckdbExportCommand, formatBytes } from "@/features/archive/model";
 import type { ArchiveCredentialsState } from "@/features/archive/use-archive-credentials";
 
 export type ArchiveDownloadDialogProps = {
   open: boolean;
   onClose: () => void;
   access: ArchiveCredentialsState;
-  meshId: string;
   prefix: string;
   meshTitle: string;
   files: number;
@@ -27,15 +25,14 @@ function slug(text: string): string {
 }
 
 /**
- * The whole archive at once: one zip from the API, a folder per day. The commands
- * suit scripts and large archives: DuckDB merges everything into one file, the AWS CLI
- * mirrors the files and later fetches only what changed.
+ * The whole archive at once. One zip is an export on the page; the commands suit scripts
+ * and large archives: DuckDB merges everything into one file, the AWS CLI mirrors the
+ * files and later fetches only what changed.
  */
 export function ArchiveDownloadDialog({
   open,
   onClose,
   access,
-  meshId,
   prefix,
   meshTitle,
   files,
@@ -64,22 +61,17 @@ export function ArchiveDownloadDialog({
       onClose={onClose}
     >
       <div className="flex min-w-0 flex-col gap-6">
-        <section className="oa-squircle-inset flex flex-col gap-3 bg-background-secondary-default p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-col gap-1">
-            <h3 className="text-body-medium text-text-primary">
-              {formatMessage({ id: "feature.archive.downloadAll.zip", defaultMessage: "Download as one zip file" })}
-            </h3>
-            <p className="text-caption-1-regular text-text-secondary">
-              {formatMessage({
-                id: "feature.archive.downloadAll.zipHint",
-                defaultMessage:
-                  "Download includes a folder per day. Each file is named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet.",
-              })}
-            </p>
-          </div>
-          <ButtonLink href={zipDownloadUrl(API_URL, meshId)} size="small" leadingIcon={RiDownloadLine} className="shrink-0">
-            {formatMessage({ id: "feature.archive.downloadAll.zipButton", defaultMessage: "Download ZIP" })}
-          </ButtonLink>
+        <section className="oa-squircle-inset flex flex-col gap-1 bg-background-secondary-default p-4">
+          <h3 className="text-body-medium text-text-primary">
+            {formatMessage({ id: "feature.archive.downloadAll.zip", defaultMessage: "Download as one zip file" })}
+          </h3>
+          <p className="text-caption-1-regular text-text-secondary">
+            {formatMessage({
+              id: "feature.archive.downloadAll.zipExport",
+              defaultMessage:
+                "Request an export under Exports on this page: a folder per day, each file named after its date and hour, e.g. 2026-09-28/2026-09-28_09.parquet. It's prepared in the background and kept for 24 hours.",
+            })}
+          </p>
         </section>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

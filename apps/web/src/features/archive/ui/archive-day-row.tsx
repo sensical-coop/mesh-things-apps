@@ -1,22 +1,25 @@
-import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
-import { RiArrowDownSLine, RiArrowRightSLine, RiDownloadLine } from "@remixicon/react";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { RiArrowDownSLine, RiArrowRightSLine, RiFolderZipLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
 import { API_URL } from "@/lib/api-url";
-import { formatBytes, partitionDownloadUrl, partitionLabel, zipDownloadUrl, type ArchiveDay } from "@/features/archive/model";
+import { formatBytes, partitionDownloadUrl, partitionLabel, type ArchiveDay } from "@/features/archive/model";
 
 export type ArchiveDayRowProps = {
   meshId: string;
   day: ArchiveDay;
   expanded: boolean;
   onToggle: () => void;
+  /** Request this day as a Parquet export. */
+  onExport: () => void;
+  exporting: boolean;
 };
 
 const cellClass = "h-10 px-3.5 py-0 align-middle";
 
-/** One UTC day of files, downloadable as one zip; expanded, one link per stored hour. */
-export function ArchiveDayRow({ meshId, day, expanded, onToggle }: ArchiveDayRowProps): ReactElement {
+/** One UTC day of files, exportable as one zip; expanded, one link per stored hour. */
+export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, exporting }: ArchiveDayRowProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();
   const hoursId = `archive-hours-${day.dt}`;
@@ -56,18 +59,20 @@ export function ArchiveDayRow({ meshId, day, expanded, onToggle }: ArchiveDayRow
         <td className={`${cellClass} tabular-nums text-text-secondary`}>{formatBytes(day.bytes, locale)}</td>
         <td className={`${cellClass} tabular-nums text-text-secondary`}>{formatWhen(day.lastModified)}</td>
         <td className={`${cellClass} text-right`}>
-          <ButtonLink
-            href={zipDownloadUrl(API_URL, meshId, { start: day.dt, stop: day.dt })}
+          <Button
+            type="button"
             size="xs"
             variant="secondary"
-            leadingIcon={RiDownloadLine}
+            leadingIcon={RiFolderZipLine}
+            disabled={exporting}
             aria-label={formatMessage(
-              { id: "feature.archive.files.downloadDayLabel", defaultMessage: "Download every hour of {day} as a zip" },
+              { id: "feature.archive.files.exportDayLabel", defaultMessage: "Export every hour of {day} as a zip" },
               { day: dayLabel },
             )}
+            onClick={onExport}
           >
-            {formatMessage({ id: "feature.archive.files.downloadDay", defaultMessage: "ZIP" })}
-          </ButtonLink>
+            {formatMessage({ id: "feature.archive.files.exportDay", defaultMessage: "Export" })}
+          </Button>
         </td>
       </tr>
       {expanded ? (

@@ -53,12 +53,6 @@ export function partitionDownloadUrl(apiUrl: string, meshId: string, partition: 
   return `${apiUrl.replace(/\/+$/, "")}/readings/archive/meshes/${meshId}/partitions/${partition.dt}/${partition.hour}`;
 }
 
-/** One zip of a range of days (UTC), named hour by hour; without a range, the whole archive. */
-export function zipDownloadUrl(apiUrl: string, meshId: string, range?: { start: string; stop: string }): string {
-  const base = `${apiUrl.replace(/\/+$/, "")}/readings/archive/meshes/${meshId}/zip`;
-  return range ? `${base}?${new URLSearchParams(range)}` : base;
-}
-
 const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
 
 export function formatBytes(bytes: number, locale?: string): string {

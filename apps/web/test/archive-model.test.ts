@@ -10,7 +10,6 @@ import {
   groupByDay,
   partitionDownloadUrl,
   summarizeArchive,
-  zipDownloadUrl,
 } from "../src/features/archive/model.ts";
 
 const operator = { id: "op", is_superuser: false, role: "operator" as const };
@@ -122,10 +121,3 @@ test("awsCliCommand exports the session and copies the mesh's folder", () => {
   assert.match(awsCliCommand(credentials, credentials.prefix, "it's"), /'it'\\''s'/);
 });
 
-test("zipDownloadUrl asks for a range of days, or everything", () => {
-  assert.equal(
-    zipDownloadUrl("https://api.example.org", "m1", { start: "2026-09-02", stop: "2026-09-02" }),
-    "https://api.example.org/readings/archive/meshes/m1/zip?start=2026-09-02&stop=2026-09-02",
-  );
-  assert.equal(zipDownloadUrl("https://api.example.org/", "m1"), "https://api.example.org/readings/archive/meshes/m1/zip");
-});

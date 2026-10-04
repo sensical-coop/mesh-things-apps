@@ -8,19 +8,35 @@ export type DataMenuProps = {
   onNavigate?: () => void;
   linkClass: string;
   activeClass: string;
+  /** Sources, sinks and the archive are for operators; CSV downloads are for everyone. */
+  isOperator: boolean;
 };
 
 /**
- * Operators' data beyond the dashboards: sources bring remote brokers in, sinks publish
- * readings for other services, and the archive keeps chosen devices' readings as files.
+ * Data beyond the dashboards: CSV downloads for everyone, and for operators sources that
+ * bring remote brokers in, sinks that publish readings, and the archive of chosen devices.
  */
-export function DataMenu(props: DataMenuProps): ReactElement {
+export function DataMenu({ isOperator, ...props }: DataMenuProps): ReactElement {
   const { formatMessage } = useIntl();
+  const csvDownloads = {
+    to: routes.csvDownloads,
+    label: formatMessage({ id: "console.header.data.csvDownloads", defaultMessage: "CSV downloads" }),
+    description: formatMessage({
+      id: "console.header.data.csvDownloadsDescription",
+      defaultMessage: "Your meshes' readings as CSV files",
+    }),
+  };
+  if (!isOperator) {
+    return (
+      <NavMenu {...props} title={formatMessage({ id: "console.header.data", defaultMessage: "Data" })} items={[csvDownloads]} />
+    );
+  }
   return (
     <NavMenu
       {...props}
       title={formatMessage({ id: "console.header.data", defaultMessage: "Data" })}
       items={[
+        csvDownloads,
         {
           to: routes.sources,
           label: formatMessage({ id: "console.footer.sources", defaultMessage: "Sources" }),

@@ -34,6 +34,7 @@ import { kpiIconFor } from "@/components/kpi/kpi-icon";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { canArchiveDevice } from "@/features/archive/model";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
+import { DeviceCsvButton } from "@/features/export/ui/device-csv-button";
 import { ChannelActionsMenu } from "@/features/device/ui/channel-actions-menu";
 import { SeriesChart } from "@/components/series/series-chart";
 import { parseWindowMs } from "@/components/series/fill-gaps";
@@ -229,12 +230,15 @@ export function DeviceDetailPage(): ReactElement {
             </div>
           </div>
           {device.data && canEdit ? (
-            <SettingsButton
-              size="small"
-              className="shrink-0"
-              label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-              onClick={() => setSettingsOpen(true)}
-            />
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <DeviceCsvButton device={device.data} />
+              <SettingsButton
+                size="small"
+                className="shrink-0"
+                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
+                onClick={() => setSettingsOpen(true)}
+              />
+            </div>
           ) : null}
         </div>
         <TabsList className="mt-3 p-1">

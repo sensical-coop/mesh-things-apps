@@ -1,14 +1,14 @@
 import type { ArchiveManifest } from "@mtt/contracts";
-import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
-import { RiArchiveStackLine, RiCalendarLine, RiDownloadLine, RiHardDrive3Line, RiTerminalBoxLine } from "@remixicon/react";
+import { RiArchiveStackLine, RiCalendarLine, RiHardDrive3Line, RiTerminalBoxLine } from "@remixicon/react";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { Kpi } from "@/components/kpi/kpi";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { API_URL } from "@/lib/api-url";
-import { formatBytes, groupByDay, summarizeArchive, zipDownloadUrl } from "@/features/archive/model";
+import { formatBytes, groupByDay, summarizeArchive } from "@/features/archive/model";
+import type { RequestExportState } from "@/features/export/use-request-export";
 import type { ArchiveCredentialsState } from "@/features/archive/use-archive-credentials";
 import { ArchiveDayRow } from "@/features/archive/ui/archive-day-row";
 import { ArchiveDownloadDialog } from "@/features/archive/ui/archive-download-dialog";
@@ -20,6 +20,7 @@ export type ArchiveFilesFrameProps = {
   pending: boolean;
   failed: boolean;
   access: ArchiveCredentialsState;
+  requested: RequestExportState;
 };
 
 /** Two weeks at first; the rest on request. */
@@ -28,7 +29,7 @@ const DAYS_SHOWN = 14;
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 
 /** What's stored for the mesh, a row per UTC day, newest first; each opens into its hours. */
-export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed, access }: ArchiveFilesFrameProps): ReactElement {
+export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed, access, requested }: ArchiveFilesFrameProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const partitions = manifest?.partitions ?? [];
   const summary = summarizeArchive(partitions);
@@ -57,7 +58,7 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
               ? formatMessage(
                   {
                     id: "feature.archive.files.description",
-                    defaultMessage: "Stored under {prefix}. Open a day to download single hours.",
+                    defaultMessage: "Stored under {prefix}. Open a day to download single hours, or export a whole day as a zip.",
                   },
                   { prefix: manifest.prefix },
                 )
@@ -72,9 +73,6 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
             <Button type="button" size="small" variant="secondary" leadingIcon={RiTerminalBoxLine} onClick={() => setDownloadOpen(true)}>
               {formatMessage({ id: "feature.archive.files.commandLine", defaultMessage: "Command line" })}
             </Button>
-            <ButtonLink href={zipDownloadUrl(API_URL, meshId)} size="small" leadingIcon={RiDownloadLine}>
-              {formatMessage({ id: "feature.archive.files.downloadAll", defaultMessage: "Download all (ZIP)" })}
-            </ButtonLink>
           </div>
         ) : null}
       </FrameHeader>
@@ -135,7 +133,7 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
                           {formatMessage({ id: "feature.archive.files.columns.updated", defaultMessage: "Last written" })}
                         </th>
                         <th className={`${headClass} text-right`}>
-                          {formatMessage({ id: "feature.archive.files.columns.download", defaultMessage: "Download" })}
+                          {formatMessage({ id: "feature.archive.files.columns.export", defaultMessage: "Export" })}
                         </th>
                       </tr>
                     </thead>
@@ -147,6 +145,11 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
                           day={day}
                           expanded={expanded.has(day.dt)}
                           onToggle={() => toggle(day.dt)}
+                          exporting={requested.pending}
+                          onExport={() => {
+                            requested.request(meshId, { format: "parquet", start: day.dt, stop: day.dt });
+                            document.getElementById("archive-exports")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }}
                         />
                       ))}
                     </tbody>
@@ -182,7 +185,6 @@ export function ArchiveFilesFrame({ meshId, meshTitle, manifest, pending, failed
           open
           onClose={() => setDownloadOpen(false)}
           access={access}
-          meshId={meshId}
           prefix={manifest.prefix}
           meshTitle={meshTitle}
           files={summary.files}
