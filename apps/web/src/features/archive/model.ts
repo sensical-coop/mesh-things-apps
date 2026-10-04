@@ -24,6 +24,23 @@ export function canArchiveDevice(
   return device.archive_enabled !== undefined && canUseArchive(me, meshOwnerId);
 }
 
+export type MeshArchiveState = {
+  /** Devices whose setting the API sent, so it can be changed from here. */
+  devices: number;
+  archived: number;
+};
+
+/** How many of a mesh's devices are stored, out of those whose setting is known. */
+export function meshArchiveState(devices: readonly Pick<DeviceRead, "archive_enabled">[]): MeshArchiveState {
+  const known = devices.filter((device) => device.archive_enabled !== undefined);
+  return { devices: known.length, archived: known.filter((device) => device.archive_enabled === true).length };
+}
+
+/** The devices a mesh-wide switch has to change to leave every one of them `enabled`. */
+export function devicesToSwitch<T extends Pick<DeviceRead, "archive_enabled">>(devices: readonly T[], enabled: boolean): T[] {
+  return devices.filter((device) => device.archive_enabled !== undefined && device.archive_enabled !== enabled);
+}
+
 export type ArchiveSummary = {
   files: number;
   bytes: number;

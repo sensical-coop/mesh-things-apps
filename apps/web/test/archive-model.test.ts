@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   canArchiveDevice,
+  devicesToSwitch,
+  meshArchiveState,
   meshSlug,
   awsCliCommand,
   canUseArchive,
@@ -126,4 +128,20 @@ test("awsCliCommand exports the session and copies the mesh's folder", () => {
 test("a mesh's title becomes a plain file name, with a fallback when nothing is left", () => {
   assert.equal(meshSlug("Barcelona Mesh!"), "barcelona-mesh");
   assert.equal(meshSlug("¡¡!!"), "mesh");
+});
+
+test("meshArchiveState counts only devices whose setting is known", () => {
+  const devices = [{ archive_enabled: true }, { archive_enabled: false }, { archive_enabled: undefined }, { archive_enabled: true }];
+  assert.deepEqual(meshArchiveState(devices), { devices: 3, archived: 2 });
+  assert.deepEqual(meshArchiveState([]), { devices: 0, archived: 0 });
+});
+
+test("devicesToSwitch leaves out devices already there and those it can't change", () => {
+  const devices = [
+    { id: "a", archive_enabled: true },
+    { id: "b", archive_enabled: false },
+    { id: "c", archive_enabled: undefined },
+  ];
+  assert.deepEqual(devicesToSwitch(devices, true).map((d) => d.id), ["b"]);
+  assert.deepEqual(devicesToSwitch(devices, false).map((d) => d.id), ["a"]);
 });

@@ -58,6 +58,8 @@ import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
 import { MapUnsupported } from "@/components/map-unsupported";
 import { RouterButtonLink } from "@/components/router-button-link";
+import { canArchiveDevice } from "@/features/archive/model";
+import { ArchiveButton } from "@/features/archive/ui/archive-button";
 
 const col = legacyCreateColumnHelper<DeviceRead>();
 
@@ -225,11 +227,12 @@ export function MeshDetailPage(): ReactElement {
                 onClick={() => setSettingsDevice(row.original)}
               />
             ) : null}
+            {canArchiveDevice(row.original, me, mesh.data?.owner_id) ? <ArchiveButton device={row.original} /> : null}
           </div>
         ),
       }),
     ],
-    [formatMessage, formatLastSeen, canEdit],
+    [formatMessage, formatLastSeen, canEdit, me, mesh.data?.owner_id],
   );
 
   return (

@@ -1,4 +1,4 @@
-import type { Mesh } from "@mtt/contracts";
+import type { DeviceRead, Mesh } from "@mtt/contracts";
 import { zMeshesCreateData } from "@mtt/contracts/zod";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
@@ -49,8 +49,10 @@ import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { sourceRepository } from "@/features/source/repository";
 import { RouterButtonLink } from "@/components/router-button-link";
+import { canUseArchive, meshArchiveState } from "@/features/archive/model";
+import { MeshArchiveButton } from "@/features/archive/ui/mesh-archive-button";
 
-type MeshRow = Mesh & { devices: number };
+type MeshRow = Mesh & { devices: number; deviceRows: DeviceRead[] };
 
 /** Select value for "no source": the instance's own broker. */
 const DEFAULT_BROKER = "default";
@@ -89,15 +91,16 @@ export function MeshesPage(): ReactElement {
   });
   const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
   const [meshToEdit, setMeshToEdit] = useState<MeshRow | null>(null);
-  const counts = new Map<string, number>();
-  for (const device of devices.data ?? []) {
-    counts.set(device.mesh_id, (counts.get(device.mesh_id) ?? 0) + 1);
-  }
-
-  const rows = useMemo<MeshRow[]>(
-    () => (meshes.data ?? []).map((mesh) => ({ ...mesh, devices: counts.get(mesh.id) ?? 0 })),
-    [meshes.data, devices.data],
-  );
+  const rows = useMemo<MeshRow[]>(() => {
+    const byMesh = new Map<string, DeviceRead[]>();
+    for (const device of devices.data ?? []) {
+      byMesh.set(device.mesh_id, [...(byMesh.get(device.mesh_id) ?? []), device]);
+    }
+    return (meshes.data ?? []).map((mesh) => {
+      const deviceRows = byMesh.get(mesh.id) ?? [];
+      return { ...mesh, devices: deviceRows.length, deviceRows };
+    });
+  }, [meshes.data, devices.data]);
   // Public meshes can belong to someone else, so say whose.
   const showOwner = isSuperuser || rows.some((row) => row.owner_id !== meId);
   // Only operators have sources; for everyone else every mesh is on the default broker.
@@ -320,6 +323,9 @@ export function MeshesPage(): ReactElement {
         enableSorting: false,
         cell: ({ row }) => {
           const canEdit = canEditMesh(row.original, me);
+          // Only where the API sent each device's setting, which it does for the owner and superusers.
+          const canArchive =
+            canUseArchive(me, row.original.owner_id) && meshArchiveState(row.original.deviceRows).devices > 0;
           return (
             <div className="flex justify-start gap-2 whitespace-nowrap">
               <RouterButtonLink to={routes.mesh} params={{ meshId: row.original.id }} size="xs" variant="secondary">
@@ -331,6 +337,7 @@ export function MeshesPage(): ReactElement {
                   onClick={() => setMeshToEdit(row.original)}
                 />
               ) : null}
+              {canArchive ? <MeshArchiveButton mesh={row.original} devices={row.original.deviceRows} /> : null}
               {canEdit ? (
                 <Button
                   type="button"
