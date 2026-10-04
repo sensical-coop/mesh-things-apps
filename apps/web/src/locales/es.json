@@ -1356,7 +1356,7 @@
   "feature.archive.query.modes.queryLabel": "Comando de DuckDB",
   "feature.archive.query.modes.file": "Un solo fichero (DuckDB)",
   "feature.archive.query.modes.fileHint": "Junta todas las horas en {file}, con dt y hour como columnas.",
-  "feature.archive.query.modes.fileLabel": "Comando de exportación de DuckDB",
+  "feature.archive.query.modes.fileLabel": "Comando de descarga de DuckDB",
   "feature.archive.query.modes.mirror": "Todos los ficheros tal cual (AWS CLI)",
   "feature.archive.query.modes.mirrorHint": "Copia las carpetas dt=…/hour=… en {folder}. Vuelve a ejecutarlo más adelante para traer solo las horas nuevas o reescritas.",
   "feature.archive.query.modes.mirrorLabel": "Comando de AWS CLI",
@@ -1416,7 +1416,7 @@
 
   "console.header.data.csvDownloads": "Descargas CSV",
   "console.header.data.csvDownloadsDescription": "Descarga los datos de tus mallas en CSV",
-  "feature.archive.exports.description": "Solicita una nueva exportación en archivos Parquet. Cada exportación contiene una carpeta por día con los archivos Parquet de cada hora.",
+  "feature.archive.exports.description": "Solicita una nueva descarga de archivos Parquet. Cada descarga contiene una carpeta por día con los archivos Parquet de cada hora.",
   "feature.archive.exports.history": "Historial de descargas. Cuando caduquen, podrás volver a solicitarlas. Para descargar otros rangos de fechas, usa el icono de calendario.",
   "feature.archive.exports.nothing": "Todavía no hay nada que exportar. Los archivos aparecen cuando un dispositivo almacenado envía datos.",
   "feature.archive.exports.request": "Exportar como ZIP",
