@@ -25,10 +25,14 @@ const queryClient = new QueryClient({
   // Data a page just loaded counts as fresh for a while, so moving between pages, or
   // back to the tab, doesn't refetch it. Mutations still invalidate what they change.
   // A 429 means the account is over the API's rate limit; retrying only spends more of it.
+  // A 404 won't change on retry either: the page shows its not-found state straight away.
   defaultOptions: {
     queries: {
       staleTime: 30_000,
-      retry: (failureCount, error) => readApiError(error).status !== 429 && failureCount < 3,
+      retry: (failureCount, error) => {
+        const { status } = readApiError(error);
+        return status !== 429 && status !== 404 && failureCount < 3;
+      },
     },
   },
   queryCache: new QueryCache({

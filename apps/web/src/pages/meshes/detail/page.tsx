@@ -11,7 +11,7 @@ import {
 import { RiAddLine, RiDeleteBinLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
@@ -36,6 +36,7 @@ import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels"
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { matchesListQuery } from "@/lib/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
+import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
@@ -70,6 +71,7 @@ export function MeshDetailPage(): ReactElement {
   const queryClient = useQueryClient();
   const { meshId } = useParams({ from: routes.mesh });
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
+  if (isNotFoundError(mesh.error)) throw notFound();
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
   const { me, isOperator, ownerName } = useOwnerDirectory();
   const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });

@@ -1,7 +1,7 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { useQuery } from "@tanstack/react-query";
-import { Link, Navigate, useParams } from "@tanstack/react-router";
+import { Link, Navigate, notFound, useParams } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
@@ -15,6 +15,7 @@ import {
 } from "@/features/operator-request/ui/decide-operator-request-dialog";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
 import { useFormatters } from "@/hooks/use-formatters";
+import { isNotFoundError } from "@/lib/not-found";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { routes } from "@/router";
 
@@ -29,6 +30,7 @@ export function OperatorRequestPage(): ReactElement {
     ...operatorRequestRepository.retrieve({ path: { request_id: requestId } }),
     enabled: allowed,
   });
+  if (isNotFoundError(request.error)) throw notFound();
   const [decision, setDecision] = useState<OperatorRequestDecision | null>(null);
 
   if (me && !allowed) return <Navigate to={routes.meshes} replace />;

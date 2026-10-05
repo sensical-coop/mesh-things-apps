@@ -2,7 +2,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { SettingsButton } from "@/components/settings-button";
@@ -18,6 +18,7 @@ import { DeleteBlueprintDialog } from "@/features/blueprint/ui/delete-blueprint-
 import { VersionSummary } from "@/features/blueprint/ui/version-summary";
 import { useFormatters } from "@/hooks/use-formatters";
 import { pageHeadingClass } from "@/lib/page-heading";
+import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
 
 /** One blueprint and its versions, newest first. Versions are immutable: changing steps adds one. */
@@ -28,6 +29,7 @@ export function BlueprintPage(): ReactElement {
   const { blueprintId } = useParams({ from: routes.blueprint });
   const { me, meId, ownerName } = useOwnerDirectory();
   const blueprint = useQuery(blueprintRepository.retrieve({ path: { blueprint_id: blueprintId } }));
+  if (isNotFoundError(blueprint.error)) throw notFound();
   const versions = useQuery(blueprintRepository.versions({ path: { blueprint_id: blueprintId } }));
   const [editing, setEditing] = useState(false);
   const [addingVersion, setAddingVersion] = useState(false);
