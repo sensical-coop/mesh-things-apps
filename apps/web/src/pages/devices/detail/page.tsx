@@ -17,7 +17,7 @@ import {
 } from "@mtt/ui/reui/frame";
 import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, notFound, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useIntl, type IntlShape } from "react-intl";
@@ -27,6 +27,7 @@ import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { useMe } from "@/features/auth/use-me";
 import { readingsRepository } from "@/features/readings/repository";
+import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
 import { Kpi } from "@/components/kpi/kpi";
 import { KpiPanel } from "@/components/kpi/kpi-panel";
@@ -67,6 +68,7 @@ export function DeviceDetailPage(): ReactElement {
   const { deviceUuid } = useParams({ from: routes.device });
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(DEVICE_TABS).withDefault("status"));
   const device = useQuery(deviceRepository.retrieve({ path: { device_uuid: deviceUuid } }));
+  if (isNotFoundError(device.error)) throw notFound();
   const mesh = useQuery({
     ...meshRepository.retrieve({
       path: { mesh_id: device.data?.mesh_id ?? "00000000-0000-4000-8000-000000000000" },

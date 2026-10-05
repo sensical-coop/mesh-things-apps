@@ -1498,5 +1498,21 @@
   "page.csvDownloads.new.description": "Trigger a new CSV download.",
   "page.csvDownloads.new.title": "New download",
   "page.csvDownloads.noMeshes": "You can download the readings of meshes you own. You don't own any yet.",
-  "page.csvDownloads.title": "CSV downloads"
+  "page.csvDownloads.title": "CSV downloads",
+
+  "notFound.page.title": "Page not found",
+  "notFound.page.description": "Nothing lives at this address. Check the link, or head back to your meshes.",
+  "notFound.page.back": "Back to meshes",
+  "notFound.mesh.title": "Mesh not found",
+  "notFound.mesh.description": "This mesh doesn't exist, or you don't have access to it.",
+  "notFound.mesh.back": "Back to meshes",
+  "notFound.device.title": "Device not found",
+  "notFound.device.description": "This device doesn't exist, or you don't have access to it.",
+  "notFound.device.back": "Back to devices",
+  "notFound.blueprint.title": "Blueprint not found",
+  "notFound.blueprint.description": "This blueprint doesn't exist, or you don't have access to it.",
+  "notFound.blueprint.back": "Back to blueprints",
+  "notFound.operatorRequest.title": "Request not found",
+  "notFound.operatorRequest.description": "This operator request doesn't exist.",
+  "notFound.operatorRequest.back": "Back to operator requests"
 }

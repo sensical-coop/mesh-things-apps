@@ -27,6 +27,7 @@ import { operatorRequestListPage } from "@/pages/operator-requests/list/route";
 import { dataDeletionListPage } from "@/pages/data-deletions/list/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
+import { NotFound } from "@/components/not-found";
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -81,6 +82,8 @@ const consoleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: routes.console,
   component: Shell,
+  // Unknown console paths render inside the Shell's outlet, chrome and all.
+  notFoundComponent: () => <NotFound />,
 });
 
 const consoleIndexRoute = createRoute({

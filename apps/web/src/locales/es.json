@@ -1498,5 +1498,21 @@
   "page.csvDownloads.new.description": "Solicita una nueva descarga CSV.",
   "page.csvDownloads.new.title": "Nueva descarga",
   "page.csvDownloads.noMeshes": "Puedes descargar las lecturas de las mallas de las que eres propietario. Todavía no tienes ninguna.",
-  "page.csvDownloads.title": "Descargas CSV"
+  "page.csvDownloads.title": "Descargas CSV",
+
+  "notFound.page.title": "Página no encontrada",
+  "notFound.page.description": "No hay nada en esta dirección. Revisa el enlace o vuelve a tus mallas.",
+  "notFound.page.back": "Volver a mallas",
+  "notFound.mesh.title": "Malla no encontrada",
+  "notFound.mesh.description": "Esta malla no existe o no tienes acceso a ella.",
+  "notFound.mesh.back": "Volver a mallas",
+  "notFound.device.title": "Dispositivo no encontrado",
+  "notFound.device.description": "Este dispositivo no existe o no tienes acceso a él.",
+  "notFound.device.back": "Volver a dispositivos",
+  "notFound.blueprint.title": "Blueprint no encontrado",
+  "notFound.blueprint.description": "Este blueprint no existe o no tienes acceso a él.",
+  "notFound.blueprint.back": "Volver a blueprints",
+  "notFound.operatorRequest.title": "Solicitud no encontrada",
+  "notFound.operatorRequest.description": "Esta solicitud de operador no existe.",
+  "notFound.operatorRequest.back": "Volver a solicitudes de operador"
 }
