@@ -175,7 +175,7 @@ const privacyPolicy = [
     headingDefault: "7. Where your data is stored",
     bodyId: "page.terms.privacy.dataStorage.body",
     bodyDefault:
-      "Sensical stores your data on servers in the European Union and doesn't transfer it outside the European Economic Area. When you view a map, though, your browser loads map tiles and map code directly from CARTO, OpenFreeMap and unpkg. Those services receive your IP address and may serve the request from outside the European Union, under their own privacy policies.",
+      "Sensical stores your data on servers in the European Union and doesn't transfer it outside the European Economic Area. When you view a map, though, your browser loads map tiles and styles directly from CARTO and OpenFreeMap. Those services receive your IP address and may serve the request from outside the European Union, under their own privacy policies.",
   },
   {
     id: "security",
