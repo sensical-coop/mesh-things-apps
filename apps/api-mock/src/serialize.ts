@@ -258,6 +258,7 @@ export function ownerReadJson(
     created_at: actor.createdAt,
     alarm_email_cooldown_seconds: actor.alarmEmailCooldownSeconds,
     status_alerts_enabled: actor.statusAlertsEnabled,
+    source_rate_alerts_enabled: actor.sourceRateAlertsEnabled,
     terms_accepted_version: accountTermsVersion,
   };
 }

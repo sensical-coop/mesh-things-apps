@@ -663,7 +663,8 @@ export const zOwnerUpdate = z.object({
         z.int().gte(0).lte(2592000),
         z.null()
     ])),
-    status_alerts_enabled: z.optional(z.boolean())
+    status_alerts_enabled: z.optional(z.boolean()),
+    source_rate_alerts_enabled: z.optional(z.boolean())
 });
 
 export const zPoint = z.object({
@@ -983,6 +984,7 @@ export const zOwnerProfile = z.object({
         z.null()
     ]).readonly(),
     status_alerts_enabled: z.boolean().readonly(),
+    source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.union([
         z.string().readonly(),
         z.null()
@@ -1022,6 +1024,7 @@ export const zOwnerRead = z.object({
         z.null()
     ]).readonly(),
     status_alerts_enabled: z.boolean().readonly(),
+    source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.union([
         z.string().readonly(),
         z.null()
@@ -1061,6 +1064,7 @@ export const zOwnerWithApiKey = z.object({
         z.null()
     ]).readonly(),
     status_alerts_enabled: z.boolean().readonly(),
+    source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.union([
         z.string().readonly(),
         z.null()

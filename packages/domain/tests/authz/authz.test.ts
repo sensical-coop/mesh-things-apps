@@ -35,6 +35,7 @@ function actor(role: Actor["role"], id = "ada"): Actor {
     lastLogin: null,
     alarmEmailCooldownSeconds: null,
     statusAlertsEnabled: false,
+    sourceRateAlertsEnabled: false,
   };
 }
 

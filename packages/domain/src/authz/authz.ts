@@ -11,6 +11,8 @@ export type Actor = {
   lastLogin: string | null;
   alarmEmailCooldownSeconds: number | null;
   statusAlertsEnabled: boolean;
+  /** Emails about this owner's sources that stay busier than the instance allows. */
+  sourceRateAlertsEnabled: boolean;
 };
 
 export type Owned = { ownerId: string };
