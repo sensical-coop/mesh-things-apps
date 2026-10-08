@@ -27,7 +27,8 @@ const sectionTitleClass = "text-body-medium text-text-primary";
 
 /**
  * The profile's "Notifications" panel: how often alarm emails repeat, and, for
- * operators, whether to be emailed when one of their sources or sinks stops working.
+ * operators, whether to be emailed when one of their sources or sinks stops working
+ * or a source is unusually busy.
  */
 export function NotificationsPanel(): ReactElement {
   const { formatMessage } = useIntl();
@@ -42,7 +43,9 @@ export function NotificationsPanel(): ReactElement {
     },
     onError: (failure) => {
       const fields = readApiError(failure).fields;
-      setError(fields.alarm_email_cooldown_seconds ?? fields.status_alerts_enabled ?? null);
+      setError(
+        fields.alarm_email_cooldown_seconds ?? fields.status_alerts_enabled ?? fields.source_rate_alerts_enabled ?? null,
+      );
     },
   });
 
@@ -54,7 +57,12 @@ export function NotificationsPanel(): ReactElement {
     const parsed = zOwnersMeUpdateData.safeParse({
       body: {
         alarm_email_cooldown_seconds: seconds,
-        ...(isOperator ? { status_alerts_enabled: form.get("status_alerts_enabled") === "on" } : {}),
+        ...(isOperator
+          ? {
+              status_alerts_enabled: form.get("status_alerts_enabled") === "on",
+              source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
+            }
+          : {}),
       },
     });
     if (!parsed.success) {
@@ -129,6 +137,28 @@ export function NotificationsPanel(): ReactElement {
                           id: "page.profile.statusAlerts.hint",
                           defaultMessage:
                             "Sent once when a source you created stays disconnected, or a sink with meshes or devices attached has nobody connected.",
+                        })}
+                      </FieldDescription>
+                    </FieldContent>
+                  </Field>
+                  <Field orientation="horizontal">
+                    <Checkbox
+                      id="profile-source-rate-alerts"
+                      name="source_rate_alerts_enabled"
+                      defaultChecked={me.source_rate_alerts_enabled}
+                    />
+                    <FieldContent>
+                      <FieldLabel htmlFor="profile-source-rate-alerts" className="text-body-regular text-text-primary">
+                        {formatMessage({
+                          id: "page.profile.sourceRateAlerts.label",
+                          defaultMessage: "Email me when a source is unusually busy",
+                        })}
+                      </FieldLabel>
+                      <FieldDescription className="text-caption-1-regular text-text-tertiary">
+                        {formatMessage({
+                          id: "page.profile.sourceRateAlerts.hint",
+                          defaultMessage:
+                            "Sent once when a source you created averages more messages per second over an hour than this instance allows. Administrators are always told.",
                         })}
                       </FieldDescription>
                     </FieldContent>

@@ -320,6 +320,8 @@
   "page.profile.statusAlerts.title": "Avisos de estado",
   "page.profile.statusAlerts.label": "Avisarme por email cuando una fuente o un destino deje de funcionar",
   "page.profile.statusAlerts.hint": "Se envía una vez cuando una fuente que creaste sigue desconectada, o cuando nadie está conectado a un destino con mallas o dispositivos asociados.",
+  "page.profile.sourceRateAlerts.label": "Avisarme por email cuando una fuente tenga un tráfico inusual",
+  "page.profile.sourceRateAlerts.hint": "Se envía una vez cuando una fuente que creaste supera, de media durante una hora, los mensajes por segundo que permite esta instancia. Los administradores siempre reciben el aviso.",
   "page.profile.dangerZone.title": "Zona de peligro",
   "page.profile.dangerZone.description": "Elimina tu cuenta y todo lo que posees. Esta acción no se puede deshacer.",
   "page.profile.dangerZone.delete": "Eliminar cuenta",

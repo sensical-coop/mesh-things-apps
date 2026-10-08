@@ -1161,10 +1161,25 @@ export const ownersMeRetrieveOptions = (options?: Options<OwnersMeRetrieveData>)
 });
 
 /**
- * Update the authenticated owner's name or email address.
+ * Update the authenticated owner's name, email address, or email preferences.
  *
- * Changing the address deactivates the account until the new one is
- * verified, and sends a fresh verification email.
+ * Changing the email address deactivates the account until the new one
+ * is verified, and sends a fresh verification email.
+ *
+ * Args:
+ * alarm_email_cooldown_seconds: Length of a device's alarm window,
+ * in seconds. The first alarm on a device is emailed straight
+ * away; any further alarms on that device during the window are
+ * sent as one summary when it ends. Accepts 0 (email on every
+ * alarm, no summaries) up to 2592000 (30 days). Leave unset or
+ * null to use the server default.
+ * status_alerts_enabled: Email me when a source I created stays
+ * disconnected, or a sink I created with meshes or devices
+ * attached has nobody connected. Defaults to false.
+ * source_rate_alerts_enabled: Email me when a source I created
+ * averages more messages per second over an hour than this
+ * instance allows. Defaults to false. Superusers are always
+ * emailed about busy sources.
  */
 export const ownersMeUpdateMutation = (options?: Partial<Options<OwnersMeUpdateData>>): UseMutationOptions<OwnersMeUpdateResponse, DefaultError, Options<OwnersMeUpdateData>> => {
     const mutationOptions: UseMutationOptions<OwnersMeUpdateResponse, DefaultError, Options<OwnersMeUpdateData>> = {

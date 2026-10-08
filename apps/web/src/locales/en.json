@@ -320,6 +320,8 @@
   "page.profile.statusAlerts.title": "Status alerts",
   "page.profile.statusAlerts.label": "Email me when a source or sink stops working",
   "page.profile.statusAlerts.hint": "Sent once when a source you created stays disconnected, or a sink with meshes or devices attached has nobody connected.",
+  "page.profile.sourceRateAlerts.label": "Email me when a source is unusually busy",
+  "page.profile.sourceRateAlerts.hint": "Sent once when a source you created averages more messages per second over an hour than this instance allows. Administrators are always told.",
   "page.profile.dangerZone.title": "Danger zone",
   "page.profile.dangerZone.description": "Delete your account and everything you own. This can't be undone.",
   "page.profile.dangerZone.delete": "Delete account",

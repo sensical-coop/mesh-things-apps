@@ -90,6 +90,7 @@ export async function seedStore(auth: MockAuth): Promise<Store> {
       lastLogin: null,
       alarmEmailCooldownSeconds: null,
       statusAlertsEnabled: false,
+      sourceRateAlertsEnabled: false,
     };
     actors.set(actor.id, actor);
     ids[account.key] = actor.id;

@@ -673,6 +673,10 @@ export type OwnerProfile = {
      */
     readonly status_alerts_enabled: boolean;
     /**
+     * Whether the owner is emailed when a source they created averages more messages per second over an hour than the instance allows.
+     */
+    readonly source_rate_alerts_enabled: boolean;
+    /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
@@ -720,6 +724,10 @@ export type OwnerRead = {
      */
     readonly status_alerts_enabled: boolean;
     /**
+     * Whether the owner is emailed when a source they created averages more messages per second over an hour than the instance allows.
+     */
+    readonly source_rate_alerts_enabled: boolean;
+    /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
@@ -755,6 +763,10 @@ export type OwnerUpdate = {
      * Email me when a source I created stays disconnected, or a sink I created with meshes or devices attached has nobody connected. Off by default.
      */
     status_alerts_enabled?: boolean;
+    /**
+     * Email me when a source I created stays busier than this instance allows, in messages per second averaged over an hour. Off by default. Superusers are always emailed.
+     */
+    source_rate_alerts_enabled?: boolean;
 };
 
 /**
@@ -785,6 +797,10 @@ export type OwnerWithApiKey = {
      * Whether the owner is emailed when a source they created stays disconnected, or a sink they created with meshes or devices attached has nobody connected.
      */
     readonly status_alerts_enabled: boolean;
+    /**
+     * Whether the owner is emailed when a source they created averages more messages per second over an hour than the instance allows.
+     */
+    readonly source_rate_alerts_enabled: boolean;
     /**
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
