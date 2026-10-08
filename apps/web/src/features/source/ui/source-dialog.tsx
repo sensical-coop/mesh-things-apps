@@ -14,7 +14,7 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { issueErrors, readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { sourceTitle, validateSourceFields } from "@/features/source/model";
+import { normalizeRoot, sourceTitle, validateSourceFields } from "@/features/source/model";
 import type { TermsAcceptance } from "@/features/terms/model";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
@@ -156,7 +156,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
       ...(editing || !termsAcceptance
         ? {}
         : { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }),
-      topic: String(form.get("topic") ?? "").trim(),
+      root: normalizeRoot(String(form.get("root") ?? "")),
       qos: Number(form.get("qos") ?? 1),
     };
     const checks = validateSourceFields(body);
@@ -194,7 +194,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
           : formatMessage({
               id: "feature.source.createDialog.description",
               defaultMessage:
-                "Bridge a topic from another MQTT broker into this instance. Only you can see it and attach meshes to it.",
+                "Bridge another MQTT broker into this instance. Channels are subscribed once a mesh on it has a gateway or discovery on. Only you can see it and attach meshes to it.",
             })
       }
       onClose={close}
@@ -220,15 +220,16 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
             <Input id="source-server" name="server" required autoComplete="off" defaultValue={source?.server} />
           </FormField>
           <FormField
-            id="source-topic"
-            label={formatMessage({ id: "feature.source.createDialog.topic", defaultMessage: "Topic filter" })}
+            id="source-root"
+            label={formatMessage({ id: "feature.source.createDialog.root", defaultMessage: "Topic root" })}
             hint={formatMessage({
-              id: "feature.source.createDialog.topicHint",
-              defaultMessage: "For example msh/EU_868/2/e/MyChannel/#. $share and $SYS topics are not accepted.",
+              id: "feature.source.createDialog.rootHint",
+              defaultMessage:
+                "The part of the gateways' topics before /2/e, for example msh/EU_868. No wildcards: each mesh's channel is subscribed beneath it.",
             })}
-            error={errors.topic}
+            error={errors.root}
           >
-            <Input id="source-topic" name="topic" required autoComplete="off" defaultValue={source?.topic} />
+            <Input id="source-root" name="root" required autoComplete="off" defaultValue={source?.root} />
           </FormField>
           <FormCheckbox
             id="source-ssl"

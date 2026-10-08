@@ -75,8 +75,8 @@ export function SourcesPage(): ReactElement {
         header: formatMessage({ id: "page.sources.list.columns.server", defaultMessage: "Server" }),
         cell: (info) => <span className="font-mono text-text-secondary">{info.getValue()}</span>,
       }),
-      col.accessor("topic", {
-        header: formatMessage({ id: "page.sources.list.columns.topic", defaultMessage: "Topic filter" }),
+      col.accessor("root", {
+        header: formatMessage({ id: "page.sources.list.columns.root", defaultMessage: "Topic root" }),
         cell: (info) => <span className="font-mono text-text-secondary">{info.getValue()}</span>,
       }),
       col.accessor((row) => row.ssl ?? true, {
@@ -233,7 +233,7 @@ export function SourcesPage(): ReactElement {
                 pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                 empty={formatMessage({
                   id: "page.sources.list.empty",
-                  defaultMessage: "No sources yet. Add one to bridge a topic from another broker.",
+                  defaultMessage: "No sources yet. Add one to bridge meshes from another broker.",
                 })}
               />
             )}

@@ -1099,7 +1099,7 @@ export const zSourceCreate = z.object({
         z.string().max(255),
         z.null()
     ])),
-    topic: z.string().max(1024),
+    root: z.string().max(1024),
     qos: z.optional(zQosEnum),
     created_by_id: z.union([
         z.uuid().readonly(),
@@ -1124,7 +1124,7 @@ export const zSourceRead = z.object({
         z.string().max(255),
         z.null()
     ])),
-    topic: z.string().max(1024),
+    root: z.string().max(1024),
     qos: z.optional(zQosEnum),
     created_by_id: z.union([
         z.uuid().readonly(),
@@ -1162,7 +1162,7 @@ export const zSourceUpdate = z.object({
         z.string().max(255),
         z.null()
     ])),
-    topic: z.optional(z.string().max(1024)),
+    root: z.optional(z.string().max(1024)),
     qos: z.optional(zQosEnum),
     created_by_id: z.union([
         z.uuid().readonly(),
@@ -1651,7 +1651,7 @@ export const zSourceCreateWritable = z.object({
         z.string(),
         z.null()
     ])),
-    topic: z.string().max(1024),
+    root: z.string().max(1024),
     qos: z.optional(zQosEnum),
     terms_version: z.optional(z.string()),
     terms_locale: z.optional(zTermsLocaleEnum)
@@ -1675,7 +1675,7 @@ export const zSourceReadWritable = z.object({
         z.string(),
         z.null()
     ])),
-    topic: z.string().max(1024),
+    root: z.string().max(1024),
     qos: z.optional(zQosEnum)
 });
 
@@ -1697,7 +1697,7 @@ export const zSourceUpdateWritable = z.object({
         z.string(),
         z.null()
     ])),
-    topic: z.optional(z.string().max(1024)),
+    root: z.optional(z.string().max(1024)),
     qos: z.optional(zQosEnum)
 });
 

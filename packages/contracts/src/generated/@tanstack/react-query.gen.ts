@@ -124,9 +124,10 @@ export const devicesListOptions = (options?: Options<DevicesListData>) => queryO
 /**
  * Register a device on a mesh the caller owns.
  *
- * Registering a gateway authorizes its traffic to be decoded. A
- * device can only move to another mesh once its current registration has
- * been disallowed.
+ * Registering a gateway authorizes its traffic to be decoded. On a mesh
+ * bridged from a source, the gateway is also added to the source's bridge,
+ * and nothing is registered if that fails. A device can only move to
+ * another mesh once its current registration has been disallowed.
  */
 export const devicesCreateMutation = (options?: Partial<Options<DevicesCreateData>>): UseMutationOptions<DevicesCreateResponse, DefaultError, Options<DevicesCreateData>> => {
     const mutationOptions: UseMutationOptions<DevicesCreateResponse, DefaultError, Options<DevicesCreateData>> = {
@@ -190,8 +191,11 @@ export const devicesRetrieveOptions = (options: Options<DevicesRetrieveData>) =>
  * `archive_enabled` stores the device's readings in the Parquet archive from
  * then on. It is accepted only on a mesh owned by an operator and on
  * instances that run the archive. Turning it off stops storing new readings
- * and keeps those already stored. The setting is rolled back if the
- * pipeline cannot be told about it.
+ * and keeps those already stored.
+ *
+ * Nothing in the request is applied if the pipeline, or for a gateway on a
+ * source that source's bridge, cannot be told about a change to
+ * `archive_enabled` or `is_allowed`.
  */
 export const devicesUpdateMutation = (options?: Partial<Options<DevicesUpdateData>>): UseMutationOptions<DevicesUpdateResponse, DefaultError, Options<DevicesUpdateData>> => {
     const mutationOptions: UseMutationOptions<DevicesUpdateResponse, DefaultError, Options<DevicesUpdateData>> = {
@@ -691,6 +695,24 @@ export const meshesListOptions = (options?: Options<MeshesListData>) => queryOpt
 
 /**
  * Create a mesh owned by the caller.
+ *
+ * A mesh on the default broker needs its mesh terms accepted, which are
+ * recorded with it. A mesh on a source is covered by the source's terms, and
+ * is not created if the source's bridge cannot be updated.
+ *
+ * Args:
+ * source_id: Source the mesh's traffic is bridged from, which must be
+ * one the caller created, or any source for a superuser. Leave
+ * unset for traffic on this instance's own broker.
+ * discover_gateways: Register gateways automatically once one of their
+ * packets decodes with this mesh's channel and pre-shared key.
+ * Defaults to `false`. Only an operator may switch it on for a mesh
+ * with a default or blank key.
+ * terms_version: The `version` of the mesh terms accepted. Required
+ * without a source, ignored with one, and ignored on an instance
+ * that does not enforce terms.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const meshesCreateMutation = (options?: Partial<Options<MeshesCreateData>>): UseMutationOptions<MeshesCreateResponse, DefaultError, Options<MeshesCreateData>> => {
     const mutationOptions: UseMutationOptions<MeshesCreateResponse, DefaultError, Options<MeshesCreateData>> = {
@@ -778,7 +800,9 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
  * Changing the channel_id, the pre-shared key or the source redistributes
  * them to every allowed gateway on the mesh, and the whole update is
  * rolled back if that fails. Once the source changes, the mesh's gateways
- * are only accepted through the new one.
+ * are only accepted through the new one. On a source, changing the channel,
+ * the source or `discover_gateways` also updates which channels and gateways
+ * the source bridges, and the update is rolled back if that fails.
  *
  * Args:
  * source_id: Source to bridge the mesh's traffic from, which must be one
@@ -795,7 +819,8 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
  * a default or blank key.
  * terms_version: The `version` of the mesh terms accepted. Required when
  * moving the mesh onto the default broker unless it already holds a
- * current acceptance; ignored otherwise.
+ * current acceptance, or the instance does not enforce terms;
+ * ignored otherwise.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
@@ -2305,7 +2330,7 @@ export const sourcesListOptions = (options?: Options<SourcesListData>) => queryO
 });
 
 /**
- * Create a source and start bridging its remote topic into this instance. Operators only.
+ * Create a source and connect this instance to its remote broker. Operators only.
  *
  * The caller must first accept the current source terms. The acceptance
  * is recorded with the source. Nothing is kept if the bridge cannot be set
@@ -2317,12 +2342,14 @@ export const sourcesListOptions = (options?: Options<SourcesListData>) => queryO
  * ssl: Connect to the remote broker over TLS. Defaults to true.
  * username: Remote broker username, if it requires one.
  * password: Remote broker password. Accepted but never returned.
- * topic: Remote topic filter, for example `msh/EU_868/2/e/MyChannel/#`.
- * `$share`, `$SYS` and filters the server has blocked, such as `#`,
- * are rejected.
+ * root: Remote topic root, the part of the gateways' topics before
+ * `/2/e`, for example `msh/EU_868`. Must be literal, without
+ * wildcards. Each channel used by the source's meshes is subscribed
+ * beneath it once one of them has a gateway or discovery on.
  * qos: 0 or 1. Defaults to 1.
  * terms_version: The `version` of the source terms the caller accepted.
- * Required, and refused once the terms have changed.
+ * Required, and refused once the terms have changed, unless the
+ * instance does not enforce terms.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */

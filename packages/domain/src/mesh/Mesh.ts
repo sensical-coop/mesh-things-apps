@@ -86,3 +86,8 @@ export function meshFilterValue(mesh: Mesh, field: string): string | undefined {
       return undefined;
   }
 }
+
+/** Why a channel name is refused, with the API's message: it is one level of an MQTT topic. */
+export function channelIdError(value: string): string | undefined {
+  return /[/+#]/.test(value) ? "A channel name cannot contain /, + or #." : undefined;
+}

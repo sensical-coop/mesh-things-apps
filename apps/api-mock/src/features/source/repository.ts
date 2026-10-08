@@ -21,7 +21,7 @@ export class MemorySources {
       ssl: input.ssl ?? true,
       username: input.username ?? null,
       password: input.password ?? null,
-      topic: input.topic,
+      root: input.root,
       qos: input.qos ?? 1,
       createdById: input.createdById,
       termsAcceptedVersion: null,
