@@ -43,7 +43,7 @@ export function sourceJson(source: Source) {
     server: source.server,
     ssl: source.ssl,
     username: source.username,
-    topic: source.topic,
+    root: source.root,
     qos: source.qos,
     terms_accepted_version: source.termsAcceptedVersion,
     terms_expires_at: source.termsExpiresAt,

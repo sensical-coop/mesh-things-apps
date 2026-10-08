@@ -7,7 +7,7 @@ import { sourceTitle } from "@/features/source/model";
 export type MeshSourceLabelProps = {
   mesh: Pick<Mesh, "source_id">;
   /** The caller's own sources, to name the one the mesh uses. */
-  sources: readonly Pick<SourceRead, "id" | "label" | "server" | "topic">[];
+  sources: readonly Pick<SourceRead, "id" | "label" | "server" | "root">[];
 };
 
 /**

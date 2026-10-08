@@ -36,7 +36,7 @@ import {
   type TelemetryVariantFilter,
 } from "@mtt/domain/device/TelemetryVariantFilter";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
-import type { Mesh } from "@mtt/domain/mesh/Mesh";
+import { channelIdError, type Mesh } from "@mtt/domain/mesh/Mesh";
 import {
   canDecideOperatorRequests,
   canManageSinks,
@@ -59,7 +59,7 @@ import {
   visibleSources,
   type Actor,
 } from "@mtt/domain/authz/authz";
-import { validateSource, type Source } from "@mtt/domain/source/Source";
+import { normalizeRoot, validateSource, type Source } from "@mtt/domain/source/Source";
 import { orderStreams, type Sink } from "@mtt/domain/sink/Sink";
 import { SINKS_ENABLED } from "./features/sink/repository";
 import type { DataDeletionReason } from "./features/data-deletion/repository";
@@ -195,19 +195,19 @@ function credentialErrors(username: string | null | undefined, password: string 
   return password && !username ? { username: ["A password needs a username."] } : {};
 }
 
-// Mirrors REGISTRY__SOURCES_BLOCKED_TOPICS left blank, which blocks `#`.
-const SOURCES_BLOCKED_TOPICS = new Set(["#"]);
+// Stands in for REGISTRY__SOURCES_BLOCKED_ROOTS.
+const SOURCES_BLOCKED_ROOTS = new Set(["msh/blocked"]);
 
 /** The server-side source checks, including the ones only the API can make. */
-function sourceErrors(input: Partial<Pick<Source, "server" | "topic" | "qos">>): Record<string, string[]> {
+function sourceErrors(input: Partial<Pick<Source, "server" | "root" | "qos">>): Record<string, string[]> {
   const errors: Record<string, string[]> = {};
   for (const [key, message] of Object.entries(validateSource(input))) errors[key] = [message];
   const host = input.server?.trim().slice(0, input.server.trim().lastIndexOf(":")).toLowerCase();
   if (!errors.server && (host === "localhost" || host === "emqx")) {
     errors.server = ["A source cannot point at this instance's own broker."];
   }
-  if (!errors.topic && input.topic !== undefined && SOURCES_BLOCKED_TOPICS.has(input.topic.trim())) {
-    errors.topic = ["This topic filter is not allowed as a source."];
+  if (!errors.root && input.root !== undefined && SOURCES_BLOCKED_ROOTS.has(normalizeRoot(input.root))) {
+    errors.root = ["This topic root is not allowed as a source."];
   }
   return errors;
 }
@@ -860,6 +860,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (sourceId !== null && !(await canAttachSource(actor, sourceId, null))) {
       return c.json({ source_id: [`Invalid pk "${sourceId}" - object does not exist.`] }, 400);
     }
+    const channelError = channelIdError(parsed.data.body.channel_id);
+    if (channelError) return c.json({ channel_id: [channelError] }, 400);
     // On the default broker the mesh's own terms apply; on a source, the source's.
     if (sourceId === null) {
       const termsError = termsVersionError("mesh", parsed.data.body.terms_version);
@@ -941,6 +943,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (patch.source_id && !(await canAttachSource(actor, patch.source_id, mesh.sourceId))) {
       return c.json({ source_id: [`Invalid pk "${patch.source_id}" - object does not exist.`] }, 400);
     }
+    const channelError = patch.channel_id === undefined ? undefined : channelIdError(patch.channel_id);
+    if (channelError) return c.json({ channel_id: [channelError] }, 400);
     // Moving onto the default broker needs the mesh terms, unless it already holds a current acceptance.
     const toDefault = patch.source_id === null && mesh.sourceId !== null;
     if (toDefault && !meshTermsCurrent(mesh)) {
@@ -1196,7 +1200,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       ssl: input.ssl,
       username: input.username ?? null,
       password: input.password || null,
-      topic: input.topic.trim(),
+      root: normalizeRoot(input.root),
       qos: input.qos,
       createdById: actor.id,
     });
@@ -1262,11 +1266,11 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     // Any subset of the fields; "" or null removes the password and keeps the username.
     const input = parsed.data.body ?? {};
     const server = input.server?.trim();
-    const topic = input.topic?.trim();
+    const root = input.root === undefined ? undefined : normalizeRoot(input.root);
     const username = input.username === undefined ? source.username : input.username;
     const password = input.password === undefined ? source.password : input.password || null;
     const errors = {
-      ...sourceErrors({ server, topic, qos: input.qos }),
+      ...sourceErrors({ server, root, qos: input.qos }),
       ...credentialErrors(username, password),
     };
     if (Object.keys(errors).length) return c.json(errors, 400);
@@ -1279,7 +1283,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       ssl: input.ssl,
       username: input.username,
       password: input.password === undefined ? undefined : password,
-      topic,
+      root,
       qos: input.qos,
     });
     if (!updated) return c.json({ detail: "Source not found" }, 404);

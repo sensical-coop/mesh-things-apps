@@ -482,6 +482,9 @@ export type MeasurementTypeUpdate = {
 
 export type Mesh = {
     readonly id: string;
+    /**
+     * Channel name, as it appears in the gateways' MQTT topics.
+     */
     channel_id: string;
     /**
      * Base64-encoded channel PSK
@@ -521,6 +524,9 @@ export type Mesh = {
  * POST /meshes input
  */
 export type MeshCreate = {
+    /**
+     * Channel name, as it appears in the gateways' MQTT topics.
+     */
     channel_id: string;
     /**
      * Base64-encoded channel PSK
@@ -545,6 +551,9 @@ export type MeshCreate = {
  * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export type MeshUpdate = {
+    /**
+     * Channel name, as it appears in the gateways' MQTT topics.
+     */
     channel_id?: string;
     label?: string | null;
     is_public?: boolean;
@@ -1042,9 +1051,9 @@ export type SourceCreate = {
     ssl?: boolean;
     username?: string | null;
     /**
-     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     * Remote topic root, the part before /2/e, for example msh/EU_868. One subscription per channel is made beneath it.
      */
-    topic: string;
+    root: string;
     qos?: QosEnum;
     readonly created_by_id: string | null;
     readonly created_at: string;
@@ -1064,9 +1073,9 @@ export type SourceRead = {
     ssl?: boolean;
     username?: string | null;
     /**
-     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     * Remote topic root, the part before /2/e, for example msh/EU_868. One subscription per channel is made beneath it.
      */
-    topic: string;
+    root: string;
     qos?: QosEnum;
     readonly created_by_id: string | null;
     readonly created_at: string;
@@ -1133,9 +1142,9 @@ export type SourceUpdate = {
     ssl?: boolean;
     username?: string | null;
     /**
-     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     * Remote topic root, the part before /2/e, for example msh/EU_868. One subscription per channel is made beneath it.
      */
-    topic?: string;
+    root?: string;
     qos?: QosEnum;
     readonly created_by_id: string | null;
     readonly created_at: string;
@@ -1306,6 +1315,9 @@ export type DeviceUpdateWritable = {
 };
 
 export type MeshWritable = {
+    /**
+     * Channel name, as it appears in the gateways' MQTT topics.
+     */
     channel_id: string;
     /**
      * Base64-encoded channel PSK
@@ -1330,6 +1342,9 @@ export type MeshWritable = {
  * POST /meshes input
  */
 export type MeshCreateWritable = {
+    /**
+     * Channel name, as it appears in the gateways' MQTT topics.
+     */
     channel_id: string;
     /**
      * Base64-encoded channel PSK
@@ -1362,6 +1377,9 @@ export type MeshCreateWritable = {
  * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
  */
 export type MeshUpdateWritable = {
+    /**
+     * Channel name, as it appears in the gateways' MQTT topics.
+     */
     channel_id?: string;
     /**
      * Base64-encoded channel PSK
@@ -1477,9 +1495,9 @@ export type SourceCreateWritable = {
      */
     password?: string | null;
     /**
-     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     * Remote topic root, the part before /2/e, for example msh/EU_868. One subscription per channel is made beneath it.
      */
-    topic: string;
+    root: string;
     qos?: QosEnum;
     /**
      * Required when the instance enforces terms (REGISTRY__TERMS_ENFORCED, on by default); ignored otherwise. Version of the terms accepted, as served by the terms endpoint.
@@ -1510,9 +1528,9 @@ export type SourceReadWritable = {
      */
     password?: string | null;
     /**
-     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     * Remote topic root, the part before /2/e, for example msh/EU_868. One subscription per channel is made beneath it.
      */
-    topic: string;
+    root: string;
     qos?: QosEnum;
 };
 
@@ -1532,9 +1550,9 @@ export type SourceUpdateWritable = {
      */
     password?: string | null;
     /**
-     * Remote topic filter, for example msh/EU_868/2/e/MyChannel/#.
+     * Remote topic root, the part before /2/e, for example msh/EU_868. One subscription per channel is made beneath it.
      */
-    topic?: string;
+    root?: string;
     qos?: QosEnum;
 };
 

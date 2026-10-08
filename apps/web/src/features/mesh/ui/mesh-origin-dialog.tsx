@@ -9,7 +9,7 @@ import { sourceTitle } from "@/features/source/model";
 
 export type MeshOriginDialogProps = {
   open: boolean;
-  sources: readonly Pick<SourceRead, "id" | "label" | "server" | "topic">[];
+  sources: readonly Pick<SourceRead, "id" | "label" | "server" | "root">[];
   onClose: () => void;
   /** Null for the default broker, which asks for the mesh terms next; a source id skips them. */
   onChoose: (sourceId: string | null) => void;
@@ -60,7 +60,7 @@ export function MeshOriginDialog({ open, sources, onClose, onChoose }: MeshOrigi
                 <span className="flex min-w-0 flex-col">
                   <span className="text-body-medium text-text-primary">{sourceTitle(source)}</span>
                   <span className="truncate font-mono text-caption-1-regular text-text-tertiary">
-                    {source.server} {source.topic}
+                    {source.server} {source.root}
                   </span>
                 </span>
                 <RiArrowRightSLine aria-hidden className="size-5 shrink-0 text-text-tertiary" />

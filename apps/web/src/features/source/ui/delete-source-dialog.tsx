@@ -15,7 +15,7 @@ import { meshRepository } from "@/features/mesh/repository";
 import { routes } from "@/router";
 
 export type DeleteSourceDialogProps = {
-  source: Pick<SourceRead, "id" | "label" | "server" | "topic"> | null;
+  source: Pick<SourceRead, "id" | "label" | "server" | "root"> | null;
   onClose: () => void;
 };
 

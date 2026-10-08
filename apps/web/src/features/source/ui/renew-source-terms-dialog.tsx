@@ -9,7 +9,7 @@ import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 
 export type RenewSourceTermsDialogProps = {
-  source: Pick<SourceRead, "id" | "label" | "server" | "topic"> | null;
+  source: Pick<SourceRead, "id" | "label" | "server" | "root"> | null;
   onClose: () => void;
   onRenewed: (source: SourceRead) => void;
 };
