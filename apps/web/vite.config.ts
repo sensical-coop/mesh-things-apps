@@ -17,6 +17,8 @@ export default defineConfig({
   optimizeDeps: {
     include: ["cobe"],
   },
+  // MapLibre starts its worker as a module worker, from the app's own bundle.
+  worker: { format: "es" },
   // ponytail: SPA + Nitro node_server, not TanStack Start. Start if we need SSR/server fns.
   plugins: [nitro(), react(), tailwindcss()],
 });

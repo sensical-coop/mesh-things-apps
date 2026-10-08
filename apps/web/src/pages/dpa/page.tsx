@@ -187,9 +187,19 @@ const securityMeasures: AnnexGroup[] = [
     items: [
       { id: "page.dpa.annex2.network.li1", defaultMessage: "A host firewall exposes only SSH and the service's public endpoints. Databases, message queues and internal services are not reachable from the internet." },
       { id: "page.dpa.annex2.network.li2", defaultMessage: "SSH accepts keys only, with no root login, and repeated failed attempts are blocked." },
-      { id: "page.dpa.annex2.network.li3", defaultMessage: "All public endpoints use TLS. Administration interfaces sit behind password authentication at the proxy." },
+      { id: "page.dpa.annex2.network.li3", defaultMessage: "All public endpoints use TLS. Administration interfaces, such as the database, queue and archive consoles, are not exposed to the internet: they listen only on the server's loopback interface, are reached through an SSH tunnel, and ask for a password as well." },
       { id: "page.dpa.annex2.network.li4", defaultMessage: "Security updates are applied automatically." },
       { id: "page.dpa.annex2.network.li5", defaultMessage: "Access to the hosting provider's console requires two-factor authentication." },
+    ],
+  },
+  {
+    id: "annex2-encryption",
+    heading: { id: "page.dpa.annex2.encryption.heading", defaultMessage: "Encryption" },
+    paragraphs: [],
+    items: [
+      { id: "page.dpa.annex2.encryption.li1", defaultMessage: "Data travelling to and from the service is encrypted with TLS." },
+      { id: "page.dpa.annex2.encryption.li2", defaultMessage: "Data at rest in the databases and the archive is not encrypted by Sensical. It is protected by the hosting provider's physical and logical access controls and by limiting access to the servers as described in this annex." },
+      { id: "page.dpa.annex2.encryption.li3", defaultMessage: "Hetzner stores and manages its backups of the servers. No encryption key held by Sensical protects them." },
     ],
   },
   {
@@ -213,6 +223,17 @@ const securityMeasures: AnnexGroup[] = [
       { id: "page.dpa.annex2.separation.li2", defaultMessage: "Only traffic from registered gateways and sources is stored. Archiving is off by default and enabled per device." },
       { id: "page.dpa.annex2.separation.li3", defaultMessage: "When terms lapse, ingestion stops before anything is deleted, and deletions are scheduled, retried and logged. In-flight messages are kept for at most 7 days." },
       { id: "page.dpa.annex2.separation.li4", defaultMessage: "Service logs, which can include IP addresses, are deleted after 30 days." },
+      { id: "page.dpa.annex2.separation.li5", defaultMessage: "Readings in the time-series database and the archive are stored under the mesh's identifier and the node's number. The owner's name and email address are kept only in the registry database, never with the readings." },
+    ],
+  },
+  {
+    id: "annex2-monitoring",
+    heading: { id: "page.dpa.annex2.monitoring.heading", defaultMessage: "Logging and monitoring" },
+    paragraphs: [],
+    items: [
+      { id: "page.dpa.annex2.monitoring.li1", defaultMessage: "An automated monitor sends a test message through the whole service every few minutes and emails the administrators when any step fails." },
+      { id: "page.dpa.annex2.monitoring.li2", defaultMessage: "The administrators are also emailed when the disk is nearly full, when service emails stop being delivered, and when a bridged source is unusually busy." },
+      { id: "page.dpa.annex2.monitoring.li3", defaultMessage: "Requests to the registry API and SSH logins are logged, and repeated failed sign-ins are rate-limited." },
     ],
   },
   {
@@ -221,6 +242,7 @@ const securityMeasures: AnnexGroup[] = [
     paragraphs: [],
     items: [
       { id: "page.dpa.annex2.availability.li1", defaultMessage: "Servers are backed up daily with Hetzner's backup service, which keeps the last 7 backups in Hetzner's EU data centres." },
+      { id: "page.dpa.annex2.availability.li2", defaultMessage: "The registry database, which holds accounts, meshes and devices, is also dumped daily on the server. The dumps are encrypted with a key that Sensical keeps off the server, so neither the server nor its backups can decrypt them, and they are kept for 7 days." },
     ],
   },
   {
@@ -254,6 +276,12 @@ const subProcessors: SubProcessor[] = [
     service: { id: "page.dpa.annex3.scaleway.service", defaultMessage: "Account and alarm emails" },
     location: { id: "page.dpa.annex3.scaleway.location", defaultMessage: "France" },
   },
+  {
+    id: "eurodns",
+    name: "EuroDNS S.A.",
+    service: { id: "page.dpa.annex3.eurodns.service", defaultMessage: "Mailbox for info@sensical.es, used for support and other correspondence with customers" },
+    location: { id: "page.dpa.annex3.eurodns.location", defaultMessage: "Luxembourg" },
+  },
 ];
 
 const tocLinkClass =
@@ -277,7 +305,7 @@ export function DpaPage(): ReactElement {
             {formatMessage({ id: "page.dpa.title", defaultMessage: "Data Processing Agreement" })}
           </h1>
           <p className="text-body-regular text-text-secondary">
-            {formatMessage({ id: "page.dpa.lastUpdated", defaultMessage: "Version 1.0. Last updated 2026-09-30." })}
+            {formatMessage({ id: "page.dpa.lastUpdated", defaultMessage: "Version 1.1. Last updated 2026-10-08." })}
           </p>
           <p className="text-body-regular text-text-secondary">
             {formatMessage({

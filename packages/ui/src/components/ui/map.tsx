@@ -5,6 +5,7 @@
 import * as MapLibreGL from "maplibre-gl";
 import type { PopupOptions, MarkerOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type * as GeoJSON from "geojson";
 import {
   createContext,
@@ -24,10 +25,9 @@ import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
 import { cn } from "@mtt/ui/utils";
 
+// Served from the app's own bundle, so the map loads no code from a third-party CDN.
 if (typeof window !== "undefined" && !MapLibreGL.getWorkerUrl()) {
-  MapLibreGL.setWorkerUrl(
-    `https://unpkg.com/maplibre-gl@${MapLibreGL.getVersion()}/dist/maplibre-gl-worker.mjs`,
-  );
+  MapLibreGL.setWorkerUrl(maplibreWorkerUrl);
 }
 
 const defaultStyles = {
