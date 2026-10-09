@@ -1270,6 +1270,118 @@ paths:
                 items:
                   $ref: '#/components/schemas/DeviceRead'
           description: ''
+  /meshes/{mesh_id}/links:
+    get:
+      operationId: meshes_links_list
+      description: |-
+        List the radio links heard on this mesh, longest first.
+
+        A link is one node heard by another, as one source reports it:
+        `traceroute` hops, `neighborinfo` reports, or `direct` receptions by a
+        gateway with no hop in between. Each is directional, since the SNR is
+        measured by the receiving node, so a pair heard both ways has two links.
+        Direct links are added once an hour. Links not heard for 30 days are
+        deleted. A public mesh's links are readable without credentials.
+
+        Args:
+            since: How far back a link must have been heard, one of `24h`, `7d`
+                or `30d`. Defaults to `7d`.
+            node_id: Only links to or from this node.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: node_id
+        schema:
+          type: string
+        description: Only links to or from this node, as a number or in its `!aabbccdd`
+          form.
+      - in: query
+        name: since
+        schema:
+          type: string
+          enum:
+          - 24h
+          - 30d
+          - 7d
+          default: 7d
+        description: How far back a link must have been heard.
+      tags:
+      - meshes
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RfLink'
+          description: ''
+  /meshes/{mesh_id}/traceroutes:
+    get:
+      operationId: meshes_traceroutes_list
+      description: |-
+        List the traceroutes heard on this mesh, newest first.
+
+        A traceroute heard by several gateways is listed once, with the most
+        complete route any of them saw. `towards` runs from the node that started
+        the traceroute to its target and `back` returns; each SNR is the one
+        measured on arriving at the next node. A reply carries both directions,
+        a request only the hops taken so far. Traceroutes are kept 30 days. A
+        public mesh's traceroutes are readable without credentials.
+
+        Args:
+            limit: How many to return, up to 500. Defaults to 50.
+            before: Only traceroutes heard before this time, as an ISO 8601
+                timestamp. Pass the `heard_at` of the last one received to read
+                the next page.
+            node_id: Only traceroutes from, to or through this node.
+      parameters:
+      - in: query
+        name: before
+        schema:
+          type: string
+        description: Only traceroutes heard before this time, for the next page.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 50
+        description: How many to return.
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: node_id
+        schema:
+          type: string
+        description: Only traceroutes through, from or to this node.
+      tags:
+      - meshes
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Traceroute'
+          description: ''
   /metrics:
     get:
       operationId: metrics_retrieve
@@ -2795,6 +2907,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceQualityResponse'
+          description: ''
+  /readings/meshes/{mesh_id}/stats:
+    get:
+      operationId: readings_meshes_stats_retrieve
+      description: |-
+        Return traffic and congestion figures for a mesh over a fixed range.
+
+        Counts every packet the mesh's registered gateways hear, including text
+        messages, routing traffic and packets that could not be decrypted. A packet
+        heard by several gateways is one packet and several receptions. Packets from
+        nodes the owner rejected count towards the totals but are never listed as
+        nodes. Channel utilization and airtime are the figures the nodes report
+        about themselves.
+
+        Busiest nodes, gateways, hops and signal are kept per hour, so they start at
+        `hourly_start`, the whole hour on or before the start of the range. Figures
+        from the last few minutes are still being counted and may grow.
+
+        Results are computed at most once a minute per mesh and range, so a repeated
+        call within that minute returns the same figures. A public mesh is readable
+        without credentials.
+
+        Args:
+            range: Period to cover, ending now. One of `1h`, `24h`, `7d` or `30d`.
+                Defaults to `24h`.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: range
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 24h
+          - 30d
+          - 7d
+          default: 24h
+        description: Period to cover, ending now.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeshStatsResponse'
           description: ''
   /sinks:
     get:
@@ -4808,6 +4975,248 @@ components:
       required:
       - channel_id
       - psk_b64
+    MeshAirtime:
+      type: object
+      properties:
+        channel:
+          type: string
+        mean:
+          type: number
+          format: double
+          nullable: true
+        peak:
+          type: number
+          format: double
+          nullable: true
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+      required:
+      - channel
+      - mean
+      - peak
+      - points
+    MeshGatewayTraffic:
+      type: object
+      properties:
+        node_id:
+          type: integer
+        device_uuid:
+          type: string
+          format: uuid
+          nullable: true
+        receptions:
+          type: integer
+        share:
+          type: number
+          format: double
+          description: Fraction of all receptions since `hourly_start`.
+        direct_receptions:
+          type: integer
+          description: Receptions heard straight from the sender, with no hop.
+        rx_snr_mean:
+          type: number
+          format: double
+          nullable: true
+          description: Mean SNR in dB of receptions heard over the air.
+        rx_rssi_mean:
+          type: number
+          format: double
+          nullable: true
+          description: Mean RSSI in dBm of receptions heard over the air.
+      required:
+      - device_uuid
+      - direct_receptions
+      - node_id
+      - receptions
+      - rx_rssi_mean
+      - rx_snr_mean
+      - share
+    MeshHops:
+      type: object
+      properties:
+        hops:
+          type: integer
+          nullable: true
+          description: Hops taken. Null for firmware that does not report it.
+        packets:
+          type: integer
+      required:
+      - hops
+      - packets
+    MeshNodeTraffic:
+      type: object
+      properties:
+        node_id:
+          type: integer
+        device_uuid:
+          type: string
+          format: uuid
+          nullable: true
+          description: Registration ID, when the node is registered.
+        packets:
+          type: integer
+        receptions:
+          type: integer
+      required:
+      - device_uuid
+      - node_id
+      - packets
+      - receptions
+    MeshSignal:
+      type: object
+      properties:
+        snr:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshSignalBucket'
+          description: Receptions per 2.5 dB of SNR.
+        rssi:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshSignalBucket'
+          description: Receptions per 10 dBm of RSSI.
+      required:
+      - rssi
+      - snr
+    MeshSignalBucket:
+      type: object
+      properties:
+        bucket:
+          type: number
+          format: double
+          description: Lower bound of the bucket.
+        receptions:
+          type: integer
+      required:
+      - bucket
+      - receptions
+    MeshStatsResponse:
+      type: object
+      properties:
+        mesh_id:
+          type: string
+        range:
+          type: string
+        window:
+          type: string
+          description: Bucket size of every series.
+        hourly_start:
+          type: string
+          format: date-time
+          description: 'Start of the hourly figures: nodes, gateways, hops and signal.'
+        generated_at:
+          type: string
+          format: date-time
+        summary:
+          $ref: '#/components/schemas/MeshStatsSummary'
+        traffic:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshTraffic'
+        airtime:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshAirtime'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshNodeTraffic'
+        gateways:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshGatewayTraffic'
+        hops:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshHops'
+        signal:
+          $ref: '#/components/schemas/MeshSignal'
+      required:
+      - airtime
+      - gateways
+      - generated_at
+      - hops
+      - hourly_start
+      - mesh_id
+      - nodes
+      - range
+      - signal
+      - summary
+      - traffic
+      - window
+    MeshStatsSummary:
+      type: object
+      properties:
+        packets:
+          type: integer
+          description: Distinct packets, counted once however many gateways heard
+            them.
+        receptions:
+          type: integer
+          description: Packets counted once per gateway that heard them.
+        receptions_per_packet:
+          type: number
+          format: double
+          nullable: true
+        bytes:
+          type: integer
+          description: Payload bytes of the distinct packets.
+        decoded_packets:
+          type: integer
+          description: Packets that decrypted to a known portnum. Rejected nodes'
+            packets are never decrypted.
+        rejected_packets:
+          type: integer
+          description: Packets from nodes the owner rejected. Included in `packets`,
+            never in `nodes`.
+        active_nodes:
+          type: integer
+          description: Nodes that sent at least one packet since `hourly_start`.
+        channel_utilization_mean:
+          type: number
+          format: double
+          nullable: true
+        channel_utilization_peak:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - active_nodes
+      - bytes
+      - channel_utilization_mean
+      - channel_utilization_peak
+      - decoded_packets
+      - packets
+      - receptions
+      - receptions_per_packet
+      - rejected_packets
+    MeshTraffic:
+      type: object
+      properties:
+        portnum:
+          type: integer
+          nullable: true
+          description: Null for packets that could not be decrypted.
+        name:
+          type: string
+          description: The portnum's Meshtastic name, for example `TELEMETRY_APP`.
+        packets:
+          type: integer
+        receptions:
+          type: integer
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          description: Receptions per `window`.
+      required:
+      - name
+      - packets
+      - points
+      - portnum
+      - receptions
     MeshUpdate:
       type: object
       description: |-
@@ -5596,6 +6005,150 @@ components:
       - function_name
       - key
       - order
+    RfLink:
+      type: object
+      properties:
+        from_node:
+          type: integer
+          description: The node that transmitted.
+        to_node:
+          type: integer
+          description: The node that heard it and measured the SNR.
+        from_device_uuid:
+          type: string
+          format: uuid
+          nullable: true
+        to_device_uuid:
+          type: string
+          format: uuid
+          nullable: true
+        source:
+          allOf:
+          - $ref: '#/components/schemas/RfLinkSourceEnum'
+          description: |-
+            `traceroute` hops, `neighborinfo` reports, or `direct` receptions by a gateway with no hop.
+
+            * `traceroute` - Traceroute
+            * `neighborinfo` - Neighborinfo
+            * `direct` - Direct
+        samples:
+          type: integer
+        snr_mean:
+          type: number
+          format: double
+          description: Mean SNR in dB over every sample.
+        last_snr:
+          type: number
+          format: double
+          nullable: true
+        first_seen:
+          type: string
+          format: date-time
+        last_seen:
+          type: string
+          format: date-time
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          description: Null unless both nodes have a position.
+      required:
+      - distance_km
+      - first_seen
+      - from_device_uuid
+      - from_node
+      - last_seen
+      - last_snr
+      - samples
+      - snr_mean
+      - source
+      - to_device_uuid
+      - to_node
+    RfLinkSourceEnum:
+      enum:
+      - traceroute
+      - neighborinfo
+      - direct
+      type: string
+      description: |-
+        * `traceroute` - Traceroute
+        * `neighborinfo` - Neighborinfo
+        * `direct` - Direct
+    Traceroute:
+      type: object
+      properties:
+        id:
+          type: integer
+        from_node:
+          type: integer
+          description: The node that sent this packet.
+        to_node:
+          type: integer
+        packet_id:
+          type: integer
+        request_id:
+          type: integer
+          nullable: true
+          description: Set on a reply, to the request it answers.
+        origin:
+          type: integer
+          description: The node that started the traceroute.
+        target:
+          type: integer
+        towards:
+          type: array
+          items:
+            type: integer
+          description: Nodes from origin towards target.
+        snr_towards:
+          type: array
+          items:
+            type: number
+            format: double
+            nullable: true
+        back:
+          type: array
+          items:
+            type: integer
+          description: Nodes from target back to origin.
+        snr_back:
+          type: array
+          items:
+            type: number
+            format: double
+            nullable: true
+        complete:
+          type: boolean
+          description: Whether the route reached the target.
+        gateway_ids:
+          type: array
+          items:
+            type: integer
+        heard_at:
+          type: string
+          format: date-time
+        distance_km:
+          type: number
+          format: double
+          nullable: true
+          description: Length of the route towards the target, when every node on
+            it has a position.
+      required:
+      - back
+      - complete
+      - distance_km
+      - from_node
+      - gateway_ids
+      - heard_at
+      - id
+      - origin
+      - packet_id
+      - request_id
+      - snr_back
+      - snr_towards
+      - target
+      - to_node
+      - towards
     QosEnum:
       enum:
       - 0

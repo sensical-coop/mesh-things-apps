@@ -537,6 +537,140 @@ export type MeshCreate = {
     discover_gateways?: boolean;
 };
 
+export type MeshAirtime = {
+    channel: string;
+    mean: number | null;
+    peak: number | null;
+    points: Array<Point>;
+};
+
+export type MeshGatewayTraffic = {
+    node_id: number;
+    device_uuid: string | null;
+    receptions: number;
+    /**
+     * Fraction of all receptions since `hourly_start`.
+     */
+    share: number;
+    /**
+     * Receptions heard straight from the sender, with no hop.
+     */
+    direct_receptions: number;
+    /**
+     * Mean SNR in dB of receptions heard over the air.
+     */
+    rx_snr_mean: number | null;
+    /**
+     * Mean RSSI in dBm of receptions heard over the air.
+     */
+    rx_rssi_mean: number | null;
+};
+
+export type MeshHops = {
+    /**
+     * Hops taken. Null for firmware that does not report it.
+     */
+    hops: number | null;
+    packets: number;
+};
+
+export type MeshNodeTraffic = {
+    node_id: number;
+    /**
+     * Registration ID, when the node is registered.
+     */
+    device_uuid: string | null;
+    packets: number;
+    receptions: number;
+};
+
+export type MeshSignal = {
+    /**
+     * Receptions per 2.5 dB of SNR.
+     */
+    snr: Array<MeshSignalBucket>;
+    /**
+     * Receptions per 10 dBm of RSSI.
+     */
+    rssi: Array<MeshSignalBucket>;
+};
+
+export type MeshSignalBucket = {
+    /**
+     * Lower bound of the bucket.
+     */
+    bucket: number;
+    receptions: number;
+};
+
+export type MeshStatsResponse = {
+    mesh_id: string;
+    range: string;
+    /**
+     * Bucket size of every series.
+     */
+    window: string;
+    /**
+     * Start of the hourly figures: nodes, gateways, hops and signal.
+     */
+    hourly_start: string;
+    generated_at: string;
+    summary: MeshStatsSummary;
+    traffic: Array<MeshTraffic>;
+    airtime: Array<MeshAirtime>;
+    nodes: Array<MeshNodeTraffic>;
+    gateways: Array<MeshGatewayTraffic>;
+    hops: Array<MeshHops>;
+    signal: MeshSignal;
+};
+
+export type MeshStatsSummary = {
+    /**
+     * Distinct packets, counted once however many gateways heard them.
+     */
+    packets: number;
+    /**
+     * Packets counted once per gateway that heard them.
+     */
+    receptions: number;
+    receptions_per_packet: number | null;
+    /**
+     * Payload bytes of the distinct packets.
+     */
+    bytes: number;
+    /**
+     * Packets that decrypted to a known portnum. Rejected nodes' packets are never decrypted.
+     */
+    decoded_packets: number;
+    /**
+     * Packets from nodes the owner rejected. Included in `packets`, never in `nodes`.
+     */
+    rejected_packets: number;
+    /**
+     * Nodes that sent at least one packet since `hourly_start`.
+     */
+    active_nodes: number;
+    channel_utilization_mean: number | null;
+    channel_utilization_peak: number | null;
+};
+
+export type MeshTraffic = {
+    /**
+     * Null for packets that could not be decrypted.
+     */
+    portnum: number | null;
+    /**
+     * The portnum's Meshtastic name, for example `TELEMETRY_APP`.
+     */
+    name: string;
+    packets: number;
+    receptions: number;
+    /**
+     * Receptions per `window`.
+     */
+    points: Array<Point>;
+};
+
 /**
  * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
  *
@@ -872,6 +1006,85 @@ export type PostprocessingStep = {
     inputs?: unknown;
     params?: unknown;
     outputs?: unknown;
+};
+
+export type RfLink = {
+    /**
+     * The node that transmitted.
+     */
+    from_node: number;
+    /**
+     * The node that heard it and measured the SNR.
+     */
+    to_node: number;
+    from_device_uuid: string | null;
+    to_device_uuid: string | null;
+    /**
+     * `traceroute` hops, `neighborinfo` reports, or `direct` receptions by a gateway with no hop.
+     *
+     * * `traceroute` - Traceroute
+     * * `neighborinfo` - Neighborinfo
+     * * `direct` - Direct
+     */
+    source: RfLinkSourceEnum;
+    samples: number;
+    /**
+     * Mean SNR in dB over every sample.
+     */
+    snr_mean: number;
+    last_snr: number | null;
+    first_seen: string;
+    last_seen: string;
+    /**
+     * Null unless both nodes have a position.
+     */
+    distance_km: number | null;
+};
+
+/**
+ * * `traceroute` - Traceroute
+ * * `neighborinfo` - Neighborinfo
+ * * `direct` - Direct
+ */
+export type RfLinkSourceEnum = 'traceroute' | 'neighborinfo' | 'direct';
+
+export type Traceroute = {
+    id: number;
+    /**
+     * The node that sent this packet.
+     */
+    from_node: number;
+    to_node: number;
+    packet_id: number;
+    /**
+     * Set on a reply, to the request it answers.
+     */
+    request_id: number | null;
+    /**
+     * The node that started the traceroute.
+     */
+    origin: number;
+    target: number;
+    /**
+     * Nodes from origin towards target.
+     */
+    towards: Array<number>;
+    snr_towards: Array<number | null>;
+    /**
+     * Nodes from target back to origin.
+     */
+    back: Array<number>;
+    snr_back: Array<number | null>;
+    /**
+     * Whether the route reached the target.
+     */
+    complete: boolean;
+    gateway_ids: Array<number>;
+    heard_at: string;
+    /**
+     * Length of the route towards the target, when every node on it has a position.
+     */
+    distance_km: number | null;
 };
 
 /**
@@ -2189,6 +2402,58 @@ export type MeshesDevicesListResponses = {
 
 export type MeshesDevicesListResponse = MeshesDevicesListResponses[keyof MeshesDevicesListResponses];
 
+export type MeshesLinksListData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Only links to or from this node, as a number or in its `!aabbccdd` form.
+         */
+        node_id?: string;
+        /**
+         * How far back a link must have been heard.
+         */
+        since?: '24h' | '30d' | '7d';
+    };
+    url: '/meshes/{mesh_id}/links';
+};
+
+export type MeshesLinksListResponses = {
+    200: Array<RfLink>;
+};
+
+export type MeshesLinksListResponse = MeshesLinksListResponses[keyof MeshesLinksListResponses];
+
+export type MeshesTraceroutesListData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Only traceroutes heard before this time, for the next page.
+         */
+        before?: string;
+        /**
+         * How many to return.
+         */
+        limit?: number;
+        /**
+         * Only traceroutes through, from or to this node.
+         */
+        node_id?: string;
+    };
+    url: '/meshes/{mesh_id}/traceroutes';
+};
+
+export type MeshesTraceroutesListResponses = {
+    200: Array<Traceroute>;
+};
+
+export type MeshesTraceroutesListResponse = MeshesTraceroutesListResponses[keyof MeshesTraceroutesListResponses];
+
 export type MetricsRetrieveData = {
     body?: never;
     path?: never;
@@ -2990,6 +3255,26 @@ export type ReadingsMeshesNodesQualityRetrieveResponses = {
 };
 
 export type ReadingsMeshesNodesQualityRetrieveResponse = ReadingsMeshesNodesQualityRetrieveResponses[keyof ReadingsMeshesNodesQualityRetrieveResponses];
+
+export type ReadingsMeshesStatsRetrieveData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+    };
+    query?: {
+        /**
+         * Period to cover, ending now.
+         */
+        range?: '1h' | '24h' | '30d' | '7d';
+    };
+    url: '/readings/meshes/{mesh_id}/stats';
+};
+
+export type ReadingsMeshesStatsRetrieveResponses = {
+    200: MeshStatsResponse;
+};
+
+export type ReadingsMeshesStatsRetrieveResponse = ReadingsMeshesStatsRetrieveResponses[keyof ReadingsMeshesStatsRetrieveResponses];
 
 export type SinksListData = {
     body?: never;
