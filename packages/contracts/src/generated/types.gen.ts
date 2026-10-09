@@ -544,6 +544,76 @@ export type MeshAirtime = {
     points: Array<Point>;
 };
 
+export type NodeTrafficResponse = {
+    mesh_id: string;
+    node_id: number;
+    range: string;
+    window: string;
+    hourly_start: string;
+    packets: number;
+    receptions: number;
+    ports: Array<NodePort>;
+    /**
+     * Packets sent per `window`.
+     */
+    points: Array<Point>;
+};
+
+export type NodePort = {
+    portnum: number | null;
+    name: string;
+    packets: number;
+};
+
+export type MeshRelayCandidate = {
+    node_id: number;
+    device_uuid: string;
+};
+
+export type MeshRelay = {
+    gateway_id: number;
+    device_uuid: string | null;
+    /**
+     * Last byte of the relaying node's number, as the firmware reports it.
+     */
+    relay: number;
+    receptions: number;
+    /**
+     * Registered nodes of the mesh whose number ends in `relay`.
+     */
+    candidates: Array<MeshRelayCandidate>;
+};
+
+export type MeshGatewayPair = {
+    gateway_a: number;
+    gateway_b: number;
+    device_uuid_a: string | null;
+    device_uuid_b: string | null;
+    /**
+     * Packets both gateways heard.
+     */
+    common_packets: number;
+    /**
+     * Mean SNR of `gateway_a` minus `gateway_b`, in dB, over packets both heard over the air.
+     */
+    snr_diff_mean: number | null;
+    /**
+     * The same for RSSI, in dBm.
+     */
+    rssi_diff_mean: number | null;
+};
+
+export type MeshActivity = {
+    /**
+     * Nodes that sent at least one packet, per `activity_window`.
+     */
+    nodes: Array<Point>;
+    /**
+     * Gateways that heard at least one packet, per `activity_window`.
+     */
+    gateways: Array<Point>;
+};
+
 export type MeshGatewayTraffic = {
     node_id: number;
     device_uuid: string | null;
@@ -607,9 +677,13 @@ export type MeshStatsResponse = {
     mesh_id: string;
     range: string;
     /**
-     * Bucket size of every series.
+     * Bucket size of the traffic and airtime series.
      */
     window: string;
+    /**
+     * Bucket size of the `activity` series.
+     */
+    activity_window: string;
     /**
      * Start of the hourly figures: nodes, gateways, hops and signal.
      */
@@ -622,6 +696,9 @@ export type MeshStatsResponse = {
     gateways: Array<MeshGatewayTraffic>;
     hops: Array<MeshHops>;
     signal: MeshSignal;
+    gateway_pairs: Array<MeshGatewayPair>;
+    relays: Array<MeshRelay>;
+    activity: MeshActivity;
 };
 
 export type MeshStatsSummary = {
@@ -3084,6 +3161,26 @@ export type ReadingsDevicesQualityRetrieveResponses = {
 
 export type ReadingsDevicesQualityRetrieveResponse = ReadingsDevicesQualityRetrieveResponses[keyof ReadingsDevicesQualityRetrieveResponses];
 
+export type ReadingsDevicesTrafficRetrieveData = {
+    body?: never;
+    path: {
+        device_uuid: string;
+    };
+    query?: {
+        /**
+         * Period to cover, ending now.
+         */
+        range?: '1h' | '24h' | '30d' | '7d';
+    };
+    url: '/readings/devices/{device_uuid}/traffic';
+};
+
+export type ReadingsDevicesTrafficRetrieveResponses = {
+    200: NodeTrafficResponse;
+};
+
+export type ReadingsDevicesTrafficRetrieveResponse = ReadingsDevicesTrafficRetrieveResponses[keyof ReadingsDevicesTrafficRetrieveResponses];
+
 export type ReadingsExportsListData = {
     body?: never;
     path?: never;
@@ -3255,6 +3352,27 @@ export type ReadingsMeshesNodesQualityRetrieveResponses = {
 };
 
 export type ReadingsMeshesNodesQualityRetrieveResponse = ReadingsMeshesNodesQualityRetrieveResponses[keyof ReadingsMeshesNodesQualityRetrieveResponses];
+
+export type ReadingsMeshesNodesTrafficRetrieveData = {
+    body?: never;
+    path: {
+        mesh_id: string;
+        node_id: number;
+    };
+    query?: {
+        /**
+         * Period to cover, ending now.
+         */
+        range?: '1h' | '24h' | '30d' | '7d';
+    };
+    url: '/readings/meshes/{mesh_id}/nodes/{node_id}/traffic';
+};
+
+export type ReadingsMeshesNodesTrafficRetrieveResponses = {
+    200: NodeTrafficResponse;
+};
+
+export type ReadingsMeshesNodesTrafficRetrieveResponse = ReadingsMeshesNodesTrafficRetrieveResponses[keyof ReadingsMeshesNodesTrafficRetrieveResponses];
 
 export type ReadingsMeshesStatsRetrieveData = {
     body?: never;

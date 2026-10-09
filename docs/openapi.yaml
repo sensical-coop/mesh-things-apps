@@ -2563,6 +2563,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceQualityResponse'
           description: ''
+  /readings/devices/{device_uuid}/traffic:
+    get:
+      operationId: readings_devices_traffic_retrieve
+      description: A device's packets over a fixed range, addressed by its registration
+        ID.
+      parameters:
+      - in: path
+        name: device_uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: range
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 24h
+          - 30d
+          - 7d
+          default: 24h
+        description: Period to cover, ending now.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeTrafficResponse'
+          description: ''
   /readings/exports:
     get:
       operationId: readings_exports_list
@@ -2908,6 +2944,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceQualityResponse'
           description: ''
+  /readings/meshes/{mesh_id}/nodes/{node_id}/traffic:
+    get:
+      operationId: readings_meshes_nodes_traffic_retrieve
+      description: |-
+        Return how much a node transmitted over a fixed range, and of which kinds of packet.
+
+        Counts every packet the mesh's gateways heard from the node, including ones
+        that could not be decrypted (`portnum` null). Kept per hour, so the range
+        starts at `hourly_start`, the whole hour on or before its start. A device on
+        a public mesh is readable without credentials.
+
+        Args:
+            range: Period to cover, ending now. One of `1h`, `24h`, `7d` or `30d`.
+                Defaults to `24h`.
+      parameters:
+      - in: path
+        name: mesh_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: node_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: range
+        schema:
+          type: string
+          enum:
+          - 1h
+          - 24h
+          - 30d
+          - 7d
+          default: 24h
+        description: Period to cover, ending now.
+      tags:
+      - readings
+      security:
+      - bearerAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeTrafficResponse'
+          description: ''
   /readings/meshes/{mesh_id}/stats:
     get:
       operationId: readings_meshes_stats_retrieve
@@ -2921,9 +3007,15 @@ paths:
         nodes. Channel utilization and airtime are the figures the nodes report
         about themselves.
 
-        Busiest nodes, gateways, hops and signal are kept per hour, so they start at
-        `hourly_start`, the whole hour on or before the start of the range. Figures
-        from the last few minutes are still being counted and may grow.
+        Busiest nodes, gateways, hops, signal, gateway pairs, relays and activity
+        are kept per hour, so they start at `hourly_start`, the whole hour on or
+        before the start of the range. Figures from the last few minutes are still
+        being counted and may grow.
+
+        Gateway pairs compare gateways that heard the same packets. Relays say which
+        nodes passed packets on to each gateway; the firmware reports only the last
+        byte of a relay's node number, so each comes with the registered nodes it
+        could be.
 
         Results are computed at most once a minute per mesh and range, so a repeated
         call within that minute returns the same figures. A public mesh is readable
@@ -4997,6 +5089,147 @@ components:
       - mean
       - peak
       - points
+    NodeTrafficResponse:
+      type: object
+      properties:
+        mesh_id:
+          type: string
+        node_id:
+          type: integer
+        range:
+          type: string
+        window:
+          type: string
+        hourly_start:
+          type: string
+          format: date-time
+        packets:
+          type: integer
+        receptions:
+          type: integer
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodePort'
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          description: Packets sent per `window`.
+      required:
+      - hourly_start
+      - mesh_id
+      - node_id
+      - packets
+      - points
+      - ports
+      - range
+      - receptions
+      - window
+    NodePort:
+      type: object
+      properties:
+        portnum:
+          type: integer
+          nullable: true
+        name:
+          type: string
+        packets:
+          type: integer
+      required:
+      - name
+      - packets
+      - portnum
+    MeshRelayCandidate:
+      type: object
+      properties:
+        node_id:
+          type: integer
+        device_uuid:
+          type: string
+          format: uuid
+      required:
+      - device_uuid
+      - node_id
+    MeshRelay:
+      type: object
+      properties:
+        gateway_id:
+          type: integer
+        device_uuid:
+          type: string
+          format: uuid
+          nullable: true
+        relay:
+          type: integer
+          description: Last byte of the relaying node's number, as the firmware reports
+            it.
+        receptions:
+          type: integer
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshRelayCandidate'
+          description: Registered nodes of the mesh whose number ends in `relay`.
+      required:
+      - candidates
+      - device_uuid
+      - gateway_id
+      - receptions
+      - relay
+    MeshGatewayPair:
+      type: object
+      properties:
+        gateway_a:
+          type: integer
+        gateway_b:
+          type: integer
+        device_uuid_a:
+          type: string
+          format: uuid
+          nullable: true
+        device_uuid_b:
+          type: string
+          format: uuid
+          nullable: true
+        common_packets:
+          type: integer
+          description: Packets both gateways heard.
+        snr_diff_mean:
+          type: number
+          format: double
+          nullable: true
+          description: Mean SNR of `gateway_a` minus `gateway_b`, in dB, over packets
+            both heard over the air.
+        rssi_diff_mean:
+          type: number
+          format: double
+          nullable: true
+          description: The same for RSSI, in dBm.
+      required:
+      - common_packets
+      - device_uuid_a
+      - device_uuid_b
+      - gateway_a
+      - gateway_b
+      - rssi_diff_mean
+      - snr_diff_mean
+    MeshActivity:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          description: Nodes that sent at least one packet, per `activity_window`.
+        gateways:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          description: Gateways that heard at least one packet, per `activity_window`.
+      required:
+      - gateways
+      - nodes
     MeshGatewayTraffic:
       type: object
       properties:
@@ -5101,7 +5334,10 @@ components:
           type: string
         window:
           type: string
-          description: Bucket size of every series.
+          description: Bucket size of the traffic and airtime series.
+        activity_window:
+          type: string
+          description: Bucket size of the `activity` series.
         hourly_start:
           type: string
           format: date-time
@@ -5133,8 +5369,21 @@ components:
             $ref: '#/components/schemas/MeshHops'
         signal:
           $ref: '#/components/schemas/MeshSignal'
+        gateway_pairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshGatewayPair'
+        relays:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeshRelay'
+        activity:
+          $ref: '#/components/schemas/MeshActivity'
       required:
+      - activity
+      - activity_window
       - airtime
+      - gateway_pairs
       - gateways
       - generated_at
       - hops
@@ -5142,6 +5391,7 @@ components:
       - mesh_id
       - nodes
       - range
+      - relays
       - signal
       - summary
       - traffic
