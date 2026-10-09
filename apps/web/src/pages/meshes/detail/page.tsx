@@ -13,6 +13,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { DataTable } from "@mtt/ui/components/data-table";
@@ -61,8 +63,11 @@ import { MapUnsupported } from "@/components/map-unsupported";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { canArchiveDevice } from "@/features/archive/model";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
+import { MeshNetworkTab } from "@/features/mesh-network/ui/network-tab";
 
 const col = legacyCreateColumnHelper<DeviceRead>();
+
+const MESH_TABS = ["overview", "network"] as const;
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
@@ -70,6 +75,7 @@ export function MeshDetailPage(): ReactElement {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { meshId } = useParams({ from: routes.mesh });
+  const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(MESH_TABS).withDefault("overview"));
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   if (isNotFoundError(mesh.error)) throw notFound();
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
@@ -296,176 +302,195 @@ export function MeshDetailPage(): ReactElement {
           canRenew={me !== undefined && mesh.data.owner_id === me.id}
         />
       ) : null}
-      <div className="flex flex-col gap-6">
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>
-              <span>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Channel ID" })}</span>
-              {mesh.data ? (
-                <code className="rounded-md bg-background-secondary-default px-1.5 py-0.5 font-mono text-body-2-regular text-text-primary">
-                  {mesh.data.channel_id}
-                </code>
-              ) : null}
-            </FrameTitle>
-            <FrameDescription>
-              {formatMessage({
-                id: "page.meshes.detail.psk.description",
-                defaultMessage: "Mesh PSK.",
-              })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            {mesh.isPending ? <SkeletonRows rows={1} /> : null}
-            {mesh.error ? (
-              <StatusCopy>
+      <Tabs
+        className="flex flex-col gap-0"
+        value={tab}
+        onValueChange={(value) => {
+          if (value === "overview" || value === "network") void setTab(value);
+        }}
+      >
+        <TabsList className="p-1">
+          <TabsTrigger value="overview" className="px-4 py-1.5 text-body-medium">
+            {formatMessage({ id: "page.meshes.detail.tabs.overview", defaultMessage: "Overview" })}
+          </TabsTrigger>
+          <TabsTrigger value="network" className="px-4 py-1.5 text-body-medium">
+            {formatMessage({ id: "page.meshes.detail.tabs.network", defaultMessage: "Network" })}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" keepMounted className="mt-6 flex flex-col gap-6">
+          <Frame className="shadow-card">
+            <FrameHeader>
+              <FrameTitle>
+                <span>{formatMessage({ id: "page.meshes.detail.psk.title", defaultMessage: "Channel ID" })}</span>
+                {mesh.data ? (
+                  <code className="rounded-md bg-background-secondary-default px-1.5 py-0.5 font-mono text-body-2-regular text-text-primary">
+                    {mesh.data.channel_id}
+                  </code>
+                ) : null}
+              </FrameTitle>
+              <FrameDescription>
                 {formatMessage({
-                  id: "page.meshes.detail.psk.error",
-                  defaultMessage: "This mesh is not in the inventory, or the API is unreachable.",
+                  id: "page.meshes.detail.psk.description",
+                  defaultMessage: "Mesh PSK.",
                 })}
-              </StatusCopy>
-            ) : null}
-            {mesh.data ? (
-              mesh.data.psk_b64 ? (
-                <PskReveal value={mesh.data.psk_b64} />
-              ) : (
+              </FrameDescription>
+            </FrameHeader>
+            <FramePanel>
+              {mesh.isPending ? <SkeletonRows rows={1} /> : null}
+              {mesh.error ? (
                 <StatusCopy>
                   {formatMessage({
-                    id: "page.meshes.detail.psk.notVisible",
-                    defaultMessage: "The pre-shared key isn't visible for this mesh.",
+                    id: "page.meshes.detail.psk.error",
+                    defaultMessage: "This mesh is not in the inventory, or the API is unreachable.",
                   })}
                 </StatusCopy>
-              )
-            ) : null}
-          </FramePanel>
-        </Frame>
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}</FrameTitle>
-            <FrameDescription>
-              {plotted.length
-                ? formatMessage({
-                    id: "page.meshes.detail.fleet.hasCoords",
-                    defaultMessage: "Devices with coordinates.",
-                  })
-                : formatMessage({
-                    id: "page.meshes.detail.fleet.noCoords",
-                    defaultMessage: "No coordinates on this mesh yet.",
-                  })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            {plotted.length ? (
-              <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
-                <DeviceMapLegend />
-                <Map
-                  center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
-                  zoom={12}
-                  unsupported={<MapUnsupported />}
-                  className="h-full min-h-80 w-full"
-                >
-                  <MapControls />
-                  <FitToPoints points={plotted.map((device) => ({ lng: device.longitude!, lat: device.latitude! }))} />
-                  {plotted.map((device) => (
-                    <MapMarker key={device.uuid} longitude={device.longitude!} latitude={device.latitude!}>
-                      <MarkerContent>
-                        <DeviceMapPin
-                          isGateway={device.is_gateway}
-                          label={deviceTitle(device)}
-                          deviceUuid={device.uuid}
-                        />
-                      </MarkerContent>
-                    </MapMarker>
-                  ))}
-                </Map>
-              </div>
-            ) : (
-              !devices.isPending && (
-                <StatusCopy>
-                  {formatMessage({
-                    id: "page.meshes.detail.fleet.noneToPlot",
-                    defaultMessage: "Register coordinates on a device to plot the mesh.",
-                  })}
-                </StatusCopy>
-              )
-            )}
-          </FramePanel>
-        </Frame>
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.meshes.detail.devices.title", defaultMessage: "Devices" })}</FrameTitle>
-            <FrameDescription>
-              {devices.isPending
-                ? formatMessage({
-                    id: "page.meshes.detail.devices.loading",
-                    defaultMessage: "Loading devices on this mesh.",
-                  })
-                : devices.data?.length && filters.active
-                  ? formatMessage(
-                      {
-                        id: "page.meshes.detail.devices.filteredCount",
-                        defaultMessage: "{shown, number} of {total, plural, one {# device} other {# devices}} match.",
-                      },
-                      { shown: shownDevices.length, total: devices.data.length },
-                    )
-                  : devices.data?.length
-                    ? formatMessage(
-                        {
-                          id: "page.meshes.detail.devices.count",
-                          defaultMessage:
-                            "{total, plural, one {# device} other {# devices}} on this channel: {gateways, plural, one {# gateway} other {# gateways}} and {nodes, plural, one {# node} other {# nodes}}.",
-                        },
-                        {
-                          total: devices.data.length,
-                          gateways: devices.data.filter((d) => d.is_gateway).length,
-                          nodes: devices.data.filter((d) => !d.is_gateway).length,
-                        },
-                      )
-                    : formatMessage({
-                        id: "page.meshes.detail.devices.none",
-                        defaultMessage: "No devices registered on this mesh.",
-                      })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            {devices.data?.length ? (
-              <div className="mb-4">
-                <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
-              </div>
-            ) : null}
-            {devices.isPending ? <SkeletonRows /> : null}
-            {devices.data?.length ? (
-              <DataTable
-                data={shownDevices}
-                columns={columns}
-                getRowId={(row) => row.uuid}
-                previousPageLabel={formatMessage({
-                  id: "common.dataTable.previousPage",
-                  defaultMessage: "Previous page",
-                })}
-                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
-                empty={formatMessage({
-                  id: "page.meshes.detail.devices.noMatch",
-                  defaultMessage: "No devices on this mesh match these filters.",
-                })}
-              />
-            ) : null}
-            {devices.data && devices.data.length === 0 ? (
-              <StatusCopy>
-                {canEdit
+              ) : null}
+              {mesh.data ? (
+                mesh.data.psk_b64 ? (
+                  <PskReveal value={mesh.data.psk_b64} />
+                ) : (
+                  <StatusCopy>
+                    {formatMessage({
+                      id: "page.meshes.detail.psk.notVisible",
+                      defaultMessage: "The pre-shared key isn't visible for this mesh.",
+                    })}
+                  </StatusCopy>
+                )
+              ) : null}
+            </FramePanel>
+          </Frame>
+          <Frame className="shadow-card">
+            <FrameHeader>
+              <FrameTitle>{formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}</FrameTitle>
+              <FrameDescription>
+                {plotted.length
                   ? formatMessage({
-                      id: "page.meshes.detail.devices.registerHint",
-                      defaultMessage: "Register a node or gateway to start decoding traffic.",
+                      id: "page.meshes.detail.fleet.hasCoords",
+                      defaultMessage: "Devices with coordinates.",
                     })
                   : formatMessage({
-                      id: "page.meshes.detail.devices.empty",
-                      defaultMessage: "No devices on this mesh yet.",
+                      id: "page.meshes.detail.fleet.noCoords",
+                      defaultMessage: "No coordinates on this mesh yet.",
                     })}
-              </StatusCopy>
-            ) : null}
-          </FramePanel>
-        </Frame>
-      </div>
+              </FrameDescription>
+            </FrameHeader>
+            <FramePanel>
+              {plotted.length ? (
+                <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
+                  <DeviceMapLegend />
+                  <Map
+                    center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
+                    zoom={12}
+                    unsupported={<MapUnsupported />}
+                    className="h-full min-h-80 w-full"
+                  >
+                    <MapControls />
+                    <FitToPoints points={plotted.map((device) => ({ lng: device.longitude!, lat: device.latitude! }))} />
+                    {plotted.map((device) => (
+                      <MapMarker key={device.uuid} longitude={device.longitude!} latitude={device.latitude!}>
+                        <MarkerContent>
+                          <DeviceMapPin
+                            isGateway={device.is_gateway}
+                            label={deviceTitle(device)}
+                            deviceUuid={device.uuid}
+                          />
+                        </MarkerContent>
+                      </MapMarker>
+                    ))}
+                  </Map>
+                </div>
+              ) : (
+                !devices.isPending && (
+                  <StatusCopy>
+                    {formatMessage({
+                      id: "page.meshes.detail.fleet.noneToPlot",
+                      defaultMessage: "Register coordinates on a device to plot the mesh.",
+                    })}
+                  </StatusCopy>
+                )
+              )}
+            </FramePanel>
+          </Frame>
+          <Frame className="shadow-card">
+            <FrameHeader>
+              <FrameTitle>{formatMessage({ id: "page.meshes.detail.devices.title", defaultMessage: "Devices" })}</FrameTitle>
+              <FrameDescription>
+                {devices.isPending
+                  ? formatMessage({
+                      id: "page.meshes.detail.devices.loading",
+                      defaultMessage: "Loading devices on this mesh.",
+                    })
+                  : devices.data?.length && filters.active
+                    ? formatMessage(
+                        {
+                          id: "page.meshes.detail.devices.filteredCount",
+                          defaultMessage: "{shown, number} of {total, plural, one {# device} other {# devices}} match.",
+                        },
+                        { shown: shownDevices.length, total: devices.data.length },
+                      )
+                    : devices.data?.length
+                      ? formatMessage(
+                          {
+                            id: "page.meshes.detail.devices.count",
+                            defaultMessage:
+                              "{total, plural, one {# device} other {# devices}} on this channel: {gateways, plural, one {# gateway} other {# gateways}} and {nodes, plural, one {# node} other {# nodes}}.",
+                          },
+                          {
+                            total: devices.data.length,
+                            gateways: devices.data.filter((d) => d.is_gateway).length,
+                            nodes: devices.data.filter((d) => !d.is_gateway).length,
+                          },
+                        )
+                      : formatMessage({
+                          id: "page.meshes.detail.devices.none",
+                          defaultMessage: "No devices registered on this mesh.",
+                        })}
+              </FrameDescription>
+            </FrameHeader>
+            <FramePanel>
+              {devices.data?.length ? (
+                <div className="mb-4">
+                  <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
+                </div>
+              ) : null}
+              {devices.isPending ? <SkeletonRows /> : null}
+              {devices.data?.length ? (
+                <DataTable
+                  data={shownDevices}
+                  columns={columns}
+                  getRowId={(row) => row.uuid}
+                  previousPageLabel={formatMessage({
+                    id: "common.dataTable.previousPage",
+                    defaultMessage: "Previous page",
+                  })}
+                  nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
+                  pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
+                  empty={formatMessage({
+                    id: "page.meshes.detail.devices.noMatch",
+                    defaultMessage: "No devices on this mesh match these filters.",
+                  })}
+                />
+              ) : null}
+              {devices.data && devices.data.length === 0 ? (
+                <StatusCopy>
+                  {canEdit
+                    ? formatMessage({
+                        id: "page.meshes.detail.devices.registerHint",
+                        defaultMessage: "Register a node or gateway to start decoding traffic.",
+                      })
+                    : formatMessage({
+                        id: "page.meshes.detail.devices.empty",
+                        defaultMessage: "No devices on this mesh yet.",
+                      })}
+                </StatusCopy>
+              ) : null}
+            </FramePanel>
+          </Frame>
+        </TabsContent>
+        <TabsContent value="network" className="mt-6">
+          <MeshNetworkTab meshId={meshId} devices={devices.data ?? []} />
+        </TabsContent>
+      </Tabs>
       {mesh.data && canEdit ? (
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
       ) : null}

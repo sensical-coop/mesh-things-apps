@@ -55,6 +55,7 @@ import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
 import { DeviceLocationFrame } from "@/features/device/ui/location-frame";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { PostprocessingsPanel } from "@/features/postprocessing/ui/postprocessings-panel";
+import { DeviceLinksFrame } from "@/features/mesh-network/ui/device-links-frame";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
@@ -596,6 +597,7 @@ function DeviceStatusTab({
           canEdit={canEdit}
         />
       ) : null}
+      {device.data ? <DeviceLinksFrame device={device.data} /> : null}
     </>
   );
 }
