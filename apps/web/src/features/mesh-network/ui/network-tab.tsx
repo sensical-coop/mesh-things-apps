@@ -111,7 +111,7 @@ export function MeshNetworkTab({ meshId, devices }: { meshId: string; devices: D
           formatNumber={formatNumber}
         />
       ) : null}
-      <TopologySection meshId={meshId} range={range} devices={devices} />
+      <TopologySection meshId={meshId} range={range} devices={devices} relays={stats.data?.relays ?? []} />
     </div>
   );
 }
@@ -309,6 +309,20 @@ function NetworkFigures({
             { window: stats.window },
           )}
         />
+        <SeriesChart
+          points={stats.activity.nodes}
+          windowMs={windowMs(stats.activity_window)}
+          icon={RiNodeTree}
+          label={formatMessage({ id: "page.meshes.detail.network.activityChart", defaultMessage: "Active nodes" })}
+          hint={formatMessage(
+            {
+              id: "page.meshes.detail.network.activityChartHint",
+              defaultMessage: "Nodes that sent at least one packet, per {window}",
+            },
+            { window: stats.activity_window },
+          )}
+        />
+        <GatewayOverlap stats={stats} byUuid={byUuid} formatNumber={formatNumber} />
         {utilization ? (
           <SeriesChart
             points={utilization.points}
@@ -393,6 +407,76 @@ function NetworkFigures({
         />
       </div>
     </>
+  );
+}
+
+function GatewayOverlap({
+  stats,
+  byUuid,
+  formatNumber,
+}: {
+  stats: MeshStatsResponse;
+  byUuid: Map<string, DeviceRead>;
+  formatNumber: ReturnType<typeof useIntl>["formatNumber"];
+}): ReactElement {
+  const { formatMessage } = useIntl();
+  const receptions = new Map(stats.gateways.map((g) => [g.node_id, g.receptions]));
+  const name = (node: number, uuid: string | null) => trafficNodeLabel({ node_id: node, device_uuid: uuid }, byUuid, deviceTitle);
+  const share = (common: number, node: number) => {
+    const total = receptions.get(node);
+    return total ? formatNumber(common / total, { style: "percent", maximumFractionDigits: 0 }) : "—";
+  };
+  const title = formatMessage({ id: "page.meshes.detail.network.overlap.title", defaultMessage: "Gateway overlap" });
+  return (
+    <KpiPanel
+      icon={RiBroadcastLine}
+      label={title}
+      hint={formatMessage({
+        id: "page.meshes.detail.network.overlap.hint",
+        defaultMessage:
+          "Packets two gateways both heard, the share of each one's receptions, and how much stronger the first heard them.",
+      })}
+    >
+      {stats.gateway_pairs.length ? (
+        <div className="oa-arrive max-h-52 overflow-auto">
+          <table className="w-full text-left text-body-2-regular" aria-label={title}>
+            <tbody>
+              {stats.gateway_pairs.map((pair) => (
+                <tr key={`${pair.gateway_a}-${pair.gateway_b}`} className="border-t border-separator-border first:border-t-0">
+                  <td className="py-1.5 pe-2 text-text-primary">
+                    {name(pair.gateway_a, pair.device_uuid_a)} ↔ {name(pair.gateway_b, pair.device_uuid_b)}
+                  </td>
+                  <td className="px-2 py-1.5 tabular-nums text-text-primary">{formatNumber(pair.common_packets)}</td>
+                  <td className="px-2 py-1.5 tabular-nums text-text-secondary">
+                    {share(pair.common_packets, pair.gateway_a)} / {share(pair.common_packets, pair.gateway_b)}
+                  </td>
+                  <td className="ps-2 py-1.5 tabular-nums text-text-secondary">
+                    {pair.snr_diff_mean == null
+                      ? "—"
+                      : formatMessage(
+                          { id: "page.meshes.detail.network.overlap.snrDiff", defaultMessage: "{snr} dB" },
+                          {
+                            snr: formatNumber(pair.snr_diff_mean, {
+                              maximumFractionDigits: 1,
+                              signDisplay: "always",
+                            }),
+                          },
+                        )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <StatusCopy>
+          {formatMessage({
+            id: "page.meshes.detail.network.overlap.none",
+            defaultMessage: "No packet was heard by more than one gateway in this range.",
+          })}
+        </StatusCopy>
+      )}
+    </KpiPanel>
   );
 }
 

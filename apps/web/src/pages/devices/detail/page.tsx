@@ -56,6 +56,8 @@ import { DeviceLocationFrame } from "@/features/device/ui/location-frame";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { PostprocessingsPanel } from "@/features/postprocessing/ui/postprocessings-panel";
 import { DeviceLinksFrame } from "@/features/mesh-network/ui/device-links-frame";
+import { DeviceTrackFrame } from "@/features/mesh-network/ui/device-track-frame";
+import { DeviceTrafficFrame } from "@/features/mesh-network/ui/device-traffic-frame";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
@@ -597,7 +599,9 @@ function DeviceStatusTab({
           canEdit={canEdit}
         />
       ) : null}
+      {device.data ? <DeviceTrafficFrame device={device.data} /> : null}
       {device.data ? <DeviceLinksFrame device={device.data} /> : null}
+      {device.data ? <DeviceTrackFrame device={device.data} /> : null}
     </>
   );
 }

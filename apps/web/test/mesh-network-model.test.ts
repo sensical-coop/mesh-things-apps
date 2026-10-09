@@ -129,3 +129,46 @@ test("newDevices counts discovery, or registration when not discovered", () => {
 test("nodeHex pads to eight digits", () => {
   assert.equal(nodeHex(0xabcd), "!0000abcd");
 });
+
+test("hullAreaKm2 measures the hull, ignoring points inside it", async () => {
+  const { hullAreaKm2 } = await import("../src/features/mesh-network/model.ts");
+  // About 1.11 km by 1.11 km at the equator, with one point in the middle.
+  const square: [number, number][] = [[0, 0], [0.01, 0], [0.01, 0.01], [0, 0.01], [0.005, 0.005]];
+  assert.ok(Math.abs(hullAreaKm2(square)! - 1.239) < 0.01);
+  assert.equal(hullAreaKm2([[0, 0], [1, 1]]), null);
+  assert.equal(hullAreaKm2([[0, 0], [1, 1], [2, 2]]), null);
+});
+
+test("confirmedRelays keeps candidates the gateway heard", async () => {
+  const { confirmedRelays } = await import("../src/features/mesh-network/model.ts");
+  const links = [link(0x114d, 100), link(0x224d, 200), link(100, 0x334d)];
+  assert.deepEqual([...confirmedRelays([0x114d, 0x224d, 0x334d], 100, links)], [0x114d]);
+});
+
+test("positionTrack pairs latitude and longitude by time, oldest first", async () => {
+  const { positionTrack } = await import("../src/features/mesh-network/model.ts");
+  const lat = [
+    { time: "2026-10-01T02:00:00Z", value: 41.2 },
+    { time: "2026-10-01T01:00:00Z", value: 41.1 },
+    { time: "2026-10-01T02:00:00Z", value: 41.2 },
+    { time: "2026-10-01T03:00:00Z", value: 41.3 },
+  ];
+  const lon = [
+    { time: "2026-10-01T01:00:00Z", value: 2.1 },
+    { time: "2026-10-01T02:00:00Z", value: 2.2 },
+  ];
+  assert.deepEqual(positionTrack(lat, lon), [
+    [2.1, 41.1],
+    [2.2, 41.2],
+  ]);
+});
+
+test("linkGraph lists every node once", async () => {
+  const { linkGraph } = await import("../src/features/mesh-network/model.ts");
+  const graph = linkGraph([
+    { key: "1-2", a: 1, b: 2, snr: 3, samples: 1, sources: [], distanceKm: null, lastSeen: "" },
+    { key: "2-3", a: 2, b: 3, snr: 1, samples: 1, sources: [], distanceKm: null, lastSeen: "" },
+  ]);
+  assert.deepEqual(graph.nodes, [1, 2, 3]);
+  assert.equal(graph.edges.length, 2);
+});

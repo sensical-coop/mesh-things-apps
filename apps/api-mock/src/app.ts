@@ -2320,6 +2320,31 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.json(latestJson(device, readings));
   });
 
+  app.get("/readings/devices/:device_uuid/traffic", async (c) => {
+    const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
+    if (!device) return c.json({ detail: "Not found" }, 404);
+    const range = c.req.query("range") ?? "24h";
+    const now = Date.now();
+    return c.json({
+      mesh_id: device.meshId,
+      node_id: device.nodeId,
+      range,
+      window: "6h",
+      hourly_start: new Date(now - 7 * 86_400_000).toISOString(),
+      packets: 186,
+      receptions: 301,
+      ports: [
+        { portnum: 67, name: "TELEMETRY_APP", packets: 140 },
+        { portnum: 3, name: "POSITION_APP", packets: 28 },
+        { portnum: 4, name: "NODEINFO_APP", packets: 18 },
+      ],
+      points: Array.from({ length: 28 }, (_, i) => ({
+        time: new Date(now - (27 - i) * 21_600_000).toISOString(),
+        value: 5 + (i % 4),
+      })),
+    });
+  });
+
   app.get("/readings/devices/:device_uuid/quality", async (c) => {
     const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
     if (!device) return c.json({ detail: "Not found" }, 404);
@@ -2473,6 +2498,7 @@ function meshStatsJson(meshId: string, range: keyof typeof MESH_STATS_RANGES, de
     mesh_id: meshId,
     range,
     window,
+    activity_window: range === "7d" || range === "30d" ? "1d" : "1h",
     hourly_start: hourlyStart,
     generated_at: new Date().toISOString(),
     summary: {
@@ -2519,6 +2545,28 @@ function meshStatsJson(meshId: string, range: keyof typeof MESH_STATS_RANGES, de
     signal: {
       snr: [-5, -2.5, 0, 2.5, 5, 7.5].map((bucket, i) => ({ bucket, receptions: [2, 5, 9, 14, 10, 4][i]! * 10 })),
       rssi: [-120, -110, -100, -90, -80].map((bucket, i) => ({ bucket, receptions: [3, 9, 15, 8, 2][i]! * 10 })),
+    },
+    gateway_pairs: gateways.slice(1).map((device) => ({
+      gateway_a: gateways[0]!.nodeId,
+      gateway_b: device.nodeId,
+      device_uuid_a: gateways[0]!.uuid,
+      device_uuid_b: device.uuid,
+      common_packets: Math.round(packets * 0.4),
+      snr_diff_mean: 3.2,
+      rssi_diff_mean: 11.5,
+    })),
+    relays: gateways.flatMap((gateway) =>
+      nodes.slice(0, 2).map((node, i) => ({
+        gateway_id: gateway.nodeId,
+        device_uuid: gateway.uuid,
+        relay: node.nodeId & 0xff,
+        receptions: 40 - i * 15,
+        candidates: [{ node_id: node.nodeId, device_uuid: node.uuid }],
+      })),
+    ),
+    activity: {
+      nodes: points(Math.max(nodes.length, 1)).filter((_, i) => i % 6 === 0),
+      gateways: points(Math.max(gateways.length, 1)).filter((_, i) => i % 6 === 0),
     },
   };
 }

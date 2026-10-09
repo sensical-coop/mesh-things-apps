@@ -1,10 +1,13 @@
-import type { DeviceRead, Traceroute } from "@mtt/contracts";
+import type { DeviceRead, MeshRelay, RfLink, Traceroute } from "@mtt/contracts";
+import { EChartsGraphChart } from "@mtt/ui/components/evilcharts/charts/echarts-graph-chart";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { cx } from "@mtt/ui/utils/cx";
-import { RiCollapseDiagonalLine, RiExpandDiagonalLine } from "@remixicon/react";
+import { RiCollapseDiagonalLine, RiExpandDiagonalLine, RiMapLine, RiShareLine } from "@remixicon/react";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { routes } from "@/router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
@@ -15,11 +18,16 @@ import { meshRepository } from "@/features/mesh/repository";
 import {
   LINK_WINDOWS,
   type MeshStatsRange,
+  confirmedRelays,
+  hullAreaKm2,
+  linkGraph,
   nodeHex,
   nodePositions,
   pairLinks,
   routeCoordinates,
+  snrStrength,
 } from "../model";
+import { tokenColor } from "../token-color";
 import { LinksMap } from "./links-map";
 import { RankedBars, type RankedBar } from "./ranked-bars";
 
@@ -27,20 +35,26 @@ const REFRESH_MS = 60_000;
 const TRACEROUTE_PAGE = 20;
 const LONGEST_LINKS = 10;
 const MAP_SIZES = ["large"] as const;
+const LINK_VIEWS = ["graph"] as const;
 
 /** Who hears whom: the links map, the longest links and the traceroutes heard on the mesh. */
 export function TopologySection({
   meshId,
   range,
   devices,
+  relays,
 }: {
   meshId: string;
   range: MeshStatsRange;
   devices: DeviceRead[];
+  relays: MeshRelay[];
 }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
+  const navigate = useNavigate();
   const [mapSize, setMapSize] = useQueryState("map", parseAsStringLiteral(MAP_SIZES));
+  const [linkView, setLinkView] = useQueryState("links", parseAsStringLiteral(LINK_VIEWS));
   const large = mapSize === "large";
+  const graph = linkView === "graph";
   const [traceLimit, setTraceLimit] = useState(TRACEROUTE_PAGE);
   const [selected, setSelected] = useState<number | null>(null);
   const links = useQuery({
@@ -62,6 +76,19 @@ export function TopologySection({
   const chosen = traceroutes.data?.find((t) => t.id === selected) ?? null;
   const route = chosen ? routeCoordinates(chosen.towards, positions) : null;
   const drawn = pairs.filter((pair) => positions.has(pair.a) && positions.has(pair.b)).length;
+  const area = hullAreaKm2([...positions.values()]);
+  const graphData = useMemo(() => {
+    const { nodes, edges } = linkGraph(pairs);
+    return {
+      nodes: nodes.map((node) => ({
+        id: String(node),
+        label: byNode.has(node) ? deviceTitle(byNode.get(node)!) : nodeHex(node),
+        emphasis: byNode.get(node)?.is_gateway ?? false,
+        muted: !byNode.has(node),
+      })),
+      edges: edges.map((edge) => ({ source: String(edge.a), target: String(edge.b), strength: snrStrength(edge.snr) })),
+    };
+  }, [pairs, byNode]);
   const snr = (value: number) => formatNumber(value, { maximumFractionDigits: 1 });
 
   const longest: RankedBar[] = pairs
@@ -89,6 +116,19 @@ export function TopologySection({
       snr={snr}
     />
   );
+  const graphView = (
+    <div className={cx("oa-arrive oa-squircle-inset overflow-hidden bg-background-primary-default", large ? "h-[70vh] min-h-96" : "h-96")}>
+      <EChartsGraphChart
+        nodes={graphData.nodes}
+        edges={graphData.edges}
+        color={tokenColor("--oa-primary", "#ff495f")}
+        onNodeClick={(id) => {
+          const device = byNode.get(Number(id));
+          if (device) void navigate({ to: routes.device, params: { deviceUuid: device.uuid } });
+        }}
+      />
+    </div>
+  );
   const tracerouteTitle = formatMessage({
     id: "page.meshes.detail.network.traceroutes.title",
     defaultMessage: "Traceroutes",
@@ -112,40 +152,65 @@ export function TopologySection({
                   },
                   { drawn, pairs: pairs.length, positioned: positions.size, devices: devices.length },
                 )}
+                {area != null
+                  ? ` ${formatMessage(
+                      {
+                        id: "page.meshes.detail.network.links.area",
+                        defaultMessage: "Positioned nodes span about {area} km².",
+                      },
+                      { area: formatNumber(area, { maximumFractionDigits: area < 10 ? 1 : 0 }) },
+                    )}`
+                  : null}
               </FrameDescription>
             </div>
-            {positions.size ? (
+            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            {pairs.length ? (
               <Button
                 type="button"
                 size="small"
                 variant="secondary"
-                className="shrink-0"
+                leadingIcon={graph ? RiMapLine : RiShareLine}
+                onClick={() => void setLinkView(graph ? null : "graph")}
+              >
+                {graph
+                  ? formatMessage({ id: "page.meshes.detail.network.links.showMap", defaultMessage: "Map" })
+                  : formatMessage({ id: "page.meshes.detail.network.links.showGraph", defaultMessage: "Graph" })}
+              </Button>
+            ) : null}
+            {positions.size || graph ? (
+              <Button
+                type="button"
+                size="small"
+                variant="secondary"
                 leadingIcon={large ? RiCollapseDiagonalLine : RiExpandDiagonalLine}
                 onClick={() => void setMapSize(large ? null : "large")}
               >
                 {large
-                  ? formatMessage({ id: "page.meshes.detail.network.links.smaller", defaultMessage: "Smaller map" })
-                  : formatMessage({ id: "page.meshes.detail.network.links.larger", defaultMessage: "Larger map" })}
+                  ? formatMessage({ id: "page.meshes.detail.network.links.smaller", defaultMessage: "Smaller view" })
+                  : formatMessage({ id: "page.meshes.detail.network.links.larger", defaultMessage: "Larger view" })}
               </Button>
             ) : null}
+            </div>
           </div>
         </FrameHeader>
         <FramePanel>
           {links.isPending ? <SkeletonRows rows={2} /> : null}
-          {links.data && positions.size ? (
+          {links.data && (positions.size || graph) ? (
             large ? (
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-                <LinksMap pairs={pairs} positions={positions} devices={devices} route={route} large />
+                {graph ? graphView : <LinksMap pairs={pairs} positions={positions} devices={devices} route={route} large />}
                 <section className="flex min-h-0 flex-col gap-2 lg:h-[70vh]" aria-label={tracerouteTitle}>
                   <h3 className="text-body-medium text-text-primary">{tracerouteTitle}</h3>
                   <div className="min-h-0 flex-1 overflow-y-auto pe-1">{traceroutePanel}</div>
                 </section>
               </div>
+            ) : graph ? (
+              graphView
             ) : (
               <LinksMap pairs={pairs} positions={positions} devices={devices} route={route} />
             )
           ) : null}
-          {links.data && !positions.size ? (
+          {links.data && !positions.size && !graph ? (
             <StatusCopy>
               {pairs.length
                 ? formatMessage({
@@ -204,7 +269,122 @@ export function TopologySection({
           </Frame>
         )}
       </div>
+      <RelaysFrame relays={relays} links={links.data ?? []} nodeName={nodeName} byNode={byNode} />
     </>
+  );
+}
+
+function RelaysFrame({
+  relays,
+  links,
+  nodeName,
+  byNode,
+}: {
+  relays: MeshRelay[];
+  links: RfLink[];
+  nodeName: (node: number) => string;
+  byNode: Map<number, DeviceRead>;
+}): ReactElement {
+  const { formatMessage, formatNumber } = useIntl();
+  const title = formatMessage({ id: "page.meshes.detail.network.relays.title", defaultMessage: "Relays into gateways" });
+  const nodeLink = (node: number, strong: boolean) => {
+    const device = byNode.get(node);
+    const text = nodeName(node);
+    return device ? (
+      <Link
+        to={routes.device}
+        params={{ deviceUuid: device.uuid }}
+        className={cx("hover:text-accent-500", strong ? "text-text-primary" : "text-text-secondary")}
+      >
+        {text}
+      </Link>
+    ) : (
+      text
+    );
+  };
+  return (
+    <Frame className="shadow-card">
+      <FrameHeader>
+        <FrameTitle>{title}</FrameTitle>
+        <FrameDescription>
+          {formatMessage({
+            id: "page.meshes.detail.network.relays.description",
+            defaultMessage:
+              "The node that passed each relayed packet on to a gateway. The firmware reports only the last byte of its number, so each comes with the registered nodes it could be; a gateway that also hears a candidate directly makes it the likely one.",
+          })}
+        </FrameDescription>
+      </FrameHeader>
+      <FramePanel>
+        {relays.length ? (
+          <div className="oa-arrive overflow-x-auto">
+            <table className="w-full min-w-[32rem] text-left text-body-2-regular" aria-label={title}>
+              <thead className="text-caption-1-medium text-text-secondary">
+                <tr>
+                  <th className="py-1.5 pe-2 font-medium">
+                    {formatMessage({ id: "page.meshes.detail.network.relays.gateway", defaultMessage: "Gateway" })}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {formatMessage({ id: "page.meshes.detail.network.relays.relay", defaultMessage: "Relay" })}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {formatMessage({ id: "page.meshes.detail.network.relays.receptions", defaultMessage: "Receptions" })}
+                  </th>
+                  <th className="ps-2 py-1.5 font-medium">
+                    {formatMessage({ id: "page.meshes.detail.network.relays.candidates", defaultMessage: "Could be" })}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {relays.map((relay) => {
+                  const candidates = relay.candidates.map((c) => c.node_id);
+                  const confirmed = confirmedRelays(candidates, relay.gateway_id, links);
+                  return (
+                    <tr key={`${relay.gateway_id}-${relay.relay}`} className="border-t border-separator-border">
+                      <td className="py-1.5 pe-2">{nodeLink(relay.gateway_id, true)}</td>
+                      <td className="px-2 py-1.5 font-mono tabular-nums text-text-secondary">
+                        ··{relay.relay.toString(16).padStart(2, "0")}
+                      </td>
+                      <td className="px-2 py-1.5 tabular-nums text-text-primary">{formatNumber(relay.receptions)}</td>
+                      <td className="ps-2 py-1.5">
+                        {candidates.length ? (
+                          <span className="flex flex-wrap gap-x-2">
+                            {candidates.map((node) => (
+                              <span key={node}>
+                                {nodeLink(node, confirmed.has(node))}
+                                {confirmed.has(node)
+                                  ? ` ${formatMessage({
+                                      id: "page.meshes.detail.network.relays.heardDirectly",
+                                      defaultMessage: "(heard directly)",
+                                    })}`
+                                  : null}
+                              </span>
+                            ))}
+                          </span>
+                        ) : (
+                          <span className="text-text-tertiary">
+                            {formatMessage({
+                              id: "page.meshes.detail.network.relays.unregistered",
+                              defaultMessage: "No registered node",
+                            })}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <StatusCopy>
+            {formatMessage({
+              id: "page.meshes.detail.network.relays.none",
+              defaultMessage: "No relayed packets reached a gateway in this range.",
+            })}
+          </StatusCopy>
+        )}
+      </FramePanel>
+    </Frame>
   );
 }
 
