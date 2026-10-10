@@ -138,7 +138,7 @@ export function TopologySection({
     <>
       <Frame className="shadow-card">
         <FrameHeader>
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 flex-col gap-1">
               <FrameTitle>
                 {formatMessage({ id: "page.meshes.detail.network.links.title", defaultMessage: "Radio links" })}
@@ -163,7 +163,7 @@ export function TopologySection({
                   : null}
               </FrameDescription>
             </div>
-            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
             {pairs.length ? (
               <Button
                 type="button"
@@ -197,9 +197,9 @@ export function TopologySection({
           {links.isPending ? <SkeletonRows rows={2} /> : null}
           {links.data && (positions.size || graph) ? (
             large ? (
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 {graph ? graphView : <LinksMap pairs={pairs} positions={positions} devices={devices} route={route} large />}
-                <section className="flex min-h-0 flex-col gap-2 lg:h-[70vh]" aria-label={tracerouteTitle}>
+                <section className="flex min-h-0 min-w-0 flex-col gap-2 lg:h-[70vh]" aria-label={tracerouteTitle}>
                   <h3 className="text-body-medium text-text-primary">{tracerouteTitle}</h3>
                   <div className="min-h-0 flex-1 overflow-y-auto pe-1">{traceroutePanel}</div>
                 </section>
@@ -316,65 +316,59 @@ function RelaysFrame({
       </FrameHeader>
       <FramePanel>
         {relays.length ? (
-          <div className="oa-arrive overflow-x-auto">
-            <table className="w-full min-w-[32rem] text-left text-body-2-regular" aria-label={title}>
-              <thead className="text-caption-1-medium text-text-secondary">
-                <tr>
-                  <th className="py-1.5 pe-2 font-medium">
-                    {formatMessage({ id: "page.meshes.detail.network.relays.gateway", defaultMessage: "Gateway" })}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.meshes.detail.network.relays.relay", defaultMessage: "Relay" })}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.meshes.detail.network.relays.receptions", defaultMessage: "Receptions" })}
-                  </th>
-                  <th className="ps-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.meshes.detail.network.relays.candidates", defaultMessage: "Could be" })}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {relays.map((relay) => {
-                  const candidates = relay.candidates.map((c) => c.node_id);
-                  const confirmed = confirmedRelays(candidates, relay.gateway_id, links);
-                  return (
-                    <tr key={`${relay.gateway_id}-${relay.relay}`} className="border-t border-separator-border">
-                      <td className="py-1.5 pe-2">{nodeLink(relay.gateway_id, true)}</td>
-                      <td className="px-2 py-1.5 font-mono tabular-nums text-text-secondary">
+          <ul className="oa-arrive flex flex-col" aria-label={title}>
+            {relays.map((relay) => {
+              const candidates = relay.candidates.map((c) => c.node_id);
+              const confirmed = confirmedRelays(candidates, relay.gateway_id, links);
+              return (
+                <li
+                  key={`${relay.gateway_id}-${relay.relay}`}
+                  className="flex flex-col gap-0.5 border-t border-separator-border py-2 first:border-t-0 first:pt-0"
+                >
+                  <div className="flex items-baseline justify-between gap-3 text-body-2-regular">
+                    <span className="flex min-w-0 items-baseline gap-1.5">
+                      <span className="min-w-0 truncate">{nodeLink(relay.gateway_id, true)}</span>
+                      <span className="shrink-0 text-text-tertiary">←</span>
+                      <span className="shrink-0 font-mono text-text-secondary">
                         ··{relay.relay.toString(16).padStart(2, "0")}
-                      </td>
-                      <td className="px-2 py-1.5 tabular-nums text-text-primary">{formatNumber(relay.receptions)}</td>
-                      <td className="ps-2 py-1.5">
-                        {candidates.length ? (
-                          <span className="flex flex-wrap gap-x-2">
-                            {candidates.map((node) => (
-                              <span key={node}>
-                                {nodeLink(node, confirmed.has(node))}
-                                {confirmed.has(node)
-                                  ? ` ${formatMessage({
-                                      id: "page.meshes.detail.network.relays.heardDirectly",
-                                      defaultMessage: "(heard directly)",
-                                    })}`
-                                  : null}
-                              </span>
-                            ))}
+                      </span>
+                    </span>
+                    <span className="shrink-0 tabular-nums text-text-secondary">
+                      {formatMessage(
+                        { id: "page.meshes.detail.network.relays.count", defaultMessage: "{count} receptions" },
+                        { count: formatNumber(relay.receptions) },
+                      )}
+                    </span>
+                  </div>
+                  <div className="text-caption-1-regular text-text-tertiary">
+                    {candidates.length ? (
+                      <span className="flex flex-wrap gap-x-2">
+                        <span>
+                          {formatMessage({ id: "page.meshes.detail.network.relays.candidates", defaultMessage: "Could be" })}
+                        </span>
+                        {candidates.map((node) => (
+                          <span key={node}>
+                            {nodeLink(node, confirmed.has(node))}
+                            {confirmed.has(node)
+                              ? ` ${formatMessage({
+                                  id: "page.meshes.detail.network.relays.heardDirectly",
+                                  defaultMessage: "(heard directly)",
+                                })}`
+                              : null}
                           </span>
-                        ) : (
-                          <span className="text-text-tertiary">
-                            {formatMessage({
-                              id: "page.meshes.detail.network.relays.unregistered",
-                              defaultMessage: "No registered node",
-                            })}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        ))}
+                      </span>
+                    ) : (
+                      formatMessage({
+                        id: "page.meshes.detail.network.relays.unregistered",
+                        defaultMessage: "No registered node",
+                      })
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         ) : (
           <StatusCopy>
             {formatMessage({

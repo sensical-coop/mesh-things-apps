@@ -396,36 +396,41 @@ function GatewayOverlap({
       })}
     >
       {stats.gateway_pairs.length ? (
-        <div className="oa-arrive max-h-52 overflow-auto">
-          <table className="w-full text-left text-body-2-regular" aria-label={title}>
-            <tbody>
-              {stats.gateway_pairs.map((pair) => (
-                <tr key={`${pair.gateway_a}-${pair.gateway_b}`} className="border-t border-separator-border first:border-t-0">
-                  <td className="py-1.5 pe-2 text-text-primary">
-                    {name(pair.gateway_a, pair.device_uuid_a)} ↔ {name(pair.gateway_b, pair.device_uuid_b)}
-                  </td>
-                  <td className="px-2 py-1.5 tabular-nums text-text-primary">{formatNumber(pair.common_packets)}</td>
-                  <td className="px-2 py-1.5 tabular-nums text-text-secondary">
-                    {share(pair.common_packets, pair.gateway_a)} / {share(pair.common_packets, pair.gateway_b)}
-                  </td>
-                  <td className="ps-2 py-1.5 tabular-nums text-text-secondary">
-                    {pair.snr_diff_mean == null
-                      ? "—"
-                      : formatMessage(
-                          { id: "page.meshes.detail.network.overlap.snrDiff", defaultMessage: "{snr} dB" },
-                          {
-                            snr: formatNumber(pair.snr_diff_mean, {
-                              maximumFractionDigits: 1,
-                              signDisplay: "always",
-                            }),
-                          },
-                        )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="oa-arrive flex max-h-52 flex-col overflow-y-auto" aria-label={title}>
+          {stats.gateway_pairs.map((pair) => (
+            <li
+              key={`${pair.gateway_a}-${pair.gateway_b}`}
+              className="flex flex-col gap-0.5 border-t border-separator-border py-1.5 first:border-t-0 first:pt-0"
+            >
+              <span className="min-w-0 truncate text-body-2-regular text-text-primary">
+                {name(pair.gateway_a, pair.device_uuid_a)} ↔ {name(pair.gateway_b, pair.device_uuid_b)}
+              </span>
+              <span className="text-caption-1-regular tabular-nums text-text-tertiary">
+                {[
+                  formatMessage(
+                    { id: "page.meshes.detail.network.overlap.packets", defaultMessage: "{count} packets" },
+                    { count: formatNumber(pair.common_packets) },
+                  ),
+                  formatMessage(
+                    {
+                      id: "page.meshes.detail.network.overlap.shares",
+                      defaultMessage: "{a} and {b} of their receptions",
+                    },
+                    { a: share(pair.common_packets, pair.gateway_a), b: share(pair.common_packets, pair.gateway_b) },
+                  ),
+                  pair.snr_diff_mean == null
+                    ? null
+                    : formatMessage(
+                        { id: "page.meshes.detail.network.overlap.snrDiff", defaultMessage: "{snr} dB" },
+                        { snr: formatNumber(pair.snr_diff_mean, { maximumFractionDigits: 1, signDisplay: "always" }) },
+                      ),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </li>
+          ))}
+        </ul>
       ) : (
         <StatusCopy>
           {formatMessage({

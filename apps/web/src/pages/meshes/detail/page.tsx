@@ -378,7 +378,7 @@ export function MeshDetailPage(): ReactElement {
           </Frame>
           <Frame className="shadow-card">
             <FrameHeader>
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex min-w-0 flex-col gap-1">
                   <FrameTitle>
                     {formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}
@@ -400,7 +400,7 @@ export function MeshDetailPage(): ReactElement {
                     type="button"
                     size="small"
                     variant="secondary"
-                    className="shrink-0"
+                    className="shrink-0 self-start"
                     leadingIcon={fleetLarge ? RiCollapseDiagonalLine : RiExpandDiagonalLine}
                     onClick={() => void setFleetSize(fleetLarge ? null : "large")}
                   >

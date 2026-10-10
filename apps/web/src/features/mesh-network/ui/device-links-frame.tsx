@@ -62,52 +62,33 @@ export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactEleme
           </StatusCopy>
         ) : null}
         {links.data?.length ? (
-          <div className="oa-arrive overflow-x-auto">
-            <table className="w-full min-w-[32rem] text-left text-body-2-regular">
-              <thead className="text-caption-1-medium text-text-secondary">
-                <tr>
-                  <th className="py-1.5 pe-2 font-medium">
-                    {formatMessage({ id: "page.devices.detail.links.columns.node", defaultMessage: "Node" })}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.devices.detail.links.columns.direction", defaultMessage: "Direction" })}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.devices.detail.links.columns.source", defaultMessage: "Source" })}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.devices.detail.links.columns.snr", defaultMessage: "SNR" })}
-                  </th>
-                  <th className="ps-2 py-1.5 font-medium">
-                    {formatMessage({ id: "page.devices.detail.links.columns.lastSeen", defaultMessage: "Last heard" })}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {links.data.map((link) => (
-                  <tr
-                    key={`${link.from_node}-${link.to_node}-${link.source}`}
-                    className="border-t border-separator-border"
-                  >
-                    <td className="py-1.5 pe-2 text-text-primary">{other(link)}</td>
-                    <td className="px-2 py-1.5 text-text-secondary">
-                      {link.to_node === device.node_id
-                        ? formatMessage({ id: "page.devices.detail.links.hears", defaultMessage: "Heard by this device" })
-                        : formatMessage({ id: "page.devices.detail.links.heardBy", defaultMessage: "Heard this device" })}
-                    </td>
-                    <td className="px-2 py-1.5 text-text-secondary">{sourceLabel[link.source]}</td>
-                    <td className="px-2 py-1.5 tabular-nums text-text-primary">
-                      {formatMessage(
-                        { id: "page.devices.detail.links.snrValue", defaultMessage: "{snr} dB" },
-                        { snr: formatNumber(link.snr_mean, { maximumFractionDigits: 1 }) },
-                      )}
-                    </td>
-                    <td className="ps-2 py-1.5 tabular-nums text-text-secondary">{formatLastSeen(link.last_seen)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="oa-arrive flex flex-col">
+            {links.data.map((link) => (
+              <li
+                key={`${link.from_node}-${link.to_node}-${link.source}`}
+                className="flex flex-col gap-0.5 border-t border-separator-border py-2 first:border-t-0 first:pt-0"
+              >
+                <span className="flex items-baseline justify-between gap-3 text-body-2-regular">
+                  <span className="min-w-0 truncate text-text-primary">{other(link)}</span>
+                  <span className="shrink-0 tabular-nums text-text-primary">
+                    {formatMessage(
+                      { id: "page.devices.detail.links.snrValue", defaultMessage: "{snr} dB" },
+                      { snr: formatNumber(link.snr_mean, { maximumFractionDigits: 1 }) },
+                    )}
+                  </span>
+                </span>
+                <span className="text-caption-1-regular text-text-tertiary">
+                  {[
+                    link.to_node === device.node_id
+                      ? formatMessage({ id: "page.devices.detail.links.hears", defaultMessage: "Heard by this device" })
+                      : formatMessage({ id: "page.devices.detail.links.heardBy", defaultMessage: "Heard this device" }),
+                    sourceLabel[link.source],
+                    formatLastSeen(link.last_seen),
+                  ].join(" · ")}
+                </span>
+              </li>
+            ))}
+          </ul>
         ) : null}
       </FramePanel>
     </Frame>

@@ -65,6 +65,8 @@ export function EChartsGraphChart({
   }, [renderer]);
 
   useEffect(() => {
+    // The force layout spreads to a fixed scale, so a narrow chart starts zoomed out to fit it.
+    const zoom = Math.min(1, Math.max(0.35, (mountRef.current?.clientWidth ?? 900) / 900));
     chartRef.current?.setOption(
       {
         animation: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -74,6 +76,8 @@ export function EChartsGraphChart({
             type: "graph",
             layout: "force",
             roam: true,
+            zoom,
+            scaleLimit: { min: 0.2, max: 5 },
             draggable: true,
             force: { repulsion: 120, edgeLength: [30, 90], gravity: 0.08 },
             data: nodes.map((node) => ({
