@@ -347,8 +347,10 @@
   "page.meshes.detail.network.relays.relay": "Relay",
   "page.meshes.detail.network.relays.title": "Relays into gateways",
   "page.meshes.detail.network.relays.unregistered": "No registered node",
-  "page.meshes.detail.tabs.network": "Network",
   "page.meshes.detail.tabs.overview": "Overview",
+  "page.meshes.detail.tabs.topology": "Topology",
+  "page.meshes.detail.tabs.traffic": "Traffic",
+  "page.meshes.detail.topology.scope": "Which nodes hear each other, from traceroutes, neighbor reports and gateways hearing nodes directly.",
 
   "page.alarms.list.title": "Alarms",
   "page.alarms.list.panel.title": "Configured alarms",

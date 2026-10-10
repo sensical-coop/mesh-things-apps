@@ -347,8 +347,10 @@
   "page.meshes.detail.network.relays.relay": "Repetidor",
   "page.meshes.detail.network.relays.title": "Repetidores hacia los gateways",
   "page.meshes.detail.network.relays.unregistered": "Ningún nodo registrado",
-  "page.meshes.detail.tabs.network": "Red",
   "page.meshes.detail.tabs.overview": "Resumen",
+  "page.meshes.detail.tabs.topology": "Topología",
+  "page.meshes.detail.tabs.traffic": "Tráfico",
+  "page.meshes.detail.topology.scope": "Qué nodos se oyen entre sí, según traceroutes, informes de vecinos y gateways que oyen nodos directamente.",
 
   "page.alarms.list.title": "Alarmas",
   "page.alarms.list.panel.title": "Alarmas configuradas",

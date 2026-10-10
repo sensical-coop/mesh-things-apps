@@ -1,6 +1,7 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { zDevicesCreateData } from "@mtt/contracts/zod";
 import { Button } from "@mtt/ui/components/base/buttons/button";
+import { cx } from "@mtt/ui/utils/cx";
 import {
   Frame,
   FrameDescription,
@@ -8,7 +9,15 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import { RiAddLine, RiDeleteBinLine, RiEyeLine, RiEyeOffLine, RiFileCopyLine } from "@remixicon/react";
+import {
+  RiAddLine,
+  RiCollapseDiagonalLine,
+  RiDeleteBinLine,
+  RiExpandDiagonalLine,
+  RiEyeLine,
+  RiEyeOffLine,
+  RiFileCopyLine,
+} from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
@@ -63,11 +72,13 @@ import { MapUnsupported } from "@/components/map-unsupported";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { canArchiveDevice } from "@/features/archive/model";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
-import { MeshNetworkTab } from "@/features/mesh-network/ui/network-tab";
+import { MeshTopologyTab } from "@/features/mesh-network/ui/topology-tab";
+import { MeshTrafficTab } from "@/features/mesh-network/ui/traffic-tab";
 
 const col = legacyCreateColumnHelper<DeviceRead>();
 
-const MESH_TABS = ["overview", "network"] as const;
+const MESH_TABS = ["overview", "traffic", "topology"] as const;
+const FLEET_MAP_SIZES = ["large"] as const;
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
@@ -76,6 +87,9 @@ export function MeshDetailPage(): ReactElement {
   const queryClient = useQueryClient();
   const { meshId } = useParams({ from: routes.mesh });
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(MESH_TABS).withDefault("overview"));
+  // Its own key, so the Topology tab's larger view does not enlarge this one too.
+  const [fleetSize, setFleetSize] = useQueryState("fleet", parseAsStringLiteral(FLEET_MAP_SIZES));
+  const fleetLarge = fleetSize === "large";
   const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
   if (isNotFoundError(mesh.error)) throw notFound();
   const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
@@ -306,15 +320,18 @@ export function MeshDetailPage(): ReactElement {
         className="flex flex-col gap-0"
         value={tab}
         onValueChange={(value) => {
-          if (value === "overview" || value === "network") void setTab(value);
+          if ((MESH_TABS as readonly string[]).includes(value as string)) void setTab(value as (typeof MESH_TABS)[number]);
         }}
       >
         <TabsList className="p-1">
           <TabsTrigger value="overview" className="px-4 py-1.5 text-body-medium">
             {formatMessage({ id: "page.meshes.detail.tabs.overview", defaultMessage: "Overview" })}
           </TabsTrigger>
-          <TabsTrigger value="network" className="px-4 py-1.5 text-body-medium">
-            {formatMessage({ id: "page.meshes.detail.tabs.network", defaultMessage: "Network" })}
+          <TabsTrigger value="traffic" className="px-4 py-1.5 text-body-medium">
+            {formatMessage({ id: "page.meshes.detail.tabs.traffic", defaultMessage: "Traffic" })}
+          </TabsTrigger>
+          <TabsTrigger value="topology" className="px-4 py-1.5 text-body-medium">
+            {formatMessage({ id: "page.meshes.detail.tabs.topology", defaultMessage: "Topology" })}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="overview" keepMounted className="mt-6 flex flex-col gap-6">
@@ -361,28 +378,55 @@ export function MeshDetailPage(): ReactElement {
           </Frame>
           <Frame className="shadow-card">
             <FrameHeader>
-              <FrameTitle>{formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}</FrameTitle>
-              <FrameDescription>
-                {plotted.length
-                  ? formatMessage({
-                      id: "page.meshes.detail.fleet.hasCoords",
-                      defaultMessage: "Devices with coordinates.",
-                    })
-                  : formatMessage({
-                      id: "page.meshes.detail.fleet.noCoords",
-                      defaultMessage: "No coordinates on this mesh yet.",
-                    })}
-              </FrameDescription>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-col gap-1">
+                  <FrameTitle>
+                    {formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}
+                  </FrameTitle>
+                  <FrameDescription>
+                    {plotted.length
+                      ? formatMessage({
+                          id: "page.meshes.detail.fleet.hasCoords",
+                          defaultMessage: "Devices with coordinates.",
+                        })
+                      : formatMessage({
+                          id: "page.meshes.detail.fleet.noCoords",
+                          defaultMessage: "No coordinates on this mesh yet.",
+                        })}
+                  </FrameDescription>
+                </div>
+                {plotted.length ? (
+                  <Button
+                    type="button"
+                    size="small"
+                    variant="secondary"
+                    className="shrink-0"
+                    leadingIcon={fleetLarge ? RiCollapseDiagonalLine : RiExpandDiagonalLine}
+                    onClick={() => void setFleetSize(fleetLarge ? null : "large")}
+                  >
+                    {fleetLarge
+                      ? formatMessage({ id: "page.meshes.detail.network.links.smaller", defaultMessage: "Smaller view" })
+                      : formatMessage({ id: "page.meshes.detail.network.links.larger", defaultMessage: "Larger view" })}
+                  </Button>
+                ) : null}
+              </div>
             </FrameHeader>
             <FramePanel>
               {plotted.length ? (
-                <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
+                <div
+                  // Remounts the map at the new height rather than leaving MapLibre at the old one.
+                  key={fleetLarge ? "large" : "small"}
+                  className={cx(
+                    "oa-arrive oa-squircle-inset relative overflow-hidden",
+                    fleetLarge ? "h-[70vh] min-h-96" : "h-80",
+                  )}
+                >
                   <DeviceMapLegend />
                   <Map
                     center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
                     zoom={12}
                     unsupported={<MapUnsupported />}
-                    className="h-full min-h-80 w-full"
+                    className="h-full w-full"
                   >
                     <MapControls />
                     <FitToPoints points={plotted.map((device) => ({ lng: device.longitude!, lat: device.latitude! }))} />
@@ -487,8 +531,11 @@ export function MeshDetailPage(): ReactElement {
             </FramePanel>
           </Frame>
         </TabsContent>
-        <TabsContent value="network" className="mt-6">
-          <MeshNetworkTab meshId={meshId} devices={devices.data ?? []} />
+        <TabsContent value="traffic" className="mt-6">
+          <MeshTrafficTab meshId={meshId} devices={devices.data ?? []} />
+        </TabsContent>
+        <TabsContent value="topology" className="mt-6">
+          <MeshTopologyTab meshId={meshId} devices={devices.data ?? []} />
         </TabsContent>
       </Tabs>
       {mesh.data && canEdit ? (

@@ -1,17 +1,8 @@
 import type { DeviceRead, MeshStatsResponse } from "@mtt/contracts";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@mtt/ui/components/ui/select";
 import { RiBroadcastLine, RiNodeTree, RiPulseLine, RiStackLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { type ReactElement, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { Kpi } from "@/components/kpi/kpi";
@@ -23,8 +14,6 @@ import { deviceTitle } from "@/features/device/model";
 import { readingsRepository } from "@/features/readings/repository";
 import { routes } from "@/router";
 import {
-  MESH_STATS_RANGES,
-  type MeshStatsRange,
   RANGE_MS,
   newDevices,
   portnumLabel,
@@ -33,14 +22,15 @@ import {
   windowMs,
 } from "../model";
 import { RankedBars, type RankedBar } from "./ranked-bars";
-import { TopologySection } from "./topology-section";
+import { StatsRangeBar, useStatsRange } from "./stats-range-bar";
 
 const REFRESH_MS = 60_000;
 const CHANNEL_UTILIZATION = "device_metrics.channel_utilization";
 
-export function MeshNetworkTab({ meshId, devices }: { meshId: string; devices: DeviceRead[] }): ReactElement {
+/** A mesh's traffic: totals, charts and how packets and gateways break down. */
+export function MeshTrafficTab({ meshId, devices }: { meshId: string; devices: DeviceRead[] }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
-  const [range, setRange] = useQueryState("range", parseAsStringLiteral(MESH_STATS_RANGES).withDefault("24h"));
+  const [range] = useStatsRange();
   // react-query pauses the interval while the tab is hidden; the tab unmounts this when it is not selected.
   const stats = useQuery({
     ...readingsRepository.meshStats({ path: { mesh_id: meshId }, query: { range } }),
@@ -48,46 +38,15 @@ export function MeshNetworkTab({ meshId, devices }: { meshId: string; devices: D
   });
   const byUuid = useMemo(() => new Map(devices.map((device) => [device.uuid, device])), [devices]);
 
-  const rangeLabels: Record<MeshStatsRange, string> = {
-    "1h": formatMessage({ id: "page.meshes.detail.network.range.1h", defaultMessage: "Last hour" }),
-    "24h": formatMessage({ id: "page.meshes.detail.network.range.24h", defaultMessage: "Last 24 hours" }),
-    "7d": formatMessage({ id: "page.meshes.detail.network.range.7d", defaultMessage: "Last 7 days" }),
-    "30d": formatMessage({ id: "page.meshes.detail.network.range.30d", defaultMessage: "Last 30 days" }),
-  };
-
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-pretty text-body-2-regular text-text-secondary">
-          {formatMessage({
-            id: "page.meshes.detail.network.scope",
-            defaultMessage:
-              "Every packet this mesh's gateways heard, including text, routing and packets that could not be decrypted.",
-          })}
-        </p>
-        <Select
-          items={MESH_STATS_RANGES.map((value) => ({ value, label: rangeLabels[value] }))}
-          value={range}
-          onValueChange={(value) => void setRange(value as MeshStatsRange)}
-        >
-          <SelectTrigger
-            size="sm"
-            className="shrink-0"
-            aria-label={formatMessage({ id: "page.meshes.detail.network.rangeLabel", defaultMessage: "Range" })}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent alignItemWithTrigger={false}>
-            <SelectGroup>
-              {MESH_STATS_RANGES.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {rangeLabels[value]}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
+      <StatsRangeBar
+        description={formatMessage({
+          id: "page.meshes.detail.network.scope",
+          defaultMessage:
+            "Every packet this mesh's gateways heard, including text, routing and packets that could not be decrypted.",
+        })}
+      />
       {stats.isPending ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-hidden>
           {[0, 1, 2, 3].map((slot) => (
@@ -111,7 +70,6 @@ export function MeshNetworkTab({ meshId, devices }: { meshId: string; devices: D
           formatNumber={formatNumber}
         />
       ) : null}
-      <TopologySection meshId={meshId} range={range} devices={devices} relays={stats.data?.relays ?? []} />
     </div>
   );
 }
