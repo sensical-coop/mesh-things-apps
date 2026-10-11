@@ -182,12 +182,32 @@ export function positionTrack(latitudes: Point[], longitudes: Point[]): [number,
     .map((p) => p.at);
 }
 
-/** Nodes and edges for a graph of every link pair, positioned or not. */
-export function linkGraph(pairs: LinkPair[]): { nodes: number[]; edges: { a: number; b: number; snr: number }[] } {
-  const nodes = new Set<number>();
-  for (const pair of pairs) {
-    nodes.add(pair.a);
-    nodes.add(pair.b);
-  }
-  return { nodes: [...nodes].sort((x, y) => x - y), edges: pairs.map(({ a, b, snr }) => ({ a, b, snr })) };
+/** Nodes and edges for a graph of every link pair, positioned or not, marking the hops of `route`. */
+export function linkGraph(
+  pairs: LinkPair[],
+  route: number[] = [],
+): {
+  nodes: { node: number; onRoute: boolean }[];
+  edges: { a: number; b: number; snr: number | null; onRoute: boolean }[];
+} {
+  const key = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+  const hops = new Map<string, [number, number]>();
+  route.forEach((node, i) => {
+    const previous = route[i - 1];
+    if (previous !== undefined && previous !== node) hops.set(key(previous, node), [previous, node]);
+  });
+  const nodes = new Set<number>(route);
+  const edges = pairs.map(({ a, b, snr }): { a: number; b: number; snr: number | null; onRoute: boolean } => {
+    nodes.add(a);
+    nodes.add(b);
+    const onRoute = hops.delete(key(a, b));
+    return { a, b, snr, onRoute };
+  });
+  // Hops no link pair covers, such as a traceroute older than the range, are still drawn.
+  for (const [a, b] of hops.values()) edges.push({ a, b, snr: null, onRoute: true });
+  const onRoute = new Set(route);
+  return {
+    nodes: [...nodes].sort((x, y) => x - y).map((node) => ({ node, onRoute: onRoute.has(node) })),
+    edges,
+  };
 }

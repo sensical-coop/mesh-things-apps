@@ -169,6 +169,32 @@ test("linkGraph lists every node once", async () => {
     { key: "1-2", a: 1, b: 2, snr: 3, samples: 1, sources: [], distanceKm: null, lastSeen: "" },
     { key: "2-3", a: 2, b: 3, snr: 1, samples: 1, sources: [], distanceKm: null, lastSeen: "" },
   ]);
-  assert.deepEqual(graph.nodes, [1, 2, 3]);
+  assert.deepEqual(
+    graph.nodes.map((n) => n.node),
+    [1, 2, 3],
+  );
   assert.equal(graph.edges.length, 2);
+});
+
+test("linkGraph marks a route's hops and adds those no link covers", async () => {
+  const { linkGraph } = await import("../src/features/mesh-network/model.ts");
+  const graph = linkGraph(
+    [
+      { key: "1-2", a: 1, b: 2, snr: 3, samples: 1, sources: [], distanceKm: null, lastSeen: "" },
+      { key: "2-3", a: 2, b: 3, snr: 1, samples: 1, sources: [], distanceKm: null, lastSeen: "" },
+    ],
+    [3, 2, 9],
+  );
+  assert.deepEqual(
+    graph.nodes.filter((n) => n.onRoute).map((n) => n.node),
+    [2, 3, 9],
+  );
+  assert.deepEqual(
+    graph.edges.map((e) => [e.a, e.b, e.onRoute]),
+    [
+      [1, 2, false],
+      [2, 3, true],
+      [2, 9, true],
+    ],
+  );
 });

@@ -78,17 +78,23 @@ export function TopologySection({
   const drawn = pairs.filter((pair) => positions.has(pair.a) && positions.has(pair.b)).length;
   const area = hullAreaKm2([...positions.values()]);
   const graphData = useMemo(() => {
-    const { nodes, edges } = linkGraph(pairs);
+    const { nodes, edges } = linkGraph(pairs, chosen?.towards ?? []);
     return {
-      nodes: nodes.map((node) => ({
+      nodes: nodes.map(({ node, onRoute }) => ({
         id: String(node),
         label: byNode.has(node) ? deviceTitle(byNode.get(node)!) : nodeHex(node),
         emphasis: byNode.get(node)?.is_gateway ?? false,
         muted: !byNode.has(node),
+        highlight: onRoute,
       })),
-      edges: edges.map((edge) => ({ source: String(edge.a), target: String(edge.b), strength: snrStrength(edge.snr) })),
+      edges: edges.map((edge) => ({
+        source: String(edge.a),
+        target: String(edge.b),
+        strength: edge.snr == null ? 0 : snrStrength(edge.snr),
+        highlight: edge.onRoute,
+      })),
     };
-  }, [pairs, byNode]);
+  }, [pairs, byNode, chosen]);
   const snr = (value: number) => formatNumber(value, { maximumFractionDigits: 1 });
 
   const longest: RankedBar[] = pairs
@@ -111,7 +117,7 @@ export function TopologySection({
       onMore={() => setTraceLimit((n) => n + TRACEROUTE_PAGE)}
       selected={selected}
       onSelect={(id) => setSelected((current) => (current === id ? null : id))}
-      route={chosen && route ? { shown: route.length, total: chosen.towards.length } : null}
+      route={chosen && route && !graph ? { shown: route.length, total: chosen.towards.length } : null}
       nodeName={nodeName}
       snr={snr}
     />
@@ -122,6 +128,8 @@ export function TopologySection({
         nodes={graphData.nodes}
         edges={graphData.edges}
         color={tokenColor("--oa-primary", "#ff495f")}
+        emphasisColor={tokenColor("--color-cyan-200", "#a5f3fc")}
+        highlightColor={tokenColor("--color-cyan-500", "#06b6d4")}
         onNodeClick={(id) => {
           const device = byNode.get(Number(id));
           if (device) void navigate({ to: routes.device, params: { deviceUuid: device.uuid } });
@@ -261,7 +269,7 @@ export function TopologySection({
               <FrameDescription>
                 {formatMessage({
                   id: "page.meshes.detail.network.traceroutes.description",
-                  defaultMessage: "Newest first. Select one to draw its route on the map.",
+                  defaultMessage: "Newest first. Select one to draw its route on the map or graph.",
                 })}
               </FrameDescription>
             </FrameHeader>

@@ -317,7 +317,7 @@
   "page.meshes.detail.network.links.title": "Radio links",
   "page.meshes.detail.network.longest.description": "Distance between nodes that heard each other, and their best SNR.",
   "page.meshes.detail.network.longest.title": "Longest links",
-  "page.meshes.detail.network.traceroutes.description": "Newest first. Select one to draw its route on the map.",
+  "page.meshes.detail.network.traceroutes.description": "Newest first. Select one to draw its route on the map or graph.",
   "page.meshes.detail.network.traceroutes.distance": "{km} km",
   "page.meshes.detail.network.traceroutes.hops": "{count,plural,one{# hop} other{# hops} =0{Direct}}",
   "page.meshes.detail.network.traceroutes.more": "Show older",
