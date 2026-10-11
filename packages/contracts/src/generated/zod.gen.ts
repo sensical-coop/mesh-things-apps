@@ -515,6 +515,121 @@ export const zMeshCreate = z.object({
     discover_gateways: z.optional(z.boolean())
 });
 
+export const zNodePort = z.object({
+    portnum: z.union([
+        z.int(),
+        z.null()
+    ]),
+    name: z.string(),
+    packets: z.int()
+});
+
+export const zMeshRelayCandidate = z.object({
+    node_id: z.int(),
+    device_uuid: z.uuid()
+});
+
+export const zMeshRelay = z.object({
+    gateway_id: z.int(),
+    device_uuid: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    relay: z.int(),
+    receptions: z.int(),
+    candidates: z.array(zMeshRelayCandidate)
+});
+
+export const zMeshGatewayPair = z.object({
+    gateway_a: z.int(),
+    gateway_b: z.int(),
+    device_uuid_a: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    device_uuid_b: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    common_packets: z.int(),
+    snr_diff_mean: z.union([
+        z.number(),
+        z.null()
+    ]),
+    rssi_diff_mean: z.union([
+        z.number(),
+        z.null()
+    ])
+});
+
+export const zMeshGatewayTraffic = z.object({
+    node_id: z.int(),
+    device_uuid: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    receptions: z.int(),
+    share: z.number(),
+    direct_receptions: z.int(),
+    rx_snr_mean: z.union([
+        z.number(),
+        z.null()
+    ]),
+    rx_rssi_mean: z.union([
+        z.number(),
+        z.null()
+    ])
+});
+
+export const zMeshHops = z.object({
+    hops: z.union([
+        z.int(),
+        z.null()
+    ]),
+    packets: z.int()
+});
+
+export const zMeshNodeTraffic = z.object({
+    node_id: z.int(),
+    device_uuid: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    packets: z.int(),
+    receptions: z.int()
+});
+
+export const zMeshSignalBucket = z.object({
+    bucket: z.number(),
+    receptions: z.int()
+});
+
+export const zMeshSignal = z.object({
+    snr: z.array(zMeshSignalBucket),
+    rssi: z.array(zMeshSignalBucket)
+});
+
+export const zMeshStatsSummary = z.object({
+    packets: z.int(),
+    receptions: z.int(),
+    receptions_per_packet: z.union([
+        z.number(),
+        z.null()
+    ]),
+    bytes: z.int(),
+    decoded_packets: z.int(),
+    rejected_packets: z.int(),
+    active_nodes: z.int(),
+    channel_utilization_mean: z.union([
+        z.number(),
+        z.null()
+    ]),
+    channel_utilization_peak: z.union([
+        z.number(),
+        z.null()
+    ])
+});
+
 /**
  * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
  *
@@ -672,6 +787,66 @@ export const zPoint = z.object({
     value: z.unknown()
 });
 
+export const zMeshAirtime = z.object({
+    channel: z.string(),
+    mean: z.union([
+        z.number(),
+        z.null()
+    ]),
+    peak: z.union([
+        z.number(),
+        z.null()
+    ]),
+    points: z.array(zPoint)
+});
+
+export const zNodeTrafficResponse = z.object({
+    mesh_id: z.string(),
+    node_id: z.int(),
+    range: z.string(),
+    window: z.string(),
+    hourly_start: z.iso.datetime(),
+    packets: z.int(),
+    receptions: z.int(),
+    ports: z.array(zNodePort),
+    points: z.array(zPoint)
+});
+
+export const zMeshActivity = z.object({
+    nodes: z.array(zPoint),
+    gateways: z.array(zPoint)
+});
+
+export const zMeshTraffic = z.object({
+    portnum: z.union([
+        z.int(),
+        z.null()
+    ]),
+    name: z.string(),
+    packets: z.int(),
+    receptions: z.int(),
+    points: z.array(zPoint)
+});
+
+export const zMeshStatsResponse = z.object({
+    mesh_id: z.string(),
+    range: z.string(),
+    window: z.string(),
+    activity_window: z.string(),
+    hourly_start: z.iso.datetime(),
+    generated_at: z.iso.datetime(),
+    summary: zMeshStatsSummary,
+    traffic: z.array(zMeshTraffic),
+    airtime: z.array(zMeshAirtime),
+    nodes: z.array(zMeshNodeTraffic),
+    gateways: z.array(zMeshGatewayTraffic),
+    hops: z.array(zMeshHops),
+    signal: zMeshSignal,
+    gateway_pairs: z.array(zMeshGatewayPair),
+    relays: z.array(zMeshRelay),
+    activity: zMeshActivity
+});
+
 export const zPostprocessingBackfill = z.object({
     id: z.uuid().readonly(),
     postprocessing_id: z.uuid().readonly(),
@@ -765,6 +940,73 @@ export const zPostprocessingBlueprintCreate = z.object({
         z.string(),
         z.null()
     ]))
+});
+
+/**
+ * * `traceroute` - Traceroute
+ * * `neighborinfo` - Neighborinfo
+ * * `direct` - Direct
+ */
+export const zRfLinkSourceEnum = z.enum([
+    'traceroute',
+    'neighborinfo',
+    'direct'
+]);
+
+export const zRfLink = z.object({
+    from_node: z.int(),
+    to_node: z.int(),
+    from_device_uuid: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    to_device_uuid: z.union([
+        z.uuid(),
+        z.null()
+    ]),
+    source: zRfLinkSourceEnum,
+    samples: z.int(),
+    snr_mean: z.number(),
+    last_snr: z.union([
+        z.number(),
+        z.null()
+    ]),
+    first_seen: z.iso.datetime(),
+    last_seen: z.iso.datetime(),
+    distance_km: z.union([
+        z.number(),
+        z.null()
+    ])
+});
+
+export const zTraceroute = z.object({
+    id: z.int(),
+    from_node: z.int(),
+    to_node: z.int(),
+    packet_id: z.int(),
+    request_id: z.union([
+        z.int(),
+        z.null()
+    ]),
+    origin: z.int(),
+    target: z.int(),
+    towards: z.array(z.int()),
+    snr_towards: z.array(z.union([
+        z.number(),
+        z.null()
+    ])),
+    back: z.array(z.int()),
+    snr_back: z.array(z.union([
+        z.number(),
+        z.null()
+    ])),
+    complete: z.boolean(),
+    gateway_ids: z.array(z.int()),
+    heard_at: z.iso.datetime(),
+    distance_km: z.union([
+        z.number(),
+        z.null()
+    ])
 });
 
 /**
@@ -2096,6 +2338,37 @@ export const zMeshesDevicesListData = z.object({
 
 export const zMeshesDevicesListResponse = z.array(zDeviceRead);
 
+export const zMeshesLinksListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        node_id: z.optional(z.string()),
+        since: z.optional(z.enum([
+            '24h',
+            '30d',
+            '7d'
+        ]))
+    }))
+});
+
+export const zMeshesLinksListResponse = z.array(zRfLink);
+
+export const zMeshesTraceroutesListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        before: z.optional(z.string()),
+        limit: z.optional(z.int()).default(50),
+        node_id: z.optional(z.string())
+    }))
+});
+
+export const zMeshesTraceroutesListResponse = z.array(zTraceroute);
+
 export const zMetricsRetrieveData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -2491,6 +2764,23 @@ export const zReadingsDevicesQualityRetrieveData = z.object({
 
 export const zReadingsDevicesQualityRetrieveResponse = zDeviceQualityResponse;
 
+export const zReadingsDevicesTrafficRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        device_uuid: z.uuid()
+    }),
+    query: z.optional(z.object({
+        range: z.optional(z.enum([
+            '1h',
+            '24h',
+            '30d',
+            '7d'
+        ]))
+    }))
+});
+
+export const zReadingsDevicesTrafficRetrieveResponse = zNodeTrafficResponse;
+
 export const zReadingsExportsListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -2589,6 +2879,41 @@ export const zReadingsMeshesNodesQualityRetrieveData = z.object({
 });
 
 export const zReadingsMeshesNodesQualityRetrieveResponse = zDeviceQualityResponse;
+
+export const zReadingsMeshesNodesTrafficRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid(),
+        node_id: z.int()
+    }),
+    query: z.optional(z.object({
+        range: z.optional(z.enum([
+            '1h',
+            '24h',
+            '30d',
+            '7d'
+        ]))
+    }))
+});
+
+export const zReadingsMeshesNodesTrafficRetrieveResponse = zNodeTrafficResponse;
+
+export const zReadingsMeshesStatsRetrieveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        mesh_id: z.uuid()
+    }),
+    query: z.optional(z.object({
+        range: z.optional(z.enum([
+            '1h',
+            '24h',
+            '30d',
+            '7d'
+        ]))
+    }))
+});
+
+export const zReadingsMeshesStatsRetrieveResponse = zMeshStatsResponse;
 
 export const zSinksListData = z.object({
     body: z.optional(z.never()),

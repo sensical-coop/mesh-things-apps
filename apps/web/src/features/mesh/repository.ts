@@ -3,10 +3,12 @@ import {
   meshesDestroyMutation,
   meshesDevicesListOptions,
   meshesDevicesListQueryKey,
+  meshesLinksListOptions,
   meshesListOptions,
   meshesListQueryKey,
   meshesRetrieveOptions,
   meshesRetrieveQueryKey,
+  meshesTraceroutesListOptions,
   meshesUpdateMutation,
 } from "@mtt/contracts/query";
 
@@ -20,4 +22,6 @@ export const meshRepository = {
   destroy: meshesDestroyMutation,
   devices: meshesDevicesListOptions,
   devicesKey: meshesDevicesListQueryKey,
+  links: meshesLinksListOptions,
+  traceroutes: meshesTraceroutesListOptions,
 };
