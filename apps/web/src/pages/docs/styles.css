@@ -2,9 +2,33 @@
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-ui/css/generated/spacious.css";
 
-/* Keep dialogs portalled to body on the same OA palette as the docs layout. */
-:root,
-.dark {
+/*
+ * Fumadocs ships global base rules (`*` border colour, `body` colours) that read its palette.
+ * Outside the docs the palette is unset, so those rules resolve to nothing and the console
+ * keeps its own styles. While the portal is mounted the palette maps to OA tokens on the root,
+ * where dialogs portalled to body can read it too.
+ */
+:root:not(:has(.docs-portal)) {
+  --color-fd-background: initial;
+  --color-fd-foreground: initial;
+  --color-fd-muted: initial;
+  --color-fd-muted-foreground: initial;
+  --color-fd-popover: initial;
+  --color-fd-popover-foreground: initial;
+  --color-fd-card: initial;
+  --color-fd-card-foreground: initial;
+  --color-fd-border: initial;
+  --color-fd-primary: initial;
+  --color-fd-primary-foreground: initial;
+  --color-fd-secondary: initial;
+  --color-fd-secondary-foreground: initial;
+  --color-fd-accent: initial;
+  --color-fd-accent-foreground: initial;
+  --color-fd-ring: initial;
+  --color-fd-overlay: initial;
+}
+
+:root:has(.docs-portal) {
   --color-fd-background: var(--color-background-primary-default);
   --color-fd-foreground: var(--color-text-primary);
   --color-fd-muted: var(--color-background-secondary-default);
