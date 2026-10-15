@@ -313,6 +313,14 @@ No meter tests de UI/primitivas en `packages/ui` salvo que el propio paquete gan
 
 ## Web (fase 1)
 
+### Portal público de documentación
+
+Fumadocs se integra en la SPA existente: `/docs` redirige a `/docs/hello-world` y `/docs/$` resuelve páginas MDX sin pasar por el `Shell` autenticado. Los headers públicos incluyen el enlace **Docs**, también en móvil.
+
+El contenido vive en `apps/web/content/docs/`. Para añadir una página, crear un `.mdx` con frontmatter `title`; Fumadocs genera el árbol de navegación desde esa carpeta. La plantilla inicial solo contiene `hello-world.mdx`.
+
+`fumadocsMdx()` en Vite compila la colección declarada en `src/lib/docs-source.ts`; el layout y las páginas se cargan de forma diferida en `src/pages/docs/`. Los colores reutilizan tokens OA y el tema sigue gestionado por `boardui:theme`. La búsqueda queda desactivada mientras solo haya una página.
+
 Rutas: constantes en `apps/web/src/router/router.ts` (historias en [ui-stories.md](./ui-stories.md)). Landing pública en `/`. Login en `/login`. Inventario autenticado bajo `/console`. Fetch con `credentials: include`.
 
 `VITE_API_URL` apunta al mock (compile-time; mismo ARG en `docker/Dockerfile`). CSRF cookie no-op en el mock.

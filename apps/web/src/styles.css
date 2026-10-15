@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./pages/docs/styles.css";
 @import "@mtt/ui/boardui.css";
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource/geist-mono/400.css";

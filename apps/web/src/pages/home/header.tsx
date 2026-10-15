@@ -54,6 +54,9 @@ export function LandingHeader(): ReactElement {
           </nav>
         </div>
         <div className="relative z-10 flex items-center gap-2">
+          <Link to={routes.docs} className={`${navLinkClass} px-2 py-2`}>
+            {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
+          </Link>
           <LanguageSwitcher />
           <Button
             type="button"

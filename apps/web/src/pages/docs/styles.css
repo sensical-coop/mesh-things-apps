@@ -1,0 +1,35 @@
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+@theme inline {
+  --color-fd-background: var(--color-background-full);
+  --color-fd-foreground: var(--color-text-primary);
+  --color-fd-muted: var(--color-background-secondary-default);
+  --color-fd-muted-foreground: var(--color-text-secondary);
+  --color-fd-popover: var(--color-background-primary-default);
+  --color-fd-popover-foreground: var(--color-text-primary);
+  --color-fd-card: var(--color-background-primary-default);
+  --color-fd-card-foreground: var(--color-text-primary);
+  --color-fd-border: var(--color-separator-border);
+  --color-fd-primary: var(--oa-primary);
+  --color-fd-primary-foreground: var(--color-text-white);
+  --color-fd-secondary: var(--color-background-secondary-default);
+  --color-fd-secondary-foreground: var(--color-text-primary);
+  --color-fd-accent: var(--color-background-secondary-hover);
+  --color-fd-accent-foreground: var(--color-text-primary);
+  --color-fd-ring: var(--color-border-focus-ring);
+}
+
+.docs-portal {
+  --fd-banner-height: 4rem;
+}
+
+.docs-portal #nd-docs-layout {
+  min-height: calc(100svh - var(--fd-banner-height));
+}
+
+@media (min-width: 640px) {
+  .docs-portal {
+    --fd-banner-height: 5rem;
+  }
+}
