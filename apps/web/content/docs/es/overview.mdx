@@ -5,6 +5,10 @@ description: Alcance de la plataforma, usuarios previstos y recorrido de un paqu
 
 Mesh Things gestiona una malla LoRa de [Meshtastic](https://meshtastic.org/) como una flota de dispositivos registrados. Las pasarelas publican paquetes protobuf en un broker MQTT. La plataforma descifra esos paquetes con la clave de la malla, almacena las lecturas resultantes y permite consultarlas mediante una API HTTP y la consola.
 
+{/* Las imágenes viven en content/docs/assets y se referencian con una ruta relativa a este fichero. Vite las empaqueta al compilar; ambos idiomas comparten el mismo fichero. */}
+
+![Ilustración de una red en malla: nodos de radio enlazados entre sí, tres pasarelas destacadas y la ruta de un paquete hacia una de ellas.](../assets/mesh-grid.svg)
+
 Cada etapa del proceso almacena un tipo de dato distinto. El bus de mensajes transporta los paquetes en bruto, PostgreSQL contiene el registro de dispositivos e InfluxDB contiene las mediciones.
 
 ```mermaid

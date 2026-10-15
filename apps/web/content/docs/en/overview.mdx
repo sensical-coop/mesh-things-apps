@@ -5,6 +5,10 @@ description: Scope of the platform, intended users, and the processing path from
 
 Mesh Things manages a [Meshtastic](https://meshtastic.org/) LoRa mesh as a fleet of registered devices. Gateways publish protobuf packets to an MQTT broker. The platform decrypts those packets with the mesh key, stores the resulting readings, and provides access to them through an HTTP API and the console.
 
+{/* Images live in content/docs/assets and are referenced with a path relative to this file. Vite bundles them at build time; both languages share the same file. */}
+
+![Illustration of a mesh network: radio nodes linked to each other, three gateways highlighted, and the route of a packet towards one of them.](../assets/mesh-grid.svg)
+
 Each stage of the pipeline stores a different kind of data. The message bus carries the raw packets, PostgreSQL holds the device registry, and InfluxDB holds the measurements.
 
 ```mermaid
