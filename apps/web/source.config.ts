@@ -1,8 +1,8 @@
-import { remarkMdxMermaid } from "fumadocs-core/mdx-plugins";
 import { defineConfig } from "fumadocs-mdx/config";
+import { remarkDiagrams } from "./src/lib/remark-diagrams.ts";
 
 export default defineConfig({
   mdxOptions: {
-    remarkPlugins: [remarkMdxMermaid],
+    remarkPlugins: [remarkDiagrams],
   },
 });

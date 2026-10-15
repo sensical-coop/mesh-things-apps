@@ -3,7 +3,7 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layo
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import { useLocale } from "@/hooks/use-locale";
 import { docsSource } from "@/lib/docs-source";
-import { DocsMermaid } from "@/pages/docs/mermaid";
+import { DocsDiagram } from "@/pages/docs/diagram";
 
 export function DocumentationPage() {
   const { _splat } = useParams({ strict: false });
@@ -18,7 +18,7 @@ export function DocumentationPage() {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <Content components={{ ...defaultMdxComponents, Mermaid: DocsMermaid }} />
+        <Content components={{ ...defaultMdxComponents, Diagram: DocsDiagram }} />
       </DocsBody>
     </DocsPage>
   );
