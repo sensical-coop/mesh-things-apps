@@ -1,11 +1,11 @@
 import { authRepository } from "@/features/auth/repository";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils";
-import { getTheme, toggleTheme } from "@mtt/ui/theme";
+import { toggleTheme } from "@mtt/ui/theme";
 import { RiCloseLine, RiMenuLine, RiMoonLine, RiSunLine, RiUserLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { type ReactElement, useState, useSyncExternalStore } from "react";
+import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { BrandMark, pageWidth } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -15,14 +15,10 @@ import { AutomationMenu } from "@/components/automation-menu";
 import { DataMenu } from "@/components/data-menu";
 import { ManagementMenu } from "@/components/management-menu";
 import { RouterButtonLink } from "@/components/router-button-link";
+import { useTheme } from "@/hooks/use-theme";
 
 const headerLinkClass =
   "rounded-full px-3 py-1 text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
-
-function subscribeTheme(onStoreChange: () => void): () => void {
-  globalThis.addEventListener("boardui-theme", onStoreChange);
-  return () => globalThis.removeEventListener("boardui-theme", onStoreChange);
-}
 
 function NavLinks({
   onNavigate,
@@ -79,7 +75,7 @@ function NavLinks({
 
 export function Header(): ReactElement {
   const { formatMessage } = useIntl();
-  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
+  const theme = useTheme();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);

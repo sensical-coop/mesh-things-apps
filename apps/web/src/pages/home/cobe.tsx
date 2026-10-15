@@ -1,12 +1,7 @@
 import { Globe } from "@mtt/ui/components/ui/globe";
-import { getTheme } from "@mtt/ui/theme";
-import { type ReactElement, useMemo, useSyncExternalStore } from "react";
+import { type ReactElement, useMemo } from "react";
 import { landingGlobeNodes } from "./mesh";
-
-function subscribeTheme(onStoreChange: () => void): () => void {
-  globalThis.addEventListener("boardui-theme", onStoreChange);
-  return () => globalThis.removeEventListener("boardui-theme", onStoreChange);
-}
+import { useTheme } from "@/hooks/use-theme";
 
 const coral: [number, number, number] = [255 / 255, 73 / 255, 95 / 255];
 const inkLight: [number, number, number] = [0.96, 0.96, 0.96];
@@ -14,7 +9,7 @@ const inkDark: [number, number, number] = [0.13, 0.13, 0.14];
 const glowLight: [number, number, number] = [1, 1, 1];
 
 export function LandingCobe(): ReactElement {
-  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
+  const theme = useTheme();
   const dark = theme === "dark";
 
   const config = useMemo(() => {

@@ -2,17 +2,13 @@ import { BrandMark } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { getTheme, toggleTheme } from "@mtt/ui/theme";
+import { toggleTheme } from "@mtt/ui/theme";
 import { RiMoonLine, RiSunLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
-import { type ReactElement, useEffect, useState, useSyncExternalStore } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { RouterButtonLink } from "@/components/router-button-link";
-
-function subscribeTheme(onStoreChange: () => void): () => void {
-  globalThis.addEventListener("boardui-theme", onStoreChange);
-  return () => globalThis.removeEventListener("boardui-theme", onStoreChange);
-}
+import { useTheme } from "@/hooks/use-theme";
 
 /**
  * Sticky top bar for standalone content pages (terms, etc.) that don't have
@@ -21,7 +17,7 @@ function subscribeTheme(onStoreChange: () => void): () => void {
  */
 export function SiteHeader(): ReactElement {
   const { formatMessage } = useIntl();
-  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
+  const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
