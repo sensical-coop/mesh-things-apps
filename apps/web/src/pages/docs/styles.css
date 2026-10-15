@@ -107,6 +107,7 @@
 
 .docs-diagram .node rect {
   rx: 8px;
+  ry: 8px;
 }
 
 /* Phones scroll a wide diagram sideways instead of shrinking its text. */
