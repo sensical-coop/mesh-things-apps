@@ -42,7 +42,9 @@ function toDiagram(chart: string): MarkdownNode {
 }
 
 function replaceDiagrams(node: MarkdownNode): void {
-  node.children = node.children?.map((child) => {
+  // Leaf nodes must keep no `children` key at all: later stages test for its presence.
+  if (!node.children) return;
+  node.children = node.children.map((child) => {
     if (child.type === "code" && child.lang === "mermaid" && child.value) return toDiagram(child.value);
     replaceDiagrams(child);
     return child;

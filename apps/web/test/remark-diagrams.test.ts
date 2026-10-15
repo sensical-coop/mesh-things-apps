@@ -16,10 +16,12 @@ test("remarkDiagrams replaces mermaid code blocks and leaves other code alone", 
     children: [
       { type: "code", lang: "mermaid", value: "flowchart TD\n  a --> b" },
       { type: "code", lang: "bash", value: "docker compose up" },
+      { type: "image", url: "../assets/mesh-grid.svg", alt: "Mesh" },
     ],
   };
   remarkDiagrams()(tree);
-  const [diagram, shell] = tree.children;
+  const [diagram, shell, image] = tree.children;
   assert.equal(diagram?.type, "mdxJsxFlowElement");
   assert.equal(shell?.type, "code");
+  assert.equal(image !== undefined && "children" in image, false);
 });
