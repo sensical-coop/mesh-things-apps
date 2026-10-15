@@ -1,49 +1,43 @@
 ---
 title: Calidad y alarmas
-description: Los cuatro detectores, dónde corre cada uno y cómo se agrupa el correo de alarma.
+description: Los cuatro detectores, sus requisitos y la agrupación de los correos de alarma.
 ---
 
-Los detectores los lista `GET /detectors`. Un canal ejecuta los de `enabled_detectors`, o el valor por defecto del catálogo cuando ese campo es null. Una lista vacía silencia el canal. La ausencia es la excepción: es un interruptor del dispositivo, porque el silencio es de la radio, no de un campo.
+Los detectores disponibles se obtienen con `GET /detectors`. Un canal ejecuta los detectores de su lista `enabled_detectors`, o el valor por defecto del catálogo cuando ese campo es nulo. Una lista vacía desactiva la detección en el canal. La detección de ausencia es la excepción: se activa en el dispositivo, ya que un periodo sin transmisiones concierne a la radio y no a un campo concreto.
 
-Una alarma no es un correo. Primero se escribe el evento. El correo es una decisión posterior, y se agrupa.
+Los eventos de alarma y los avisos de alarma se gestionan por separado. Cada evento se almacena primero; los avisos por correo se envían después y de forma agrupada.
 
 ```mermaid
 sequenceDiagram
   participant Detector
-  participant Kafka
-  participant Influx as InfluxDB
-  participant Redis
-  participant Mail as Correo
-  Detector->>Kafka: evento de alarma
-  Kafka->>Influx: se guarda en alarms
-  Kafka->>Mail: primera alarma de este dispositivo
-  Kafka->>Redis: las siguientes, retenidas
-  Redis->>Mail: un resumen al cerrar la ventana
+  participant Store as InfluxDB
+  participant Notifier as Avisos
+  participant Owner as Propietario
+  Detector->>Store: Evento de alarma
+  Detector->>Notifier: Evento de alarma
+  Notifier->>Owner: Correo de la primera alarma
+  Notifier->>Owner: Resumen al terminar el periodo de espera
 ```
 
-<Callout type="warn" title="Tres detectores piden full">
-`flat_value`, `range` y `absence` corren en Flink. Una caja lite no los ejecuta. Completitud y plantillas sí pueden correr si añades el perfil `quality`.
+<Callout type="info" title="Detectores en flujo">
+`flat_value`, `range` y `absence` evalúan las lecturas a medida que llegan. Solo están disponibles en las instancias que ofrecen procesamiento en flujo. Las comprobaciones de completitud y las plantillas se ejecutan como trabajos programados.
 </Callout>
 
-| Detector | Ámbito | Dónde corre | Qué necesita |
+| Detector | Ámbito | Evaluación | Requisitos |
 | --- | --- | --- | --- |
-| `flat_value` | Canal | Trabajo de patrones de Flink, perfil completo | Un intervalo de lectura. La ventana es unas tres horas de muestras. |
-| `range` | Canal | Trabajo de patrones de Flink, perfil completo | `valid_min` y `valid_max` en ese canal, puestos juntos. |
-| `absence` | Dispositivo | Trabajo de ausencia de Flink, perfil completo | `absence_detection_enabled` y `publish_interval_seconds`. |
-| `completeness` | Canal | Quality worker, por lotes | `reading_interval_seconds`. Alarma si el ratio de relleno es bajo o hay un hueco largo. |
+| `flat_value` | Canal | En flujo | Un intervalo de lectura. La ventana abarca aproximadamente tres horas de muestras. |
+| `range` | Canal | En flujo | `valid_min` y `valid_max` en el canal, establecidos conjuntamente. |
+| `absence` | Dispositivo | En flujo | `absence_detection_enabled` y `publish_interval_seconds`. |
+| `completeness` | Canal | Programada | `reading_interval_seconds`. Genera una alarma cuando la proporción de datos es baja o un hueco es largo. |
 
-`lite` no ejecuta los trabajos de Flink. Añade el perfil `quality` si aún quieres completitud y plantillas en una máquina pequeña. `flat_value`, `range` y `absence` pertenecen a `full`.
+Los eventos de alarma se almacenan en la medición `alarms`, etiquetados con el detector, la malla, el nodo, un canal opcional y `source` (`stream` o `batch`).
 
-Los eventos de alarma son JSON en `mesh.telemetry.alarms.v1`. El escritor de Influx también los guarda en el measurement `alarms`, etiquetados con el detector, la malla, el nodo, un canal opcional y `source` (`stream` o `batch`).
+## Avisos por correo
 
-## Correo
+La primera alarma de un dispositivo envía un correo al propietario de la malla de forma inmediata. Las alarmas posteriores del mismo dispositivo, con independencia del detector o del canal, se retienen durante `alarm_email_cooldown_seconds`. Al terminar ese periodo, un único correo de resumen enumera las alarmas retenidas. Un periodo de 0 envía un correo por cada alarma.
 
-La primera alarma de un dispositivo envía correo al dueño de la malla al momento. Las siguientes de ese mismo dispositivo, sea cual sea el detector o el canal, se retienen en Redis durante `alarm_email_cooldown_seconds`. Cuando se cierra la ventana, un correo resumen lista lo retenido. Un enfriamiento de 0 envía cada alarma.
+El propietario puede sustituir el valor por defecto de la instancia desde la página de perfil. Los correos incluyen enlaces a la consola. Los propietarios reciben además un recordatorio diario mientras haya alarmas activas.
 
-El dueño puede sustituir el valor del servidor desde su perfil. El correo usa el estilo HTML de la consola y enlaza de vuelta (`REGISTRY__PUBLIC_FRONTEND_URL`). Los dueños también reciben un recordatorio diario mientras las alarmas siguen abiertas.
+## Vistas de la consola
 
-`GET /status/email` deja que el monitor compruebe que el envío funciona. Es un extremo de operaciones, no una página de la consola.
-
-## Qué enseña la consola
-
-**Automation → Alarms** es donde eliges qué vigilar en cada medida. La ficha del dispositivo es donde un canal hereda, sustituye o silencia esa elección, y donde se enciende la ausencia para todo el dispositivo.
+**Automatización → Alarmas** configura qué condiciones se vigilan en cada medición. En la página del dispositivo, cada canal puede heredar, sustituir o desactivar esa configuración, y la detección de ausencia puede activarse para todo el dispositivo.

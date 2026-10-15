@@ -1,57 +1,57 @@
 ---
 title: Readings
-description: Latest values, historic series, and CSV downloads.
+description: Latest values, historical series, and CSV downloads.
 ---
 
-Readings live in InfluxDB. The readings API never returns the mesh PSK. You can query by the device's registration id, or by mesh id plus Meshtastic node number.
+Readings are stored in InfluxDB. The readings API never returns the mesh PSK. A device can be queried by its registration identifier, or by the mesh identifier together with the Meshtastic node number.
 
-Same store, four questions. Pick the path that matches the question, not the screen you happen to be on.
+The readings API exposes several endpoints over the same store. The appropriate endpoint depends on the data required.
 
 ```mermaid
 flowchart LR
-  device["One device"] --> series["Historic series"]
-  device --> latest["Latest per channel"]
+  device["Single device"] --> series["Historical series"]
+  device --> latest["Latest value per channel"]
   device --> quality["Quality series"]
   device --> traffic["Packet traffic"]
-  mesh["Whole mesh"] --> stats["Mesh stats"]
-  mesh --> csv["CSV zip, in the background"]
+  mesh["Whole mesh"] --> stats["Mesh statistics"]
+  mesh --> csv["CSV export"]
 ```
 
-<Callout type="info" title="One download at a time">
-A second export while one is still preparing comes back as 429. The link lives 24 hours. After that the file is gone and you ask again.
+<Callout type="info" title="One export at a time">
+A new export requested while another is still being prepared returns 429. The download link remains valid for 24 hours; after that period, the file is deleted and the export must be requested again.
 </Callout>
 
-| Question | Path |
+| Data | Endpoint |
 | --- | --- |
-| Historic samples | `GET /readings/devices/{uuid}` or `GET /readings/meshes/{mesh}/nodes/{node}` |
+| Historical samples | `GET /readings/devices/{uuid}` or `GET /readings/meshes/{mesh}/nodes/{node}` |
 | Latest value per channel | `.../latest` |
 | Quality series | `.../quality` |
 | Packet traffic for one node | `.../traffic` |
-| Mesh-wide traffic | `GET /readings/meshes/{mesh}/stats` |
+| Traffic for the whole mesh | `GET /readings/meshes/{mesh}/stats` |
 
-Query a series with `channel`, `start`, `stop`, `window`, and `agg`. The device page defaults to the last 24 hours, a one-hour window, and a mean, and it prefers `environment_metrics.temperature` when that channel exists.
+A series is queried with the parameters `channel`, `start`, `stop`, `window`, and `agg`. By default, the device page shows the last 24 hours, aggregated as the mean over one-hour windows, and selects `environment_metrics.temperature` when that channel exists.
 
-`start` and `stop` accept a time or a relative value such as `-24h`. `window` is the bucket size. `agg` is the reducer inside the bucket (`mean` and the other reducers the API lists).
+`start` and `stop` accept an absolute time or a relative value such as `-24h`. `window` sets the size of each aggregation window. `agg` sets the aggregation function applied within each window: `mean`, or any of the other functions listed by the API.
 
-Latest values are the cards at the top of the device page: value, unit, quantity kind, and time. An empty lookback is an empty state, not a zero.
+Latest values appear as cards at the top of the device page, with the value, unit, quantity kind, and time. When no value exists within the lookback period, the card shows an empty state rather than zero.
 
 ## CSV downloads
 
-Any mesh owner can take readings away as CSV. Superusers can too. The device page has **Download CSV** for that one device. `/console/csv-downloads` (under **Data**) can cover a whole mesh or a chosen subset.
+Mesh owners and superusers can export readings as CSV. The device page provides **Download CSV** for a single device. **Data → CSV downloads** (`/console/csv-downloads`) covers a whole mesh or a selection of its devices.
 
-One download is a zip, built in the background.
+Each export is a ZIP file, prepared in the background.
 
 | Limit | Value |
 | --- | --- |
-| Longest range | 366 days |
-| In preparation at once | One. A second request is 429. |
-| Link lifetime | 24 hours. You get mail when it is ready. |
-| Listed so you can ask again | 30 days |
+| Maximum range | 366 days |
+| Exports in preparation | One at a time. A second request returns 429. |
+| Link validity | 24 hours. An email is sent when the export is ready. |
+| Export history | 30 days, so that an export can be requested again |
 
-States are `queued`, `running` (with days done of days total), `ready` (a signed URL until `expires_at`), `failed` (an error string), and `expired` (the file is gone; request it again).
+The export states are `queued`, `running` (with the number of days processed out of the total), `ready` (with a signed URL valid until `expires_at`), `failed` (with an error message), and `expired` (the file has been deleted and must be requested again).
 
-Parquet exports of the archive use the same job machinery with `format: parquet`. See [Archive](/docs/archive).
+Parquet exports from the archive use the same mechanism with `format: parquet`. See [Archive](/docs/archive).
 
 ## Rate limits
 
-Readings are throttled per owner. Superusers are not throttled.
+Requests to the readings API are rate-limited per owner. Superusers are not subject to rate limits.

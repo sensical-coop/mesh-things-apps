@@ -1,61 +1,59 @@
 ---
 title: Blueprints
-description: Recipes that derive new channels, with a calibration history per device.
+description: Definitions that derive new channels, with a calibration history per device.
 ---
 
-A blueprint is a recipe: an ordered list of named algorithms from `GET /algorithms`. The owner edits it under **Automation → Blueprints** (`/console/blueprints`). You see your own recipes and the public ones.
+A blueprint is an ordered list of named algorithms from `GET /algorithms`. Owners edit blueprints under **Automation → Blueprints** (`/console/blueprints`). Each owner can view their own blueprints and all public blueprints.
 
-The recipe and the device stay apart on purpose. Editing steps does not silently change a device that is already running.
+Blueprints and device assignments are versioned independently, so editing a blueprint does not alter devices that are already running it.
 
 ```mermaid
-flowchart LR
-  recipe["Blueprint"] --> version["Immutable version"]
-  version --> attach["Attached to one device"]
-  attach --> wire["Slots wired to real channels"]
-  wire --> cal["Calibration, valid from a time"]
-  cal --> live["Derived channels"]
-  cal --> backfill["Backfill over history"]
+flowchart TD
+  blueprint["Blueprint"] --> version["Immutable version"]
+  version --> assignment["Assignment to a device"]
+  assignment --> inputs["Inputs bound to device channels"]
+  inputs --> calibration["Calibration with a validity date"]
+  calibration --> live["Derived channels"]
+  calibration --> backfill["Backfill over stored history"]
 ```
 
 <Callout type="info" title="Calibration belongs to the device">
-The recipe names the algorithm. The device stores the numbers, with `valid_from`, so reprocessing old data uses the calibration that was in force then.
+The blueprint names the algorithm. The device stores the calibration values together with `valid_from`, so reprocessing historical data applies the calibration that was in force at the time.
 </Callout>
 
-## A version is immutable
+## Versioning
 
-Changing the name, the description, or whether the blueprint is public edits the blueprint in place. Changing steps creates a **new version**, copied from the latest. Devices attach to a version, not to "whatever the recipe says today", so a running device does not change formula under it.
+Changes to the name, the description, or the public flag modify the blueprint in place. Changes to the steps create a **new version**, copied from the latest one. Devices are assigned to a specific version, so the formula applied to a running device never changes without an explicit update.
 
 Each step has:
 
-- a key and an order, unique inside the version
-- `function_name`, which must exist in the algorithm catalog
-- `inputs`: each algorithm input is `slot:<name>` or `step:<key>.<output>`
+- a key and a position, both unique within the version
+- `function_name`, which must exist in the algorithm catalogue
+- `inputs`: each algorithm input is either `slot:<name>` or `step:<key>.<output>`
 - `params` for configuration. Parameters marked as calibration are not set here.
 - `outputs`: each algorithm output becomes a derived field name
 
-Renaming a slot or a step rewrites the references that point at it. The console checks the same rules the API checks before you send the form.
+Renaming a slot or a step updates every reference to it. The console validates the same rules as the API before the form is submitted.
 
-## Attach it to a device
+## Device assignment
 
-On the device page, a postprocessing binds one blueprint version to that device:
+On the device page, a postprocessing assigns one blueprint version to the device:
 
-- each input slot is wired to a real channel on this device
-- `output_prefix` is prepended to every derived field, so the same blueprint can run twice
-- `tolerance_seconds` is how far apart samples may be and still count as the same instant. Null uses half the device's reading interval
-- `is_enabled` starts and stops it
+- each input slot is bound to a channel of the device
+- `output_prefix` is prepended to every derived field, so the same blueprint can run more than once on a device
+- `tolerance_seconds` is the maximum time difference between samples that are treated as simultaneous. A null value applies half of the device's reading interval.
+- `is_enabled` starts and stops the postprocessing
 
-Derived channels show up as measurements with `produced_by` pointing at that postprocessing. Their catalog type is removed when the last channel that used it disappears, so a stale unit cannot block a later attach.
+Derived channels appear as measurements whose `produced_by` field refers to the postprocessing. The catalogue type of a derived channel is removed when the last channel that uses it is deleted, so an obsolete unit cannot block a later assignment.
 
 ## Calibration
 
-Calibration belongs to the device, not to the recipe. `StepCalibration` is append-only: a step key, the algorithm name, the params, and `valid_from`. Reprocessing old data uses the calibration that was in force at that time. A calibration applies only while the step still runs the same algorithm.
+Calibration is stored on the device, not on the blueprint. `StepCalibration` records are append-only and contain a step key, the algorithm name, the parameters, and `valid_from`. Reprocessing historical data applies the calibration in force at the time of each sample. A calibration applies only while the step uses the same algorithm.
 
-Stream calibration on the full profile reads compact `mesh.calibration.v1` and writes `mesh.telemetry.calibrated.v1`. A bad function is logged and the raw value passes through.
+If a calibration function fails on a reading, the error is logged and the raw value is passed through unchanged.
 
 ## Backfill
 
-`POST` a postprocessing backfill to rerun the recipe over a stored range. The quality worker claims the job. `include_dependants` also reruns postprocessings that read this one's outputs, in order. Status moves through `pending`, `running`, `done`, and `failed`. The row records how many points were published.
+A backfill (`POST` on the postprocessing) runs the blueprint again over a stored time range. `include_dependants` also reruns, in order, the postprocessings that read this postprocessing's outputs. The status progresses through `pending`, `running`, `done`, and `failed`, and the record stores the number of points published.
 
-The batch executor loads the required Influx channels over the lookback, aligns them to the reading interval, runs steps in order, and writes the `derived` measurement tagged with the blueprint. Pointwise algorithms can run per sample. Windowed ones stay on the batch tier.
-
-The worker signs in to the registry as a superuser so it can see every owner's devices.
+A backfill loads the required channels over the selected range, aligns them to the reading interval, runs the steps in order, and writes the results to the `derived` measurement, tagged with the blueprint. Pointwise algorithms can also run on each incoming sample; windowed algorithms run only as scheduled jobs.

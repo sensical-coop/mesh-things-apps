@@ -1,49 +1,43 @@
 ---
 title: Quality and alarms
-description: The four detectors, where each one runs, and how alarm email is batched.
+description: The four detectors, their requirements, and the grouping of alarm emails.
 ---
 
-Detectors are listed by `GET /detectors`. A channel runs the ones in `enabled_detectors`, or the catalog default when that field is null. An empty list silences the channel. Absence is the exception: it is a switch on the device, because silence is about the radio, not about one field.
+The available detectors are listed by `GET /detectors`. A channel runs the detectors in its `enabled_detectors` list, or the catalogue default when that field is null. An empty list disables detection on the channel. Absence detection is the exception: it is enabled on the device, because a period of silence concerns the radio rather than a single field.
 
-An alarm is not an email. The event is written first. Mail is a later decision, and it batches.
+Alarm events and alarm notifications are handled separately. Each event is stored first; email notifications follow and are grouped.
 
 ```mermaid
 sequenceDiagram
   participant Detector
-  participant Kafka
-  participant Influx as InfluxDB
-  participant Redis
-  participant Mail
-  Detector->>Kafka: alarm event
-  Kafka->>Influx: stored on alarms
-  Kafka->>Mail: first alarm on this device
-  Kafka->>Redis: later alarms, held
-  Redis->>Mail: one summary when the window closes
+  participant Store as InfluxDB
+  participant Notifier as Notifications
+  participant Owner
+  Detector->>Store: Alarm event
+  Detector->>Notifier: Alarm event
+  Notifier->>Owner: Email for the first alarm
+  Notifier->>Owner: Summary when the cooldown ends
 ```
 
-<Callout type="warn" title="Three detectors need full">
-`flat_value`, `range`, and `absence` run on Flink. A lite box does not run them. Completeness and blueprints can still run if you add the `quality` profile.
+<Callout type="info" title="Stream detectors">
+`flat_value`, `range`, and `absence` evaluate readings as they arrive. They are available only on instances that provide stream processing. Completeness checks and blueprints run as scheduled jobs.
 </Callout>
 
-| Detector | Scope | Where it runs | What it needs |
+| Detector | Scope | Evaluation | Requirements |
 | --- | --- | --- | --- |
-| `flat_value` | Channel | Flink pattern job, full profile | A reading interval. The window is about three hours of samples. |
-| `range` | Channel | Flink pattern job, full profile | `valid_min` and `valid_max` on that channel, set together. |
-| `absence` | Device | Flink absence job, full profile | `absence_detection_enabled` and `publish_interval_seconds`. |
-| `completeness` | Channel | Quality worker, batch | `reading_interval_seconds`. Alarms when the fill ratio is low or a gap is long. |
+| `flat_value` | Channel | Stream | A reading interval. The window covers approximately three hours of samples. |
+| `range` | Channel | Stream | `valid_min` and `valid_max` on the channel, set together. |
+| `absence` | Device | Stream | `absence_detection_enabled` and `publish_interval_seconds`. |
+| `completeness` | Channel | Scheduled | `reading_interval_seconds`. Raises an alarm when the fill ratio is low or a gap is long. |
 
-`lite` does not run the Flink jobs. Add the `quality` profile if you still want completeness and blueprints on a small machine. `flat_value`, `range`, and `absence` belong to `full`.
+Alarm events are stored in the `alarms` measurement, tagged with the detector, the mesh, the node, an optional channel, and `source` (`stream` or `batch`).
 
-Alarm events are JSON on `mesh.telemetry.alarms.v1`. The Influx writer also stores them in the `alarms` measurement, tagged with the detector, the mesh, the node, an optional channel, and `source` (`stream` or `batch`).
+## Email notifications
 
-## Email
+The first alarm on a device sends an email to the mesh owner immediately. Later alarms on the same device, regardless of detector or channel, are held for `alarm_email_cooldown_seconds`. When that period ends, a single summary email lists the alarms held. A cooldown of 0 sends an email for every alarm.
 
-The first alarm on a device emails the mesh owner immediately. Later alarms on that same device, whatever the detector or the channel, are held in Redis for `alarm_email_cooldown_seconds`. When the window closes, one summary mail lists what was held. A cooldown of 0 emails every alarm.
+The owner can override the instance default from the profile page. Emails link back to the console. Owners also receive a daily reminder while alarms remain active.
 
-The owner can override the server default from their profile. Mail uses the console's HTML style and links back to the console (`REGISTRY__PUBLIC_FRONTEND_URL`). Owners are also reminded daily while alarms are still ongoing.
+## Console views
 
-`GET /status/email` lets the monitor check that sending works. It is an operations endpoint, not a console page.
-
-## What the console shows
-
-**Automation → Alarms** is where you choose what to watch on each measurement. The device page is where a channel inherits, overrides, or silences that choice, and where absence is switched for the whole device.
+**Automation → Alarms** configures which conditions are monitored on each measurement. On the device page, each channel can inherit, override, or disable that configuration, and absence detection can be enabled for the whole device.

@@ -1,72 +1,55 @@
 ---
 title: Visión general
-description: Qué guarda Mesh Things, para quién es y cómo un paquete se convierte en una lectura.
+description: Alcance de la plataforma, usuarios previstos y recorrido de un paquete de radio hasta convertirse en una lectura almacenada.
 ---
 
-Mesh Things convierte una malla LoRa de [Meshtastic](https://meshtastic.org/) en una flota gestionada. Las pasarelas publican paquetes protobuf en MQTT. Esta plataforma los descifra con la clave de la malla, guarda las lecturas y deja que el dueño las consulte y configure por HTTP y en la consola.
+Mesh Things gestiona una malla LoRa de [Meshtastic](https://meshtastic.org/) como una flota de dispositivos registrados. Las pasarelas publican paquetes protobuf en un broker MQTT. La plataforma descifra esos paquetes con la clave de la malla, almacena las lecturas resultantes y permite consultarlas mediante una API HTTP y la consola.
 
-Un paquete no cae en una sola caja. Cada etapa guarda una promesa distinta: el bus recuerda el sobre, Postgres recuerda la flota, InfluxDB recuerda las muestras.
+Cada etapa del proceso almacena un tipo de dato distinto. El bus de mensajes transporta los paquetes en bruto, PostgreSQL contiene el registro de dispositivos e InfluxDB contiene las mediciones.
 
 ```mermaid
-flowchart LR
-  radios["Radios de la malla"] --> mqtt["MQTT"]
-  mqtt --> raw["Kafka, en bruto"]
-  raw --> decode["Descifrado"]
-  decode --> catalog["Postgres, la flota"]
-  decode --> series["InfluxDB, las muestras"]
-  decode --> archive["Parquet, opcional"]
-  catalog --> console["Consola"]
+flowchart TD
+  radios["Radios de la malla"] --> mqtt["Broker MQTT"]
+  mqtt --> decoder["Descifrado"]
+  decoder --> registry["Registro en PostgreSQL"]
+  decoder --> series["Series temporales en InfluxDB"]
+  decoder --> archive["Archivo Parquet"]
+  registry --> console["API y consola"]
   series --> console
 ```
 
-<Callout type="warn" title="Un solo descifrador">
-`lite` y `full` leen el mismo topic en bruto. Elige uno. Arrancar los dos hace que dos consumidores compitan por los mismos paquetes.
-</Callout>
+## Usuarios previstos
 
-## Para quién es
+- Propietarios que operan una o varias mallas y necesitan un registro duradero de los datos de sus sensores.
+- Usuarios que necesitan recibir avisos cuando un nodo deja de transmitir, un sensor informa de un valor constante o un valor sale de su rango válido.
+- Equipos que calculan canales adicionales a partir de las lecturas en bruto, con una calibración que puede cambiar con el tiempo.
+- Operadores que importan tráfico desde un broker MQTT remoto o que publican un subconjunto de lecturas para terceros.
+- Usuarios que requieren acceso de solo lectura a una malla pública.
 
-- Dueños que operan una o varias mallas y quieren un registro duradero de los sensores.
-- Quien necesita saber cuándo un nodo se calla, un sensor se queda fijo o un valor sale del rango válido.
-- Equipos que calculan canales extra a partir de lecturas en bruto, con una calibración que puede cambiar con el tiempo.
-- Operadores que traen un bróker MQTT remoto, o entregan un subconjunto de lecturas a un tercero.
-- Lectores que deben ver una malla pública y no cambiar nada.
+## Procesamiento de paquetes
 
-## Qué le pasa a un paquete
+1. **Ingesta.** El tráfico del broker MQTT se copia en la plataforma como paquetes en bruto. El broker puede ser el de la propia instancia o un broker remoto registrado como [fuente](/docs/sources).
+2. **Descifrado.** El servicio de descifrado descifra cada paquete con la clave precompartida de la malla y lo convierte en datos estructurados. Se descartan los paquetes de pasarelas desconocidas y de nodos rechazados.
+3. **Catalogación.** Cada paquete actualiza el registro: se crean o actualizan en PostgreSQL los dispositivos, las variantes de telemetría y los canales de medida.
+4. **Almacenamiento.** Las lecturas descifradas se escriben en InfluxDB. Los dispositivos que lo activan se archivan además en ficheros Parquet por horas.
+5. **Procesamiento.** Los detectores evalúan las lecturas entrantes, y los trabajos programados aplican plantillas y comprobaciones de completitud sobre el histórico almacenado.
+6. **Acceso.** La API de registro gestiona cuentas, mallas, dispositivos y el catálogo. La API de lecturas sirve series, últimos valores, exportaciones y el archivo. La consola se apoya en ambas.
 
-1. **Entrada.** Un puente MQTT copia el tráfico a Kafka como sobre en bruto. El bróker puede ser el de esta instancia o uno remoto dado de alta como [fuente](/docs/sources).
-2. **Descifrado.** Un consumidor en Python (`lite`) o un trabajo de Flink (`full`) descifra con la clave precompartida de la malla y emite JSON estructurado. Las pasarelas desconocidas y los nodos rechazados se descartan.
-3. **Catálogo.** Los avistamientos y el descubrimiento de sensores crean o actualizan dispositivos, variantes de telemetría y canales de medida en PostgreSQL.
-4. **Almacén.** Los eventos descifrados van a InfluxDB. En un despliegue completo, los dispositivos que lo activan también se archivan como Parquet por horas.
-5. **Proceso.** El perfil completo aplica detectores en flujo. Un worker por lotes ejecuta plantillas y comprobaciones de completitud sobre el histórico.
-6. **Servicio.** Caddy reparte la API de registro (cuentas, mallas, dispositivos, catálogo) y la API de lecturas (series, últimos valores, exportaciones, archivo). La consola es la interfaz sobre las dos.
+## Almacenamiento de datos
 
-## Dos tamaños de despliegue
-
-| Modo | Equipo típico | Qué incluye |
-| --- | --- | --- |
-| `lite` | Una placa de un solo ordenador | Entrada MQTT, descifrado en Python, InfluxDB, las dos APIs |
-| `lite` + `quality` | Lo mismo, con más CPU | Plantillas por lotes y análisis de completitud |
-| `full` | Una máquina mayor | Flujos de Flink, destinos y el worker por lotes. Añade `minio` para guardar el archivo Parquet en el almacén incluido |
-
-`lite` y `full` son alternativas para el descifrado. Arrancar los dos a la vez los hace competir por el mismo topic en bruto.
-
-## Dónde vive cada dato
-
-| Asunto | Almacén |
+| Datos | Almacén |
 | --- | --- |
 | Cuentas, mallas, claves, dispositivos, catálogo, plantillas | PostgreSQL |
-| Telemetría, posiciones, información de nodo, canales derivados, calidad, alarmas | InfluxDB |
-| Archivo de eventos descifrados, si el dispositivo lo activa | S3 o MinIO, en Parquet |
-| Sesiones, límites de tasa, ventanas de correo de alarma | Redis |
-| Eventos en vuelo y la configuración actual de descifrado | Kafka |
+| Telemetría, posiciones, información de nodo, canales derivados, métricas de calidad, alarmas | InfluxDB |
+| Eventos descifrados archivados, para los dispositivos que lo activan | Almacenamiento de objetos compatible con S3, en formato Parquet |
 
-El contrato HTTP en vivo es el OpenAPI del registro en `/schema`, con Swagger UI en el host de la API. Ese documento es distinto de esta guía de la consola.
+El contrato HTTP se publica como documento OpenAPI en `/schema` en el host de la API, con una interfaz Swagger interactiva. Esa referencia se mantiene por separado de esta guía.
 
-## Sigue por aquí
+## Páginas relacionadas
 
 <Cards>
-  <Card title="Conceptos" href="/docs/concepts" description="Malla, pasarela, nodo y los dos sentidos de canal." />
-  <Card title="Cuentas" href="/docs/accounts" description="Alta, la cookie de sesión y quién puede ver una PSK." />
-  <Card title="Arquitectura" href="/docs/architecture" description="Perfiles, servicios y los topics de Kafka que los unen." />
-  <Card title="Almacenes de datos" href="/docs/data" description="Qué guardan Postgres, InfluxDB, Parquet y Redis." />
+  <Card title="Conceptos" href="/docs/concepts" description="Malla, pasarela, nodo y los dos significados de canal." />
+  <Card title="Cuentas" href="/docs/accounts" description="Alta, autenticación y acceso a la clave de la malla." />
+  <Card title="Arquitectura" href="/docs/architecture" description="Componentes de la plataforma y flujo de datos entre ellos." />
+  <Card title="Almacenes de datos" href="/docs/data" description="Contenido de PostgreSQL, InfluxDB y el archivo Parquet." />
 </Cards>

@@ -1,49 +1,50 @@
 ---
 title: Destinos
-description: Publicar un conjunto de lecturas para que otro se suscriba.
+description: Publicación de lecturas seleccionadas para un suscriptor externo.
 ---
 
-Un destino es lo contrario de una fuente. Un operador publica lecturas en el bróker EMQX de esta instancia, y un consumidor que él elige se suscribe con su propio usuario y contraseña. La contraseña vive hasheada en EMQX. La API la muestra una vez, al crearla o al rotarla.
+Un destino exporta datos, mientras que una fuente los importa. Un operador publica lecturas en el broker MQTT de la instancia, y un consumidor designado por el operador se suscribe con su propio usuario y contraseña. El broker almacena la contraseña como hash, y la API solo la muestra una vez, cuando se establece o se vuelve a emitir.
 
-Eliges el flujo y las radios. El consumidor no ve nunca la clave de la malla.
+El operador selecciona los flujos y los dispositivos. El consumidor nunca tiene acceso a la clave de la malla.
 
 ```mermaid
-flowchart LR
-  series["Descifrado, derivado, alarmas"] --> pick{"¿Malla entera o algunos dispositivos?"}
-  pick --> emqx["EMQX de esta instancia"]
-  emqx --> consumer["Su mosquitto_sub"]
-  terms["Condiciones del destino"] -.->|caducan| stop["No se envía nada"]
+flowchart TD
+  streams["Flujos descifrado, derivado y de alarmas"] --> scope{"Ámbito"}
+  scope -->|Malla completa| broker["Broker MQTT de la instancia"]
+  scope -->|Dispositivos seleccionados| broker
+  broker --> consumer["Suscriptor externo"]
+  terms["Condiciones del destino"] -.->|Al caducar| paused["Publicación en pausa"]
 ```
 
-<Callout type="warn" title="La contraseña se muestra una vez">
-Emitir una contraseña nueva desconecta a quien esté conectado ahora. Borrar el destino revoca las credenciales. No puedes borrar un destino que aún tiene mallas o dispositivos asociados.
+<Callout type="warn" title="La contraseña se muestra una sola vez">
+Emitir una nueva contraseña desconecta a los consumidores conectados en ese momento. Eliminar el destino revoca sus credenciales. No es posible eliminar un destino mientras tenga mallas o dispositivos asociados.
 </Callout>
 
-Los destinos necesitan EMQX. En un despliegue sin él, todas las rutas de destino responden 404 y la consola lo dice. El perfil `sinks` los enciende en un stack lite; `full` los incluye.
+Los destinos solo están disponibles en las instancias cuyo broker los admite. En el resto de instancias, todos los endpoints de destinos devuelven 404 y la consola indica que la función no está disponible.
 
-Solo operadores y superusuarios gestionan destinos, y un operador ve solo los que creó. La página es `/console/sinks`, junto a Sources y Archive.
+Solo los operadores y los superusuarios gestionan destinos, y un operador solo puede consultar los destinos que ha creado. La página se encuentra en **Datos → Destinos** (`/console/sinks`).
 
-## Qué se envía
+## Flujos publicados
 
-`streams` es un subconjunto no vacío de `decoded`, `derived` y `alarms`, guardado en ese orden.
+`streams` es un subconjunto no vacío de `decoded`, `derived` y `alarms`, almacenado en ese orden.
 
-**Send from** es o bien:
+Los datos se publican desde:
 
-- una malla entera, incluidos los nodos que aparezcan después, o
-- dispositivos sueltos
+- una malla completa, incluidos los nodos que se añadan después, o
+- dispositivos seleccionados individualmente
 
-Marcar la malla desactiva las casillas de dispositivo ("included with the mesh"). Desmarcarla restaura las elecciones sueltas que tuvieras, y esas elecciones son las que se guardan. Al editar, cada lista que envías sustituye la actual. Las credenciales no cambian al editar.
+Al seleccionar la malla, se desactivan las casillas de los dispositivos, que se marcan como incluidos con la malla. Al quitar la selección de la malla, se restauran los dispositivos seleccionados anteriormente, y son esos dispositivos los que se almacenan. Al editar, cada lista enviada sustituye a la lista actual. Las credenciales no cambian al editar.
 
-La malla o el dispositivo tiene que ser uno que puedas editar, y el dueño de la malla tiene que ser operador. Un superusuario puede asociar destinos en las mallas de un operador.
+El usuario debe tener permiso de edición sobre la malla o el dispositivo, y el propietario de la malla debe ser operador. Un superusuario puede asociar destinos a las mallas de un operador.
 
 ## Credenciales
 
-El alta, y **Issue a new password**, devuelven la contraseña una vez: bróker, usuario, contraseña y filtro de tema, más una línea `mosquitto_sub` con sesión persistente. Emitir una contraseña nueva desconecta a los consumidores actuales. Borrar el destino revoca las credenciales.
+La creación de un destino y **Emitir una nueva contraseña** devuelven la contraseña una sola vez, junto con la dirección del broker, el usuario, el filtro de topic y un comando `mosquitto_sub` que mantiene una sesión persistente. Emitir una nueva contraseña desconecta a los consumidores actuales. Eliminar el destino revoca sus credenciales.
 
-No puedes borrar un destino que aún tiene mallas o dispositivos asociados. La API responde 409; edítalo y quítalos antes.
+No es posible eliminar un destino mientras tenga mallas o dispositivos asociados. En ese caso, la API devuelve 409, y es necesario editar el destino para retirarlos previamente.
 
 ## Condiciones
 
-Cada alta acepta las condiciones vigentes de destino. El operador responde de lo que el destino envía y de a quién entrega las credenciales. Si la aceptación caduca, se pone `paused_at`: no se envía nada, y el consumidor es rechazado, hasta que quien lo creó renueva.
+Cada creación de un destino acepta las condiciones de destino vigentes. El operador es responsable de los datos que publica el destino y de las partes que reciben las credenciales. Si la aceptación caduca, se informa `paused_at`: no se publica ningún dato y se rechazan las conexiones de los consumidores hasta que el creador renueva las condiciones.
 
-La lista muestra si está enviando o en pausa, de cuántas mallas y dispositivos sale, y cuántos consumidores hay conectados ahora. Las conexiones salen como una raya cuando el bróker no responde.
+La lista muestra si cada destino está publicando o en pausa, el número de mallas y dispositivos que abarca y el número de consumidores conectados en ese momento. Cuando el broker no responde, el número de conexiones se muestra como un guion.

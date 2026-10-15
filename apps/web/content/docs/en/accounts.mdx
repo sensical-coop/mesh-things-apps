@@ -1,69 +1,70 @@
 ---
 title: Accounts
-description: Sign-up, sign-in, roles, API keys, and the terms that cover an account.
+description: Registration, authentication, roles, API keys, and the terms that apply to an account.
 ---
 
-An account is an **owner**. The email is the username. `is_active` means the email has been verified.
+An account is an **owner**. The email address is the username. `is_active` indicates that the email address has been verified.
 
-Signing up and signing in are two different doors. The key is for scripts. The cookie is for the console. Neither one is stored in the browser as a secret you paste back later.
+Registration and authentication are separate operations. Scripts authenticate with an API key; the console authenticates with a session cookie. Neither credential is stored in the browser for manual reuse.
 
 ```mermaid
 sequenceDiagram
-  participant You
+  participant User
   participant Console
   participant API
-  You->>Console: Sign up
+  User->>Console: Sign up
   Console->>API: POST /owners
-  API-->>You: API key, shown once
-  API->>You: Verification mail
-  You->>Console: Sign in
-  Console->>API: Session cookie
+  API-->>User: API key, displayed once
+  API->>User: Verification email
+  User->>Console: Sign in
+  Console->>API: POST /owners/login
+  API-->>Console: Session cookie
 ```
 
-<Callout type="warn" title="The key is shown once">
-Rotate it and the old key dies. The database keeps a SHA-256 hash, not the key. If you close the dialog, generate another one.
+<Callout type="warn" title="The API key is displayed once">
+The database stores only a SHA-256 hash of the key, so the key cannot be displayed again. Rotating the key invalidates the previous one. If the key is lost, a new one must be generated.
 </Callout>
 
-## Create an account
+## Registration
 
-`POST /owners` creates the account and returns an API key once. The console sign-up is at `/signup`.
+`POST /owners` creates the account and returns an API key once. The console registration form is available at `/signup`.
 
-When the instance enforces terms (`REGISTRY__TERMS_ENFORCED`), sign-up also asks you to accept the terms of use and the privacy policy. Account terms do not expire. They are asked again only when the text changes. A lite instance that does not enforce terms skips this step; `GET /terms` answers 404 and the console hides the checkboxes.
+When the instance requires acceptance of terms, registration also asks for acceptance of the terms of use and the privacy policy. Account terms do not expire; acceptance is requested again only when the text changes. On instances that do not require acceptance, this step is omitted, `GET /terms` returns 404, and the console hides the corresponding checkboxes.
 
-Until the address is verified, the account cannot pass the usual checks. The verification link hits `GET /owners/verify-email`. You can ask for another message with `POST /owners/me/resend-verification`.
+An account cannot pass the standard access checks until its email address is verified. The verification link calls `GET /owners/verify-email`. A new verification message can be requested with `POST /owners/me/resend-verification`.
 
-## Sign in
+## Authentication
 
-The console signs you in with a session cookie: `POST /owners/login` and `POST /owners/logout`. Unverified owners can still sign in so they can finish verification. Login is throttled per client IP and per email. Failed attempts expire; they are not a permanent counter.
+The console authenticates with a session cookie, using `POST /owners/login` and `POST /owners/logout`. Unverified owners can sign in in order to complete verification. Sign-in attempts are rate-limited per client IP address and per email address. Failed attempts expire after a period of time and do not accumulate indefinitely.
 
-The same session cookie is accepted by the readings API. Both API roles share a secret so a cookie issued by the registry still decodes there.
+The readings API accepts the same session cookie as the registry API.
 
-Scripts use `Authorization: Bearer` and the API key. Rotate it with `POST /owners/me/rotate-key`. The new key is shown once. The database stores only a SHA-256 hash.
+Scripts authenticate with the `Authorization: Bearer` header and the API key. The key is rotated with `POST /owners/me/rotate-key`, and the new key is displayed once.
 
-Password reset is a token in the request body (`POST /owners/request-password-reset`, then `POST /owners/reset-password`). Change it while signed in with `POST /owners/me/change-password`.
+A password reset uses a token sent in the request body: `POST /owners/request-password-reset`, followed by `POST /owners/reset-password`. A signed-in owner changes the password with `POST /owners/me/change-password`.
 
 ## Roles
 
-| Role | How you get it | Extra power |
+| Role | Assignment | Additional permissions |
 | --- | --- | --- |
-| Member | Sign-up | Own meshes, devices, and blueprints |
-| Operator | A superuser approves your request | Sources, sinks, and the archive |
-| Staff | Granted on the server | Read the catalog, no secrets, no writes |
-| Superuser | `createsuperuser` | Every mesh, every key, the admin site at `/admin/` |
+| Member | Registration | Owned meshes, devices, and blueprints |
+| Operator | Approval of a request by a superuser | Sources, sinks, and the archive |
+| Staff | Assigned by the instance administrator | Read access to the catalogue, without secrets or write access |
+| Superuser | Assigned by the instance administrator | Access to every mesh and every key |
 
-Ask for operator from **Profile**. One pending request per owner. A rejection lets you ask again. Superusers decide under **Management → Operator requests**. Approving sets `role` to `operator`.
+The operator role is requested from **Profile** with **Request operator role**. Each owner may have one pending request at a time. A rejected request may be submitted again. Once a request is approved, the owner's `role` becomes `operator`.
 
-## What you can see
+## Visibility
 
-A verified owner reads their meshes and any mesh marked public. A superuser reads everything. Writes never follow the public flag.
+A verified owner can read their own meshes and any mesh marked as public. A superuser can read every mesh. The public flag never grants write access.
 
-Staff read the catalog and do not see PSKs. Operators see only the sources and sinks they created, unless they are a superuser, who sees all of them.
+Staff can read the catalogue but cannot view PSKs. Operators can view only the sources and sinks they created; superusers can view all of them.
 
-## Alarm mail for this account
+## Alarm notifications
 
-`alarm_email_cooldown_seconds` on `PUT /owners/me` overrides the server default for how long alarms on one device are held before a summary mail. Null means "use the server default". See [Quality and alarms](/docs/quality).
+`alarm_email_cooldown_seconds` on `PUT /owners/me` overrides the instance default for the period during which alarms on a device are held before a summary email is sent. A null value applies the instance default. See [Quality and alarms](/docs/quality).
 
-Two more switches are about infrastructure you created, not about sensor alarms:
+Two further settings concern infrastructure created by the owner rather than sensor alarms:
 
-- `status_alerts_enabled` — mail when a source or sink you created stays disconnected or unused.
-- `source_rate_alerts_enabled` — mail when a source you created stays busier than the instance allows. Superusers are also told when a source is unusually busy.
+- `status_alerts_enabled` sends an email when a source or sink created by the owner remains disconnected or unused.
+- `source_rate_alerts_enabled` sends an email when a source created by the owner remains above the message rate allowed by the instance.

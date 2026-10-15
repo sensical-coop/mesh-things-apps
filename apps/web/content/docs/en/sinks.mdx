@@ -1,49 +1,50 @@
 ---
 title: Sinks
-description: Publish a chosen set of readings for someone else to subscribe to.
+description: Publication of selected readings to an external subscriber.
 ---
 
-A sink is the opposite of a source. An operator publishes readings onto this instance's EMQX broker, and a consumer they choose subscribes with its own username and password. The password lives hashed in EMQX. The API shows it once, when it is set or rotated.
+A sink exports data, whereas a source imports it. An operator publishes readings on the instance's MQTT broker, and a consumer designated by the operator subscribes with its own username and password. The broker stores the password as a hash, and the API displays it only once, when it is set or reissued.
 
-You choose the stream and the radios. The consumer never sees the mesh key.
+The operator selects the streams and the devices. The consumer never has access to the mesh key.
 
 ```mermaid
-flowchart LR
-  series["Decoded, derived, alarms"] --> pick{"Whole mesh or some devices?"}
-  pick --> emqx["This instance's EMQX"]
-  emqx --> consumer["Their mosquitto_sub"]
-  terms["Sink terms"] -.->|lapse| stop["Nothing is sent"]
+flowchart TD
+  streams["Decoded, derived, and alarm streams"] --> scope{"Scope"}
+  scope -->|Whole mesh| broker["Instance MQTT broker"]
+  scope -->|Selected devices| broker
+  broker --> consumer["External subscriber"]
+  terms["Sink terms"] -.->|On expiry| paused["Publication paused"]
 ```
 
-<Callout type="warn" title="The password is shown once">
-Issuing a new password disconnects whoever is connected now. Deleting the sink revokes the credentials. You cannot delete a sink that still has meshes or devices attached.
+<Callout type="warn" title="The password is displayed once">
+Issuing a new password disconnects the consumers currently connected. Deleting the sink revokes its credentials. A sink cannot be deleted while meshes or devices are attached to it.
 </Callout>
 
-Sinks need EMQX. On a deployment without it, every sink route answers 404 and the console says so. The `sinks` profile turns them on for a lite stack; `full` includes them.
+Sinks are available only on instances whose broker supports them. On other instances, every sink endpoint returns 404 and the console indicates that the feature is unavailable.
 
-Only operators and superusers manage sinks, and an operator sees only the ones they created. The page is `/console/sinks`, next to Sources and Archive.
+Only operators and superusers manage sinks, and an operator can view only the sinks they created. The page is located at **Data → Sinks** (`/console/sinks`).
 
-## What is sent
+## Published streams
 
 `streams` is a non-empty subset of `decoded`, `derived`, and `alarms`, stored in that order.
 
-**Send from** is either:
+The data is published from either:
 
-- a whole mesh, including nodes that appear later, or
-- individual devices
+- a whole mesh, including nodes added later, or
+- individually selected devices
 
-Checking the mesh disables the device checkboxes ("included with the mesh"). Unchecking it restores any device picks you had made, and those picks are what get stored. On edit, each list you send replaces the current one. Credentials do not change on edit.
+Selecting the mesh disables the device checkboxes, which are marked as included with the mesh. Clearing the mesh selection restores any devices previously selected, and those devices are the ones stored. On edit, each list sent replaces the current list. Credentials do not change on edit.
 
-The mesh or device has to be one you can edit, and the mesh owner has to be an operator. A superuser can attach sinks on an operator's meshes.
+The user must have edit access to the mesh or device, and the mesh owner must be an operator. A superuser can attach sinks to an operator's meshes.
 
 ## Credentials
 
-Create, and **Issue a new password**, return the password once: broker, username, password, and topic filter, plus a `mosquitto_sub` line that keeps a persistent session. Issuing a new password disconnects current consumers. Deleting the sink revokes the credentials.
+Creating a sink and **Issue a new password** both return the password once, together with the broker address, username, topic filter, and a `mosquitto_sub` command that maintains a persistent session. Issuing a new password disconnects the current consumers. Deleting the sink revokes its credentials.
 
-You cannot delete a sink that still has meshes or devices attached. The API answers 409; edit it and clear them first.
+A sink cannot be deleted while meshes or devices are attached to it. In that case, the API returns 409, and the sink must be edited to remove them first.
 
 ## Terms
 
-Each create accepts the current sink terms. The operator is responsible for what the sink sends and for whom they give the credentials to. If acceptance lapses, `paused_at` is set: nothing is sent, and the consumer is refused, until the creator renews.
+Each sink creation accepts the current sink terms. The operator is responsible for the data the sink publishes and for the parties who receive the credentials. If the acceptance expires, `paused_at` is set: no data is published and consumer connections are refused until the creator renews the terms.
 
-The list shows whether it is sending or paused, how many meshes and devices it covers, and how many consumers are connected now. Connections show as an em dash when the broker does not answer.
+The list shows whether each sink is publishing or paused, the number of meshes and devices it covers, and the number of consumers currently connected. When the broker does not respond, the number of connections is shown as a dash.

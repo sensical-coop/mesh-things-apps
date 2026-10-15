@@ -1,61 +1,59 @@
 ---
 title: Plantillas
-description: Recetas que calculan canales nuevos, con un histórico de calibración por dispositivo.
+description: Definiciones que calculan canales nuevos, con un histórico de calibración por dispositivo.
 ---
 
-Una plantilla es una receta: una lista ordenada de algoritmos con nombre, de `GET /algorithms`. El dueño la edita en **Automation → Blueprints** (`/console/blueprints`). Ves las tuyas y las públicas.
+Una plantilla es una lista ordenada de algoritmos con nombre, obtenidos de `GET /algorithms`. Los propietarios editan las plantillas en **Automatización → Plantillas** (`/console/blueprints`). Cada propietario puede consultar sus propias plantillas y todas las plantillas públicas.
 
-La receta y el dispositivo se quedan separados a propósito. Editar los pasos no cambia en silencio un dispositivo que ya está corriendo.
+Las plantillas y su asignación a dispositivos se versionan de forma independiente, de modo que editar una plantilla no altera los dispositivos que ya la están ejecutando.
 
 ```mermaid
-flowchart LR
-  recipe["Plantilla"] --> version["Versión inmutable"]
-  version --> attach["Asociada a un dispositivo"]
-  attach --> wire["Entradas cableadas a canales reales"]
-  wire --> cal["Calibración, vigente desde una hora"]
-  cal --> live["Canales derivados"]
-  cal --> backfill["Recálculo del histórico"]
+flowchart TD
+  blueprint["Plantilla"] --> version["Versión inmutable"]
+  version --> assignment["Asignación a un dispositivo"]
+  assignment --> inputs["Entradas vinculadas a canales del dispositivo"]
+  inputs --> calibration["Calibración con fecha de validez"]
+  calibration --> live["Canales derivados"]
+  calibration --> backfill["Recálculo sobre el histórico"]
 ```
 
-<Callout type="info" title="La calibración es del dispositivo">
-La receta nombra el algoritmo. El dispositivo guarda los números, con `valid_from`, así que reprocesar datos viejos usa la calibración que estaba en vigor entonces.
+<Callout type="info" title="La calibración pertenece al dispositivo">
+La plantilla indica el algoritmo. El dispositivo almacena los valores de calibración junto con `valid_from`, de modo que el reprocesamiento de datos históricos aplica la calibración vigente en cada momento.
 </Callout>
 
-## Una versión es inmutable
+## Versionado
 
-Cambiar el nombre, la descripción o si la plantilla es pública edita la plantilla en su sitio. Cambiar los pasos crea una **versión nueva**, copiada de la última. Los dispositivos se asocian a una versión, no a "lo que diga hoy la receta", así que un dispositivo en marcha no cambia de fórmula por debajo.
+Los cambios en el nombre, la descripción o la marca de plantilla pública modifican la plantilla directamente. Los cambios en los pasos crean una **nueva versión**, copiada de la más reciente. Los dispositivos se asignan a una versión concreta, por lo que la fórmula aplicada a un dispositivo en ejecución nunca cambia sin una actualización explícita.
 
 Cada paso tiene:
 
-- una clave y un orden, únicos dentro de la versión
-- `function_name`, que tiene que existir en el catálogo de algoritmos
-- `inputs`: cada entrada del algoritmo es `slot:<nombre>` o `step:<clave>.<salida>`
-- `params` de configuración. Los parámetros marcados como calibración no se ponen aquí.
-- `outputs`: cada salida del algoritmo se convierte en un nombre de campo derivado
+- una clave y una posición, ambas únicas dentro de la versión
+- `function_name`, que debe existir en el catálogo de algoritmos
+- `inputs`: cada entrada del algoritmo es `slot:<name>` o `step:<key>.<output>`
+- `params` para la configuración. Los parámetros marcados como calibración no se establecen aquí.
+- `outputs`: cada salida del algoritmo se convierte en el nombre de un campo derivado
 
-Renombrar una entrada o un paso reescribe las referencias que lo apuntan. La consola comprueba las mismas reglas que la API antes de enviar el formulario.
+Al renombrar una entrada o un paso, se actualizan todas las referencias a ellos. La consola valida las mismas reglas que la API antes de enviar el formulario.
 
-## Asociarla a un dispositivo
+## Asignación a un dispositivo
 
-En la ficha, un postprocesado une una versión de plantilla a ese dispositivo:
+En la página del dispositivo, un postprocesado asigna una versión de plantilla al dispositivo:
 
-- cada entrada se cablea a un canal real de este dispositivo
-- `output_prefix` se antepone a cada campo derivado, así la misma plantilla puede correr dos veces
-- `tolerance_seconds` es cuánto pueden separarse las muestras y seguir contando como el mismo instante. Null usa la mitad del intervalo de lectura del dispositivo
-- `is_enabled` lo arranca y lo para
+- cada entrada se vincula a un canal del dispositivo
+- `output_prefix` se antepone a cada campo derivado, de modo que la misma plantilla puede ejecutarse más de una vez en un dispositivo
+- `tolerance_seconds` es la diferencia temporal máxima entre muestras que se consideran simultáneas. Un valor nulo aplica la mitad del intervalo de lectura del dispositivo.
+- `is_enabled` inicia y detiene el postprocesado
 
-Los canales derivados aparecen como medidas con `produced_by` apuntando a ese postprocesado. Su tipo de catálogo se elimina cuando desaparece el último canal que lo usaba, para que una unidad vieja no bloquee una asociación posterior.
+Los canales derivados aparecen como mediciones cuyo campo `produced_by` hace referencia al postprocesado. El tipo de catálogo de un canal derivado se elimina cuando se elimina el último canal que lo utiliza, de modo que una unidad obsoleta no puede bloquear una asignación posterior.
 
 ## Calibración
 
-La calibración es del dispositivo, no de la receta. `StepCalibration` es solo de añadir: una clave de paso, el nombre del algoritmo, los parámetros y `valid_from`. Reprocesar datos viejos usa la calibración que estaba en vigor en ese momento. Una calibración se aplica solo mientras el paso sigue ejecutando el mismo algoritmo.
+La calibración se almacena en el dispositivo, no en la plantilla. Los registros `StepCalibration` solo admiten inserciones y contienen la clave del paso, el nombre del algoritmo, los parámetros y `valid_from`. El reprocesamiento de datos históricos aplica la calibración vigente en el momento de cada muestra. Una calibración solo se aplica mientras el paso utiliza el mismo algoritmo.
 
-La calibración en flujo, en el perfil completo, lee el topic compacto `mesh.calibration.v1` y escribe `mesh.telemetry.calibrated.v1`. Una función mala se registra y el valor en bruto pasa tal cual.
+Si una función de calibración falla con una lectura, el error se registra y el valor en bruto se transmite sin cambios.
 
-## Recalcular el histórico
+## Recálculo
 
-Un `POST` de backfill vuelve a ejecutar la receta sobre un rango guardado. El quality worker reclama el trabajo. `include_dependants` también vuelve a ejecutar los postprocesados que leen las salidas de este, en orden. El estado pasa por `pending`, `running`, `done` y `failed`. La fila anota cuántos puntos se publicaron.
+Un recálculo (`POST` sobre el postprocesado) vuelve a ejecutar la plantilla sobre un intervalo de tiempo almacenado. `include_dependants` vuelve a ejecutar también, en orden, los postprocesados que leen las salidas de este. El estado pasa por `pending`, `running`, `done` y `failed`, y el registro almacena el número de puntos publicados.
 
-El ejecutor por lotes carga los canales de Influx necesarios en la ventana, los alinea al intervalo de lectura, corre los pasos en orden y escribe el measurement `derived` etiquetado con la plantilla. Los algoritmos punto a punto pueden correr por muestra. Los de ventana se quedan en el lote.
-
-El worker entra en el registro como superusuario para poder ver los dispositivos de todos los dueños.
+Un recálculo carga los canales necesarios en el intervalo seleccionado, los alinea con el intervalo de lectura, ejecuta los pasos en orden y escribe los resultados en la medición `derived`, etiquetados con la plantilla. Los algoritmos puntuales también pueden ejecutarse sobre cada muestra entrante; los algoritmos por ventana solo se ejecutan como trabajos programados.

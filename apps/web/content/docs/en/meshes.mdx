@@ -1,61 +1,59 @@
 ---
 title: Meshes
-description: Register a network, choose where its traffic comes from, and decide who can read it.
+description: Registration of a network, the origin of its traffic, and read access.
 ---
 
-A mesh is registered with `POST /meshes`: a channel id, a PSK, and an optional label. The key is published on the compact Kafka topic `mesh.keys.v1`, keyed by gateway id, so decode can decrypt without asking the API on every packet.
+A mesh is registered with `POST /meshes`, providing a channel identifier, a PSK, and an optional label. The key is distributed to the decoders, so packets are decrypted without querying the API for each one.
 
-Where the packets come from decides which terms apply, and what happens when those terms lapse.
+The origin of the traffic determines which terms apply and what happens when those terms expire.
 
 ```mermaid
 flowchart TD
-  create["Register the mesh"] --> where{"Traffic from?"}
-  where -->|This instance| own["Default broker"]
-  where -->|Remote broker| source["A source you operate"]
-  own --> meshTerms["Mesh terms, owner is controller"]
-  source --> sourceTerms["Source terms already cover it"]
-  meshTerms --> lapse{"Terms lapse?"}
-  sourceTerms --> lapse
-  lapse -->|Default broker| pauseMesh["Gateways deregistered"]
-  lapse -->|Source| pauseBridge["EMQX bridge removed"]
+  create["Mesh registration"] --> origin{"Traffic origin"}
+  origin -->|Instance broker| own["Default broker"]
+  origin -->|Remote broker| source["Operator source"]
+  own --> meshTerms["Mesh terms accepted by the owner"]
+  source --> sourceTerms["Source terms already accepted"]
+  meshTerms --> lapsedMesh["On expiry, gateways are deregistered"]
+  sourceTerms --> lapsedSource["On expiry, the bridge is removed"]
 ```
 
-<Callout type="warn" title="Public is read-only">
-`is_public` lets other people, and anonymous API callers, read devices and history. It never lets them edit the mesh, see the PSK, or see a node you rejected.
+<Callout type="warn" title="Public access is read-only">
+`is_public` allows other owners and unauthenticated API clients to read devices and history. It does not allow them to modify the mesh, view the PSK, or view rejected nodes.
 </Callout>
 
-The console lists your meshes at `/console/meshes`. Open one to see its gateways and nodes together.
+The console lists the owner's meshes at `/console/meshes`. The detail page of a mesh shows its gateways and nodes together.
 
-## Who can read and write
+## Access control
 
-| Action | Who |
+| Action | Permitted for |
 | --- | --- |
-| Read devices and readings | The owner, a superuser, and anyone if `is_public` is set. Anonymous API callers see public meshes only. |
-| See the PSK | The owner and a superuser. Staff never see it. A public reader does not. |
-| See rejected nodes | The owner and a superuser. |
-| Edit, delete, register devices | The owner and a superuser. |
+| Read devices and readings | The owner, a superuser, and any client when `is_public` is set. Unauthenticated API clients can read public meshes only. |
+| View the PSK | The owner and a superuser. Staff and public readers cannot view it. |
+| View rejected nodes | The owner and a superuser. |
+| Edit or delete the mesh, register devices | The owner and a superuser. |
 
-## Where the traffic comes from
+## Traffic origin
 
-`source` is null when packets arrive on this instance's own broker topic. An operator can point the mesh at one of their [sources](/docs/sources) instead. Moving a mesh off a source, or deleting the mesh, schedules its stored readings for deletion after a grace period. Superusers watch those jobs under **Management → Scheduled deletions**.
+`source` is null when packets arrive on the instance's own broker. An operator can assign the mesh to one of their [sources](/docs/sources) instead. Removing a mesh from a source, or deleting the mesh, schedules the deletion of its stored readings after a grace period.
 
-On the default broker, mesh terms apply to the owner as controller of that traffic. On a source, the source's terms apply and the mesh form does not ask again. If terms lapse:
+On the default broker, the mesh terms apply, and the owner acts as data controller for that traffic. On a source, the source terms apply and the mesh form does not request acceptance again. When the terms expire:
 
-- Default broker: the mesh is paused and its gateways are deregistered until the owner renews.
-- Source: the EMQX bridge for that source is removed until the operator renews.
+- On the default broker, the mesh is paused and its gateways are deregistered until the owner renews the terms.
+- On a source, the bridge for that source is removed until the operator renews the terms.
 
-The console status column orders the urgent states first: scheduled for deletion, source paused, source disconnected, terms changed, renew soon, terms not yet accepted, source status unknown, then active. A lite instance that does not enforce terms shows meshes as active unless the bridge itself is unhealthy.
+The status column in the console lists the most urgent states first: scheduled for deletion, source paused, source disconnected, terms changed, renewal due, terms not yet accepted, source status unknown, and active. On instances that do not require acceptance of terms, meshes are shown as active unless the bridge itself is unhealthy.
 
-## Discovering gateways
+## Gateway discovery
 
-`discover_gateways` lets the platform register gateways whose packets decrypt with this mesh's channel and PSK, without the owner adding each one. Discovery is paced (about 50 gateways a minute) so a busy broker cannot flood the registry. Nodes under a discovered gateway are still upserted from decode sightings.
+`discover_gateways` allows the platform to register gateways whose packets decrypt with the channel and PSK of this mesh, without the owner adding each gateway manually. Discovery is rate-limited to approximately 50 gateways per minute, so that a busy broker cannot overload the registry. Nodes behind a discovered gateway are registered as their packets are decoded.
 
-A device row created this way has `discovered_at` set. You can still reject it.
+A device registered in this way has `discovered_at` set, and it can be rejected like any other device.
 
 ## Public meshes
 
-Turn `is_public` on when viewers should read the fleet and the history. They cannot change it, they cannot see the PSK, and they cannot see devices you have rejected.
+`is_public` should be enabled when viewers need read access to the fleet and its history. Public readers cannot modify the mesh, view the PSK, or view rejected devices.
 
 ## Deleting a mesh
 
-Deleting a mesh does not erase readings in the same request. A data-deletion job is scheduled, with a reason of `mesh_deleted`, and runs after `delete_after`. The same happens when a mesh leaves its source (`source_detached`) or when source terms lapse (`terms_lapsed`). Renewing terms, or putting the mesh back on that source, can cancel a pending job.
+Deleting a mesh does not remove its readings in the same request. A data deletion job is scheduled with the reason `mesh_deleted` and runs after `delete_after`. A job is also scheduled when a mesh is removed from its source (`source_detached`) or when the source terms expire (`terms_lapsed`). Renewing the terms, or assigning the mesh to the same source again, can cancel a pending job.

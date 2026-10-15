@@ -1,47 +1,47 @@
 ---
 title: Red
-description: Quién oyó a quién, traceroutes y cuánto tráfico lleva una malla.
+description: Enlaces de radio, traceroutes y estadísticas de tráfico de una malla.
 ---
 
-El descifrado hace más que guardar valores de sensor. También guarda una imagen de la red de radio: qué nodos oyeron a cuáles, el camino que tomó un traceroute y cuánto tráfico lleva cada pasarela.
+Además de los valores de los sensores, el servicio de descifrado registra la estructura de la red de radio: qué nodos reciben a cuáles, el camino de cada traceroute y el volumen de tráfico que gestiona cada pasarela.
 
-Un paquete puede alimentar tres imágenes. Responden a preguntas distintas, así que no se sustituyen.
+Un mismo paquete puede contribuir a tres registros distintos. Cada uno responde a una pregunta diferente, y no son intercambiables.
 
 ```mermaid
 flowchart TD
-  packet["Un paquete que oyó una pasarela"] --> link["Enlace de radio dirigido, con SNR"]
-  packet --> trace["Camino de traceroute, guardado una vez"]
-  packet --> count["Recuento de tráfico de esa pasarela"]
-  link --> linksApi["GET /meshes/id/links"]
-  trace --> traceApi["GET /meshes/id/traceroutes"]
-  count --> statsApi["Estadísticas de malla y tráfico del nodo"]
+  packet["Paquete recibido por una pasarela"] --> link["Enlace de radio dirigido con SNR"]
+  packet --> trace["Camino de traceroute"]
+  packet --> count["Recuento de tráfico por pasarela"]
+  link --> linksApi["GET /meshes/{id}/links"]
+  trace --> traceApi["GET /meshes/{id}/traceroutes"]
+  count --> statsApi["Estadísticas de tráfico"]
 ```
 
-<Callout type="info" title="Ocupado no es medido">
-El tráfico cuenta paquetes. Un nodo puede ser ruidoso en la malla y no tener canal de temperatura.
+<Callout type="info" title="El tráfico es independiente de los datos de sensores">
+Las estadísticas de tráfico cuentan paquetes. Un nodo puede generar un tráfico considerable en la malla sin informar de ningún canal de sensor.
 </Callout>
 
 ## Enlaces de radio
 
-`GET /meshes/{id}/links` devuelve un salto dirigido: `from_node` transmitió, `to_node` midió la SNR. Un enlace se cuenta aparte por cada forma en que se observó:
+`GET /meshes/{id}/links` devuelve saltos dirigidos: `from_node` transmitió el paquete y `to_node` midió su SNR. Un enlace se registra por separado para cada método por el que se observó:
 
-| Origen | Significado |
+| Método | Significado |
 | --- | --- |
-| `traceroute` | Un salto nombrado en un traceroute |
+| `traceroute` | Un salto incluido en un traceroute |
 | `neighborinfo` | Un informe de vecinos |
-| `direct` | Un paquete oído directamente del emisor |
+| `direct` | Un paquete recibido directamente del emisor |
 
-Cada fila guarda el número de muestras, la suma de SNR, la última SNR y la primera y última vez que se vio. La SNR está en dB, y es null donde el paquete no la midió. Los valores de SNR de un traceroute más allá del camino conocido se ignoran, en lugar de dar el paquete por fallido.
+Cada registro almacena el número de muestras, la suma de los valores de SNR, el último SNR y los instantes de la primera y la última observación. El SNR se expresa en dB y es nulo cuando el paquete no incluía la medición. Los valores de SNR que exceden el camino conocido de un traceroute se ignoran en lugar de rechazar el paquete.
 
 ## Traceroutes
 
-`GET /meshes/{id}/traceroutes` devuelve los paquetes de camino. Un traceroute se guarda una vez, oiganlo las pasarelas que lo oigan. `from_node` envió el paquete y `to_node` era el destino. En una respuesta (`request_id` puesto) ese par es el inverso de la dirección propia del traceroute. `route` y `route_back` son números de nodo; `snr_towards` y `snr_back` se alinean con ellos. `gateway_ids` lista quién oyó esta copia.
+`GET /meshes/{id}/traceroutes` devuelve los paquetes de traceroute. Cada traceroute se almacena una sola vez, independientemente del número de pasarelas que lo recibieran. `from_node` envió el paquete y `to_node` era su destino. En una respuesta (`request_id` informado), estos dos campos aparecen invertidos respecto al sentido del traceroute original. `route` y `route_back` contienen números de nodo, y `snr_towards` y `snr_back` contienen los valores de SNR correspondientes. `gateway_ids` enumera las pasarelas que recibieron esta copia del paquete.
 
 ## Tráfico
 
-Se cuenta cada paquete que oye una pasarela registrada.
+Se contabiliza cada paquete recibido por una pasarela registrada.
 
-- `GET /readings/meshes/{id}/stats` es la malla: solapamiento de pasarelas, retransmisiones, actividad.
-- `GET /readings/devices/{uuid}/traffic` y el gemelo por número de nodo son los tipos de paquete y el volumen de un nodo.
+- `GET /readings/meshes/{id}/stats` devuelve las estadísticas de la malla: solapamiento entre pasarelas, retransmisiones y actividad.
+- `GET /readings/devices/{uuid}/traffic`, y el endpoint equivalente por número de nodo, devuelven los tipos de paquete y el volumen de un único nodo.
 
-Estos números describen la radio, no el catálogo de sensores. Un nodo puede estar ocupado en la malla y no tener canal de temperatura.
+Estas estadísticas describen la actividad de radio, no el catálogo de sensores.

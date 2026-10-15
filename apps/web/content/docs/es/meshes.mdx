@@ -1,61 +1,59 @@
 ---
 title: Mallas
-description: Registrar una red, elegir de dónde llega su tráfico y decidir quién puede leerla.
+description: Registro de una red, origen de su tráfico y acceso de lectura.
 ---
 
-Una malla se registra con `POST /meshes`: un id de canal, una PSK y una etiqueta opcional. La clave se publica en el topic compacto de Kafka `mesh.keys.v1`, con clave el id de pasarela, para que el descifrado no pregunte a la API en cada paquete.
+Una malla se registra con `POST /meshes`, indicando un identificador de canal, una PSK y una etiqueta opcional. La clave se distribuye a los servicios de descifrado, de modo que los paquetes se descifran sin consultar la API para cada uno de ellos.
 
-De dónde vienen los paquetes decide qué condiciones se aplican, y qué pasa cuando caducan.
+El origen del tráfico determina qué condiciones se aplican y qué ocurre cuando esas condiciones caducan.
 
 ```mermaid
 flowchart TD
-  create["Registrar la malla"] --> where{"¿De dónde llega?"}
-  where -->|Esta instancia| own["Bróker por defecto"]
-  where -->|Bróker remoto| source["Una fuente que operas"]
-  own --> meshTerms["Condiciones de malla"]
-  source --> sourceTerms["Ya cubren las de la fuente"]
-  meshTerms --> lapse{"¿Caducan?"}
-  sourceTerms --> lapse
-  lapse -->|Bróker por defecto| pauseMesh["Pasarelas dadas de baja"]
-  lapse -->|Fuente| pauseBridge["Se retira el puente EMQX"]
+  create["Registro de la malla"] --> origin{"Origen del tráfico"}
+  origin -->|Broker de la instancia| own["Broker por defecto"]
+  origin -->|Broker remoto| source["Fuente de un operador"]
+  own --> meshTerms["Condiciones de malla aceptadas por el propietario"]
+  source --> sourceTerms["Condiciones de fuente ya aceptadas"]
+  meshTerms --> lapsedMesh["Al caducar, se dan de baja las pasarelas"]
+  sourceTerms --> lapsedSource["Al caducar, se retira el puente"]
 ```
 
-<Callout type="warn" title="Pública es solo lectura">
-`is_public` deja que otras personas, y las llamadas anónimas a la API, lean dispositivos e histórico. No les deja editar la malla, ver la PSK ni ver un nodo que rechazaste.
+<Callout type="warn" title="El acceso público es de solo lectura">
+`is_public` permite a otros propietarios y a los clientes de la API sin autenticar leer los dispositivos y el histórico. No les permite modificar la malla, consultar la PSK ni consultar los nodos rechazados.
 </Callout>
 
-La consola lista tus mallas en `/console/meshes`. Abre una para ver juntas sus pasarelas y sus nodos.
+La consola muestra las mallas del propietario en `/console/meshes`. La página de detalle de una malla muestra sus pasarelas y nodos en conjunto.
 
-## Quién puede leer y escribir
+## Control de acceso
 
-| Acción | Quién |
+| Acción | Permitida para |
 | --- | --- |
-| Leer dispositivos y lecturas | El dueño, un superusuario, y cualquiera si `is_public` está activo. Las llamadas anónimas a la API solo ven mallas públicas. |
-| Ver la PSK | El dueño y un superusuario. Staff no la ve. Un lector de una malla pública tampoco. |
-| Ver nodos rechazados | El dueño y un superusuario. |
-| Editar, borrar, registrar dispositivos | El dueño y un superusuario. |
+| Leer dispositivos y lecturas | El propietario, un superusuario y cualquier cliente cuando `is_public` está activado. Los clientes de la API sin autenticar solo pueden leer mallas públicas. |
+| Consultar la PSK | El propietario y un superusuario. El staff y los lectores públicos no pueden consultarla. |
+| Consultar los nodos rechazados | El propietario y un superusuario. |
+| Editar o eliminar la malla, registrar dispositivos | El propietario y un superusuario. |
 
-## De dónde llega el tráfico
+## Origen del tráfico
 
-`source` es null cuando los paquetes llegan por el topic del bróker de esta instancia. Un operador puede apuntar la malla a una de sus [fuentes](/docs/sources). Sacar una malla de su fuente, o borrarla, programa el borrado de sus lecturas guardadas tras un periodo de gracia. Los superusuarios vigilan esos trabajos en **Gestión → Borrados programados**.
+`source` es nulo cuando los paquetes llegan al broker propio de la instancia. Un operador puede asignar la malla a una de sus [fuentes](/docs/sources). Retirar una malla de una fuente, o eliminar la malla, programa la eliminación de sus lecturas almacenadas tras un periodo de gracia.
 
-En el bróker por defecto, las condiciones de malla se aplican al dueño como responsable de ese tráfico. En una fuente se aplican las condiciones de la fuente y el formulario de malla no vuelve a pedirlas. Si caducan:
+En el broker por defecto se aplican las condiciones de malla, y el propietario actúa como responsable del tratamiento de ese tráfico. En una fuente se aplican las condiciones de la fuente, y el formulario de la malla no vuelve a solicitar su aceptación. Cuando las condiciones caducan:
 
-- Bróker por defecto: la malla se pausa y sus pasarelas se dan de baja hasta que el dueño renueve.
-- Fuente: se retira el puente EMQX de esa fuente hasta que el operador renueve.
+- En el broker por defecto, la malla se pausa y sus pasarelas se dan de baja hasta que el propietario renueva las condiciones.
+- En una fuente, el puente de esa fuente se retira hasta que el operador renueva las condiciones.
 
-La columna de estado de la consola ordena primero lo urgente: borrado programado, fuente en pausa, fuente desconectada, condiciones cambiadas, renovar pronto, condiciones aún no aceptadas, estado de fuente desconocido y, al final, activa. Una instancia lite que no exige condiciones muestra las mallas como activas salvo que el propio puente esté mal.
+La columna de estado de la consola muestra primero los estados más urgentes: eliminación programada, fuente en pausa, fuente desconectada, condiciones modificadas, renovación próxima, condiciones pendientes de aceptación, estado de la fuente desconocido y activa. En las instancias que no exigen la aceptación de condiciones, las mallas se muestran como activas salvo que el propio puente presente un fallo.
 
-## Descubrir pasarelas
+## Descubrimiento de pasarelas
 
-`discover_gateways` deja que la plataforma registre pasarelas cuyos paquetes se descifran con el canal y la PSK de esta malla, sin que el dueño añada cada una. El descubrimiento va dosificado (unas 50 pasarelas por minuto) para que un bróker ocupado no inunde el registro. Los nodos bajo una pasarela descubierta se siguen creando a partir de los avistamientos del descifrado.
+`discover_gateways` permite a la plataforma registrar las pasarelas cuyos paquetes se descifran con el canal y la PSK de esta malla, sin que el propietario tenga que añadir cada pasarela manualmente. El descubrimiento está limitado a unas 50 pasarelas por minuto, para que un broker con mucho tráfico no sature el registro. Los nodos que dependen de una pasarela descubierta se registran a medida que se descifran sus paquetes.
 
-Una fila creada así tiene `discovered_at`. Sigues pudiendo rechazarla.
+Un dispositivo registrado de este modo tiene `discovered_at` informado, y puede rechazarse como cualquier otro dispositivo.
 
 ## Mallas públicas
 
-Activa `is_public` cuando los lectores deban ver la flota y el histórico. No pueden cambiarla, no ven la PSK y no ven los dispositivos que hayas rechazado.
+Conviene activar `is_public` cuando otros usuarios necesitan acceso de lectura a la flota y a su histórico. Los lectores públicos no pueden modificar la malla, consultar la PSK ni consultar los dispositivos rechazados.
 
-## Borrar una malla
+## Eliminación de una malla
 
-Borrar una malla no borra las lecturas en la misma petición. Se programa un trabajo de borrado, con motivo `mesh_deleted`, que corre después de `delete_after`. Lo mismo ocurre cuando una malla deja su fuente (`source_detached`) o cuando caducan las condiciones de la fuente (`terms_lapsed`). Renovar las condiciones, o devolver la malla a esa fuente, puede cancelar un trabajo pendiente.
+Eliminar una malla no borra sus lecturas en la misma petición. Se programa un trabajo de eliminación de datos con el motivo `mesh_deleted`, que se ejecuta después de `delete_after`. También se programa un trabajo cuando una malla se retira de su fuente (`source_detached`) o cuando caducan las condiciones de la fuente (`terms_lapsed`). Renovar las condiciones, o volver a asignar la malla a la misma fuente, puede cancelar un trabajo pendiente.

@@ -1,69 +1,70 @@
 ---
 title: Cuentas
-description: Alta, acceso, roles, claves de API y las condiciones que cubren una cuenta.
+description: Alta, autenticación, roles, claves de API y condiciones aplicables a una cuenta.
 ---
 
-Una cuenta es un **dueño**. El correo es el nombre de usuario. `is_active` significa que el correo está verificado.
+Una cuenta es un **propietario**. La dirección de correo electrónico es el nombre de usuario. `is_active` indica que la dirección de correo se ha verificado.
 
-Darse de alta y entrar son dos puertas distintas. La clave es para scripts. La cookie es para la consola. Ninguna de las dos se guarda en el navegador como un secreto que luego vuelves a pegar.
+El alta y la autenticación son operaciones independientes. Los scripts se autentican con una clave de API; la consola se autentica con una cookie de sesión. Ninguna de las dos credenciales se guarda en el navegador para reutilizarla manualmente.
 
 ```mermaid
 sequenceDiagram
-  participant Tu as Tú
+  participant User as Usuario
   participant Console as Consola
   participant API
-  Tu->>Console: Alta
+  User->>Console: Alta
   Console->>API: POST /owners
-  API-->>Tu: Clave de API, una vez
-  API->>Tu: Correo de verificación
-  Tu->>Console: Entrar
-  Console->>API: Cookie de sesión
+  API-->>User: Clave de API, mostrada una vez
+  API->>User: Correo de verificación
+  User->>Console: Inicio de sesión
+  Console->>API: POST /owners/login
+  API-->>Console: Cookie de sesión
 ```
 
-<Callout type="warn" title="La clave se muestra una vez">
-Rótala y la clave vieja muere. La base de datos guarda un hash SHA-256, no la clave. Si cierras el diálogo, genera otra.
+<Callout type="warn" title="La clave de API se muestra una sola vez">
+La base de datos almacena únicamente un hash SHA-256 de la clave, por lo que no es posible volver a mostrarla. Al rotar la clave, la anterior deja de ser válida. Si la clave se pierde, es necesario generar una nueva.
 </Callout>
 
-## Crear una cuenta
+## Alta
 
-`POST /owners` crea la cuenta y devuelve una clave de API una sola vez. El alta de la consola está en `/signup`.
+`POST /owners` crea la cuenta y devuelve una clave de API una sola vez. El formulario de alta de la consola está disponible en `/signup`.
 
-Cuando la instancia exige condiciones (`REGISTRY__TERMS_ENFORCED`), el alta también pide aceptar las condiciones de uso y la política de privacidad. Las condiciones de cuenta no caducan. Se vuelven a pedir solo cuando cambia el texto. Una instancia lite que no exige condiciones se salta este paso; `GET /terms` responde 404 y la consola oculta las casillas.
+Cuando la instancia exige la aceptación de condiciones, el alta solicita también la aceptación de las condiciones de uso y de la política de privacidad. Las condiciones de la cuenta no caducan; la aceptación solo se solicita de nuevo cuando cambia el texto. En las instancias que no exigen aceptación, este paso se omite, `GET /terms` devuelve 404 y la consola oculta las casillas correspondientes.
 
-Hasta que la dirección está verificada, la cuenta no pasa las comprobaciones habituales. El enlace de verificación llama a `GET /owners/verify-email`. Puedes pedir otro mensaje con `POST /owners/me/resend-verification`.
+Una cuenta no supera las comprobaciones de acceso habituales hasta que se verifica su dirección de correo. El enlace de verificación llama a `GET /owners/verify-email`. Se puede solicitar un nuevo mensaje de verificación con `POST /owners/me/resend-verification`.
 
-## Entrar
+## Autenticación
 
-La consola te identifica con una cookie de sesión: `POST /owners/login` y `POST /owners/logout`. Los dueños sin verificar también pueden entrar, para terminar la verificación. El acceso está limitado por IP de cliente y por correo. Los intentos fallidos caducan; no son un contador permanente.
+La consola se autentica con una cookie de sesión, mediante `POST /owners/login` y `POST /owners/logout`. Los propietarios sin verificar pueden iniciar sesión para completar la verificación. Los intentos de inicio de sesión están limitados por dirección IP de cliente y por dirección de correo. Los intentos fallidos caducan transcurrido un tiempo y no se acumulan de forma indefinida.
 
-La API de lecturas acepta la misma cookie. Los dos roles de API comparten un secreto, así que una cookie emitida por el registro sigue siendo válida allí.
+La API de lecturas acepta la misma cookie de sesión que la API de registro.
 
-Los scripts usan `Authorization: Bearer` y la clave de API. Se rota con `POST /owners/me/rotate-key`. La clave nueva se muestra una vez. La base de datos guarda solo un hash SHA-256.
+Los scripts se autentican con la cabecera `Authorization: Bearer` y la clave de API. La clave se rota con `POST /owners/me/rotate-key`, y la nueva clave se muestra una sola vez.
 
-Restablecer la contraseña es un token en el cuerpo de la petición (`POST /owners/request-password-reset`, luego `POST /owners/reset-password`). Cámbiala con la sesión abierta en `POST /owners/me/change-password`.
+El restablecimiento de la contraseña utiliza un token enviado en el cuerpo de la petición: `POST /owners/request-password-reset`, seguido de `POST /owners/reset-password`. Un propietario con la sesión iniciada cambia la contraseña con `POST /owners/me/change-password`.
 
 ## Roles
 
-| Rol | Cómo se obtiene | Poder extra |
+| Rol | Asignación | Permisos adicionales |
 | --- | --- | --- |
-| Miembro | Alta | Sus mallas, dispositivos y plantillas |
-| Operador | Un superusuario aprueba la petición | Fuentes, destinos y archivo |
-| Staff | Concedido en el servidor | Lee el catálogo, sin secretos y sin escrituras |
-| Superusuario | `createsuperuser` | Todas las mallas, todas las claves, el admin de Django en `/admin/` |
+| Miembro | Alta | Mallas, dispositivos y plantillas propios |
+| Operador | Aprobación de una solicitud por un superusuario | Fuentes, destinos y el archivo |
+| Staff | Asignado por la administración de la instancia | Lectura del catálogo, sin secretos ni permisos de escritura |
+| Superusuario | Asignado por la administración de la instancia | Acceso a todas las mallas y todas las claves |
 
-Pide el rol de operador desde **Perfil**. Una petición pendiente por dueño. Un rechazo permite volver a pedir. Los superusuarios deciden en **Gestión → Peticiones de operador**. Aprobar pone `role` en `operator`.
+El rol de operador se solicita desde **Perfil** con **Solicitar rol de operador**. Cada propietario puede tener una sola solicitud pendiente. Una solicitud rechazada puede presentarse de nuevo. Cuando se aprueba una solicitud, el `role` del propietario pasa a ser `operator`.
 
-## Qué puedes ver
+## Visibilidad
 
-Un dueño verificado lee sus mallas y cualquier malla marcada como pública. Un superusuario lo lee todo. Las escrituras no siguen la marca de pública.
+Un propietario verificado puede leer sus propias mallas y cualquier malla marcada como pública. Un superusuario puede leer todas las mallas. La marca de malla pública nunca concede permisos de escritura.
 
-Staff lee el catálogo y no ve las PSK. Los operadores ven solo las fuentes y los destinos que crearon, salvo que sean superusuario, que los ve todos.
+El staff puede leer el catálogo, pero no puede consultar las PSK. Los operadores solo pueden consultar las fuentes y los destinos que han creado; los superusuarios pueden consultar todos.
 
-## Correo de alarma de esta cuenta
+## Avisos de alarma
 
-`alarm_email_cooldown_seconds` en `PUT /owners/me` sustituye el valor por defecto del servidor: cuánto se retienen las alarmas de un dispositivo antes del correo resumen. Null significa "usar el valor del servidor". Ver [Calidad y alarmas](/docs/quality).
+`alarm_email_cooldown_seconds` en `PUT /owners/me` sustituye el valor por defecto de la instancia para el periodo durante el que se retienen las alarmas de un dispositivo antes de enviar un correo de resumen. Un valor nulo aplica el valor por defecto de la instancia. Véase [Calidad y alarmas](/docs/quality).
 
-Dos interruptores más hablan de la infraestructura que creaste, no de las alarmas de sensor:
+Otros dos ajustes se refieren a la infraestructura creada por el propietario y no a las alarmas de sensores:
 
-- `status_alerts_enabled` — correo cuando una fuente o un destino que creaste sigue desconectado o sin uso.
-- `source_rate_alerts_enabled` — correo cuando una fuente que creaste sigue más ocupada de lo que la instancia permite. Los superusuarios también reciben aviso cuando una fuente está inusualmente ocupada.
+- `status_alerts_enabled` envía un correo cuando una fuente o un destino creados por el propietario permanecen desconectados o sin uso.
+- `source_rate_alerts_enabled` envía un correo cuando una fuente creada por el propietario se mantiene por encima de la tasa de mensajes permitida por la instancia.

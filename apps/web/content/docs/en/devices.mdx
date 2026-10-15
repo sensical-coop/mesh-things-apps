@@ -1,64 +1,61 @@
 ---
 title: Devices
-description: Gateways and nodes, what decode will accept, and what you can override.
+description: Gateway and node registration, decoder acceptance rules, and device attributes that can be overridden.
 ---
 
-Register a device with `POST /devices` from the mesh page: the Meshtastic node number, whether it is a gateway, and an optional label. Decode also upserts devices from packets it can already decrypt, and gateway discovery can register gateways when the mesh allows it.
+A device is registered with `POST /devices` from the mesh page, providing the Meshtastic node number, whether the device is a gateway, and an optional label. The decoder also registers devices from packets it can already decrypt, and gateway discovery can register gateways when the mesh allows it.
 
-Decode asks two questions before a packet becomes a row. Fail either one and the sample never lands.
+The decoder applies two checks before storing a packet. A packet that fails either check is discarded.
 
 ```mermaid
 flowchart TD
-  packet["Packet arrives"] --> known{"Gateway known?"}
-  known -->|No| drop1["Dropped"]
-  known -->|Yes| allowed{"Node allowed?"}
-  allowed -->|No| drop2["Dropped, row kept"]
-  allowed -->|Yes| seen{"Variant seen before?"}
-  seen -->|No| open["Open its channels"]
-  seen -->|Yes| store["Write the sample"]
-  open --> store
+  packet["Incoming packet"] --> known{"Known gateway?"}
+  known -->|No| dropped["Discarded"]
+  known -->|Yes| allowed{"Allowed node?"}
+  allowed -->|No| rejected["Discarded, device retained"]
+  allowed -->|Yes| stored["Reading stored"]
 ```
 
-<Callout type="info" title="Rejecting is not deleting">
-`is_allowed = false` publishes the node so every decoder drops it. The row stays, so you can allow it again. Public readers do not see rejected devices.
+<Callout type="info" title="Rejection is not deletion">
+`is_allowed = false` instructs every decoder to discard the node's packets. The device record is retained, so the device can be allowed again. Public readers cannot view rejected devices.
 </Callout>
 
-The inventory at `/console/devices` lists every device you can see. Filter by mesh, gateway, allowed, and whether a blueprint is attached. Open a row for the device page.
+The inventory at `/console/devices` lists every device the user can access. It can be filtered by mesh, gateway, allowed status, and attached blueprint. Each row opens the device page.
 
 ## Gateway or node
 
-`is_gateway` marks the MQTT publisher. Its node number is how decode finds the PSK, so two allowed gateways cannot share a node number anywhere on the instance. Ordinary nodes only have to be unique inside their mesh.
+`is_gateway` identifies the MQTT publisher. The decoder uses the gateway's node number to find the PSK, so two allowed gateways cannot share a node number anywhere on the instance. Ordinary nodes need only be unique within their mesh.
 
-Up to three Meshtastic admin keys (`admin_keys_b64`) can be stored on a device. Only the mesh owner sees them. They match the firmware limit of three `admin_key` entries.
+Up to three Meshtastic administration keys (`admin_keys_b64`) can be stored on a device, matching the firmware limit of three `admin_key` entries. Only the mesh owner can view them.
 
-## Allowed and rejected
+## Allowed and rejected devices
 
-`is_allowed = false` publishes the node on `mesh.node_rejections.v1`. Decode drops those packets. The device stays in the registry so you can allow it again. Public readers do not see rejected rows.
+When `is_allowed = false` is set, the decoder discards the device's packets. The device remains in the registry and can be allowed again. Public readers cannot view rejected devices.
 
-## Name, role, and place
+## Identity and location
 
-NodeInfo fills `name`, `short_name`, `hardware_type`, and `role` until you set `nodeinfo_overridden`. Position fills latitude and longitude until you set `location_overridden`. After the flag is set, later packets do not overwrite what you typed.
+NodeInfo packets update `name`, `short_name`, `hardware_type`, and `role` until `nodeinfo_overridden` is set. Position packets update latitude and longitude until `location_overridden` is set. Once a flag is set, later packets no longer overwrite the values entered manually.
 
-`last_seen` is the last time decode heard the device. `discovered_at` is set when gateway discovery created the row rather than you.
+`last_seen` records the last time the decoder received a packet from the device. `discovered_at` is set when gateway discovery created the device record.
 
 ## Intervals
 
-`reading_interval_seconds` is how often the sensor is expected to sample. Detectors and blueprint alignment use it. `publish_interval_seconds` is how often the radio is expected to send. The absence detector compares silence against that interval.
+`reading_interval_seconds` is the expected sampling interval of the sensor. Detectors and blueprint alignment use this value. `publish_interval_seconds` is the expected transmission interval of the radio; the absence detector compares periods of silence against it.
 
-Leave them empty when you do not know yet. The catalog variant can carry a default reading interval until the device has its own.
+Both values can be left empty when they are not yet known. The telemetry variant in the catalogue can provide a default reading interval until the device has its own.
 
-## Channels on this device
+## Device channels
 
-The device page lists telemetry variants (`GET /devices/{id}/telemetry-variants`) and the live channels (`GET /devices/{id}/measurements`). A channel appears when that variant is first seen. You do not create `environment_metrics.temperature` by hand.
+The device page lists the telemetry variants (`GET /devices/{id}/telemetry-variants`) and the active channels (`GET /devices/{id}/measurements`). A channel is created when its variant is first received; channels such as `environment_metrics.temperature` are never created manually.
 
-On each channel:
+Each channel supports the following settings:
 
-- `enabled_detectors = null` inherits the catalog default.
-- `enabled_detectors = []` silences detectors on that channel.
-- `valid_min` and `valid_max` are set together for the range detector. Both empty means range is not checked.
+- `enabled_detectors = null` inherits the catalogue default.
+- `enabled_detectors = []` disables detectors on the channel.
+- `valid_min` and `valid_max` are set together for the range detector. When both are empty, the range is not checked.
 
-Absence is not a per-channel switch. It is `absence_detection_enabled` on the device. See [Quality and alarms](/docs/quality).
+Absence detection is not configured per channel. It is enabled with `absence_detection_enabled` on the device. See [Quality and alarms](/docs/quality).
 
 ## Archive
 
-`archive_enabled` opts this device into the Parquet archive. The API accepts it only on a mesh whose owner is an operator, and only when the instance has an archive. Turning it off stops new objects and keeps what was already written. The console calls this switch **S3 storage**. See [Archive](/docs/archive).
+`archive_enabled` includes the device in the Parquet archive. The API accepts this setting only on a mesh whose owner is an operator, and only when the instance provides an archive. Disabling it stops the creation of new files and retains the files already written. The console labels this setting **S3 storage**. See [Archive](/docs/archive).
