@@ -8,6 +8,10 @@ export default defineConfig({
   // Repo-root .env (also read by docker-compose) drives local dev too, so
   // VITE_API_URL / VITE_DISABLE_MOCK_API only need to be set in one place.
   envDir: "../..",
+  nitro: {
+    // ponytail: Nitro does not scan routes until serverDir is set.
+    serverDir: "server",
+  },
   server: { port: 5173 },
   resolve: {
     alias: {

@@ -1,0 +1,21 @@
+{
+  "pages": [
+    "overview",
+    "concepts",
+    "---Consola---",
+    "accounts",
+    "meshes",
+    "devices",
+    "readings",
+    "quality",
+    "blueprints",
+    "---Datos---",
+    "sources",
+    "sinks",
+    "archive",
+    "network",
+    "---Plataforma---",
+    "architecture",
+    "data"
+  ]
+}

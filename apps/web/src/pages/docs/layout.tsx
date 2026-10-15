@@ -1,21 +1,27 @@
 import { Outlet } from "@tanstack/react-router";
-import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { DocsLayout } from "fumadocs-ui/layouts/spacious";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
-import { SiteHeader } from "@/components/site-header";
+import { BrandMark } from "@/components/brand";
+import { useLocale } from "@/hooks/use-locale";
 import { docsSource } from "@/lib/docs-source";
+import { DocumentationActions } from "@/pages/docs/actions";
+import { DocumentationHeader } from "@/pages/docs/header";
 import { routes } from "@/router";
 
 export function DocumentationLayout() {
-  // ponytail: enable search when the portal grows beyond the starter page.
+  const [locale] = useLocale();
+
   return (
-    <RootProvider theme={{ enabled: false }} search={{ enabled: false }}>
+    <RootProvider theme={{ enabled: false }} i18n={{ locale, defaultLanguage: "en", hideLocale: "always" }}>
       <div className="docs-portal">
-        <SiteHeader />
         <DocsLayout
-          tree={docsSource.getPageTree()}
-          nav={{ title: "Docs", url: routes.docs }}
+          tree={docsSource.getPageTree(locale)}
+          nav={{
+            title: <><BrandMark className="h-3" /><span className="sr-only">Sensical</span><span className="text-text-secondary">Docs</span></>,
+            url: routes.home,
+          }}
           themeSwitch={{ enabled: false }}
-          searchToggle={{ enabled: false }}
+          slots={{ actions: DocumentationActions, header: DocumentationHeader }}
         >
           <Outlet />
         </DocsLayout>

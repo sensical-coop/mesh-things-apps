@@ -315,11 +315,11 @@ No meter tests de UI/primitivas en `packages/ui` salvo que el propio paquete gan
 
 ### Portal público de documentación
 
-Fumadocs se integra en la SPA existente: `/docs` redirige a `/docs/hello-world` y `/docs/$` resuelve páginas MDX sin pasar por el `Shell` autenticado. Los headers públicos incluyen el enlace **Docs**, también en móvil.
+Fumadocs se integra en la SPA existente: `/docs` redirige a `/docs/overview` y `/docs/$` resuelve páginas MDX sin pasar por el `Shell` autenticado. Los headers públicos incluyen el enlace **Docs**, también en móvil.
 
-El contenido vive en `apps/web/content/docs/`. Para añadir una página, crear un `.mdx` con frontmatter `title`; Fumadocs genera el árbol de navegación desde esa carpeta. La plantilla inicial solo contiene `hello-world.mdx`.
+El contenido vive en `apps/web/content/docs/en` y `apps/web/content/docs/es`. El mismo slug existe en los dos idiomas; el selector de idioma de la app elige el árbol (`hideLocale: always`, la URL no lleva prefijo). Para añadir una página, crear el `.mdx` en las dos carpetas con frontmatter `title` y apuntarlo en los dos `meta.json`. Un bloque ` ```mermaid ` se dibuja con el componente `Mermaid` (`source.config.ts` registra `remarkMdxMermaid`); el tema sigue `boardui:theme`.
 
-`fumadocsMdx()` en Vite compila la colección declarada en `src/lib/docs-source.ts`; el layout y las páginas se cargan de forma diferida en `src/pages/docs/`. Los colores reutilizan tokens OA y el tema sigue gestionado por `boardui:theme`. La búsqueda queda desactivada mientras solo haya una página.
+`fumadocsMdx()` en Vite compila la colección declarada en `src/lib/docs-source.ts`; el layout y las páginas se cargan de forma diferida en `src/pages/docs/`. El portal usa el layout spacious de Fumadocs (`fumadocs-ui` apunta a `@fumadocs/base-ui`) con su propio header, separado del header público. Los colores reutilizan tokens OA mediante las variables `--color-fd-*`, también en diálogos; los controles de idioma y tema reutilizan los de la aplicación (`boardui:theme`). La búsqueda es el equivalente al `routes/api/search.ts` de la guía de TanStack Start: `server/api/search.ts` responde en `/api/search` con `createFromSource`. La app no es TanStack Start.
 
 Rutas: constantes en `apps/web/src/router/router.ts` (historias en [ui-stories.md](./ui-stories.md)). Landing pública en `/`. Login en `/login`. Inventario autenticado bajo `/console`. Fetch con `credentials: include`.
 

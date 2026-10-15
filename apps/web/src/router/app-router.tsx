@@ -54,7 +54,7 @@ const docsIndexRoute = createRoute({
   getParentRoute: () => docsRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: routes.docsPage, params: { _splat: "hello-world" } });
+    throw redirect({ to: routes.docsPage, params: { _splat: "overview" } });
   },
 });
 

@@ -1,35 +1,49 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+@import "fumadocs-ui/css/generated/spacious.css";
 
-@theme inline {
-  --color-fd-background: var(--color-background-full);
+/* Keep dialogs portalled to body on the same OA palette as the docs layout. */
+:root,
+.dark {
+  --color-fd-background: var(--color-background-primary-default);
   --color-fd-foreground: var(--color-text-primary);
   --color-fd-muted: var(--color-background-secondary-default);
   --color-fd-muted-foreground: var(--color-text-secondary);
   --color-fd-popover: var(--color-background-primary-default);
   --color-fd-popover-foreground: var(--color-text-primary);
-  --color-fd-card: var(--color-background-primary-default);
+  --color-fd-card: var(--color-background-secondary-default);
   --color-fd-card-foreground: var(--color-text-primary);
   --color-fd-border: var(--color-separator-border);
   --color-fd-primary: var(--oa-primary);
   --color-fd-primary-foreground: var(--color-text-white);
-  --color-fd-secondary: var(--color-background-secondary-default);
+  --color-fd-secondary: var(--oa-secondary);
   --color-fd-secondary-foreground: var(--color-text-primary);
-  --color-fd-accent: var(--color-background-secondary-hover);
+  --color-fd-accent: var(--color-background-primary-hover);
   --color-fd-accent-foreground: var(--color-text-primary);
   --color-fd-ring: var(--color-border-focus-ring);
+  --color-fd-error: var(--color-text-error-primary);
 }
 
 .docs-portal {
-  --fd-banner-height: 4rem;
+  min-height: 100svh;
+  background: var(--color-fd-card);
+  color: var(--color-fd-foreground);
 }
 
-.docs-portal #nd-docs-layout {
-  min-height: calc(100svh - var(--fd-banner-height));
+.docs-portal #nd-sidebar a,
+.docs-portal button {
+  border-radius: calc(infinity * 1px);
 }
 
-@media (min-width: 640px) {
-  .docs-portal {
-    --fd-banner-height: 5rem;
+.docs-portal :is(h1, h2, h3, h4, strong, b) {
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .docs-portal #nd-page-panel {
+    border-radius: 24px;
+    corner-shape: squircle;
+    box-shadow: var(--shadow-card);
+    border: 0;
   }
 }

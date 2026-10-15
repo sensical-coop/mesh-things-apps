@@ -7,6 +7,7 @@ export const docsPage = {
   component: lazyRouteComponent(() => import("./page"), "DocumentationPage"),
   loader: async ({ params }: DocumentationLoaderContext) => {
     const { docsSource } = await import("@/lib/docs-source");
-    if (!docsSource.getPage(params._splat?.split("/") ?? [])) throw notFound();
+    const slugs = params._splat?.split("/").filter(Boolean) ?? [];
+    if (!docsSource.getPage(slugs)) throw notFound();
   },
 };
