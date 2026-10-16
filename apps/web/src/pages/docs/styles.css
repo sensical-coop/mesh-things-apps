@@ -1,0 +1,118 @@
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "fumadocs-ui/css/generated/spacious.css";
+
+/*
+ * Fumadocs ships global base rules (`*` border colour, `body` colours) that read its palette.
+ * Outside the docs the palette is unset, so those rules resolve to nothing and the console
+ * keeps its own styles. While the portal is mounted the palette maps to OA tokens on the root,
+ * where dialogs portalled to body can read it too.
+ */
+:root:not(:has(.docs-portal)) {
+  --color-fd-background: initial;
+  --color-fd-foreground: initial;
+  --color-fd-muted: initial;
+  --color-fd-muted-foreground: initial;
+  --color-fd-popover: initial;
+  --color-fd-popover-foreground: initial;
+  --color-fd-card: initial;
+  --color-fd-card-foreground: initial;
+  --color-fd-border: initial;
+  --color-fd-primary: initial;
+  --color-fd-primary-foreground: initial;
+  --color-fd-secondary: initial;
+  --color-fd-secondary-foreground: initial;
+  --color-fd-accent: initial;
+  --color-fd-accent-foreground: initial;
+  --color-fd-ring: initial;
+  --color-fd-overlay: initial;
+}
+
+:root:has(.docs-portal) {
+  --color-fd-background: var(--color-background-primary-default);
+  --color-fd-foreground: var(--color-text-primary);
+  --color-fd-muted: var(--color-background-secondary-default);
+  --color-fd-muted-foreground: var(--color-text-secondary);
+  --color-fd-popover: var(--color-background-primary-default);
+  --color-fd-popover-foreground: var(--color-text-primary);
+  --color-fd-card: var(--color-background-secondary-default);
+  --color-fd-card-foreground: var(--color-text-primary);
+  --color-fd-border: var(--color-separator-border);
+  --color-fd-primary: var(--oa-primary);
+  --color-fd-primary-foreground: var(--color-text-white);
+  --color-fd-secondary: var(--oa-secondary);
+  --color-fd-secondary-foreground: var(--color-text-primary);
+  --color-fd-accent: var(--color-background-primary-hover);
+  --color-fd-accent-foreground: var(--color-text-primary);
+  --color-fd-ring: var(--color-border-focus-ring);
+  --color-fd-error: var(--color-text-error-primary);
+}
+
+.docs-portal {
+  min-height: 100svh;
+  background: var(--color-fd-card);
+  color: var(--color-fd-foreground);
+}
+
+.docs-portal #nd-sidebar a,
+.docs-portal button {
+  border-radius: calc(infinity * 1px);
+}
+
+.docs-portal :is(h1, h2, h3, h4, strong, b) {
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .docs-portal #nd-page-panel {
+    border-radius: 24px;
+    corner-shape: squircle;
+    box-shadow: var(--shadow-card);
+    border: 0;
+  }
+}
+
+/* Variables the diagram SVGs read; see src/lib/remark-diagrams.ts. */
+.docs-diagram {
+  --diagram-bg: var(--color-background-secondary-default);
+  --diagram-fg: var(--color-text-primary);
+  --diagram-line: var(--color-text-tertiary);
+  --diagram-accent: var(--oa-primary);
+  --diagram-muted: var(--color-text-secondary);
+  --diagram-surface: var(--color-background-primary-default);
+  --diagram-border: var(--color-separator-border);
+}
+
+.docs-diagram svg {
+  --_text: var(--fg);
+  --_text-sec: var(--muted);
+  --_text-muted: var(--muted);
+  --_text-faint: color-mix(in srgb, var(--fg) 25%, var(--bg));
+  --_line: var(--line);
+  --_arrow: var(--accent);
+  --_node-fill: var(--surface);
+  --_node-stroke: var(--border);
+  --_group-fill: var(--bg);
+  --_group-hdr: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  --_inner-stroke: color-mix(in srgb, var(--fg) 12%, var(--bg));
+  --_key-badge: color-mix(in srgb, var(--fg) 10%, var(--bg));
+  display: block;
+  height: auto;
+  margin-inline: auto;
+}
+
+.docs-diagram text {
+  font-family: inherit;
+}
+
+.docs-diagram .node rect {
+  rx: 8px;
+  ry: 8px;
+}
+
+/* Phones scroll a wide diagram sideways instead of shrinking its text. */
+@media (min-width: 640px) {
+  .docs-diagram svg {
+    max-width: 100%;
+  }
+}

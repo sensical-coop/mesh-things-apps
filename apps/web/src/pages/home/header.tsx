@@ -2,24 +2,20 @@ import { BrandMark } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { routes } from "@/router";
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { getTheme, toggleTheme } from "@mtt/ui/theme";
+import { toggleTheme } from "@mtt/ui/theme";
 import { RiMoonLine, RiSunLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
-import { type ReactElement, useEffect, useState, useSyncExternalStore } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { RouterButtonLink } from "@/components/router-button-link";
+import { useTheme } from "@/hooks/use-theme";
 
 const navLinkClass =
   "rounded-full text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
-function subscribeTheme(onStoreChange: () => void): () => void {
-  globalThis.addEventListener("boardui-theme", onStoreChange);
-  return () => globalThis.removeEventListener("boardui-theme", onStoreChange);
-}
-
 export function LandingHeader(): ReactElement {
   const { formatMessage } = useIntl();
-  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
+  const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -54,6 +50,9 @@ export function LandingHeader(): ReactElement {
           </nav>
         </div>
         <div className="relative z-10 flex items-center gap-2">
+          <Link to={routes.docs} className={`${navLinkClass} px-2 py-2`}>
+            {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
+          </Link>
           <LanguageSwitcher />
           <Button
             type="button"

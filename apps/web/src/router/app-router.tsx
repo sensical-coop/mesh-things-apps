@@ -1,4 +1,5 @@
-import { createRootRoute, createRoute, createRouter, Outlet, redirect } from "@tanstack/react-router";
+import { createRootRoute, createRoute, createRouter, lazyRouteComponent, Outlet, redirect } from "@tanstack/react-router";
+import { docsPage } from "@/pages/docs/route";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import type { ReactNode } from "react";
 import { landingHomePage } from "@/pages/home/route";
@@ -41,6 +42,25 @@ const landingRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   ...authLoginPage,
+});
+
+const docsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: routes.docs,
+  component: lazyRouteComponent(() => import("@/pages/docs/layout"), "DocumentationLayout"),
+});
+
+const docsIndexRoute = createRoute({
+  getParentRoute: () => docsRoute,
+  path: "/",
+  beforeLoad: () => {
+    throw redirect({ to: routes.docsPage, params: { _splat: "overview" } });
+  },
+});
+
+const docsContentRoute = createRoute({
+  getParentRoute: () => docsRoute,
+  ...docsPage,
 });
 
 const signupRoute = createRoute({
@@ -171,6 +191,7 @@ const profileRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   landingRoute,
+  docsRoute.addChildren([docsIndexRoute, docsContentRoute]),
   loginRoute,
   signupRoute,
   forgotPasswordRoute,
