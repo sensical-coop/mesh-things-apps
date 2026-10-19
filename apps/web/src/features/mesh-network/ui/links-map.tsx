@@ -41,19 +41,21 @@ export function LinksMap({
   const linked = new Set(
     pairs.filter((pair) => positions.has(pair.a) && positions.has(pair.b)).flatMap((pair) => [pair.a, pair.b]),
   );
-  const shown = devices.filter((d) => positions.has(d.node_id));
-  const points = shown.map((d) => ({ lng: d.longitude!, lat: d.latitude! }));
+  const shown = devices.flatMap((device) => {
+    const position = positions.get(device.node_id);
+    return position ? [{ device, lng: position[0], lat: position[1] }] : [];
+  });
 
   return (
     <div className={cx("oa-arrive oa-squircle-inset relative overflow-hidden", large ? "h-[70vh] min-h-96" : "h-96")}>
       <Map
-        center={points.length ? [points[0]!.lng, points[0]!.lat] : [0, 0]}
+        center={shown.length ? [shown[0]!.lng, shown[0]!.lat] : [0, 0]}
         zoom={11}
         unsupported={<MapUnsupported />}
         className="h-full w-full"
       >
         <MapControls />
-        <FitToPoints points={points} />
+        <FitToPoints points={shown} />
         <MapArc
           id="mesh-links"
           data={arcs}
@@ -71,8 +73,8 @@ export function LinksMap({
             <MapRoute id="traceroute" coordinates={route} color={routeColor} width={5} opacity={1} interactive={false} />
           </>
         ) : null}
-        {shown.map((device) => (
-          <MapMarker key={device.uuid} longitude={device.longitude!} latitude={device.latitude!}>
+        {shown.map(({ device, lng, lat }) => (
+          <MapMarker key={device.uuid} longitude={lng} latitude={lat}>
             <MarkerContent className={cx(!linked.has(device.node_id) && "opacity-40")}>
               <DeviceMapPin isGateway={device.is_gateway} label={deviceTitle(device)} deviceUuid={device.uuid} />
             </MarkerContent>
