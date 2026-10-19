@@ -3,6 +3,7 @@ import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
 import {
   deviceLastSeen,
+  devicePosition,
   deviceRoleLabel,
   deviceSilent,
   deviceTitle,
@@ -109,4 +110,12 @@ test("deviceSilent counts a just discovered gateway as heard", () => {
   const now = Date.parse("2026-01-02T00:01:00Z");
   assert.equal(deviceSilent(device, now), true);
   assert.equal(deviceSilent({ ...device, discovered_at: "2026-01-02T00:00:00Z" }, now), false);
+});
+
+test("devicePosition drops missing and out-of-range coordinates", () => {
+  assert.deepEqual(devicePosition({ latitude: 41.38, longitude: 2.17 }), [2.17, 41.38]);
+  assert.equal(devicePosition({ latitude: null, longitude: 2.17 }), null);
+  assert.equal(devicePosition({ latitude: 413_851_000, longitude: 21_734_000 }), null);
+  assert.equal(devicePosition({ latitude: 41.38, longitude: 190 }), null);
+  assert.equal(devicePosition({ latitude: Number.NaN, longitude: 2.17 }), null);
 });

@@ -113,3 +113,19 @@ export function formatNodeId(value: number, format: NodeIdFormat): string {
 export function roundCoordinate(value: number): number {
   return Math.round(value * 1e6) / 1e6;
 }
+
+/** True for a [longitude, latitude] pair MapLibre accepts: finite and within range. */
+export function isValidLngLat(lng: number, lat: number): boolean {
+  return Number.isFinite(lng) && Number.isFinite(lat) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90;
+}
+
+/**
+ * [longitude, latitude] of a device, or null when it has none. Nodes report
+ * whatever their GPS says, so an out-of-range fix counts as no position
+ * rather than reaching the map, which throws on it.
+ */
+export function devicePosition(device: Pick<DeviceRead, "latitude" | "longitude">): [number, number] | null {
+  const { latitude, longitude } = device;
+  if (latitude == null || longitude == null || !isValidLngLat(longitude, latitude)) return null;
+  return [longitude, latitude];
+}

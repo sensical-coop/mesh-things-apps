@@ -1,4 +1,5 @@
 import type { DeviceRead, MeshTraffic, Point, RfLink } from "@mtt/contracts";
+import { devicePosition, isValidLngLat } from "../device/model.ts";
 
 export const MESH_STATS_RANGES = ["1h", "24h", "7d", "30d"] as const;
 export type MeshStatsRange = (typeof MESH_STATS_RANGES)[number];
@@ -109,9 +110,8 @@ export function snrStrength(snr: number): number {
 export function nodePositions(devices: DeviceRead[]): Map<number, [number, number]> {
   const positions = new Map<number, [number, number]>();
   for (const device of devices) {
-    if (device.latitude != null && device.longitude != null) {
-      positions.set(device.node_id, [device.longitude, device.latitude]);
-    }
+    const position = devicePosition(device);
+    if (position) positions.set(device.node_id, position);
   }
   return positions;
 }
@@ -174,7 +174,7 @@ export function positionTrack(latitudes: Point[], longitudes: Point[]): [number,
   const ordered = latitudes
     .flatMap((p) => {
       const lng = lon.get(p.time);
-      return typeof p.value === "number" && typeof lng === "number" ? [{ time: p.time, at: [lng, p.value] as [number, number] }] : [];
+      return typeof p.value === "number" && typeof lng === "number" && isValidLngLat(lng, p.value) ? [{ time: p.time, at: [lng, p.value] as [number, number] }] : [];
     })
     .sort((a, b) => Date.parse(a.time) - Date.parse(b.time));
   return ordered

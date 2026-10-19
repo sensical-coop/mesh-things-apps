@@ -39,7 +39,7 @@ import { DeviceMapLegend } from "@/features/device/ui/map-legend";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
-import { deviceLastSeen, deviceTitle } from "@/features/device/model";
+import { deviceLastSeen, devicePosition, deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { NodeIdField } from "@/features/device/ui/node-id-field";
 import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
@@ -121,7 +121,11 @@ export function MeshDetailPage(): ReactElement {
     : null;
 
   const plotted = useMemo(
-    () => (devices.data ?? []).filter((d) => d.latitude != null && d.longitude != null),
+    () =>
+      (devices.data ?? []).flatMap((device) => {
+        const position = devicePosition(device);
+        return position ? [{ device, lng: position[0], lat: position[1] }] : [];
+      }),
     [devices.data],
   );
 
@@ -423,15 +427,15 @@ export function MeshDetailPage(): ReactElement {
                 >
                   <DeviceMapLegend />
                   <Map
-                    center={[plotted[0]!.longitude!, plotted[0]!.latitude!]}
+                    center={[plotted[0]!.lng, plotted[0]!.lat]}
                     zoom={12}
                     unsupported={<MapUnsupported />}
                     className="h-full w-full"
                   >
                     <MapControls />
-                    <FitToPoints points={plotted.map((device) => ({ lng: device.longitude!, lat: device.latitude! }))} />
-                    {plotted.map((device) => (
-                      <MapMarker key={device.uuid} longitude={device.longitude!} latitude={device.latitude!}>
+                    <FitToPoints points={plotted} />
+                    {plotted.map(({ device, lng, lat }) => (
+                      <MapMarker key={device.uuid} longitude={lng} latitude={lat}>
                         <MarkerContent>
                           <DeviceMapPin
                             isGateway={device.is_gateway}

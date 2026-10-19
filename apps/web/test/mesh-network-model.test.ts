@@ -198,3 +198,16 @@ test("linkGraph marks a route's hops and adds those no link covers", async () =>
     ],
   );
 });
+
+test("positionTrack skips fixes MapLibre would reject", async () => {
+  const { positionTrack } = await import("../src/features/mesh-network/model.ts");
+  const lat = [
+    { time: "2026-10-01T00:00:00Z", value: 41.38 },
+    { time: "2026-10-01T00:01:00Z", value: 913 },
+  ];
+  const lon = [
+    { time: "2026-10-01T00:00:00Z", value: 2.17 },
+    { time: "2026-10-01T00:01:00Z", value: 2.18 },
+  ];
+  assert.deepEqual(positionTrack(lat, lon), [[2.17, 41.38]]);
+});

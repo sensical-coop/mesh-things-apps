@@ -29,6 +29,7 @@ import { dataDeletionListPage } from "@/pages/data-deletions/list/route";
 import { routes } from "./router.ts";
 import { Shell } from "@/layout";
 import { NotFound } from "@/components/not-found";
+import { RouteError } from "@/components/route-error";
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -222,6 +223,9 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
+  // A page that throws while rendering (bad data from a node, say) fails on its
+  // own, inside the Shell, instead of taking the whole console down.
+  defaultErrorComponent: RouteError,
   InnerWrap: function InnerWrap({ children }: { children: ReactNode }) {
     return <NuqsAdapter>{children}</NuqsAdapter>;
   },
