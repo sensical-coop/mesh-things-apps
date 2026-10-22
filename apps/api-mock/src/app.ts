@@ -1265,6 +1265,16 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.json(sourceReadJson(source), 201);
   });
 
+  app.post("/sources/:source_id/restart", async (c) => {
+    const actor = c.get("actor");
+    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
+    const source = await sourceForOperator(actor, c.req.param("source_id"));
+    if (!source) return c.json({ detail: "Source not found" }, 404);
+    if (source.pausedAt) return c.json({ detail: "Source is paused; renew its terms to restart it" }, 409);
+    if (bridgeFails(source)) return c.json({ detail: "Failed to restart the bridge: connection refused" }, 502);
+    return c.json(sourceReadJson(source));
+  });
+
   app.get("/sources/:source_id", async (c) => {
     const actor = c.get("actor");
     if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);

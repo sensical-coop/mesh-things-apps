@@ -971,7 +971,7 @@ export type OwnerUpdate = {
      */
     alarm_email_cooldown_seconds?: number | null;
     /**
-     * Email me when a source I created stays disconnected, or a sink I created with meshes or devices attached has nobody connected. Off by default.
+     * Email me when a source I created stays disconnected or stops receiving messages, or a sink I created with meshes or devices attached has nobody connected. Off by default. Superusers are always emailed about silent sources.
      */
     status_alerts_enabled?: boolean;
     /**
@@ -3607,6 +3607,21 @@ export type SourcesUpdateResponses = {
 };
 
 export type SourcesUpdateResponse = SourcesUpdateResponses[keyof SourcesUpdateResponses];
+
+export type SourcesRestartCreateData = {
+    body?: never;
+    path: {
+        source_id: string;
+    };
+    query?: never;
+    url: '/sources/{source_id}/restart';
+};
+
+export type SourcesRestartCreateResponses = {
+    200: SourceRead;
+};
+
+export type SourcesRestartCreateResponse = SourcesRestartCreateResponses[keyof SourcesRestartCreateResponses];
 
 export type SourcesTermsAcceptanceCreateData = {
     body: SourceTermsAcceptance;

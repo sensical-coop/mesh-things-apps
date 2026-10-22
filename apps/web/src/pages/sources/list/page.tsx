@@ -2,7 +2,7 @@ import type { SourceRead } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
-import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiRestartLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { Navigate } from "@tanstack/react-router";
@@ -17,6 +17,7 @@ import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { SourceDialog } from "@/features/source/ui/source-dialog";
 import { RenewSourceTermsDialog } from "@/features/source/ui/renew-source-terms-dialog";
+import { RestartSourceDialog } from "@/features/source/ui/restart-source-dialog";
 import { SourceStatusChip } from "@/features/source/ui/source-status-chip";
 import { termsLocale, termsStanding, type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
@@ -52,9 +53,10 @@ export function SourcesPage(): ReactElement {
   const [addOpen, setAddOpen] = useState(false);
   const [termsAcceptance, setTermsAcceptance] = useState<TermsAcceptance | null>(null);
   const [sourceToRenew, setSourceToRenew] = useState<SourceRow | null>(null);
-  const [saved, setSaved] = useState<{ source: SourceRead; created: boolean } | null>(null);
+  const [saved, setSaved] = useState<{ source: SourceRead; action: "created" | "updated" | "restarted" } | null>(null);
   const [sourceToEdit, setSourceToEdit] = useState<SourceRow | null>(null);
   const [sourceToDelete, setSourceToDelete] = useState<SourceRow | null>(null);
+  const [sourceToRestart, setSourceToRestart] = useState<SourceRow | null>(null);
 
   const rows = useMemo<SourceRow[]>(() => {
     const counts = new Map<string, number>();
@@ -150,6 +152,18 @@ export function SourcesPage(): ReactElement {
               label={formatMessage({ id: "page.sources.list.edit", defaultMessage: "Edit source" })}
               onClick={() => setSourceToEdit(row.original)}
             />
+            {/* A paused source has no bridge to restart; renewing its terms starts it. */}
+            {row.original.paused_at ? null : (
+              <Button
+                type="button"
+                size="xs"
+                variant="secondary"
+                iconOnly
+                leadingIcon={RiRestartLine}
+                aria-label={formatMessage({ id: "page.sources.list.restart", defaultMessage: "Restart source" })}
+                onClick={() => setSourceToRestart(row.original)}
+              />
+            )}
             <Button
               type="button"
               size="xs"
@@ -182,7 +196,7 @@ export function SourcesPage(): ReactElement {
       <div className="flex flex-col gap-6">
         {saved ? (
           <StatusCopy>
-            {saved.created
+            {saved.action === "created"
               ? formatMessage(
                   {
                     id: "page.sources.list.created",
@@ -192,10 +206,15 @@ export function SourcesPage(): ReactElement {
                   { source: sourceTitle(saved.source), status: saved.source.status },
                 )
               : formatMessage(
-                  {
-                    id: "page.sources.list.updated",
-                    defaultMessage: "{source} was saved. Bridge status: {status}.",
-                  },
+                  saved.action === "restarted"
+                    ? {
+                        id: "page.sources.list.restarted",
+                        defaultMessage: "{source} was restarted. Bridge status: {status}.",
+                      }
+                    : {
+                        id: "page.sources.list.updated",
+                        defaultMessage: "{source} was saved. Bridge status: {status}.",
+                      },
                   { source: sourceTitle(saved.source), status: saved.source.status },
                 )}
           </StatusCopy>
@@ -257,20 +276,25 @@ export function SourcesPage(): ReactElement {
           setAddOpen(false);
           setTermsAcceptance(null);
         }}
-        onSaved={(source) => setSaved({ source, created: true })}
+        onSaved={(source) => setSaved({ source, action: "created" })}
       />
       {sourceToEdit ? (
         <SourceDialog
           open
           source={sourceToEdit}
           onClose={() => setSourceToEdit(null)}
-          onSaved={(source) => setSaved({ source, created: false })}
+          onSaved={(source) => setSaved({ source, action: "updated" })}
         />
       ) : null}
       <RenewSourceTermsDialog
         source={sourceToRenew}
         onClose={() => setSourceToRenew(null)}
-        onRenewed={(source) => setSaved({ source, created: false })}
+        onRenewed={(source) => setSaved({ source, action: "updated" })}
+      />
+      <RestartSourceDialog
+        source={sourceToRestart}
+        onClose={() => setSourceToRestart(null)}
+        onRestarted={(source) => setSaved({ source, action: "restarted" })}
       />
       <DeleteSourceDialog
         key={sourceToDelete?.id ?? "none"}
