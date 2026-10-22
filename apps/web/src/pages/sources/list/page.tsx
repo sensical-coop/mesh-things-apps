@@ -116,7 +116,7 @@ export function SourcesPage(): ReactElement {
                 now: new Date(),
               });
               return (
-                <span className="flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-2">
                   <span className="text-text-secondary">
                     {row.terms_expires_at
                       ? formatMessage(
