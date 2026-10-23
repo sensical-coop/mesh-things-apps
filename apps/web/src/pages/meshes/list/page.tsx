@@ -259,7 +259,7 @@ export function MeshesPage(): ReactElement {
         id: "label",
         header: formatMessage({ id: "page.meshes.list.columns.mesh", defaultMessage: "Mesh" }),
         cell: (info) => (
-          <span className="flex flex-wrap items-center gap-2">
+          <span className="flex items-center gap-2">
             <Link
               to={routes.mesh}
               params={{ meshId: info.row.original.id }}

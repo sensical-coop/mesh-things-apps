@@ -3053,6 +3053,16 @@ export const zSourcesUpdateData = z.object({
 
 export const zSourcesUpdateResponse = zSourceRead;
 
+export const zSourcesRestartCreateData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        source_id: z.uuid()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSourcesRestartCreateResponse = zSourceRead;
+
 export const zSourcesTermsAcceptanceCreateData = z.object({
     body: zSourceTermsAcceptance,
     path: z.object({

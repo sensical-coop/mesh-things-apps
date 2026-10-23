@@ -3,6 +3,7 @@ import {
   sourcesDestroyMutation,
   sourcesListOptions,
   sourcesListQueryKey,
+  sourcesRestartCreateMutation,
   sourcesUpdateMutation,
 } from "@mtt/contracts/query";
 
@@ -12,4 +13,5 @@ export const sourceRepository = {
   create: sourcesCreateMutation,
   update: sourcesUpdateMutation,
   destroy: sourcesDestroyMutation,
+  restart: sourcesRestartCreateMutation,
 };

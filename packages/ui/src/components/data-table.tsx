@@ -5,7 +5,7 @@ import {
   getSortedRowModel,
   useLegacyTable,
 } from "@tanstack/react-table/legacy";
-import { type ReactElement, type ReactNode, useState } from "react";
+import { type CSSProperties, type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpSLine } from "@remixicon/react";
 import { cx } from "@mtt/ui/utils/cx";
@@ -22,6 +22,45 @@ export type DataTableProps<T> = {
   nextPageLabel?: string;
   pageRangeOfLabel?: string;
 };
+
+const FADE = "3rem";
+
+/** Which sides of a horizontally scrolling element have content clipped. */
+function useClippedEdges() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: false, end: false });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      // A pixel of slack: fractional widths leave scrollLeft just short of the end.
+      const start = el.scrollLeft > 1;
+      const end = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+      setEdges((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    if (el.firstElementChild) observer.observe(el.firstElementChild);
+    return () => {
+      el.removeEventListener("scroll", update);
+      observer.disconnect();
+    };
+  }, []);
+
+  return { ref, edges };
+}
+
+/** Fades the clipped sides, so a table wider than its panel reads as scrollable. */
+function fadeMask({ start, end }: { start: boolean; end: boolean }): CSSProperties | undefined {
+  if (!start && !end) return undefined;
+  const mask = `linear-gradient(to right, ${start ? `transparent, black ${FADE}` : "black"}, ${
+    end ? `black calc(100% - ${FADE}), transparent` : "black"
+  })`;
+  return { maskImage: mask, WebkitMaskImage: mask };
+}
 
 export function DataTable<T>({
   data,
@@ -45,13 +84,14 @@ export function DataTable<T>({
     getRowId: getRowId as never,
   });
 
+  const { ref: scrollRef, edges } = useClippedEdges();
   const rows = table.getRowModel().rows;
   const total = data.length;
   const { pageIndex, pageSize } = table.getState().pagination;
 
   return (
     <div className="oa-arrive flex min-h-0 flex-col">
-      <div className="overflow-x-auto">
+      <div ref={scrollRef} className="overflow-x-auto" style={fadeMask(edges)}>
         <table className="w-full min-w-[36rem] caption-bottom text-left text-body-2-regular">
           <thead>
             {table.getHeaderGroups().map((hg) => (
