@@ -1537,6 +1537,9 @@ paths:
                 terms have changed, unless the instance does not enforce terms.
             terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
                 to `en`.
+            next: Frontend page the verification link leads to once the email is
+                verified. Optional, and limited to the pages the instance allows,
+                such as `/start`.
       tags:
       - owners
       requestBody:
@@ -1898,9 +1901,26 @@ paths:
   /owners/me/resend-verification:
     post:
       operationId: owners_me_resend_verification_create
-      description: Send a fresh verification email to the authenticated owner.
+      description: |-
+        Send a fresh verification email to the authenticated owner.
+
+        Args:
+            next: Frontend page the new link leads to once the email is verified.
+                Optional, and limited to the pages the instance allows, such as
+                `/start`.
       tags:
       - owners
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendVerification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResendVerification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResendVerification'
       security:
       - bearerAuth: []
       - cookieAuth: []
@@ -5723,6 +5743,12 @@ components:
 
             * `en` - en
             * `es` - es
+        next:
+          type: string
+          writeOnly: true
+          description: Frontend page the verification link sends the owner to once
+            verified, for example `/start` to resume the onboarding. Only the paths
+            this instance allows are accepted.
       required:
       - email
       - name
@@ -6286,6 +6312,15 @@ components:
       - function_name
       - key
       - order
+    ResendVerification:
+      type: object
+      properties:
+        next:
+          type: string
+          writeOnly: true
+          description: Frontend page the verification link sends the owner to once
+            verified, for example `/start` to resume the onboarding. Only the paths
+            this instance allows are accepted.
     RfLink:
       type: object
       properties:

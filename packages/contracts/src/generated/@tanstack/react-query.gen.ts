@@ -1117,6 +1117,9 @@ export const ownersListOptions = (options?: Options<OwnersListData>) => queryOpt
  * terms have changed, unless the instance does not enforce terms.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
+ * next: Frontend page the verification link leads to once the email is
+ * verified. Optional, and limited to the pages the instance allows,
+ * such as `/start`.
  */
 export const ownersCreateMutation = (options?: Partial<Options<OwnersCreateData>>): UseMutationOptions<OwnersCreateResponse, DefaultError, Options<OwnersCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersCreateResponse, DefaultError, Options<OwnersCreateData>> = {
@@ -1407,6 +1410,11 @@ export const ownersMeOperatorRequestCreateMutation = (options?: Partial<Options<
 
 /**
  * Send a fresh verification email to the authenticated owner.
+ *
+ * Args:
+ * next: Frontend page the new link leads to once the email is verified.
+ * Optional, and limited to the pages the instance allows, such as
+ * `/start`.
  */
 export const ownersMeResendVerificationCreateMutation = (options?: Partial<Options<OwnersMeResendVerificationCreateData>>): UseMutationOptions<OwnersMeResendVerificationCreateResponse, DefaultError, Options<OwnersMeResendVerificationCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersMeResendVerificationCreateResponse, DefaultError, Options<OwnersMeResendVerificationCreateData>> = {

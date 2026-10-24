@@ -962,6 +962,9 @@ export const ownersList = <ThrowOnError extends boolean = false>(options?: Optio
  * terms have changed, unless the instance does not enforce terms.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
+ * next: Frontend page the verification link leads to once the email is
+ * verified. Optional, and limited to the pages the instance allows,
+ * such as `/start`.
  */
 export const ownersCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersCreateData, ThrowOnError>) => (options.client ?? client).post<OwnersCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersCreateData.parseAsync(data),
@@ -1233,6 +1236,11 @@ export const ownersMeOperatorRequestCreate = <ThrowOnError extends boolean = fal
 
 /**
  * Send a fresh verification email to the authenticated owner.
+ *
+ * Args:
+ * next: Frontend page the new link leads to once the email is verified.
+ * Optional, and limited to the pages the instance allows, such as
+ * `/start`.
  */
 export const ownersMeResendVerificationCreate = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeResendVerificationCreateData, ThrowOnError>) => (options?.client ?? client).post<OwnersMeResendVerificationCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersMeResendVerificationCreateData.parseAsync(data),
@@ -1243,7 +1251,11 @@ export const ownersMeResendVerificationCreate = <ThrowOnError extends boolean = 
             type: 'apiKey'
         }],
     url: '/owners/me/resend-verification',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
 });
 
 /**

@@ -1085,6 +1085,13 @@ export type PostprocessingStep = {
     outputs?: unknown;
 };
 
+export type ResendVerification = {
+    /**
+     * Frontend page the verification link sends the owner to once verified, for example `/start` to resume the onboarding. Only the paths this instance allows are accepted.
+     */
+    next?: string;
+};
+
 export type RfLink = {
     /**
      * The node that transmitted.
@@ -1714,6 +1721,10 @@ export type OwnerCreateWritable = {
      * * `es` - es
      */
     terms_locale?: TermsLocaleEnum;
+    /**
+     * Frontend page the verification link sends the owner to once verified, for example `/start` to resume the onboarding. Only the paths this instance allows are accepted.
+     */
+    next?: string;
 };
 
 /**
@@ -2806,7 +2817,7 @@ export type OwnersMeOperatorRequestCreateResponses = {
 export type OwnersMeOperatorRequestCreateResponse = OwnersMeOperatorRequestCreateResponses[keyof OwnersMeOperatorRequestCreateResponses];
 
 export type OwnersMeResendVerificationCreateData = {
-    body?: never;
+    body?: ResendVerification;
     path?: never;
     query?: never;
     url: '/owners/me/resend-verification';
