@@ -942,6 +942,10 @@ export const zPostprocessingBlueprintCreate = z.object({
     ]))
 });
 
+export const zResendVerification = z.object({
+    next: z.optional(z.string())
+});
+
 /**
  * * `traceroute` - Traceroute
  * * `neighborinfo` - Neighborinfo
@@ -1841,7 +1845,8 @@ export const zOwnerCreateWritable = z.object({
     email: z.email(),
     password: z.string(),
     terms_version: z.optional(z.string()),
-    terms_locale: z.optional(zTermsLocaleEnum)
+    terms_locale: z.optional(zTermsLocaleEnum),
+    next: z.optional(z.string())
 });
 
 /**
@@ -2546,7 +2551,7 @@ export const zOwnersMeOperatorRequestCreateData = z.object({
 export const zOwnersMeOperatorRequestCreateResponse = zOperatorRequest;
 
 export const zOwnersMeResendVerificationCreateData = z.object({
-    body: z.optional(z.never()),
+    body: z.optional(zResendVerification),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });

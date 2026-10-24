@@ -6,6 +6,7 @@ import {
   zMeshesTermsAcceptanceCreateData,
   zMeshesUpdateData,
   zOwnersCreateData,
+  zOwnersMeResendVerificationCreateData,
   zOwnersLoginCreateData,
   zOwnersMeUpdateData,
   zOwnersRequestPasswordResetCreateData,
@@ -154,6 +155,19 @@ import {
 type Env = { Variables: { actor: Actor } };
 
 const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with apps/web resend-cooldown.ts
+/** Mirrors REGISTRY__FRONTEND_RETURN_PATHS: pages a verification link may send the owner back to. */
+const FRONTEND_RETURN_PATHS = (process.env.MOCK_FRONTEND_RETURN_PATHS ?? "/start").split(",").filter(Boolean);
+
+/** `next` must match an allowed path exactly, as in the API, so the link can't redirect elsewhere. */
+function returnPathError(next: string | undefined): Record<string, string[]> {
+  return next === undefined || FRONTEND_RETURN_PATHS.includes(next)
+    ? {}
+    : { next: ["This page is not an allowed return path."] };
+}
+
+function verificationLink(token: string, next: string | undefined): string {
+  return `/verify-email?${new URLSearchParams(next ? { next, token } : { token })}`;
+}
 const PASSWORD_RESET_TTL_HOURS = 1; // keep in sync with meshtastic-things REGISTRY__PASSWORD_RESET_TTL_HOURS
 const INACTIVE_ALLOWED_PATHS = new Set(["/owners/me", "/owners/me/resend-verification"]);
 const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
@@ -665,6 +679,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const { name, email, password } = parsed.data.body;
     const termsError = termsVersionError("account", parsed.data.body.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
+    const nextError = returnPathError(parsed.data.body.next);
+    if (Object.keys(nextError).length) return c.json(nextError, 400);
     let result;
     try {
       result = await auth.api.signUpEmail({
@@ -698,7 +714,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     db.verificationTokens.set(token, actor.id);
     const verification = { emailVerifiedAt: null, emailVerificationSentAt: now };
     db.verifications.set(actor.id, verification);
-    console.info(`[mock] verification link for ${email}: /verify-email?token=${token}`);
+    console.info(`[mock] verification link for ${email}: ${verificationLink(token, parsed.data.body.next)}`);
     return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${token}`, ownerTerms(actor.id)), 201);
   });
 
@@ -723,7 +739,13 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${newId()}`, ownerTerms(actor.id)));
   });
 
-  app.post("/owners/me/resend-verification", (c) => {
+  app.post("/owners/me/resend-verification", async (c) => {
+    const body: unknown = await c.req.json().catch(() => undefined);
+    const parsed = zOwnersMeResendVerificationCreateData.safeParse({ body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const next = parsed.data.body?.next;
+    const nextError = returnPathError(next);
+    if (Object.keys(nextError).length) return c.json(nextError, 400);
     const actor = c.get("actor");
     const info = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     if (info.emailVerificationSentAt) {
@@ -740,7 +762,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     db.verificationTokens.set(token, actor.id);
     const now = nowIso();
     db.verifications.set(actor.id, { ...info, emailVerificationSentAt: now });
-    console.info(`[mock] verification link for ${actor.email}: /verify-email?token=${token}`);
+    console.info(`[mock] verification link for ${actor.email}: ${verificationLink(token, next)}`);
     return c.json({ detail: "ok" });
   });
 
@@ -786,7 +808,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       const token = newId();
       db.verificationTokens.set(token, actor.id);
       db.verifications.set(actor.id, { emailVerifiedAt: null, emailVerificationSentAt: nowIso() });
-      console.info(`[mock] verification link for ${actor.email}: /verify-email?token=${token}`);
+      console.info(`[mock] verification link for ${actor.email}: ${verificationLink(token, undefined)}`);
     }
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerReadJson(actor, verification, ownerTerms(actor.id)));
