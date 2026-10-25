@@ -23,7 +23,7 @@ export function MeshTopologyTab({ meshId, devices }: { meshId: string; devices: 
         description={formatMessage({
           id: "page.meshes.detail.topology.scope",
           defaultMessage:
-            "Which nodes hear each other, from traceroutes, neighbor reports and gateways hearing nodes directly.",
+            "Topology metrics and information about how nodes see each other.",
         })}
       />
       <TopologySection meshId={meshId} range={range} devices={devices} relays={stats.data?.relays ?? []} />

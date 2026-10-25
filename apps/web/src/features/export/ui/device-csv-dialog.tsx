@@ -56,7 +56,7 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
       description={formatMessage({
         id: "feature.export.device.description",
         defaultMessage:
-          "This device's readings as one zip: a CSV file per measurement and day, with a column per value, and channels.csv with each channel's unit.",
+          "This device's readings as one zip: a CSV file per measurement and day.",
       })}
       onClose={onClose}
     >
@@ -99,7 +99,7 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
               <div className="flex min-w-0 flex-col gap-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <ExportStatusChip status={latest.status} />
-                  <span className="text-body-regular tabular-nums text-text-primary">
+                  <span className="text-body-regular text-text-primary tabular-nums">
                     {latest.start === latest.stop ? latest.start : `${latest.start} → ${latest.stop}`}
                   </span>
                 </div>
