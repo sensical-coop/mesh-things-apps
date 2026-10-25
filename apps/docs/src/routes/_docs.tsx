@@ -29,6 +29,19 @@ type DocsLinkProps = {
   title?: string;
 };
 
+// A query string is not part of the page slug. TanStack keeps it in `search`.
+function pageHref(href: string): { path: string; hash?: string; search?: Record<string, string> } {
+  const hashAt = href.indexOf("#");
+  const beforeHash = hashAt === -1 ? href : href.slice(0, hashAt);
+  const hash = hashAt === -1 || href.slice(hashAt + 1) === "" ? undefined : href.slice(hashAt + 1);
+  const queryAt = beforeHash.indexOf("?");
+  const path = queryAt === -1 ? beforeHash : beforeHash.slice(0, queryAt);
+  if (queryAt === -1) return { path, hash };
+  const search: Record<string, string> = {};
+  for (const [key, value] of new URLSearchParams(beforeHash.slice(queryAt))) search[key] = value;
+  return { path, hash, search };
+}
+
 // Fumadocs gives a public path (`/overview`). The splat route owns every page under `/`.
 function DocsLink({ href, prefetch = true, children, className, ...rest }: DocsLinkProps) {
   if (!href || href.startsWith("#") || /^[a-z]+:/i.test(href)) {
@@ -38,19 +51,17 @@ function DocsLink({ href, prefetch = true, children, className, ...rest }: DocsL
       </a>
     );
   }
-  const hashAt = href.indexOf("#");
-  const path = hashAt === -1 ? href : href.slice(0, hashAt);
-  const hash = hashAt === -1 ? undefined : href.slice(hashAt + 1);
+  const { path, hash, search } = pageHref(href);
   const preload = prefetch ? "intent" : false;
   if (path === "/" || path === "") {
     return (
-      <Link to="/" hash={hash} preload={preload} className={className} {...rest}>
+      <Link to="/" hash={hash} search={search} preload={preload} className={className} {...rest}>
         {children}
       </Link>
     );
   }
   return (
-    <Link to="/$" params={{ _splat: path.replace(/^\//, "") }} hash={hash} preload={preload} className={className} {...rest}>
+    <Link to="/$" params={{ _splat: path.replace(/^\//, "") }} hash={hash} search={search} preload={preload} className={className} {...rest}>
       {children}
     </Link>
   );
