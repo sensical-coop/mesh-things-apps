@@ -976,27 +976,30 @@ export const meshesTraceroutesListInfiniteQueryKey = (options: Options<MeshesTra
  * the next page.
  * node_id: Only traceroutes from, to or through this node.
  */
-export const meshesTraceroutesListInfiniteOptions = (options: Options<MeshesTraceroutesListData>) => infiniteQueryOptions<MeshesTraceroutesListResponse, DefaultError, InfiniteData<MeshesTraceroutesListResponse>, QueryKey<Options<MeshesTraceroutesListData>>, string | Pick<QueryKey<Options<MeshesTraceroutesListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<MeshesTraceroutesListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                before: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await meshesTraceroutesList({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: meshesTraceroutesListInfiniteQueryKey(options)
-});
+export const meshesTraceroutesListInfiniteOptions = (options: Options<MeshesTraceroutesListData>) => {
+    const opts = infiniteQueryOptions<MeshesTraceroutesListResponse, DefaultError, InfiniteData<MeshesTraceroutesListResponse>, QueryKey<Options<MeshesTraceroutesListData>>, string | Pick<QueryKey<Options<MeshesTraceroutesListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<MeshesTraceroutesListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    before: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await meshesTraceroutesList({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: meshesTraceroutesListInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const metricsRetrieveQueryKey = (options?: Options<MetricsRetrieveData>) => createQueryKey('metricsRetrieve', options);
 
@@ -1750,27 +1753,30 @@ export const readingsArchiveMeshesRetrieveInfiniteQueryKey = (options: Options<R
  * start: Earliest day to include, as `YYYY-MM-DD`. Defaults to the first archived day.
  * stop: Latest day to include, as `YYYY-MM-DD`. Defaults to the last archived day.
  */
-export const readingsArchiveMeshesRetrieveInfiniteOptions = (options: Options<ReadingsArchiveMeshesRetrieveData>) => infiniteQueryOptions<ReadingsArchiveMeshesRetrieveResponse, DefaultError, InfiniteData<ReadingsArchiveMeshesRetrieveResponse>, QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                start: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await readingsArchiveMeshesRetrieve({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsArchiveMeshesRetrieveInfiniteQueryKey(options)
-});
+export const readingsArchiveMeshesRetrieveInfiniteOptions = (options: Options<ReadingsArchiveMeshesRetrieveData>) => {
+    const opts = infiniteQueryOptions<ReadingsArchiveMeshesRetrieveResponse, DefaultError, InfiniteData<ReadingsArchiveMeshesRetrieveResponse>, QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ReadingsArchiveMeshesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    start: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await readingsArchiveMeshesRetrieve({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: readingsArchiveMeshesRetrieveInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 /**
  * Issue temporary S3 credentials that can read this mesh's archive and nothing else.
@@ -1841,27 +1847,30 @@ export const readingsDevicesRetrieveInfiniteQueryKey = (options: Options<Reading
 /**
  * Readings over a time range, addressed by the device's registration ID.
  */
-export const readingsDevicesRetrieveInfiniteOptions = (options: Options<ReadingsDevicesRetrieveData>) => infiniteQueryOptions<ReadingsDevicesRetrieveResponse, DefaultError, InfiniteData<ReadingsDevicesRetrieveResponse>, QueryKey<Options<ReadingsDevicesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsDevicesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReadingsDevicesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                start: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await readingsDevicesRetrieve({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsDevicesRetrieveInfiniteQueryKey(options)
-});
+export const readingsDevicesRetrieveInfiniteOptions = (options: Options<ReadingsDevicesRetrieveData>) => {
+    const opts = infiniteQueryOptions<ReadingsDevicesRetrieveResponse, DefaultError, InfiniteData<ReadingsDevicesRetrieveResponse>, QueryKey<Options<ReadingsDevicesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsDevicesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ReadingsDevicesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    start: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await readingsDevicesRetrieve({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: readingsDevicesRetrieveInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const readingsDevicesLatestRetrieveQueryKey = (options: Options<ReadingsDevicesLatestRetrieveData>) => createQueryKey('readingsDevicesLatestRetrieve', options);
 
@@ -1904,27 +1913,30 @@ export const readingsDevicesQualityRetrieveInfiniteQueryKey = (options: Options<
 /**
  * Data-quality figures for a device, addressed by its registration ID.
  */
-export const readingsDevicesQualityRetrieveInfiniteOptions = (options: Options<ReadingsDevicesQualityRetrieveData>) => infiniteQueryOptions<ReadingsDevicesQualityRetrieveResponse, DefaultError, InfiniteData<ReadingsDevicesQualityRetrieveResponse>, QueryKey<Options<ReadingsDevicesQualityRetrieveData>>, string | Pick<QueryKey<Options<ReadingsDevicesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReadingsDevicesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                start: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await readingsDevicesQualityRetrieve({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsDevicesQualityRetrieveInfiniteQueryKey(options)
-});
+export const readingsDevicesQualityRetrieveInfiniteOptions = (options: Options<ReadingsDevicesQualityRetrieveData>) => {
+    const opts = infiniteQueryOptions<ReadingsDevicesQualityRetrieveResponse, DefaultError, InfiniteData<ReadingsDevicesQualityRetrieveResponse>, QueryKey<Options<ReadingsDevicesQualityRetrieveData>>, string | Pick<QueryKey<Options<ReadingsDevicesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ReadingsDevicesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    start: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await readingsDevicesQualityRetrieve({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: readingsDevicesQualityRetrieveInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const readingsDevicesTrafficRetrieveQueryKey = (options: Options<ReadingsDevicesTrafficRetrieveData>) => createQueryKey('readingsDevicesTrafficRetrieve', options);
 
@@ -2099,27 +2111,30 @@ export const readingsMeshesNodesRetrieveInfiniteQueryKey = (options: Options<Rea
  * `last`, `first`, `sum` or `count`. Defaults to `mean` and applies
  * only when `window` is set.
  */
-export const readingsMeshesNodesRetrieveInfiniteOptions = (options: Options<ReadingsMeshesNodesRetrieveData>) => infiniteQueryOptions<ReadingsMeshesNodesRetrieveResponse, DefaultError, InfiniteData<ReadingsMeshesNodesRetrieveResponse>, QueryKey<Options<ReadingsMeshesNodesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsMeshesNodesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReadingsMeshesNodesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                start: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await readingsMeshesNodesRetrieve({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsMeshesNodesRetrieveInfiniteQueryKey(options)
-});
+export const readingsMeshesNodesRetrieveInfiniteOptions = (options: Options<ReadingsMeshesNodesRetrieveData>) => {
+    const opts = infiniteQueryOptions<ReadingsMeshesNodesRetrieveResponse, DefaultError, InfiniteData<ReadingsMeshesNodesRetrieveResponse>, QueryKey<Options<ReadingsMeshesNodesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsMeshesNodesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ReadingsMeshesNodesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    start: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await readingsMeshesNodesRetrieve({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: readingsMeshesNodesRetrieveInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const readingsMeshesNodesLatestRetrieveQueryKey = (options: Options<ReadingsMeshesNodesLatestRetrieveData>) => createQueryKey('readingsMeshesNodesLatestRetrieve', options);
 
@@ -2195,27 +2210,30 @@ export const readingsMeshesNodesQualityRetrieveInfiniteQueryKey = (options: Opti
  * stop: End of the range, in the same forms as `start`, or `now()`.
  * Defaults to `now()`.
  */
-export const readingsMeshesNodesQualityRetrieveInfiniteOptions = (options: Options<ReadingsMeshesNodesQualityRetrieveData>) => infiniteQueryOptions<ReadingsMeshesNodesQualityRetrieveResponse, DefaultError, InfiniteData<ReadingsMeshesNodesQualityRetrieveResponse>, QueryKey<Options<ReadingsMeshesNodesQualityRetrieveData>>, string | Pick<QueryKey<Options<ReadingsMeshesNodesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReadingsMeshesNodesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                start: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await readingsMeshesNodesQualityRetrieve({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readingsMeshesNodesQualityRetrieveInfiniteQueryKey(options)
-});
+export const readingsMeshesNodesQualityRetrieveInfiniteOptions = (options: Options<ReadingsMeshesNodesQualityRetrieveData>) => {
+    const opts = infiniteQueryOptions<ReadingsMeshesNodesQualityRetrieveResponse, DefaultError, InfiniteData<ReadingsMeshesNodesQualityRetrieveResponse>, QueryKey<Options<ReadingsMeshesNodesQualityRetrieveData>>, string | Pick<QueryKey<Options<ReadingsMeshesNodesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ReadingsMeshesNodesQualityRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    start: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await readingsMeshesNodesQualityRetrieve({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: readingsMeshesNodesQualityRetrieveInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
 
 export const readingsMeshesNodesTrafficRetrieveQueryKey = (options: Options<ReadingsMeshesNodesTrafficRetrieveData>) => createQueryKey('readingsMeshesNodesTrafficRetrieve', options);
 

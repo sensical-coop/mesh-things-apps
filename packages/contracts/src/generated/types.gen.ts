@@ -171,7 +171,7 @@ export type Detail = {
  */
 export type Detector = {
     readonly name: string;
-    scope: 'measurement' | 'device';
+    readonly scope: 'measurement' | 'device';
     readonly requires: Array<string>;
     readonly description: string;
 };
@@ -776,7 +776,7 @@ export type MetricsResponse = {
     active_gateways: number;
 };
 
-export type NullEnum = unknown;
+export type NullEnum = never;
 
 /**
  * An operator request as its requester sees it.

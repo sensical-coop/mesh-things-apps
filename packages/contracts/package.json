@@ -8,7 +8,7 @@
     "./client": "./src/generated/client.gen.ts",
     "./query": "./src/generated/@tanstack/react-query.gen.ts",
     "./types": "./src/generated/types.gen.ts",
-    "./zod": "./src/generated/zod.gen.ts",
+    "./zod": "./src/zod.ts",
     "./runtime": "./src/api-runtime.ts"
   },
   "scripts": {
@@ -17,13 +17,13 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.89.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "peerDependencies": {
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.90.2",
+    "@hey-api/openapi-ts": "0.99.0",
     "@mtt/tsconfig": "workspace:^",
     "@types/node": "^22.15.21",
     "typescript": "^5.8.3"
