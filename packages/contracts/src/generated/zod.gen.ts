@@ -2129,3 +2129,669 @@ export const zTermsRetrieveQuery = z.object({
 });
 
 export const zTermsRetrieveResponse = zTerms;
+
+export const zAlgorithmsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zDataDeletionsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zDataDeletionsListQuery.optional()
+});
+
+export const zDevicesListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zDevicesListQuery.optional()
+});
+
+export const zDevicesCreateData = z.object({
+    body: zDevicesCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zDevicesDestroyData = z.object({
+    body: z.never().optional(),
+    path: zDevicesDestroyPath,
+    query: z.never().optional()
+});
+
+export const zDevicesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zDevicesRetrievePath,
+    query: z.never().optional()
+});
+
+export const zDevicesUpdateData = z.object({
+    body: zDevicesUpdateBody.optional(),
+    path: zDevicesUpdatePath,
+    query: z.never().optional()
+});
+
+export const zDetectorsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zDevicesMeasurementsListData = z.object({
+    body: z.never().optional(),
+    path: zDevicesMeasurementsListPath,
+    query: z.never().optional()
+});
+
+export const zDevicesMeasurementsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zDevicesMeasurementsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zDevicesMeasurementsUpdateData = z.object({
+    body: zDevicesMeasurementsUpdateBody.optional(),
+    path: zDevicesMeasurementsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsListData = z.object({
+    body: z.never().optional(),
+    path: zDevicesPostprocessingsListPath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsCreateData = z.object({
+    body: zDevicesPostprocessingsCreateBody.optional(),
+    path: zDevicesPostprocessingsCreatePath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsDestroyData = z.object({
+    body: z.never().optional(),
+    path: zDevicesPostprocessingsDestroyPath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zDevicesPostprocessingsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsUpdateData = z.object({
+    body: zDevicesPostprocessingsUpdateBody.optional(),
+    path: zDevicesPostprocessingsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsBackfillsListData = z.object({
+    body: z.never().optional(),
+    path: zDevicesPostprocessingsBackfillsListPath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsBackfillsCreateData = z.object({
+    body: zDevicesPostprocessingsBackfillsCreateBody,
+    path: zDevicesPostprocessingsBackfillsCreatePath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsCalibrationsListData = z.object({
+    body: z.never().optional(),
+    path: zDevicesPostprocessingsCalibrationsListPath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsCalibrationsCreateData = z.object({
+    body: zDevicesPostprocessingsCalibrationsCreateBody,
+    path: zDevicesPostprocessingsCalibrationsCreatePath,
+    query: z.never().optional()
+});
+
+export const zDevicesPostprocessingsCalibrationsDestroyData = z.object({
+    body: z.never().optional(),
+    path: zDevicesPostprocessingsCalibrationsDestroyPath,
+    query: z.never().optional()
+});
+
+export const zDevicesTelemetryVariantsListData = z.object({
+    body: z.never().optional(),
+    path: zDevicesTelemetryVariantsListPath,
+    query: z.never().optional()
+});
+
+export const zHealthRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zMeasurementsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zMeasurementsListQuery.optional()
+});
+
+export const zMeasurementsCreateData = z.object({
+    body: zMeasurementsCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zMeasurementsDestroyData = z.object({
+    body: z.never().optional(),
+    path: zMeasurementsDestroyPath,
+    query: z.never().optional()
+});
+
+export const zMeasurementsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zMeasurementsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zMeasurementsUpdateData = z.object({
+    body: zMeasurementsUpdateBody.optional(),
+    path: zMeasurementsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zMeshesListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zMeshesListQuery.optional()
+});
+
+export const zMeshesCreateData = z.object({
+    body: zMeshesCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zMeshesTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zMeshesTermsRetrieveQuery.optional()
+});
+
+export const zMeshesDestroyData = z.object({
+    body: z.never().optional(),
+    path: zMeshesDestroyPath,
+    query: z.never().optional()
+});
+
+export const zMeshesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zMeshesRetrievePath,
+    query: z.never().optional()
+});
+
+export const zMeshesUpdateData = z.object({
+    body: zMeshesUpdateBody.optional(),
+    path: zMeshesUpdatePath,
+    query: z.never().optional()
+});
+
+export const zMeshesTermsAcceptanceCreateData = z.object({
+    body: zMeshesTermsAcceptanceCreateBody,
+    path: zMeshesTermsAcceptanceCreatePath,
+    query: z.never().optional()
+});
+
+export const zMeshesDevicesListData = z.object({
+    body: z.never().optional(),
+    path: zMeshesDevicesListPath,
+    query: zMeshesDevicesListQuery.optional()
+});
+
+export const zMeshesLinksListData = z.object({
+    body: z.never().optional(),
+    path: zMeshesLinksListPath,
+    query: zMeshesLinksListQuery.optional()
+});
+
+export const zMeshesTraceroutesListData = z.object({
+    body: z.never().optional(),
+    path: zMeshesTraceroutesListPath,
+    query: zMeshesTraceroutesListQuery.optional()
+});
+
+export const zMetricsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOperatorRequestsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zOperatorRequestsListQuery.optional()
+});
+
+export const zOperatorRequestsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zOperatorRequestsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zOperatorRequestsUpdateData = z.object({
+    body: zOperatorRequestsUpdateBody,
+    path: zOperatorRequestsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zOwnersListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersCreateData = z.object({
+    body: zOwnersCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersDestroyData = z.object({
+    body: z.never().optional(),
+    path: zOwnersDestroyPath,
+    query: z.never().optional()
+});
+
+export const zOwnersRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zOwnersRetrievePath,
+    query: z.never().optional()
+});
+
+export const zOwnersUpdateData = z.object({
+    body: zOwnersUpdateBody,
+    path: zOwnersUpdatePath,
+    query: z.never().optional()
+});
+
+export const zOwnersCsrfCookieRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersLoginCreateData = z.object({
+    body: zOwnersLoginCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersLogoutCreateData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeDestroyData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeUpdateData = z.object({
+    body: zOwnersMeUpdateBody.optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeChangePasswordCreateData = z.object({
+    body: zOwnersMeChangePasswordCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeDevicesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeOperatorRequestRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeOperatorRequestCreateData = z.object({
+    body: zOwnersMeOperatorRequestCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeResendVerificationCreateData = z.object({
+    body: zOwnersMeResendVerificationCreateBody.optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeRotateKeyCreateData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersMeTermsAcceptanceCreateData = z.object({
+    body: zOwnersMeTermsAcceptanceCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersRequestPasswordResetCreateData = z.object({
+    body: zOwnersRequestPasswordResetCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersResetPasswordCreateData = z.object({
+    body: zOwnersResetPasswordCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zOwnersVerifyEmailRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zOwnersVerifyEmailRetrieveQuery
+});
+
+export const zPostprocessingBlueprintsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zPostprocessingBlueprintsListQuery.optional()
+});
+
+export const zPostprocessingBlueprintsCreateData = z.object({
+    body: zPostprocessingBlueprintsCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zPostprocessingBlueprintsDestroyData = z.object({
+    body: z.never().optional(),
+    path: zPostprocessingBlueprintsDestroyPath,
+    query: z.never().optional()
+});
+
+export const zPostprocessingBlueprintsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zPostprocessingBlueprintsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zPostprocessingBlueprintsUpdateData = z.object({
+    body: zPostprocessingBlueprintsUpdateBody.optional(),
+    path: zPostprocessingBlueprintsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zPostprocessingBlueprintsVersionsListData = z.object({
+    body: z.never().optional(),
+    path: zPostprocessingBlueprintsVersionsListPath,
+    query: z.never().optional()
+});
+
+export const zPostprocessingBlueprintsVersionsCreateData = z.object({
+    body: zPostprocessingBlueprintsVersionsCreateBody,
+    path: zPostprocessingBlueprintsVersionsCreatePath,
+    query: z.never().optional()
+});
+
+export const zPostprocessingBlueprintsVersionsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zPostprocessingBlueprintsVersionsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zReadingsArchiveMeshesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsArchiveMeshesRetrievePath,
+    query: zReadingsArchiveMeshesRetrieveQuery.optional()
+});
+
+export const zReadingsArchiveMeshesCredentialsCreateData = z.object({
+    body: z.never().optional(),
+    path: zReadingsArchiveMeshesCredentialsCreatePath,
+    query: z.never().optional()
+});
+
+export const zReadingsArchiveMeshesPartitionsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsArchiveMeshesPartitionsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zReadingsDevicesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsDevicesRetrievePath,
+    query: zReadingsDevicesRetrieveQuery.optional()
+});
+
+export const zReadingsDevicesLatestRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsDevicesLatestRetrievePath,
+    query: zReadingsDevicesLatestRetrieveQuery.optional()
+});
+
+export const zReadingsDevicesQualityRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsDevicesQualityRetrievePath,
+    query: zReadingsDevicesQualityRetrieveQuery.optional()
+});
+
+export const zReadingsDevicesTrafficRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsDevicesTrafficRetrievePath,
+    query: zReadingsDevicesTrafficRetrieveQuery.optional()
+});
+
+export const zReadingsExportsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zReadingsMeshesExportsListData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesExportsListPath,
+    query: z.never().optional()
+});
+
+export const zReadingsMeshesExportsCreateData = z.object({
+    body: zReadingsMeshesExportsCreateBody,
+    path: zReadingsMeshesExportsCreatePath,
+    query: z.never().optional()
+});
+
+export const zReadingsMeshesExportsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesExportsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zReadingsMeshesNodesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesNodesRetrievePath,
+    query: zReadingsMeshesNodesRetrieveQuery.optional()
+});
+
+export const zReadingsMeshesNodesLatestRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesNodesLatestRetrievePath,
+    query: zReadingsMeshesNodesLatestRetrieveQuery.optional()
+});
+
+export const zReadingsMeshesNodesQualityRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesNodesQualityRetrievePath,
+    query: zReadingsMeshesNodesQualityRetrieveQuery.optional()
+});
+
+export const zReadingsMeshesNodesTrafficRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesNodesTrafficRetrievePath,
+    query: zReadingsMeshesNodesTrafficRetrieveQuery.optional()
+});
+
+export const zReadingsMeshesStatsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zReadingsMeshesStatsRetrievePath,
+    query: zReadingsMeshesStatsRetrieveQuery.optional()
+});
+
+export const zSinksListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zSinksCreateData = z.object({
+    body: zSinksCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zSinksTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zSinksTermsRetrieveQuery.optional()
+});
+
+export const zSinksDestroyData = z.object({
+    body: z.never().optional(),
+    path: zSinksDestroyPath,
+    query: z.never().optional()
+});
+
+export const zSinksRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zSinksRetrievePath,
+    query: z.never().optional()
+});
+
+export const zSinksUpdateData = z.object({
+    body: zSinksUpdateBody.optional(),
+    path: zSinksUpdatePath,
+    query: z.never().optional()
+});
+
+export const zSinksCredentialsCreateData = z.object({
+    body: z.never().optional(),
+    path: zSinksCredentialsCreatePath,
+    query: z.never().optional()
+});
+
+export const zSinksTermsAcceptanceCreateData = z.object({
+    body: zSinksTermsAcceptanceCreateBody,
+    path: zSinksTermsAcceptanceCreatePath,
+    query: z.never().optional()
+});
+
+export const zSourcesListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zSourcesCreateData = z.object({
+    body: zSourcesCreateBody,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zSourcesTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zSourcesTermsRetrieveQuery.optional()
+});
+
+export const zSourcesDestroyData = z.object({
+    body: z.never().optional(),
+    path: zSourcesDestroyPath,
+    query: z.never().optional()
+});
+
+export const zSourcesRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zSourcesRetrievePath,
+    query: z.never().optional()
+});
+
+export const zSourcesUpdateData = z.object({
+    body: zSourcesUpdateBody.optional(),
+    path: zSourcesUpdatePath,
+    query: z.never().optional()
+});
+
+export const zSourcesRestartCreateData = z.object({
+    body: z.never().optional(),
+    path: zSourcesRestartCreatePath,
+    query: z.never().optional()
+});
+
+export const zSourcesTermsAcceptanceCreateData = z.object({
+    body: zSourcesTermsAcceptanceCreateBody,
+    path: zSourcesTermsAcceptanceCreatePath,
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsDestroyData = z.object({
+    body: z.never().optional(),
+    path: zTelemetryVariantsDestroyPath,
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zTelemetryVariantsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsUpdateData = z.object({
+    body: zTelemetryVariantsUpdateBody.optional(),
+    path: zTelemetryVariantsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsMeasurementsListData = z.object({
+    body: z.never().optional(),
+    path: zTelemetryVariantsMeasurementsListPath,
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsMeasurementsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: zTelemetryVariantsMeasurementsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zTelemetryVariantsMeasurementsUpdateData = z.object({
+    body: zTelemetryVariantsMeasurementsUpdateBody.optional(),
+    path: zTelemetryVariantsMeasurementsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zTermsRetrieveQuery.optional()
+});

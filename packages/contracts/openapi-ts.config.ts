@@ -11,6 +11,8 @@ export default defineConfig({
     "@hey-api/typescript",
     {
       name: "zod",
+      // v0.95+ inlines request envelopes unless this is set. Forms and the mock parse z*Data.
+      requests: { shouldExtract: true },
     },
     {
       name: "@hey-api/sdk",
