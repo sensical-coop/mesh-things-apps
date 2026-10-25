@@ -778,11 +778,6 @@
  * The transform uses a shorter duration on press and the slower duration only
  * when returning to rest, so hover styles never inherit the 700ms timing. */
 @utility button-press-motion {
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-    transform: none;
-  }
-
   transition:
     background-color var(--button-transition-ms) ease,
     border-color var(--button-transition-ms) ease,
@@ -798,6 +793,15 @@
   &:active:not(:disabled, [aria-disabled="true"]) {
     transform: scale(0.98);
     transition-duration: 150ms, 150ms, 150ms, 150ms, 220ms;
+  }
+
+  /* After the press rule. The active selector matches its specificity, so the scale does not win. */
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    &:active:not(:disabled, [aria-disabled="true"]) {
+      transition: none;
+      transform: none;
+    }
   }
 }
 

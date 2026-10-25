@@ -1,13 +1,17 @@
 #!/bin/sh
-set -e
-root=$(git rev-parse --show-toplevel)
-cd "$root"
-files=$(git diff --cached --name-only --diff-filter=ACMR)
-css=$(printf '%s\n' "$files" | grep -E '\.css$' || true)
-tsx=$(printf '%s\n' "$files" | grep -E '\.(tsx|jsx)$' || true)
-if [ -n "$css" ]; then
-  printf '%s\n' "$css" | tr '\n' '\0' | xargs -0 pnpm exec stylelint
-fi
-if [ -n "$tsx" ]; then
-  printf '%s\n' "$tsx" | tr '\n' '\0' | xargs -0 pnpm exec eslint
-fi
+# mesh-things-apps pre-commit
+set -eu
+
+cd "$(git rev-parse --show-toplevel)"
+
+# Lint the staged blob. A partial stage must not be judged by unstaged edits.
+git diff --cached --name-only --diff-filter=ACMR -z | while IFS= read -r -d '' file; do
+  case "$file" in
+    *.css)
+      git show ":$file" | pnpm exec stylelint --stdin --stdin-filename "$file"
+      ;;
+    *.tsx|*.jsx)
+      git show ":$file" | pnpm exec eslint --stdin --stdin-filename "$file"
+      ;;
+  esac
+done

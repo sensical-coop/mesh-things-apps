@@ -53,7 +53,10 @@ export default {
       { ignoreAtRules: ["utility"] },
     ],
 
-    /* Declarations inside @media in an @utility are valid Tailwind. Stylelint treats @utility as a plain at-rule. */
-    "no-invalid-position-declaration": null,
+    /* @media may declare inside @utility. Stylelint otherwise requires a style-rule ancestor. */
+    "no-invalid-position-declaration": [
+      true,
+      { ignoreAtRules: ["utility", "theme"] },
+    ],
   },
 };
