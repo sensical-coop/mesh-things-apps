@@ -18,7 +18,7 @@ export function LandingReveal({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry?.isIntersecting) return;
-        el.classList.add("is-inview");
+        el.setAttribute("data-inview", "");
         observer.disconnect();
       },
       { rootMargin: "0px 0px -10% 0px" },

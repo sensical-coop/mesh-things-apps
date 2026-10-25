@@ -46,10 +46,17 @@ pre {
   font-family: var(--font-mono);
 }
 
-@media (max-width: 639px) {
+/* 16px on small screens stops iOS from zooming a focused field. From 40rem the field inherits. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+@media (width >= 40rem) {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: inherit;
   }
 }

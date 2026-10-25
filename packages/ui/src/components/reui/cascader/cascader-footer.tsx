@@ -112,7 +112,7 @@ function CascaderFooter({
       aria-label={labels.actionsLabel}
       onKeyDown={handleKeyDown}
       className={cn(
-        "border-border/60 flex shrink-0 flex-col gap-0.5 border-t",
+        "flex shrink-0 flex-col gap-0.5 border-t border-border/60",
         /* The LIST's padding, not a flat `p-1`: with a padding of its own the
            two columns of text were 2px out in luma and sera and 4px out in
            lyra. It also gives a separator in here a number to cancel. */
@@ -309,7 +309,7 @@ function CascaderAction({
       {icon ? (
         <span
           data-slot="cascader-action-icon"
-          className="text-muted-foreground flex shrink-0 items-center justify-center"
+          className="flex shrink-0 items-center justify-center text-muted-foreground"
         >
           {icon}
         </span>
@@ -533,7 +533,7 @@ function CascaderSubmenuTrigger({
       {icon ? (
         <span
           data-slot="cascader-action-icon"
-          className="text-muted-foreground flex shrink-0 items-center justify-center"
+          className="flex shrink-0 items-center justify-center text-muted-foreground"
         >
           {icon}
         </span>
@@ -541,7 +541,7 @@ function CascaderSubmenuTrigger({
       <span className="min-w-0 flex-1 truncate text-start">{children}</span>
       {/* Nothing else says the row opens a MENU, not another tree level. */}
       <span className="sr-only">, {labels.submenuAffordance}</span>
-      <ChevronRightIcon aria-hidden="true" className="text-muted-foreground -me-0.5 size-4 shrink-0 rtl:-scale-x-100" />
+      <ChevronRightIcon aria-hidden="true" className="-me-0.5 size-4 shrink-0 text-muted-foreground rtl:-scale-x-100" />
     </PopoverPrimitive.Trigger>
   )
 }
@@ -680,7 +680,7 @@ function CascaderSubmenuContent({
         align={align}
         sideOffset={sideOffset}
         alignOffset={alignOffset}
-        className="isolate z-50"
+        className="isolate z-dropdown"
       >
         <PopoverPrimitive.Popup
           ref={popupRef}

@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
 import { API_URL } from "@/lib/api-url";
 import { formatBytes, partitionDownloadUrl, partitionLabel, type ArchiveDay } from "@/features/archive/model";
+import { cn } from "@mtt/ui/utils";
 
 export type ArchiveDayRowProps = {
   meshId: string;
@@ -37,7 +38,7 @@ export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, expor
         <td className={cellClass}>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-full text-start outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="inline-flex items-center gap-1.5 rounded-full text-start outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             aria-expanded={expanded}
             aria-controls={hoursId}
             onClick={onToggle}
@@ -50,15 +51,15 @@ export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, expor
             <span className="tabular-nums">{dayLabel}</span>
           </button>
         </td>
-        <td className={`${cellClass} tabular-nums text-text-secondary`}>
+        <td className={cn(cellClass, "text-text-secondary tabular-nums")}>
           {formatMessage(
             { id: "feature.archive.files.hourCount", defaultMessage: "{count, plural, one {# hour} other {# hours}}" },
             { count: day.hours.length },
           )}
         </td>
-        <td className={`${cellClass} tabular-nums text-text-secondary`}>{formatBytes(day.bytes, locale)}</td>
-        <td className={`${cellClass} tabular-nums text-text-secondary`}>{formatWhen(day.lastModified)}</td>
-        <td className={`${cellClass} text-right`}>
+        <td className={cn(cellClass, "text-text-secondary tabular-nums")}>{formatBytes(day.bytes, locale)}</td>
+        <td className={cn(cellClass, "text-text-secondary tabular-nums")}>{formatWhen(day.lastModified)}</td>
+        <td className={cn(cellClass, "text-right")}>
           <Button
             type="button"
             size="xs"

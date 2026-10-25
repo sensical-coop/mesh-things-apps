@@ -263,7 +263,7 @@ export function MeshesPage(): ReactElement {
             <Link
               to={routes.mesh}
               params={{ meshId: info.row.original.id }}
-              className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              className="rounded-full outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
               {info.getValue()}
             </Link>
@@ -293,7 +293,7 @@ export function MeshesPage(): ReactElement {
       }),
       col.accessor("devices", {
         header: formatMessage({ id: "page.meshes.list.columns.devices", defaultMessage: "Devices" }),
-        cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
+        cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
       }),
       ...(showOwner
         ? [

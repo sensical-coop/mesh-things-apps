@@ -33,7 +33,7 @@ export function BlueprintsPage(): ReactElement {
           <Link
             to={routes.blueprint}
             params={{ blueprintId: info.row.original.id }}
-            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="rounded-full outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {info.getValue()}
           </Link>
@@ -61,7 +61,7 @@ export function BlueprintsPage(): ReactElement {
       col.accessor((row) => row.latest_version.number, {
         id: "version",
         header: formatMessage({ id: "page.blueprints.list.columns.version", defaultMessage: "Latest version" }),
-        cell: (info) => <span className="tabular-nums text-text-secondary">v{info.getValue()}</span>,
+        cell: (info) => <span className="text-text-secondary tabular-nums">v{info.getValue()}</span>,
       }),
       col.accessor(
         (row) =>
@@ -78,7 +78,7 @@ export function BlueprintsPage(): ReactElement {
       col.accessor((row) => row.latest_version.device_count, {
         id: "devices",
         header: formatMessage({ id: "page.blueprints.list.columns.devices", defaultMessage: "Devices on latest" }),
-        cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
+        cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
       }),
     ],
     [formatMessage, meId, ownerName],

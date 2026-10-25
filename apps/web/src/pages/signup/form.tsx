@@ -155,7 +155,7 @@ export function SignupForm(): ReactElement {
   }
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -224,7 +224,7 @@ export function SignupForm(): ReactElement {
             <div className="flex flex-col gap-3">
               <button
                 type="button"
-                className="flex w-full items-start justify-between gap-3 rounded-lg text-start outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-not-allowed"
+                className="flex w-full items-start justify-between gap-3 rounded-lg text-start outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-not-allowed"
                 aria-expanded={termsOpen}
                 aria-controls="signup-terms-panel"
                 disabled={!credentialsReady && !termsOpen}
@@ -305,7 +305,7 @@ export function SignupForm(): ReactElement {
             defaultMessage="Already have an account? <link>Sign in</link>."
             values={{
               link: (chunks: ReactNode) => (
-                <Link to={routes.login} className="underline underline-offset-2 text-accent-500">
+                <Link to={routes.login} className="text-accent-500 underline underline-offset-2">
                   {chunks}
                 </Link>
               ),

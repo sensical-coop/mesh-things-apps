@@ -84,7 +84,7 @@ export function NavMenu({
           <DropdownMenuItem
             key={item.to}
             render={<Link to={item.to} />}
-            className="items-start justify-between gap-4 whitespace-nowrap"
+            className="items-start justify-between gap-4 whitespace-nowrap transition-colors hover:bg-dropdown-item-hover-background focus:bg-dropdown-item-hover-background data-highlighted:bg-dropdown-item-hover-background"
           >
             <span className="flex flex-col">
               <span>{item.label}</span>

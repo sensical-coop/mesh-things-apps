@@ -37,7 +37,8 @@
     "./components/evilcharts/ui/*": "./src/components/evilcharts/ui/*.tsx",
     "./components/evilcharts/charts/*": "./src/components/evilcharts/charts/*.tsx",
     "./components/*": "./src/components/*.tsx",
-    "./*": "./src/*.tsx"
+    "./*": "./src/*.tsx",
+    "./maplibre.css": "./src/vendor/maplibre.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

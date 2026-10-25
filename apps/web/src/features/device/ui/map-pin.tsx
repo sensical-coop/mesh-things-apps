@@ -20,7 +20,7 @@ export function DeviceMapPin({ isGateway, label, deviceUuid, pulse }: DeviceMapP
         delay={0}
         aria-label={label}
         className={cx(
-          "relative flex size-5 items-center justify-center rounded-full bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+          "relative flex size-5 items-center justify-center rounded-full bg-transparent p-0 outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring",
           deviceUuid && "cursor-pointer transition-transform hover:scale-125 motion-reduce:transition-none",
         )}
         render={deviceUuid ? <Link to={routes.device} params={{ deviceUuid }} /> : undefined}

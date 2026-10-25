@@ -10,6 +10,7 @@ import { StatusCopy } from "@/components/status-copy";
 import { formatBytes, groupByDay, summarizeArchive } from "@/features/archive/model";
 import type { RequestExportState } from "@/features/export/use-request-export";
 import { ArchiveDayRow } from "@/features/archive/ui/archive-day-row";
+import { cn } from "@mtt/ui/utils";
 
 export type ArchiveFilesFrameProps = {
   meshId: string;
@@ -120,7 +121,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
                         <th className={headClass}>
                           {formatMessage({ id: "feature.archive.files.columns.updated", defaultMessage: "Last written" })}
                         </th>
-                        <th className={`${headClass} text-right`}>
+                        <th className={cn(headClass, "text-right")}>
                           {formatMessage({ id: "feature.archive.files.columns.export", defaultMessage: "Export" })}
                         </th>
                       </tr>

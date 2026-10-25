@@ -52,7 +52,7 @@ export function OperatorRequestsPage(): ReactElement {
             <Link
               to={routes.operatorRequest}
               params={{ requestId: info.row.original.id }}
-              className="rounded-full text-text-primary outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              className="rounded-full text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
               {info.getValue()}
             </Link>

@@ -67,11 +67,11 @@ export function PostprocessingItem({
           <Link
             to={routes.blueprint}
             params={{ blueprintId: postprocessing.blueprint_id }}
-            className="min-w-0 break-words rounded-full text-body-medium text-text-primary outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="min-w-0 rounded-full text-body-medium break-words text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {postprocessing.blueprint_name}
           </Link>
-          <span className="tabular-nums text-caption-1-regular text-text-tertiary">v{postprocessing.blueprint_version}</span>
+          <span className="text-caption-1-regular text-text-tertiary tabular-nums">v{postprocessing.blueprint_version}</span>
           <PostprocessingStateChip postprocessing={postprocessing} />
         </div>
         {canEdit ? (
@@ -121,7 +121,7 @@ export function PostprocessingItem({
             {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Outputs" })}
           </dt>
           {postprocessing.outputs.map((output) => (
-            <dd key={output.measurement_id} className="min-w-0 break-words font-mono text-text-primary">
+            <dd key={output.measurement_id} className="min-w-0 font-mono break-words text-text-primary">
               {output.channel}
               {output.unit ? <span className="text-text-tertiary"> ({output.unit})</span> : null}
             </dd>

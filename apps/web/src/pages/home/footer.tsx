@@ -5,7 +5,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 
 const linkClass =
-  "rounded-full text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+  "rounded-full text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 export function LandingFooter(): ReactElement {
   const { formatMessage } = useIntl();
@@ -16,7 +16,7 @@ export function LandingFooter(): ReactElement {
           <a
             href={SITE}
             aria-label="Sensical"
-            className="w-fit rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="w-fit rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             <BrandMark className="h-3.5" />
           </a>
@@ -29,7 +29,7 @@ export function LandingFooter(): ReactElement {
         </div>
         <nav aria-label="Landing" className="flex flex-wrap gap-x-10 gap-y-6">
           <div className="flex flex-col gap-2">
-            <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">
+            <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">
               {formatMessage({ id: "page.home.footer.product", defaultMessage: "Product" })}
             </p>
             <a href="/#why" className={linkClass}>
@@ -55,7 +55,7 @@ export function LandingFooter(): ReactElement {
             </Link>
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">Sensical</p>
+            <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">Sensical</p>
             <a href={SITE} className={linkClass}>
               {formatMessage({ id: "page.home.footer.website", defaultMessage: "Website" })}
             </a>

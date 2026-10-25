@@ -52,7 +52,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-caption-1-regular whitespace-nowrap text-text-secondary outline-none transition-[color,background-color,box-shadow] duration-150 ease-out",
+        "relative inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-caption-1-regular whitespace-nowrap text-text-secondary outline-hidden transition-[color,background-color,box-shadow] duration-150 ease-out",
         "hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring",
         "disabled:pointer-events-none disabled:opacity-50",
         "group-data-[variant=default]/tabs-list:data-active:bg-background-primary-default group-data-[variant=default]/tabs-list:data-active:text-text-primary group-data-[variant=default]/tabs-list:data-active:shadow-card",

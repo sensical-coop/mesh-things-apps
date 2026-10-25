@@ -9,9 +9,10 @@ import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { useTheme } from "@/hooks/use-theme";
+import { cn } from "@mtt/ui/utils";
 
 const navLinkClass =
-  "rounded-full text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+  "rounded-full text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 export function LandingHeader(): ReactElement {
   const { formatMessage } = useIntl();
@@ -26,14 +27,14 @@ export function LandingHeader(): ReactElement {
   }, []);
 
   return (
-    <header data-scrolled={scrolled} className="landing-header-morph group sticky top-0 z-50 h-16 w-full px-4 sm:h-20 sm:px-6">
+    <header data-scrolled={scrolled} className="landing-header-morph group sticky top-0 z-sticky h-16 w-full px-4 sm:h-20 sm:px-6">
       <div className="landing-header-pill relative mx-auto flex h-14 w-full max-w-full items-center justify-between px-0 sm:h-16 sm:max-w-4xl sm:px-4">
         <span aria-hidden className="glass-noise absolute inset-0 rounded-full" />
         <div className="relative z-10 flex items-center gap-7">
           <Link
             to={routes.home}
             aria-label="Sensical"
-            className="shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             <BrandMark />
           </Link>
@@ -50,7 +51,7 @@ export function LandingHeader(): ReactElement {
           </nav>
         </div>
         <div className="relative z-10 flex items-center gap-2">
-          <Link to={routes.docs} className={`${navLinkClass} px-2 py-2`}>
+          <Link to={routes.docs} className={cn(navLinkClass, "px-2 py-2")}>
             {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
           </Link>
           <LanguageSwitcher />

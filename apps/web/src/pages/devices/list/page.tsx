@@ -203,7 +203,7 @@ export function DevicesPage(): ReactElement {
           <Link
             to={routes.device}
             params={{ deviceUuid: info.row.original.uuid }}
-            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="rounded-full outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {info.getValue()}
           </Link>
@@ -251,7 +251,7 @@ export function DevicesPage(): ReactElement {
         cell: (info) => {
           const seen = info.getValue();
           return (
-            <span className="whitespace-nowrap tabular-nums text-text-secondary" title={seen ? formatWhen(seen) : undefined}>
+            <span className="whitespace-nowrap text-text-secondary tabular-nums" title={seen ? formatWhen(seen) : undefined}>
               {seen ? (toRelative(seen) ?? formatWhen(seen)) : formatLastSeen(null)}
             </span>
           );

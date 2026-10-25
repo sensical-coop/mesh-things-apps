@@ -28,8 +28,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Stylelint
+        run: pnpm lint:css
+
       - name: Lint
-        run: pnpm lint
+        run: pnpm lint:classes
 
       - name: Typecheck
         run: pnpm typecheck

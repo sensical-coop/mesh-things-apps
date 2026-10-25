@@ -5,74 +5,68 @@
 
 :root {
   --ink: #1b1c1f;
-
   --oa-stage: #f6f6f6;
+
   /* sensical.es CTAs: rgb(255, 73, 95). Mixes use a darker coral, not OA's indigo. */
   --oa-primary: #ff495f;
   --oa-primary-deep: #b81f38;
   --oa-ring: #ff495f;
   --oa-secondary: #e9e9e9;
   --oa-muted-foreground: #6d6d6d;
-
   --color-text-primary: var(--ink);
   --color-text-secondary: var(--oa-muted-foreground);
-  --color-text-tertiary: color-mix(in srgb, var(--ink) 40%, transparent);
-  --color-text-placeholder: color-mix(in srgb, var(--ink) 40%, transparent);
+  --color-text-tertiary: color-mix(in oklch, var(--ink) 40%, transparent);
+  --color-text-placeholder: color-mix(in oklch, var(--ink) 40%, transparent);
   --color-foreground-icon-primary: var(--ink);
   --color-foreground-icon-secondary: var(--oa-muted-foreground);
-
-  --color-background-full: #ffffff;
-  --color-background-primary-default: #ffffff;
-  --color-background-inner-default: #ffffff;
-  --color-background-primary-hover: color-mix(in srgb, var(--ink) 5%, transparent);
-  --color-background-primary-active: color-mix(in srgb, var(--ink) 10%, transparent);
+  --color-background-full: #fff;
+  --color-background-primary-default: #fff;
+  --color-background-inner-default: #fff;
+  --color-background-primary-hover: color-mix(in oklch, var(--ink) 5%, transparent);
+  --color-background-primary-active: color-mix(in oklch, var(--ink) 10%, transparent);
   --color-background-secondary-default: var(--oa-stage);
-  --color-background-secondary-hover: color-mix(in srgb, var(--ink) 5%, var(--oa-stage));
-  --color-background-tertiary-default: color-mix(in srgb, var(--ink) 10%, transparent);
-
-  --color-separator-border: color-mix(in srgb, var(--ink) 12%, transparent);
-  --color-separator-border-strong: color-mix(in srgb, var(--ink) 14%, transparent);
-  --color-border-button-default: color-mix(in srgb, var(--ink) 12%, transparent);
-  --color-border-button-hover: color-mix(in srgb, var(--ink) 16%, transparent);
+  --color-background-secondary-hover: color-mix(in oklch, var(--ink) 5%, var(--oa-stage));
+  --color-background-tertiary-default: color-mix(in oklch, var(--ink) 10%, transparent);
+  --color-separator-border: color-mix(in oklch, var(--ink) 12%, transparent);
+  --color-separator-border-strong: color-mix(in oklch, var(--ink) 14%, transparent);
+  --color-border-button-default: color-mix(in oklch, var(--ink) 12%, transparent);
+  --color-border-button-hover: color-mix(in oklch, var(--ink) 16%, transparent);
   --color-border-focus-ring: var(--oa-ring);
-  --color-border-table: color-mix(in srgb, var(--ink) 12%, transparent);
-
+  --color-border-table: color-mix(in oklch, var(--ink) 12%, transparent);
   --color-accent-500: var(--oa-primary);
-  --color-accent-600: color-mix(in srgb, var(--oa-primary) 80%, var(--oa-primary-deep));
-  --color-accent-400: color-mix(in srgb, var(--oa-primary) 80%, #ffffff);
+  --color-accent-600: color-mix(in oklch, var(--oa-primary) 80%, var(--oa-primary-deep));
+  --color-accent-400: color-mix(in oklch, var(--oa-primary) 80%, var(--color-background-full));
+
   /* Accent status chip: the coral as a tint, like the other status pairs. */
-  --color-status-accent-background: color-mix(in srgb, var(--oa-primary) 16%, transparent);
+  --color-status-accent-background: color-mix(in oklch, var(--oa-primary) 16%, transparent);
   --color-status-accent-text: var(--color-accent-600);
   --color-button-ghost-foreground: var(--oa-primary);
-  --color-button-ghost-background: color-mix(in srgb, var(--oa-primary) 8%, transparent);
-  --color-button-ghost-hover: color-mix(in srgb, var(--oa-primary) 12%, transparent);
-  --color-button-ghost-active: color-mix(in srgb, var(--oa-primary) 16%, transparent);
-  --color-button-ghost-disabled: color-mix(in srgb, var(--oa-primary) 6%, transparent);
-  --color-button-ghost-disabled-foreground: color-mix(in srgb, var(--oa-primary) 40%, transparent);
-  --color-dropdown-item-hover-background: color-mix(in srgb, var(--ink) 5%, transparent);
+  --color-button-ghost-background: color-mix(in oklch, var(--oa-primary) 8%, transparent);
+  --color-button-ghost-hover: color-mix(in oklch, var(--oa-primary) 12%, transparent);
+  --color-button-ghost-active: color-mix(in oklch, var(--oa-primary) 16%, transparent);
+  --color-button-ghost-disabled: color-mix(in oklch, var(--oa-primary) 6%, transparent);
+  --color-button-ghost-disabled-foreground: color-mix(in oklch, var(--oa-primary) 40%, transparent);
+  --color-dropdown-item-hover-background: color-mix(in oklch, var(--ink) 5%, transparent);
   --color-chart-1: var(--oa-primary);
   --color-chart-1-active: var(--oa-primary-deep);
-
-  --color-badge-neutral-background: color-mix(in srgb, var(--ink) 5%, transparent);
-  --color-segmented-control-background: color-mix(in srgb, var(--ink) 5%, transparent);
-  --color-segmented-control-selected-background: #ffffff;
-
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-dropdown: 0 1px 2px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-sidebar: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-floating: 0 1px 2px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.08);
-
+  --color-badge-neutral-background: color-mix(in oklch, var(--ink) 5%, transparent);
+  --color-segmented-control-background: color-mix(in oklch, var(--ink) 5%, transparent);
+  --color-segmented-control-selected-background: #fff;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-dropdown: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 24px rgb(0 0 0 / 8%);
+  --shadow-sidebar: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-resting: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-floating: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 24px rgb(0 0 0 / 8%);
   --gradient-button-primary-default: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--oa-primary) 90%, var(--oa-primary-deep)) 0%,
+    color-mix(in oklch, var(--oa-primary) 90%, var(--oa-primary-deep)) 0%,
     var(--oa-primary) 100%
   );
   --gradient-button-primary-hover: linear-gradient(180deg, var(--oa-primary) 0%, var(--oa-primary) 100%);
   --gradient-button-primary-active: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--oa-primary) 80%, var(--oa-primary-deep)) 0%,
-    color-mix(in srgb, var(--oa-primary) 80%, var(--oa-primary-deep)) 100%
+    color-mix(in oklch, var(--oa-primary) 80%, var(--oa-primary-deep)) 0%,
+    color-mix(in oklch, var(--oa-primary) 80%, var(--oa-primary-deep)) 100%
   );
 }
 
@@ -83,34 +77,30 @@
   --oa-primary-deep: #ff495f;
   --oa-secondary: #2e2e2e;
   --oa-muted-foreground: #969696;
-
   --color-text-primary: var(--ink);
   --color-text-secondary: var(--oa-muted-foreground);
-  --color-text-tertiary: color-mix(in srgb, var(--ink) 42%, transparent);
+  --color-text-tertiary: color-mix(in oklch, var(--ink) 42%, transparent);
   --color-foreground-icon-primary: var(--ink);
   --color-foreground-icon-secondary: var(--oa-muted-foreground);
-
   --color-background-full: #191919;
   --color-background-primary-default: #212121;
   --color-background-inner-default: #212121;
-  --color-background-primary-hover: color-mix(in srgb, var(--ink) 5%, transparent);
+  --color-background-primary-hover: color-mix(in oklch, var(--ink) 5%, transparent);
   --color-background-secondary-default: #191919;
-  --color-background-secondary-hover: color-mix(in srgb, var(--ink) 7%, #191919);
+  --color-background-secondary-hover: color-mix(in oklch, var(--ink) 7%, var(--oa-stage));
   --color-background-tertiary-default: #2e2e2e;
-
-  --color-separator-border: color-mix(in srgb, var(--ink) 14%, transparent);
-  --color-separator-border-strong: color-mix(in srgb, var(--ink) 16%, transparent);
-  --color-border-button-default: color-mix(in srgb, var(--ink) 14%, transparent);
+  --color-separator-border: color-mix(in oklch, var(--ink) 14%, transparent);
+  --color-separator-border-strong: color-mix(in oklch, var(--ink) 16%, transparent);
+  --color-border-button-default: color-mix(in oklch, var(--ink) 14%, transparent);
   --color-border-focus-ring: var(--oa-ring);
   --color-accent-500: var(--oa-primary);
-  --color-status-accent-background: color-mix(in srgb, var(--oa-primary) 22%, transparent);
+  --color-status-accent-background: color-mix(in oklch, var(--oa-primary) 22%, transparent);
   --color-status-accent-text: var(--oa-primary);
   --color-chart-1: var(--oa-primary);
   --color-button-ghost-foreground: var(--oa-primary);
-  --color-button-ghost-background: color-mix(in srgb, var(--oa-primary) 12%, transparent);
-  --color-button-ghost-hover: color-mix(in srgb, var(--oa-primary) 18%, transparent);
-  --color-button-ghost-active: color-mix(in srgb, var(--oa-primary) 24%, transparent);
-
+  --color-button-ghost-background: color-mix(in oklch, var(--oa-primary) 12%, transparent);
+  --color-button-ghost-hover: color-mix(in oklch, var(--oa-primary) 18%, transparent);
+  --color-button-ghost-active: color-mix(in oklch, var(--oa-primary) 24%, transparent);
   --color-segmented-control-background: #2e2e2e;
   --color-segmented-control-selected-background: #212121;
 }
@@ -121,11 +111,11 @@
   --color-oa-primary: var(--oa-primary);
   --color-oa-ring: var(--oa-ring);
   --color-primary: var(--oa-primary);
-  --color-primary-foreground: #ffffff;
+  --color-primary-foreground: #fff;
   --color-secondary: var(--oa-secondary);
   --color-secondary-foreground: var(--ink);
   --color-ring: var(--oa-ring);
-  --color-card: #ffffff;
+  --color-card: #fff;
   --color-muted-foreground: var(--oa-muted-foreground);
   --shadow-resting: var(--shadow-resting);
   --shadow-floating: var(--shadow-floating);
@@ -144,7 +134,7 @@
   }
 
   body {
-    background: #ffffff;
+    background: #fff;
     color: var(--color-text-primary);
   }
 
@@ -169,7 +159,7 @@
   corner-shape: squircle;
 }
 
-@media (min-width: 640px) {
+@media (width >= 40rem) {
   .oa-squircle {
     border-radius: 24px;
   }
@@ -206,9 +196,9 @@
   border-radius: 4px;
   background-image: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--ink) 15%, transparent) 0%,
-    color-mix(in srgb, var(--ink) 8%, transparent) 50%,
-    color-mix(in srgb, var(--ink) 15%, transparent) 100%
+    color-mix(in oklch, var(--ink) 15%, transparent) 0%,
+    color-mix(in oklch, var(--ink) 8%, transparent) 50%,
+    color-mix(in oklch, var(--ink) 15%, transparent) 100%
   );
   background-size: 200% 100%;
   animation: oa-skeleton 2s linear infinite;
@@ -246,18 +236,34 @@
   }
 }
 
+@keyframes oa-dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes oa-dialog-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .oa-arrive {
-    animation: none;
+    animation-name: none;
   }
 
   .oa-skeleton-bar {
-    animation: none;
+    animation-name: none;
   }
 
-  [data-slot="dialog-overlay"],
-  [data-slot="dialog-content"] {
-    animation: none !important;
+  /* Opacity stays. Scale and translate live only on oa-dialog-in / oa-dialog-out. */
+  [data-slot="dialog-content"][data-open] {
+    animation-name: oa-dialog-fade-in;
+  }
+
+  [data-slot="dialog-content"][data-closed] {
+    animation-name: oa-dialog-fade-out;
   }
 }
 
@@ -297,6 +303,6 @@
 @media (prefers-reduced-motion: reduce) {
   [data-sonner-toast][data-type="success"],
   [data-sonner-toast][data-type="error"] {
-    animation: none;
+    animation-name: none;
   }
 }

@@ -1,6 +1,10 @@
+/* vendor sits between base and components so MapLibre loses to our overrides. */
+@layer theme, base, vendor, components, utilities;
+
 @import "tailwindcss";
 @import "./pages/docs/styles.css";
 @import "@mtt/ui/boardui.css";
+@import "@mtt/ui/maplibre.css";
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource/geist-mono/400.css";
 @import "@fontsource/geist-mono/500.css";
@@ -14,7 +18,7 @@
   --color-foreground: var(--color-text-primary);
   --color-background: var(--color-background-primary-default);
   --color-primary: var(--oa-primary);
-  --color-primary-foreground: #ffffff;
+  --color-primary-foreground: var(--color-text-white);
   --color-muted: var(--color-background-secondary-default);
   --color-muted-foreground: var(--color-text-secondary);
   --color-border: var(--color-separator-border);
@@ -32,12 +36,15 @@
   .text-foreground {
     color: var(--color-text-primary);
   }
+
   .text-muted-foreground {
     color: var(--color-text-secondary);
   }
+
   .text-border {
     color: var(--color-separator-border);
   }
+
   .text-background {
     color: var(--color-background-primary-default);
   }
@@ -47,111 +54,79 @@
   * {
     @apply border-separator-border outline-border-focus-ring/50;
   }
+
   html {
     @apply overflow-x-clip font-sans antialiased;
+
     font-synthesis: none;
   }
+
   body {
     @apply m-0 min-h-svh bg-background-full text-text-primary;
   }
+}
+
+@layer components {
   .maplibregl-popup-content {
-    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+    @apply rounded-none bg-transparent p-0 shadow-none;
   }
+
   .maplibregl-popup-tip {
-    @apply hidden!;
+    @apply hidden;
   }
+
   .maplibregl-ctrl-attrib {
     @apply rounded-md border border-separator-border bg-background-primary-default text-text-secondary shadow-card;
   }
+
   .maplibregl-ctrl-attrib a {
     @apply text-text-secondary;
   }
-  .maplibregl-ctrl-attrib a:hover {
-    @apply text-text-primary;
-  }
+
   .maplibregl-ctrl-attrib-button {
-    @apply bg-transparent! dark:invert;
+    @apply bg-transparent;
   }
+}
+
+@media (hover: hover) {
+  .maplibregl-ctrl-attrib a:hover {
+    color: var(--color-text-primary);
+  }
+}
+
+/* The attribution icon is a dark glyph. Invert it when the surface is dark. Not a color token. */
+.dark .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+:root {
+  --landing-plate-background: var(--color-background-secondary-default);
+}
+
+.dark {
+  --landing-plate-background: var(--color-background-primary-default);
 }
 
 .oa-reveal {
   opacity: 0;
-  translate: 0 14px;
-  transition:
-    opacity 0.7s ease-out,
-    translate 0.7s ease-out;
-  transition-delay: var(--reveal-delay, 0s);
+  transition: opacity var(--duration-reveal) var(--ease-reveal) var(--reveal-delay, 0s);
 }
-.oa-reveal.is-inview {
+
+.oa-reveal[data-inview] {
   opacity: 1;
-  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .oa-reveal {
+    translate: 0 14px;
+    transition-property: opacity, translate;
+  }
+
+  .oa-reveal[data-inview] {
+    translate: 0 0;
+  }
 }
 
 .landing-plate {
-  background-color: var(--color-background-secondary-default);
-}
-.dark .landing-plate {
-  background-color: var(--color-background-primary-default);
-}
-
-.glass-noise {
-  pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.9'/></svg>");
-  background-size: 160px 160px;
-  opacity: 0;
-  mix-blend-mode: overlay;
-  transition: opacity 700ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.landing-header-pill {
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  transition:
-    max-width 700ms cubic-bezier(0.32, 0.72, 0, 1),
-    height 700ms cubic-bezier(0.32, 0.72, 0, 1),
-    margin 700ms cubic-bezier(0.32, 0.72, 0, 1),
-    padding 700ms cubic-bezier(0.32, 0.72, 0, 1),
-    background-color 700ms cubic-bezier(0.32, 0.72, 0, 1),
-    border-color 700ms cubic-bezier(0.32, 0.72, 0, 1),
-    box-shadow 700ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.landing-header-morph[data-scrolled="true"] .glass-noise {
-  opacity: 0.2;
-}
-
-.landing-header-morph[data-scrolled="true"] .landing-header-pill {
-  margin-top: 0.75rem;
-  height: 2.75rem;
-  max-width: calc(100% - 1.5rem);
-  padding-inline: 0.5rem;
-  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
-  background: rgb(255 255 255 / 0.4);
-  backdrop-filter: blur(28px) saturate(1.5);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.55),
-    inset 0 -1px 0 rgb(255 255 255 / 0.08),
-    0 1px 1px rgb(0 0 0 / 0.03),
-    0 8px 24px rgb(0 0 0 / 0.05);
-}
-
-.dark .landing-header-morph[data-scrolled="true"] .landing-header-pill {
-  border-color: color-mix(in srgb, var(--ink) 18%, transparent);
-  background: rgb(255 255 255 / 0.08);
-}
-
-@media (min-width: 640px) {
-  .landing-header-morph[data-scrolled="true"] .landing-header-pill {
-    height: 3rem;
-    max-width: 42rem;
-    padding-inline: 0.625rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .oa-reveal {
-    opacity: 1;
-    translate: 0 0;
-    transition: none;
-  }
+  background-color: var(--landing-plate-background);
 }

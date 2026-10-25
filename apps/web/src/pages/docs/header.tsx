@@ -11,7 +11,7 @@ export function DocumentationHeader() {
   const { formatMessage } = useIntl();
 
   return (
-    <header id="nd-subnav" className="sticky top-0 z-30 flex h-14 items-center gap-2 bg-background-secondary-default px-3 [grid-area:header] md:hidden">
+    <header id="nd-subnav" className="sticky top-0 z-sticky flex h-14 items-center gap-2 bg-background-secondary-default px-3 [grid-area:header] md:hidden">
       <slots.navTitle className="me-auto inline-flex items-center gap-2" />
       <DocumentationActions />
       {slots.searchTrigger && <slots.searchTrigger.sm hideIfDisabled className="p-2" />}

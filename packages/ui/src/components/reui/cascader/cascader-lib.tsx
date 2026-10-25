@@ -28,12 +28,12 @@ export const CASCADER_MORE_PREFIX = "\u0000more:"
 
 /**
  * The bound. `min()` over an undefined custom property is an INVALID
- * declaration that drops the whole max-height, hence the `100vh` fallback: an
+ * declaration that drops the whole max-height, hence the `100svh` fallback: an
  * inline panel has no positioner, so no `--available-height`. `24rem` is the
  * default cap, so the common case sets no variable at all.
  */
 export const CASCADER_LIST_HEIGHT_CLASS =
-  "max-h-[min(var(--available-height,100vh),var(--cascader-max-height,24rem))]"
+  "max-h-[min(var(--available-height,100svh),var(--cascader-max-height,24rem))]"
 
 /**
  * Each style's list padding: rows take it as `padding`, the scrollport as

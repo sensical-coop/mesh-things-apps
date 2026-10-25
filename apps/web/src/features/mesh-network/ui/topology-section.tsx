@@ -341,7 +341,7 @@ function RelaysFrame({
                         ··{relay.relay.toString(16).padStart(2, "0")}
                       </span>
                     </span>
-                    <span className="shrink-0 tabular-nums text-text-secondary">
+                    <span className="shrink-0 text-text-secondary tabular-nums">
                       {formatMessage(
                         { id: "page.meshes.detail.network.relays.count", defaultMessage: "{count} receptions" },
                         { count: formatNumber(relay.receptions) },
@@ -424,7 +424,7 @@ function TraceroutePanel({
   return (
     <div className="flex flex-col gap-3">
       {route && route.shown < route.total ? (
-        <p className="text-pretty text-caption-1-regular text-text-tertiary">
+        <p className="text-caption-1-regular text-pretty text-text-tertiary">
           {formatMessage(
             {
               id: "page.meshes.detail.network.traceroutes.partialRoute",
@@ -477,7 +477,7 @@ function TracerouteList({
               aria-pressed={selected === t.id}
               onClick={() => onSelect(t.id)}
               className={cx(
-                "flex w-full flex-col gap-0.5 rounded-lg border-s-2 border-transparent px-3 py-2 text-left outline-none",
+                "flex w-full flex-col gap-0.5 rounded-lg border-s-2 border-transparent px-3 py-2 text-left outline-hidden",
                 "hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                 // Cyan, like the selected route on the map.
                 selected === t.id && "border-cyan-500 bg-background-secondary-default",
@@ -487,7 +487,7 @@ function TracerouteList({
                 <span className="min-w-0 truncate text-text-primary">
                   {nodeName(t.origin)} → {nodeName(t.target)}
                 </span>
-                <span className="shrink-0 tabular-nums text-text-secondary">{formatWhen(t.heard_at)}</span>
+                <span className="shrink-0 text-text-secondary tabular-nums">{formatWhen(t.heard_at)}</span>
               </span>
               <span className="text-caption-1-regular text-text-tertiary">
                 {[

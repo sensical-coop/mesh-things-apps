@@ -6,12 +6,22 @@
     "dev": "[ -f .env ] && . ./.env; if [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ]; then turbo run dev --filter=web; else turbo run dev --filter=web --filter=api-mock; fi",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
+    "lint": "pnpm lint:css && pnpm lint:classes",
     "test": "turbo run test",
     "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts",
-    "shadcn": "pnpm dlx shadcn@latest --cwd apps/web"
+    "shadcn": "pnpm dlx shadcn@latest --cwd apps/web",
+    "lint:css": "stylelint \"apps/**/*.css\" \"packages/**/*.css\"",
+    "lint:classes": "eslint \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\"",
+    "prepare": "node scripts/install-git-hooks.mjs"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^8.72.0",
+    "browserslist": "^4.29.4",
+    "eslint": "^10.13.0",
+    "eslint-plugin-better-tailwindcss": "^4.10.0",
+    "stylelint": "^17.16.0",
+    "stylelint-config-standard": "^40.0.0",
+    "tailwindcss": "^4.1.13",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3"
   },
@@ -20,6 +30,11 @@
   },
   "packageManager": "pnpm@10.6.1",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
-  }
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "browserslist": [
+    "baseline widely available"
+  ]
 }

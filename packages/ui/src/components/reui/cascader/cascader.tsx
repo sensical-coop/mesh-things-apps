@@ -2408,7 +2408,7 @@ function CascaderChips({
         (nodes.length === 0 ? (
           <span
             data-slot="cascader-chips-placeholder"
-            className="text-muted-foreground truncate"
+            className="truncate text-muted-foreground"
           >
             {placeholder}
           </span>
@@ -2626,7 +2626,7 @@ function CascaderContent({
         {...(collisionPadding !== undefined ? { collisionPadding } : null)}
         {...(sticky !== undefined ? { sticky } : null)}
         {...(positionMethod !== undefined ? { positionMethod } : null)}
-        className="isolate z-50"
+        className="isolate z-dropdown"
       >
         <ComboboxPrimitive.Popup
           ref={setPopup}
@@ -2838,7 +2838,7 @@ function CascaderEmpty({
           /* A real button because this lives OUTSIDE the listbox; a focusable
              element inside a `role="option"` is `nested-interactive`. */
           onClick={() => retryLevel(levelKey)}
-          className="text-foreground hover:bg-accent focus-visible:ring-ring/50 rounded-md px-2 py-0.5 font-medium outline-hidden transition-colors focus-visible:ring-2"
+          className="hover:bg-accent rounded-md px-2 py-0.5 font-medium text-foreground outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           {labels.retry}
         </button>
