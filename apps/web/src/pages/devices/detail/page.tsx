@@ -224,7 +224,7 @@ export function DeviceDetailPage(): ReactElement {
                 </p>
               ) : null}
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h1 className="min-w-0 text-balance break-words text-title-2-medium tracking-tight text-text-primary">
+                <h1 className="min-w-0 text-title-2-medium tracking-tight text-balance break-words text-text-primary">
                   {device.data
                     ? deviceTitle(device.data)
                     : formatMessage({ id: "page.devices.detail.fallbackTitle", defaultMessage: "Device" })}
@@ -504,16 +504,16 @@ function DeviceStatusTab({
                       <tbody>
                         {quality.data.channels.map((row) => (
                           <tr key={row.channel}>
-                            <td className="pe-2 py-1.5 text-text-primary">
+                            <td className="py-1.5 pe-2 text-text-primary">
                               {names.get(row.channel)?.display_name ?? row.channel}
                             </td>
-                            <td className="px-2 py-1.5 tabular-nums text-text-primary">
+                            <td className="px-2 py-1.5 text-text-primary tabular-nums">
                               {formatRatio(row.completeness_ratio)}
                             </td>
-                            <td className="px-2 py-1.5 tabular-nums text-text-secondary">
+                            <td className="px-2 py-1.5 text-text-secondary tabular-nums">
                               {row.observed ?? "—"} / {row.expected ?? "—"}
                             </td>
-                            <td className="ps-2 py-1.5 tabular-nums text-text-secondary">
+                            <td className="py-1.5 ps-2 text-text-secondary tabular-nums">
                               {formatGapShort(row.largest_gap_seconds, formatMessage)}
                             </td>
                           </tr>
@@ -632,13 +632,13 @@ function TelemetryVariantSection({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h3 className="flex min-w-0 items-center gap-2 break-words text-body-medium text-text-primary">
+          <h3 className="flex min-w-0 items-center gap-2 text-body-medium break-words text-text-primary">
             {tv
               ? (tv.name ?? tv.payload_kind)
               : formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" })}
           </h3>
           {variant && tv ? (
-            <span className="min-w-0 break-words text-caption-1-regular text-text-secondary">
+            <span className="min-w-0 text-caption-1-regular break-words text-text-secondary">
               {formatMessage(
                 { id: "page.devices.detail.variants.last", defaultMessage: "last {when}" },
                 { when: formatWhen(variant.last_seen) },
@@ -662,7 +662,7 @@ function TelemetryVariantSection({
                   : ""}
             </span>
           ) : (
-            <span className="min-w-0 break-words text-caption-1-regular text-text-secondary">
+            <span className="min-w-0 text-caption-1-regular break-words text-text-secondary">
               {formatMessage({
                 id: "page.devices.detail.variants.computedMeta",
                 defaultMessage: "derived by the blueprints attached below",
@@ -684,7 +684,7 @@ function TelemetryVariantSection({
           >
             <thead>
               <tr>
-                <th className="h-8 w-72 break-words px-3.5 text-left align-middle text-caption-1-medium text-text-secondary">
+                <th className="h-8 w-72 px-3.5 text-left align-middle text-caption-1-medium break-words text-text-secondary">
                   {formatMessage({
                     id: "page.devices.detail.variants.columns.measurement",
                     defaultMessage: "Measurement",
@@ -725,7 +725,7 @@ function TelemetryVariantSection({
                 const channel = row.measurement_type.channel;
                 return (
                   <tr key={row.id} className="text-text-primary hover:bg-background-primary-hover">
-                    <td className="h-8 w-72 break-words px-3.5 py-0 align-middle">
+                    <td className="h-8 w-72 px-3.5 py-0 align-middle break-words">
                       <span className="flex min-w-0 items-center gap-2">
                         {row.measurement_type.display_name ?? channelShortName(channel)}
                         {isDerivedMeasurement(row.measurement_type) ? <ComputedFlag /> : null}
@@ -739,17 +739,17 @@ function TelemetryVariantSection({
                         ? `${row.valid_min ?? "—"} … ${row.valid_max ?? "—"}`
                         : "—"}
                     </td>
-                    <td className="h-8 break-words px-3.5 py-0 align-middle text-text-secondary">
+                    <td className="h-8 px-3.5 py-0 align-middle break-words text-text-secondary">
                       {formatLastSeen(row.last_seen)}
                     </td>
-                    <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-left">
+                    <td className="h-8 px-3.5 py-0 text-left align-middle whitespace-nowrap">
                       <a
                         href={`#${chartAnchorId(channel)}`}
                         onClick={(event) => {
                           event.preventDefault();
                           onViewChart(channel);
                         }}
-                        className="rounded-full text-caption-1-medium text-accent-500 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                        className="rounded-full text-caption-1-medium text-accent-500 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                       >
                         {formatMessage({
                           id: "page.devices.detail.variants.viewChart",
@@ -758,7 +758,7 @@ function TelemetryVariantSection({
                       </a>
                     </td>
                     {canEdit ? (
-                      <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
+                      <td className="h-8 px-3.5 py-0 text-right align-middle whitespace-nowrap">
                         {device ? (
                           <AlarmBellButton
                             deviceUuid={device.uuid}
@@ -769,7 +769,7 @@ function TelemetryVariantSection({
                       </td>
                     ) : null}
                     {canArchive ? (
-                      <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
+                      <td className="h-8 px-3.5 py-0 text-right align-middle whitespace-nowrap">
                         {device ? <ArchiveButton device={device} /> : null}
                       </td>
                     ) : null}
@@ -889,7 +889,7 @@ function DeviceDashboardTab({
           <div className="oa-arrive flex flex-col gap-5">
             {latestGroups.map((group) => (
               <div key={group.key} className="flex flex-col gap-2">
-                <h3 className="min-w-0 break-words text-body-medium text-text-primary">{group.title}</h3>
+                <h3 className="min-w-0 text-body-medium break-words text-text-primary">{group.title}</h3>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label={group.title}>
                   {group.readings.map((reading) => {
                     const type = names.get(reading.channel);
@@ -956,7 +956,7 @@ function DeviceDashboardTab({
           <div className="oa-arrive flex flex-col gap-6">
             {chartChannelGroups.map((group) => (
               <div key={group.key} className="flex flex-col gap-2">
-                <h3 className="min-w-0 break-words text-body-medium text-text-primary">{group.title}</h3>
+                <h3 className="min-w-0 text-body-medium break-words text-text-primary">{group.title}</h3>
                 <div className="grid items-start gap-3 sm:grid-cols-2">
                   {group.channels.map((channel) => {
                     const index = chartChannels.indexOf(channel);
@@ -1119,7 +1119,7 @@ function Item({ label, value }: { label: string; value: ReactElement | string })
   return (
     <div className="flex flex-col gap-1">
       <dt className="text-caption-1-medium text-text-secondary">{label}</dt>
-      <dd className="min-w-0 break-words text-body-medium text-text-primary">{value}</dd>
+      <dd className="min-w-0 text-body-medium break-words text-text-primary">{value}</dd>
     </div>
   );
 }

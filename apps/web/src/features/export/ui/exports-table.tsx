@@ -7,6 +7,7 @@ import { useFormatters } from "@/hooks/use-formatters";
 import { formatBytes } from "@/features/archive/model";
 import { isActive, progressOf } from "@/features/export/model";
 import { ExportStatusChip } from "@/features/export/ui/export-status-chip";
+import { cn } from "@mtt/ui/utils";
 
 export type ExportsTableProps = {
   rows: readonly Export[];
@@ -61,7 +62,7 @@ export function ExportsTable({
             <th className={headClass}>
               {formatMessage({ id: "feature.export.table.available", defaultMessage: "Available until" })}
             </th>
-            <th className={`${headClass} text-right`}>
+            <th className={cn(headClass, "text-right")}>
               <span className="sr-only">{formatMessage({ id: "feature.export.table.actions", defaultMessage: "Actions" })}</span>
             </th>
           </tr>
@@ -70,10 +71,10 @@ export function ExportsTable({
           {rows.map((row) => (
             <tr key={row.id} className="border-t border-separator-border text-text-primary">
               {meshTitles ? <td className={cellClass}>{meshTitles.get(row.mesh_id) ?? dash}</td> : null}
-              <td className={`${cellClass} max-w-[16rem] truncate`} title={devicesLabel(row)}>
+              <td className={cn(cellClass, "max-w-[16rem] truncate")} title={devicesLabel(row)}>
                 {devicesLabel(row)}
               </td>
-              <td className={`${cellClass} whitespace-nowrap tabular-nums`}>{daysLabel(row)}</td>
+              <td className={cn(cellClass, "whitespace-nowrap tabular-nums")}>{daysLabel(row)}</td>
               <td className={cellClass}>
                 <div className="flex min-w-[9rem] flex-col items-start gap-1">
                   <ExportStatusChip status={row.status} />
@@ -97,13 +98,13 @@ export function ExportsTable({
                   ) : null}
                 </div>
               </td>
-              <td className={`${cellClass} tabular-nums text-text-secondary`}>
+              <td className={cn(cellClass, "text-text-secondary tabular-nums")}>
                 {row.size != null ? formatBytes(row.size, locale) : dash}
               </td>
-              <td className={`${cellClass} whitespace-nowrap tabular-nums text-text-secondary`}>
+              <td className={cn(cellClass, "whitespace-nowrap text-text-secondary tabular-nums")}>
                 {row.status === "ready" ? formatWhen(row.expires_at) : dash}
               </td>
-              <td className={`${cellClass} text-right`}>
+              <td className={cn(cellClass, "text-right")}>
                 <div className="flex justify-end gap-1.5">
                   {row.status === "ready" && row.url ? (
                     <ButtonLink href={row.url} size="xs" leadingIcon={RiDownloadLine}>

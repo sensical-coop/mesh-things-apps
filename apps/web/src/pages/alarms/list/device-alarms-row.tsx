@@ -43,7 +43,7 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
         <div className="flex min-w-0 items-center gap-2">
           <button
             type="button"
-            className="inline-flex min-w-0 items-center gap-1.5 rounded-full text-start text-body-medium text-text-primary outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="inline-flex min-w-0 items-center gap-1.5 rounded-full text-start text-body-medium text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             aria-expanded={expanded}
             aria-controls={channelsId}
             onClick={onToggle}
@@ -85,14 +85,14 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
           ) : null}
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
-              <h4 className="min-w-0 break-words text-caption-1-medium text-text-secondary">
+              <h4 className="min-w-0 text-caption-1-medium break-words text-text-secondary">
                 {group.title ?? formatMessage({ id: "page.alarms.list.otherVariant", defaultMessage: "Other" })}
               </h4>
               <div className="oa-arrive overflow-x-auto">
                 <table className="w-full min-w-[32rem] table-fixed caption-bottom text-left text-body-2-regular">
                   <thead>
                     <tr>
-                      <th className="h-8 w-72 break-words px-3.5 text-left align-middle text-caption-1-medium text-text-secondary">
+                      <th className="h-8 w-72 px-3.5 text-left align-middle text-caption-1-medium break-words text-text-secondary">
                         {formatMessage({ id: "page.alarms.list.columns.measurement", defaultMessage: "Measurement" })}
                       </th>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
@@ -106,13 +106,13 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
                   <tbody>
                     {group.channels.map((channel) => (
                       <tr key={channel.key} className="text-text-primary hover:bg-background-primary-hover">
-                        <td className="h-8 w-72 break-words px-3.5 py-0 align-middle">{channel.label}</td>
+                        <td className="h-8 w-72 px-3.5 py-0 align-middle break-words">{channel.label}</td>
                         <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
                           {channel.detectors.length
                             ? channel.detectors.join(", ")
                             : formatMessage({ id: "page.alarms.list.none", defaultMessage: "None" })}
                         </td>
-                        <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-right">
+                        <td className="h-8 px-3.5 py-0 text-right align-middle whitespace-nowrap">
                           <AlarmBellButton deviceUuid={device.uuid} channel={channel.channel} label={channel.label} />
                         </td>
                       </tr>

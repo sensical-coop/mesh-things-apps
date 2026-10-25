@@ -18,12 +18,12 @@ const socials = [
 ] as const;
 
 const footerLinkClass =
-  "rounded-full text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+  "rounded-full text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 function FooterColumn({ title, children }: { title: string; children: ReactNode }): ReactElement {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">{title}</p>
+      <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">{title}</p>
       {children}
     </div>
   );
@@ -43,7 +43,7 @@ export function Footer(): ReactElement {
           <a
             href={SITE}
             aria-label="Sensical"
-            className="w-fit rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="w-fit rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             <BrandMark className="h-3.5" />
           </a>

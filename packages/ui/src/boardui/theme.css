@@ -12,15 +12,15 @@
 
 @theme {
   /* ----- Color primitives ----------------------------------------------------
-   * Almost the entire palette matches Tailwind v4's OKLCH defaults. The four
+   * Almost the entire palette matches Tailwind v4's OKLCH defaults. The
    * overrides below are the only intentional deviations (see Figma → variables
    * → color/...).
-   * --------------------------------------------------------------------------*/
-  --color-slate-200:   #ebeff5;
-  --color-neutral-100: #f7f7f7;
-  --color-neutral-200: #ebebeb;
-  --color-neutral-925: #121212;
-  --color-blue-400:    #3392ff;
+   * -------------------------------------------------------------------------- */
+  --color-slate-200:   oklch(95.1% 0.009 258.336deg); /* #ebeff5 */
+  --color-neutral-100: oklch(97.6% 0 0deg); /* #f7f7f7 */
+  --color-neutral-200: oklch(94% 0 0deg); /* #ebebeb */
+  --color-neutral-925: oklch(18.2% 0 0deg); /* #121212 */
+  --color-blue-400:    oklch(66% 0.184 254.753deg); /* #3392ff */
 
   /* ----- Accent ramp ---------------------------------------------------------
    * The CTA hue. Interactive/selection surfaces (primary button gradient,
@@ -31,7 +31,7 @@
    * a customer project after importing this file. Defaults to the blue
    * primitives above. Content/data blues (charts, status chips, calendar
    * events, info notifications) deliberately keep referencing blue-*.
-   * --------------------------------------------------------------------------*/
+   * -------------------------------------------------------------------------- */
   --color-accent-50:  var(--color-blue-50);
   --color-accent-100: var(--color-blue-100);
   --color-accent-200: var(--color-blue-200);
@@ -47,7 +47,7 @@
   /* ----- Typography ----------------------------------------------------------
    * Font sizes, weights, line-heights, and tracking live in typography.css.
    * Family: Inter Tight, loaded by each app and exposed as --font-inter.
-   * --------------------------------------------------------------------------*/
+   * -------------------------------------------------------------------------- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif,
                "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
                "Noto Color Emoji";
@@ -56,13 +56,13 @@
   /* Monospace ramp for code blocks. Loaded via next/font in app/layout.tsx
    * (--font-mono-source → JetBrains Mono). Figma's spec uses IBM Plex Mono;
    * JetBrains Mono is the closest already-bundled face. */
-  --font-mono: var(--font-mono-source), ui-monospace, "SFMono-Regular", Menlo,
-               Consolas, "Liberation Mono", monospace;
+  --font-mono: var(--font-mono-source), ui-monospace, "SFMono-Regular", menlo,
+               consolas, "Liberation Mono", monospace;
 
   /* ----- Radii ---------------------------------------------------------------
    * Extra step between lg (8) and xl (12). Used by medium-size buttons.
    * Figma name: radius/2lg.
-   * --------------------------------------------------------------------------*/
+   * -------------------------------------------------------------------------- */
   --radius-2lg: 10px;
   --radius-notification-card: 10px;
 
@@ -70,11 +70,11 @@
    * 2xs, xs, 2xl and the inner shadows already match Tailwind v4. Sizes sm, md,
    * lg, xl follow the Figma 6%/10% recipe (slightly softer than Tailwind v4's
    * 10%/10% default).
-   * --------------------------------------------------------------------------*/
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 1px 3px 0 rgb(0 0 0 / 0.10);
-  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.06), 0 4px 6px -1px rgb(0 0 0 / 0.10);
-  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 0.05), 0 10px 15px -3px rgb(0 0 0 / 0.10);
-  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 0.04), 0 20px 25px -5px rgb(0 0 0 / 0.10);
+   * -------------------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 6%), 0 1px 3px 0 rgb(0 0 0 / 10%);
+  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 6%), 0 4px 6px -1px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 5%), 0 10px 15px -3px rgb(0 0 0 / 10%);
+  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 4%), 0 20px 25px -5px rgb(0 0 0 / 10%);
 
   /* Figma effect style "Background/Sidebar Elevation" — copied 1:1:
    *   DROP_SHADOW #00000005 offset(0,1) radius 0  spread 0  → 0 1px 0px  0 / 0.0196
@@ -82,9 +82,9 @@
    *   DROP_SHADOW #00000052 offset(0,0) radius 1  spread 0  → 0 0   1px  0 / 0.3216
    * (alpha = hex byte / 255: 05→0.0196, 0F→0.0588, 52→0.3216). */
   --shadow-sidebar:
-    0 1px 0 0 rgb(0 0 0 / 0.0196),
-    0 1px 12px 0 rgb(0 0 0 / 0.0588),
-    0 0 1px 0 rgb(0 0 0 / 0.3216);
+    0 1px 0 0 rgb(0 0 0 / 1.96%),
+    0 1px 12px 0 rgb(0 0 0 / 5.88%),
+    0 0 1px 0 rgb(0 0 0 / 32.2%);
 
   /* Figma effect style "Sidebar selected" — copied 1:1:
    *   DROP_SHADOW  color/blue/500 offset(0,0) radius 0 spread 1 → 0 0 0 1px blue-500
@@ -92,41 +92,52 @@
    * (#FFFFFF40 alpha = 0x40/255 = 0.251). */
   --shadow-nav-selected:
     0 0 0 1px var(--color-accent-500),
-    inset 0 1px 0 0 rgb(255 255 255 / 0.251);
+    inset 0 1px 0 0 rgb(255 255 255 / 25.1%);
 
   /* Checkbox checked/indeterminate surface (from the Figma Checkbox component):
    * inner top highlight + 1px inner blue edge over the primary gradient. */
   --shadow-checkbox-selected:
-    inset 0 2px 0 0 rgb(255 255 255 / 0.25),
+    inset 0 2px 0 0 rgb(255 255 255 / 25%),
     inset 0 0 0 1px var(--color-accent-500);
 
   /* 1px contact shadow used on white cards/dropdown triggers sitting on the
    * secondary background (Figma drop shadow 0 1 1 5%). */
-  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 0.05);
+  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 5%);
 
   /* Floating menu/dropdown panel (Figma → sidebar profile menu node 3823:3699):
    *   DROP_SHADOW #0000000A offset(0,1) radius 1 → 0 1px 1px 0 / 0.04
    *   DROP_SHADOW #00000005 offset(0,4) radius 4 → 0 4px 4px 0 / 0.02 */
   --shadow-dropdown:
-    0 1px 1px 0 rgb(0 0 0 / 0.04),
-    0 4px 4px 0 rgb(0 0 0 / 0.02);
+    0 1px 1px 0 rgb(0 0 0 / 4%),
+    0 4px 4px 0 rgb(0 0 0 / 2%);
 
   /* Floating template waitlist (Figma node 4117:32737). This extends the
    * sidebar elevation recipe with the two broad ambient layers used by the
    * signup surface. */
   --shadow-waitlist:
-    0 0 6px 0 rgb(0 0 0 / 0.06),
-    0 0 64px 0 rgb(0 0 0 / 0.16),
-    0 0 1px 0 rgb(0 0 0 / 0.32),
-    0 1px 12px 0 rgb(0 0 0 / 0.06),
-    0 1px 0 0 rgb(0 0 0 / 0.02);
+    0 0 6px 0 rgb(0 0 0 / 6%),
+    0 0 64px 0 rgb(0 0 0 / 16%),
+    0 0 1px 0 rgb(0 0 0 / 32%),
+    0 1px 12px 0 rgb(0 0 0 / 6%),
+    0 1px 0 0 rgb(0 0 0 / 2%);
 
   /* Inner shadows (Figma names inner-shadow/*; Tailwind utility prefix is
    * inset-shadow-*).
    */
-  --inset-shadow-2xs: inset 0 1px 0 0 rgb(0 0 0 / 0.05);
-  --inset-shadow-xs:  inset 0 1px 1px 0 rgb(0 0 0 / 0.05);
-  --inset-shadow-sm:  inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --inset-shadow-2xs: inset 0 1px 0 0 rgb(0 0 0 / 5%);
+  --inset-shadow-xs:  inset 0 1px 1px 0 rgb(0 0 0 / 5%);
+  --inset-shadow-sm:  inset 0 2px 4px 0 rgb(0 0 0 / 5%);
+
+  /* Overlay scale. Dropdown is above modal so a portaled menu can open on a dialog.
+     Sticky page chrome stays under both. Toast covers a drag preview. */
+  --z-index-sticky: 30;
+  --z-index-overlay: 40;
+  --z-index-modal: 50;
+  --z-index-dropdown: 60;
+  --z-index-toast: 80;
+  --duration-reveal: 0.7s;
+  --ease-reveal: ease-out;
+  --ease-morph: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ---------------------------------------------------------------------------
@@ -198,6 +209,7 @@
   --color-background-tertiary-error:    var(--color-red-100);
   --color-background-recent-hire-role:  var(--color-neutral-100);
   --color-avatar-neutral-background:    var(--color-neutral-300);
+
   /* Figma background/quaternary/default — first used by the Storage
    * dropzone's upload-icon disc (node 4106:26587). */
   --color-background-quaternary-default: var(--color-neutral-300);
@@ -212,6 +224,7 @@
   --color-border-button-hover:     var(--color-neutral-300);
   --color-border-button-active:    var(--color-neutral-400);
   --color-border-button-white:     var(--color-white);
+
   /* The system had no red border. Matches text/error/primary so an invalid
      field's edge and its message are the same red. */
   --color-border-error-default:    var(--color-red-500);
@@ -237,6 +250,7 @@
   --color-control-indicator-background-subtle: var(--color-neutral-100);
   --color-switch-off-chip-start:                var(--color-white);
   --color-switch-off-chip-end:                  var(--color-neutral-100);
+
   /* Selected switch chip: the Figma comps use hexes a touch deeper than the
    * plain 500→600 ramp (#2473fe → #0450e2 for blue). Expressed as oklab mixes
    * of neighbouring accent stops so the recipe survives a re-tint. */
@@ -365,7 +379,6 @@
   --gradient-button-primary-hover:    linear-gradient(180deg, var(--color-accent-400)    0%, var(--color-accent-500)    100%);
   --gradient-button-primary-active:   linear-gradient(180deg, var(--color-accent-600)    0%, var(--color-accent-700)    100%);
   --gradient-button-primary-disabled: linear-gradient(180deg, var(--color-neutral-200) 0%, var(--color-neutral-300) 100%);
-
   --gradient-button-danger-default:   linear-gradient(180deg, var(--color-red-500) 0%, var(--color-red-600) 100%);
   --gradient-button-danger-hover:     linear-gradient(180deg, var(--color-red-400) 0%, var(--color-red-500) 100%);
   --gradient-button-danger-active:    linear-gradient(180deg, var(--color-red-600) 0%, var(--color-red-700) 100%);
@@ -392,26 +405,26 @@
   --color-text-tertiary: var(--color-neutral-600);
   --color-text-disabled: var(--color-neutral-800);
   --color-text-error-primary: var(--color-red-400);
-  --color-input-disabled-text: color-mix(in srgb, var(--color-neutral-500) 40%, transparent);
+  --color-input-disabled-text: color-mix(in oklch, var(--color-neutral-500) 40%, transparent);
 
   /* Background */
   --color-background-full:              var(--color-neutral-925);
   --color-background-primary-default:   var(--color-neutral-800);
-  --color-background-inner-default:     color-mix(in srgb, var(--color-neutral-800) 60%, transparent);
-  --color-background-primary-hover:     color-mix(in srgb, var(--color-neutral-700) 60%, transparent);
+  --color-background-inner-default:     color-mix(in oklch, var(--color-neutral-800) 60%, transparent);
+  --color-background-primary-hover:     color-mix(in oklch, var(--color-neutral-700) 60%, transparent);
   --color-background-primary-active:    var(--color-neutral-800);
   --color-background-primary-disabled:  var(--color-neutral-800);
-  --color-input-disabled-background:    color-mix(in srgb, var(--color-neutral-800) 30%, transparent);
+  --color-input-disabled-background:    color-mix(in oklch, var(--color-neutral-800) 30%, transparent);
   --color-switch-off-chip-start:        var(--color-background-tertiary-default);
   --color-switch-off-chip-end:          var(--color-background-tertiary-default);
   --color-background-secondary-default: var(--color-neutral-900);
   --color-background-secondary-hover:   var(--color-neutral-800);
   --color-background-tertiary-default:  var(--color-neutral-800);
   --color-background-tertiary-hover:    var(--color-neutral-700);
-  --color-background-tertiary-error:    color-mix(in srgb, var(--color-red-950) 60%, transparent);
+  --color-background-tertiary-error:    color-mix(in oklch, var(--color-red-950) 60%, transparent);
   --color-background-quaternary-default: var(--color-neutral-700);
   --color-background-quaternary-hover:   var(--color-neutral-600);
-  --color-background-recent-hire-role:  color-mix(in srgb, var(--color-neutral-900) 60%, transparent);
+  --color-background-recent-hire-role:  color-mix(in oklch, var(--color-neutral-900) 60%, transparent);
   --color-avatar-neutral-background:    var(--color-background-primary-default);
   --color-file-upload-icon-background:  var(--color-neutral-600);
   --color-file-upload-icon-foreground:  var(--color-neutral-400);
@@ -423,46 +436,46 @@
   --color-theme-toggle-sidebar-selected-background: var(--color-neutral-700);
   --color-ai-chat-composer-add-background:       var(--color-neutral-700);
   --color-ai-chat-composer-add-hover-background: var(--color-neutral-600);
-  --color-agent-progress-ring:                     color-mix(in srgb, var(--color-white) 50%, transparent);
+  --color-agent-progress-ring:                     color-mix(in oklch, var(--color-white) 50%, transparent);
   --color-button-ghost-background:                var(--color-accent-900);
   --color-button-ghost-hover:                     var(--color-accent-800);
   --color-button-ghost-active:                    var(--color-accent-700);
   --color-button-ghost-disabled:                  var(--color-neutral-800);
   --color-button-ghost-foreground:                var(--color-accent-300);
   --color-button-ghost-disabled-foreground:       var(--color-neutral-600);
-  --color-dropdown-item-hover-background:        color-mix(in srgb, var(--color-neutral-700) 60%, transparent);
+  --color-dropdown-item-hover-background:        color-mix(in oklch, var(--color-neutral-700) 60%, transparent);
   --color-kbd-background:                        var(--color-neutral-700);
   --color-kbd-foreground:                        var(--color-neutral-400);
-  --color-docs-file-chip-background:             color-mix(in srgb, var(--color-purple-950) 50%, transparent);
+  --color-docs-file-chip-background:             color-mix(in oklch, var(--color-purple-950) 50%, transparent);
   --color-docs-file-chip-border:                 var(--color-purple-800);
   --color-docs-file-chip-foreground:             var(--color-purple-400);
   --color-docs-code-background:                  var(--color-background-full);
-  --color-docs-install-rail:                     color-mix(in srgb, var(--color-neutral-800) 60%, transparent);
+  --color-docs-install-rail:                     color-mix(in oklch, var(--color-neutral-800) 60%, transparent);
 
   /* Dark surfaces absorb low-alpha shadows more readily than white ones.
    * Preserve the light-mode geometry and raise only the black alpha: tighter
    * contact shadows stay crisp, while higher elevations receive a restrained
    * ambient layer without introducing a grey glow. */
-  --shadow-2xs: 0 1px rgb(0 0 0 / 0.16);
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.18);
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.12), 0 1px 3px 0 rgb(0 0 0 / 0.16);
-  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.12), 0 4px 6px -1px rgb(0 0 0 / 0.18);
-  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 0.10), 0 10px 15px -3px rgb(0 0 0 / 0.18);
-  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 0.08), 0 20px 25px -5px rgb(0 0 0 / 0.20);
-  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 0.14);
+  --shadow-2xs: 0 1px rgb(0 0 0 / 16%);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 18%);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 12%), 0 1px 3px 0 rgb(0 0 0 / 16%);
+  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 12%), 0 4px 6px -1px rgb(0 0 0 / 18%);
+  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 10%), 0 10px 15px -3px rgb(0 0 0 / 18%);
+  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 8%), 0 20px 25px -5px rgb(0 0 0 / 20%);
+  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 14%);
   --shadow-dropdown:
-    0 1px 1px 0 rgb(0 0 0 / 0.14),
-    0 4px 4px 0 rgb(0 0 0 / 0.10);
+    0 1px 1px 0 rgb(0 0 0 / 14%),
+    0 4px 4px 0 rgb(0 0 0 / 10%);
   --shadow-sidebar:
-    0 1px 0 0 rgb(0 0 0 / 0.10),
-    0 1px 12px 0 rgb(0 0 0 / 0.16),
-    0 0 1px 0 rgb(0 0 0 / 0.42);
+    0 1px 0 0 rgb(0 0 0 / 10%),
+    0 1px 12px 0 rgb(0 0 0 / 16%),
+    0 0 1px 0 rgb(0 0 0 / 42%);
   --shadow-waitlist:
-    0 0 6px 0 rgb(0 0 0 / 0.12),
-    0 0 64px 0 rgb(0 0 0 / 0.22),
-    0 0 1px 0 rgb(0 0 0 / 0.42),
-    0 1px 12px 0 rgb(0 0 0 / 0.14),
-    0 1px 0 0 rgb(0 0 0 / 0.08);
+    0 0 6px 0 rgb(0 0 0 / 12%),
+    0 0 64px 0 rgb(0 0 0 / 22%),
+    0 0 1px 0 rgb(0 0 0 / 42%),
+    0 1px 12px 0 rgb(0 0 0 / 14%),
+    0 1px 0 0 rgb(0 0 0 / 8%);
 
   /* Badges */
   --color-badge-neutral-background: var(--color-neutral-800);
@@ -470,15 +483,15 @@
   --color-team-menu-count-foreground: var(--color-neutral-400);
   --color-badge-new-background: var(--color-accent-950);
   --color-badge-new-text:       var(--color-accent-400);
-  --color-tab-count-selected-background: color-mix(in srgb, var(--color-accent-800) 60%, transparent);
+  --color-tab-count-selected-background: color-mix(in oklch, var(--color-accent-800) 60%, transparent);
 
   /* Dark status discs use /800 surfaces with /300 foregrounds so the icon
    * remains crisp without reverting to a bright pastel circle. */
-  --color-notification-information-background: color-mix(in srgb, var(--color-blue-800) 50%, transparent);
+  --color-notification-information-background: color-mix(in oklch, var(--color-blue-800) 50%, transparent);
   --color-notification-information-foreground: var(--color-blue-300);
-  --color-notification-success-background:     color-mix(in srgb, var(--color-lime-800) 50%, transparent);
+  --color-notification-success-background:     color-mix(in oklch, var(--color-lime-800) 50%, transparent);
   --color-notification-success-foreground:     var(--color-lime-300);
-  --color-notification-error-background:       color-mix(in srgb, var(--color-rose-800) 50%, transparent);
+  --color-notification-error-background:       color-mix(in oklch, var(--color-rose-800) 50%, transparent);
   --color-notification-error-foreground:       var(--color-rose-300);
   --color-notification-center-background:      var(--color-neutral-900);
 
@@ -494,34 +507,32 @@
   --color-border-component-detail-container: var(--color-neutral-800);
   --color-border-ai-profile-card:             var(--color-neutral-800);
   --color-border-table:            var(--color-neutral-800);
-  --color-border-button-group:     color-mix(in srgb, var(--color-neutral-600) 60%, transparent);
+  --color-border-button-group:     color-mix(in oklch, var(--color-neutral-600) 60%, transparent);
   --color-border-sidebar-profile-hover: var(--color-neutral-600);
   --color-separator-border:        var(--color-neutral-800);
-  --color-separator-border-strong: color-mix(in srgb, var(--color-neutral-700) 60%, transparent);
+  --color-separator-border-strong: color-mix(in oklch, var(--color-neutral-700) 60%, transparent);
 
   /* Figma's dark table status pairs. */
-  --color-status-lime-background:   color-mix(in srgb, var(--color-lime-950) 60%, transparent);
+  --color-status-lime-background:   color-mix(in oklch, var(--color-lime-950) 60%, transparent);
   --color-status-lime-text:         var(--color-lime-500);
-  --color-status-orange-background: color-mix(in srgb, var(--color-orange-950) 60%, transparent);
+  --color-status-orange-background: color-mix(in oklch, var(--color-orange-950) 60%, transparent);
   --color-status-orange-text:       var(--color-orange-400);
-  --color-status-yellow-background: color-mix(in srgb, var(--color-yellow-950) 60%, transparent);
+  --color-status-yellow-background: color-mix(in oklch, var(--color-yellow-950) 60%, transparent);
   --color-status-yellow-text:       var(--color-yellow-500);
-  --color-status-rose-background:   color-mix(in srgb, var(--color-rose-950) 60%, transparent);
+  --color-status-rose-background:   color-mix(in oklch, var(--color-rose-950) 60%, transparent);
   --color-status-rose-text:         var(--color-rose-500);
-  --color-status-cyan-background:   color-mix(in srgb, var(--color-cyan-950) 60%, transparent);
+  --color-status-cyan-background:   color-mix(in oklch, var(--color-cyan-950) 60%, transparent);
   --color-status-cyan-text:         var(--color-cyan-400);
-  --color-status-blue-background:   color-mix(in srgb, var(--color-blue-950) 60%, transparent);
+  --color-status-blue-background:   color-mix(in oklch, var(--color-blue-950) 60%, transparent);
   --color-status-blue-text:         var(--color-blue-300);
-  --color-status-purple-background: color-mix(in srgb, var(--color-purple-900) 50%, transparent);
+  --color-status-purple-background: color-mix(in oklch, var(--color-purple-900) 50%, transparent);
   --color-status-purple-text:       var(--color-purple-300);
-  --color-status-dot-green-halo:    color-mix(in srgb, var(--color-green-800) 40%, transparent);
-  --color-status-dot-yellow-halo:   color-mix(in srgb, var(--color-yellow-800) 40%, transparent);
-  --color-status-dot-indigo-halo:   color-mix(in srgb, var(--color-indigo-800) 40%, transparent);
-
+  --color-status-dot-green-halo:    color-mix(in oklch, var(--color-green-800) 40%, transparent);
+  --color-status-dot-yellow-halo:   color-mix(in oklch, var(--color-yellow-800) 40%, transparent);
+  --color-status-dot-indigo-halo:   color-mix(in oklch, var(--color-indigo-800) 40%, transparent);
   --color-date-range-background:      var(--color-accent-950);
   --color-date-range-edge-background: var(--color-accent-800);
-
-  --color-pill-tab-blue-selected-background: color-mix(in srgb, var(--color-accent-950) 60%, transparent);
+  --color-pill-tab-blue-selected-background: color-mix(in oklch, var(--color-accent-950) 60%, transparent);
   --color-pill-tab-blue-hover-background: var(--color-neutral-800);
 
   /* Calendar event families share the same dark-mode depth/contrast recipe. */
@@ -565,7 +576,7 @@
  * /950 that glows too loudly against the dark sidebar; halve the NEW badge
  * fill there. Light mode keeps the solid /100 surface. */
 .dark[data-accent] {
-  --color-badge-new-background: color-mix(in srgb, var(--color-accent-950) 50%, transparent);
+  --color-badge-new-background: color-mix(in oklch, var(--color-accent-950) 50%, transparent);
 }
 
 /* Re-export semantic tokens as Tailwind utilities. The `inline` form means
@@ -585,7 +596,6 @@
   --color-input-disabled-foreground:  var(--color-input-disabled-foreground);
   --color-icon-button-disabled-foreground: var(--color-icon-button-disabled-foreground);
   --color-button-primary-disabled-foreground: var(--color-button-primary-disabled-foreground);
-
   --color-text-primary:         var(--color-text-primary);
   --color-text-secondary:       var(--color-text-secondary);
   --color-text-tertiary:        var(--color-text-tertiary);
@@ -595,7 +605,6 @@
   --color-text-error-primary:   var(--color-text-error-primary);
   --color-input-disabled-text:  var(--color-input-disabled-text);
   --color-text-white:           var(--color-text-white);
-
   --color-background-full:              var(--color-background-full);
   --color-background-primary-default:   var(--color-background-primary-default);
   --color-background-inner-default:     var(--color-background-inner-default);
@@ -616,7 +625,6 @@
   --color-file-upload-icon-background:   var(--color-file-upload-icon-background);
   --color-file-upload-icon-foreground:   var(--color-file-upload-icon-foreground);
   --color-file-upload-icon-foreground-hover: var(--color-file-upload-icon-foreground-hover);
-
   --color-border-button-default:   var(--color-border-button-default);
   --color-border-button-hover:     var(--color-border-button-hover);
   --color-border-button-active:    var(--color-border-button-active);
@@ -634,7 +642,6 @@
   --color-separator-border:        var(--color-separator-border);
   --color-separator-border-strong: var(--color-separator-border-strong);
   --color-border-focus-ring:       var(--color-border-focus-ring);
-
   --color-state-success-text: var(--color-state-success-text);
   --color-state-success-base: var(--color-state-success-base);
   --color-control-indicator-background:        var(--color-control-indicator-background);
@@ -717,9 +724,7 @@
   --color-calendar-event-emerald-background: var(--color-calendar-event-emerald-background);
   --color-calendar-event-emerald-title:      var(--color-calendar-event-emerald-title);
   --color-calendar-event-emerald-time:       var(--color-calendar-event-emerald-time);
-
   --color-text-error-placeholder: var(--color-text-error-placeholder);
-
   --color-chart-track:    var(--color-chart-track);
   --color-chart-cursor:   var(--color-chart-cursor);
   --color-chart-neutral:  var(--color-chart-neutral);
@@ -773,6 +778,11 @@
  * The transform uses a shorter duration on press and the slower duration only
  * when returning to rest, so hover styles never inherit the 700ms timing. */
 @utility button-press-motion {
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    transform: none;
+  }
+
   transition:
     background-color var(--button-transition-ms) ease,
     border-color var(--button-transition-ms) ease,
@@ -780,19 +790,14 @@
     color var(--button-transition-ms) ease,
     transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  &:active:not(:disabled):not([aria-disabled="true"]) {
-    transform: scale(0.98);
-    transition-duration: 150ms, 150ms, 150ms, 150ms, 220ms;
-  }
-
   &:disabled,
   &[aria-disabled="true"] {
     transform: none;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-    transform: none;
+  &:active:not(:disabled, [aria-disabled="true"]) {
+    transform: scale(0.98);
+    transition-duration: 150ms, 150ms, 150ms, 150ms, 220ms;
   }
 }
 
@@ -812,22 +817,27 @@
     opacity: 0;
     transition: opacity var(--button-transition-ms) ease;
   }
-  &:hover:not(:disabled):not([aria-disabled="true"])::before {
-    opacity: 1;
-  }
-  &:active:not(:disabled):not([aria-disabled="true"]) {
-    background-image: var(--gradient-button-primary-active);
-  }
-  &:active:not(:disabled):not([aria-disabled="true"])::before {
-    opacity: 0;
-  }
+
   &:disabled,
   &[aria-disabled="true"] {
     background-image: var(--gradient-button-primary-disabled);
   }
+
   &:disabled::before,
   &[aria-disabled="true"]::before {
     display: none;
+  }
+
+  &:hover:not(:disabled, [aria-disabled="true"])::before {
+    opacity: 1;
+  }
+
+  &:active:not(:disabled, [aria-disabled="true"]) {
+    background-image: var(--gradient-button-primary-active);
+  }
+
+  &:active:not(:disabled, [aria-disabled="true"])::before {
+    opacity: 0;
   }
 }
 
@@ -847,21 +857,26 @@
     opacity: 0;
     transition: opacity var(--button-transition-ms) ease;
   }
-  &:hover:not(:disabled):not([aria-disabled="true"])::before {
-    opacity: 1;
-  }
-  &:active:not(:disabled):not([aria-disabled="true"]) {
-    background-image: var(--gradient-button-danger-active);
-  }
-  &:active:not(:disabled):not([aria-disabled="true"])::before {
-    opacity: 0;
-  }
+
   &:disabled,
   &[aria-disabled="true"] {
     background-image: var(--gradient-button-danger-disabled);
   }
+
   &:disabled::before,
   &[aria-disabled="true"]::before {
     display: none;
+  }
+
+  &:hover:not(:disabled, [aria-disabled="true"])::before {
+    opacity: 1;
+  }
+
+  &:active:not(:disabled, [aria-disabled="true"]) {
+    background-image: var(--gradient-button-danger-active);
+  }
+
+  &:active:not(:disabled, [aria-disabled="true"])::before {
+    opacity: 0;
   }
 }

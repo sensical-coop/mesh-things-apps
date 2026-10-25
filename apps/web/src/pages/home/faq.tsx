@@ -43,7 +43,7 @@ export function LandingFaq(): ReactElement {
   return (
     <section id="faq" className="scroll-mt-24">
       <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
+        <h2 className="mx-auto max-w-2xl text-center text-title-1-medium tracking-tight text-balance text-text-primary sm:text-display-3-medium">
           <FormattedMessage
             id="page.home.faq.heading"
             defaultMessage="Frequently asked <secondary>questions</secondary>"
@@ -55,7 +55,7 @@ export function LandingFaq(): ReactElement {
         <div>
           {faqs.map((item) => (
             <details key={item.id} className="group border-b border-separator-border">
-              <summary className="flex min-h-[54px] cursor-pointer list-none items-center justify-between gap-4 px-1 text-left text-body-medium text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-[54px] cursor-pointer list-none items-center justify-between gap-4 px-1 text-left text-body-medium text-text-primary outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring [&::-webkit-details-marker]:hidden">
                 {formatMessage({ id: item.qId, defaultMessage: item.qDefault })}
                 <RiArrowDownSLine className="size-4 shrink-0 text-foreground-icon-tertiary transition-transform group-open:rotate-180" aria-hidden />
               </summary>

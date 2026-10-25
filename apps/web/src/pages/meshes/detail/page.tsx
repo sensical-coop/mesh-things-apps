@@ -214,7 +214,7 @@ export function MeshDetailPage(): ReactElement {
           <Link
             to={routes.device}
             params={{ deviceUuid: info.row.original.uuid }}
-            className="rounded-full outline-none hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="rounded-full outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {info.getValue()}
           </Link>
@@ -236,7 +236,7 @@ export function MeshDetailPage(): ReactElement {
       col.accessor(deviceLastSeen, {
         id: "last_seen",
         header: formatMessage({ id: "page.meshes.detail.devices.columns.lastSeen", defaultMessage: "Last seen" }),
-        cell: (info) => <span className="tabular-nums text-text-secondary">{formatLastSeen(info.getValue())}</span>,
+        cell: (info) => <span className="text-text-secondary tabular-nums">{formatLastSeen(info.getValue())}</span>,
       }),
       col.display({
         id: "actions",
@@ -271,7 +271,7 @@ export function MeshDetailPage(): ReactElement {
             </Link>
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
+            <h1 className="min-w-0 text-title-2-medium tracking-tight break-words text-text-primary">
               {mesh.data
                 ? meshTitle(mesh.data)
                 : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
@@ -679,7 +679,7 @@ function PskReveal({ value }: { value: string }): ReactElement {
   const [copied, setCopied] = useState(false);
   return (
     <div className="oa-arrive flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <code className="min-w-0 break-all font-mono text-body-2-regular text-text-primary">
+      <code className="min-w-0 font-mono text-body-2-regular break-all text-text-primary">
         {open ? value : "••••••••"}
       </code>
       <div className="flex shrink-0 gap-2">

@@ -18,7 +18,7 @@ import { RouterButtonLink } from "@/components/router-button-link";
 import { useTheme } from "@/hooks/use-theme";
 
 const headerLinkClass =
-  "rounded-full px-3 py-1 text-body-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+  "rounded-full px-3 py-1 text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 function NavLinks({
   onNavigate,
@@ -89,13 +89,13 @@ export function Header(): ReactElement {
   });
 
   return (
-    <header className="fixed inset-x-0 top-0 z-10 bg-background-full pt-[env(safe-area-inset-top)]">
+    <header className="fixed inset-x-0 top-0 z-sticky bg-background-full pt-[env(safe-area-inset-top)]">
       <div className={cx(pageWidth, "flex h-14 items-center justify-between gap-3")}>
         <div className="flex min-w-0 items-center gap-4">
           <Link
             to={routes.meshes}
             aria-label="Sensical"
-            className="shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             onClick={() => setMenuOpen(false)}
           >
             <BrandMark />

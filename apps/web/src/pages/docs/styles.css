@@ -63,7 +63,7 @@
   font-weight: 500;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .docs-portal #nd-page-panel {
     border-radius: 24px;
     corner-shape: squircle;
@@ -87,15 +87,16 @@
   --_text: var(--fg);
   --_text-sec: var(--muted);
   --_text-muted: var(--muted);
-  --_text-faint: color-mix(in srgb, var(--fg) 25%, var(--bg));
+  --_text-faint: color-mix(in oklch, var(--fg) 25%, var(--bg));
   --_line: var(--line);
   --_arrow: var(--accent);
   --_node-fill: var(--surface);
   --_node-stroke: var(--border);
   --_group-fill: var(--bg);
-  --_group-hdr: color-mix(in srgb, var(--fg) 5%, var(--bg));
-  --_inner-stroke: color-mix(in srgb, var(--fg) 12%, var(--bg));
-  --_key-badge: color-mix(in srgb, var(--fg) 10%, var(--bg));
+  --_group-hdr: color-mix(in oklch, var(--fg) 5%, var(--bg));
+  --_inner-stroke: color-mix(in oklch, var(--fg) 12%, var(--bg));
+  --_key-badge: color-mix(in oklch, var(--fg) 10%, var(--bg));
+
   display: block;
   height: auto;
   margin-inline: auto;
@@ -111,7 +112,7 @@
 }
 
 /* Phones scroll a wide diagram sideways instead of shrinking its text. */
-@media (min-width: 640px) {
+@media (width >= 40rem) {
   .docs-diagram svg {
     max-width: 100%;
   }

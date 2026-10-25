@@ -16,7 +16,7 @@ export type MeshOriginDialogProps = {
 };
 
 const optionClass =
-  "flex w-full items-center justify-between gap-3 rounded-2xl border border-separator-border px-4 py-3 text-start outline-none hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+  "flex w-full items-center justify-between gap-3 rounded-2xl border border-separator-border px-4 py-3 text-start outline-hidden hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 /**
  * Operators only, the first step of "Create mesh": where its traffic comes from.

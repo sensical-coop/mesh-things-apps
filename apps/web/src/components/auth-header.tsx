@@ -14,7 +14,7 @@ export function AuthHeader(): ReactElement {
         <Link
           to={routes.home}
           aria-label="Sensical"
-          className="shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          className="shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
         >
           <BrandMark />
         </Link>

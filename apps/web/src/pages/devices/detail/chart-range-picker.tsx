@@ -32,7 +32,7 @@ function RangeRow({
     <button
       type="button"
       className={cx(
-        "flex h-8 w-full items-center rounded-lg px-3 text-left text-body-regular text-text-primary outline-none",
+        "flex h-8 w-full items-center rounded-lg px-3 text-left text-body-regular text-text-primary outline-hidden",
         "hover:bg-background-primary-hover",
         "focus-visible:ring-2 focus-visible:ring-border-focus-ring",
         selected && "bg-background-secondary-default",

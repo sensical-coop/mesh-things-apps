@@ -11,21 +11,21 @@ import { cn } from "@mtt/ui/utils";
  * border-(--frame-panel-border-color). This means:
  *
  *   - variant="inverse" overrides those vars on Frame → all panels pick it up
- *   - <FramePanel className="bg-blue-50"> adds a direct utility on the element
+ *   - <FramePanel className="bg-background-secondary-default"> adds a direct utility on the element
  *     which wins over bg-(--frame-panel-bg) by Tailwind source order — no
  *     :not() or !important needed
  */
 const frameVariants = cva(
   [
-    "@container oa-squircle relative flex min-w-0 flex-col bg-background-primary-default gap-(--frame-gap) px-(--frame-px) py-(--frame-py) rounded-(--frame-radius)",
+    "oa-squircle @container relative flex min-w-0 flex-col gap-(--frame-gap) rounded-(--frame-radius) bg-background-primary-default px-(--frame-px) py-(--frame-py)",
     "(--radius-xl)] [--frame-radius:var(--radius-xl)]",
     "(--radius-none)] (--radius-2xl)] (--radius-lg)] (--radius-none)]",
-    "[--frame-gap:--spacing(0.75)] [--frame-px:--spacing(0.75)] [--frame-py:--spacing(0.75)] [--frame-panel-header-gap:0rem] [--frame-panel-footer-gap:--spacing(1)]",
-    "[--frame-panel-px-adjust:0px] [--frame-panel-py-adjust:0px] [--frame-panel-header-px-adjust:0px] [--frame-panel-header-py-adjust:0px] [--frame-panel-footer-px-adjust:0px] [--frame-panel-footer-py-adjust:0px]",
-    "[--frame-panel-px:calc(var(--frame-panel-px-base)_+_var(--frame-panel-px-adjust))] [--frame-panel-py:calc(var(--frame-panel-py-base)_+_var(--frame-panel-py-adjust))] [--frame-panel-header-px:calc(var(--frame-panel-header-px-base)_+_var(--frame-panel-header-px-adjust))] [--frame-panel-header-py:calc(var(--frame-panel-header-py-base)_+_var(--frame-panel-header-py-adjust))] [--frame-panel-footer-px:calc(var(--frame-panel-footer-px-base)_+_var(--frame-panel-footer-px-adjust))] [--frame-panel-footer-py:calc(var(--frame-panel-footer-py-base)_+_var(--frame-panel-footer-py-adjust))]",
+    "[--frame-gap:--spacing(0.75)] [--frame-panel-footer-gap:--spacing(1)] [--frame-panel-header-gap:0rem] [--frame-px:--spacing(0.75)] [--frame-py:--spacing(0.75)]",
+    "[--frame-panel-footer-px-adjust:0px] [--frame-panel-footer-py-adjust:0px] [--frame-panel-header-px-adjust:0px] [--frame-panel-header-py-adjust:0px] [--frame-panel-px-adjust:0px] [--frame-panel-py-adjust:0px]",
+    "[--frame-panel-footer-px:calc(var(--frame-panel-footer-px-base)_+_var(--frame-panel-footer-px-adjust))] [--frame-panel-footer-py:calc(var(--frame-panel-footer-py-base)_+_var(--frame-panel-footer-py-adjust))] [--frame-panel-header-px:calc(var(--frame-panel-header-px-base)_+_var(--frame-panel-header-px-adjust))] [--frame-panel-header-py:calc(var(--frame-panel-header-py-base)_+_var(--frame-panel-header-py-adjust))] [--frame-panel-px:calc(var(--frame-panel-px-base)_+_var(--frame-panel-px-adjust))] [--frame-panel-py:calc(var(--frame-panel-py-base)_+_var(--frame-panel-py-adjust))]",
     "(1)] (1)] (1.25)] (1.5)] (1.5)] (0.5)] (1)] (1)]",
     // Default panel token values — overridden per-variant below
-    "[--frame-panel-bg:var(--color-background-secondary-default)] [--frame-panel-border-color:var(--color-separator-border)] [--frame-border-color:var(--color-separator-border)]",
+    "[--frame-border-color:var(--color-separator-border)] [--frame-panel-bg:var(--color-background-secondary-default)] [--frame-panel-border-color:var(--color-separator-border)]",
     // Concentric inner radius: the panel corner nests smoothly inside the frame
     // corner instead of matching it. The panel sits inset from the frame's outer
     // edge by the frame's 1px border + --frame-px padding, so its radius is
@@ -40,7 +40,7 @@ const frameVariants = cva(
       variant: {
         default: "border border-[var(--frame-border-color)] bg-clip-padding",
         inverse:
-          "[--frame-panel-bg:color-mix(in_oklch,var(--color-background-secondary-default)_40%,transparent)] border border-[var(--frame-border-color)] bg-background-full bg-clip-padding",
+          "border border-[var(--frame-border-color)] bg-background-full bg-clip-padding [--frame-panel-bg:color-mix(in_oklch,var(--color-background-secondary-default)_40%,transparent)]",
         // No frame border, so the panel is inset by --frame-px padding only.
         ghost: "[--frame-panel-radius:calc(var(--frame-radius)_-_var(--frame-px))]",
       },
@@ -53,11 +53,11 @@ const frameVariants = cva(
       // content and footer stay left-aligned. `xs` holds at 0.5 (2px): it is
       // the practical floor, since anything lower stops reading as padding.
       spacing: {
-        xs: "[--frame-panel-px-base:--spacing(2)] [--frame-panel-py-base:--spacing(2)] [--frame-panel-header-px-base:--spacing(2)] [--frame-panel-header-py-base:--spacing(0.5)] [--frame-panel-footer-px-base:--spacing(2)] [--frame-panel-footer-py-base:--spacing(0.5)]",
-        sm: "[--frame-panel-px-base:--spacing(3)] [--frame-panel-py-base:--spacing(3.5)] [--frame-panel-header-px-base:--spacing(3)] [--frame-panel-header-py-base:--spacing(1.5)] [--frame-panel-footer-px-base:--spacing(3)] [--frame-panel-footer-py-base:--spacing(1.5)]",
+        xs: "[--frame-panel-footer-px-base:--spacing(2)] [--frame-panel-footer-py-base:--spacing(0.5)] [--frame-panel-header-px-base:--spacing(2)] [--frame-panel-header-py-base:--spacing(0.5)] [--frame-panel-px-base:--spacing(2)] [--frame-panel-py-base:--spacing(2)]",
+        sm: "[--frame-panel-footer-px-base:--spacing(3)] [--frame-panel-footer-py-base:--spacing(1.5)] [--frame-panel-header-px-base:--spacing(3)] [--frame-panel-header-py-base:--spacing(1.5)] [--frame-panel-px-base:--spacing(3)] [--frame-panel-py-base:--spacing(3.5)]",
         default:
-          "[--frame-panel-px-base:--spacing(4)] [--frame-panel-py-base:--spacing(4)] [--frame-panel-header-px-base:--spacing(4)] [--frame-panel-header-py-base:--spacing(2)] [--frame-panel-footer-px-base:--spacing(4)] [--frame-panel-footer-py-base:--spacing(2)]",
-        lg: "[--frame-panel-px-base:--spacing(5)] [--frame-panel-py-base:--spacing(5)] [--frame-panel-header-px-base:--spacing(5)] [--frame-panel-header-py-base:--spacing(2.5)] [--frame-panel-footer-px-base:--spacing(5)] [--frame-panel-footer-py-base:--spacing(2.5)]",
+          "[--frame-panel-footer-px-base:--spacing(4)] [--frame-panel-footer-py-base:--spacing(2)] [--frame-panel-header-px-base:--spacing(4)] [--frame-panel-header-py-base:--spacing(2)] [--frame-panel-px-base:--spacing(4)] [--frame-panel-py-base:--spacing(4)]",
+        lg: "[--frame-panel-footer-px-base:--spacing(5)] [--frame-panel-footer-py-base:--spacing(2.5)] [--frame-panel-header-px-base:--spacing(5)] [--frame-panel-header-py-base:--spacing(2.5)] [--frame-panel-px-base:--spacing(5)] [--frame-panel-py-base:--spacing(5)]",
       },
       stacked: {
         true: [
@@ -76,7 +76,7 @@ const frameVariants = cva(
         // Positional rules must stay as parent selectors — cannot be expressed via CSS vars.
         // Padding is 0 and panels are pulled flush to the frame edge (-mx-px), so
         // their corners align with the frame radius rather than nesting inside it.
-        true: "p-0 gap-0 border-[var(--frame-border-color)] [--frame-panel-radius:var(--frame-radius)] [&_[data-slot=frame-panel]]:-mx-px [&_[data-slot=frame-panel]]:before:hidden [&_[data-slot=frame-panel]:last-child]:-mb-px [&:not(:has([data-slot=frame-panel-header]))_[data-slot=frame-panel]:is(:first-child)]:-mt-px",
+        true: "gap-0 border-[var(--frame-border-color)] p-0 [--frame-panel-radius:var(--frame-radius)] [&_[data-slot=frame-panel]]:-mx-px [&_[data-slot=frame-panel]]:before:hidden [&_[data-slot=frame-panel]:last-child]:-mb-px [&:not(:has([data-slot=frame-panel-header]))_[data-slot=frame-panel]:is(:first-child)]:-mt-px",
         false: "",
       },
     },
@@ -167,7 +167,7 @@ function FrameDescription({
 }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("text-text-secondary text-body-regular break-words", className)}
+      className={cn("text-body-regular break-words text-text-secondary", className)}
       data-slot="frame-panel-description"
       {...props}
     />

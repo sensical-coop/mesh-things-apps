@@ -1,0 +1,2 @@
+/* Loaded in the vendor layer so app overrides win by order, not by !important. */
+@import "maplibre-gl/dist/maplibre-gl.css" layer(vendor);

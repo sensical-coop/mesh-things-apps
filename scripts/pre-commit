@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+css=$(printf '%s\n' "$files" | grep -E '\.css$' || true)
+tsx=$(printf '%s\n' "$files" | grep -E '\.(tsx|jsx)$' || true)
+if [ -n "$css" ]; then
+  printf '%s\n' "$css" | tr '\n' '\0' | xargs -0 pnpm exec stylelint
+fi
+if [ -n "$tsx" ]; then
+  printf '%s\n' "$tsx" | tr '\n' '\0' | xargs -0 pnpm exec eslint
+fi
