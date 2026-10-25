@@ -32,7 +32,12 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
-    ]
+    ],
+    "overrides": {
+      "zod@>=4.0.0 <4.6.6": "4.6.6",
+      "source-map-js@<1.2.2": "1.2.2",
+      "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2"
+    }
   },
   "browserslist": [
     "baseline widely available"
