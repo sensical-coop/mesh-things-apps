@@ -1,3 +1,4 @@
+import { zDetectorEnum } from "@mtt/contracts/zod";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -56,9 +57,10 @@ export function AlarmDetectorsDialog({
     event.preventDefault();
     if (!row) return;
     const form = new FormData(event.currentTarget);
-    const enabledDetectors = measurementDetectors
-      .map((d) => d.name)
-      .filter((name) => form.get(`detector-${name}`) === "on");
+    const enabledDetectors = measurementDetectors.flatMap((d) => {
+      const name = zDetectorEnum.safeParse(d.name);
+      return name.success && form.get(`detector-${d.name}`) === "on" ? [name.data] : [];
+    });
     const min = String(form.get("valid_min") ?? "").trim();
     const max = String(form.get("valid_max") ?? "").trim();
     if ((min === "") !== (max === "")) {

@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesLinksList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesTraceroutesList, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsDevicesTrafficRetrieve, readingsExportsList, readingsMeshesExportsCreate, readingsMeshesExportsList, readingsMeshesExportsRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, readingsMeshesNodesTrafficRetrieve, readingsMeshesStatsRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRestartCreate, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
-import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesLinksListData, MeshesLinksListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesTraceroutesListData, MeshesTraceroutesListResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsDevicesTrafficRetrieveData, ReadingsDevicesTrafficRetrieveResponse, ReadingsExportsListData, ReadingsExportsListResponse, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateResponse, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponse, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, ReadingsMeshesNodesTrafficRetrieveData, ReadingsMeshesNodesTrafficRetrieveResponse, ReadingsMeshesStatsRetrieveData, ReadingsMeshesStatsRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRestartCreateData, SourcesRestartCreateResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
+import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesLinksList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesTraceroutesList, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBackfillsClaimCreate, postprocessingBackfillsList, postprocessingBackfillsUpdate, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsDevicesTrafficRetrieve, readingsExportsList, readingsMeshesExportsCreate, readingsMeshesExportsList, readingsMeshesExportsRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, readingsMeshesNodesTrafficRetrieve, readingsMeshesStatsRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRestartCreate, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, statusEmailRetrieve, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
+import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesLinksListData, MeshesLinksListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesTraceroutesListData, MeshesTraceroutesListResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBackfillsClaimCreateData, PostprocessingBackfillsClaimCreateResponse, PostprocessingBackfillsListData, PostprocessingBackfillsListResponse, PostprocessingBackfillsUpdateData, PostprocessingBackfillsUpdateResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsDevicesTrafficRetrieveData, ReadingsDevicesTrafficRetrieveResponse, ReadingsExportsListData, ReadingsExportsListResponse, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateResponse, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponse, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, ReadingsMeshesNodesTrafficRetrieveData, ReadingsMeshesNodesTrafficRetrieveResponse, ReadingsMeshesStatsRetrieveData, ReadingsMeshesStatsRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRestartCreateData, SourcesRestartCreateResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, StatusEmailRetrieveData, StatusEmailRetrieveResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -87,10 +87,37 @@ export const dataDeletionsListOptions = (options?: Options<DataDeletionsListData
     queryKey: dataDeletionsListQueryKey(options)
 });
 
+export const detectorsListQueryKey = (options?: Options<DetectorsListData>) => createQueryKey('detectorsList', options);
+
+/**
+ * List the alarm detectors and what each one needs to trigger.
+ *
+ * - `scope`: where a detector is switched on: `measurement` ones go in a
+ * channel's `enabled_detectors`, `device` ones in the device's own
+ * `absence_detection_enabled`.
+ * - `requires` is the config that must also be set before the
+ * detector can trigger in the first place.
+ */
+export const detectorsListOptions = (options?: Options<DetectorsListData>) => queryOptions<DetectorsListResponse, DefaultError, DetectorsListResponse, ReturnType<typeof detectorsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await detectorsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: detectorsListQueryKey(options)
+});
+
 export const devicesListQueryKey = (options?: Options<DevicesListData>) => createQueryKey('devicesList', options);
 
 /**
- * List the caller's registered devices, or every device for a superuser.
+ * List the devices the caller may read, or every device for a superuser.
+ *
+ * Alongside devices on their own meshes, this includes those on public
+ * meshes. Rejected registrations are shown only to the mesh's owner.
  *
  * Args:
  * mesh_id: Restrict to devices on one mesh.
@@ -99,14 +126,9 @@ export const devicesListQueryKey = (options?: Options<DevicesListData>) => creat
  * when false.
  * has_postprocessing: Restrict to devices with a postprocessing
  * attached, or to those without one when false.
- * label: Restrict by device label.
  * telemetry_variant: Restrict by reported telemetry variants, as
  * `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
  * variant ids separated by `|`. Bare ids mean `has_any_of`.
- *
- * List filters use `operator:value` or `operator:v1|v2` (same wire as the
- * dashboard URL). Bare values (`true`, a uuid, a label) are treated as
- * `is:<value>`.
  */
 export const devicesListOptions = (options?: Options<DevicesListData>) => queryOptions<DevicesListResponse, DefaultError, DevicesListResponse, ReturnType<typeof devicesListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -166,6 +188,8 @@ export const devicesRetrieveQueryKey = (options: Options<DevicesRetrieveData>) =
 
 /**
  * Return one registered device.
+ *
+ * Rejected registrations are visible only to the mesh's owner.
  */
 export const devicesRetrieveOptions = (options: Options<DevicesRetrieveData>) => queryOptions<DevicesRetrieveResponse, DefaultError, DevicesRetrieveResponse, ReturnType<typeof devicesRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -185,13 +209,17 @@ export const devicesRetrieveOptions = (options: Options<DevicesRetrieveData>) =>
  *
  * Position and identity fields are filled in from what the device reports
  * until they are set here, after which the values given take precedence.
- * Disallowing a gateway stops its traffic being decoded.
+ * Disallowing a gateway stops its traffic being decoded. Turning a node into
+ * a gateway registers it with the decoder, which refuses a node number that
+ * another allowed gateway on the instance already uses.
  *
  * `archive_enabled` stores the device's readings in the Parquet archive from
  * then on. It is accepted only on a mesh owned by an operator and on
  * instances that run the archive. Turning it off stops storing new readings
- * and keeps those already stored. The setting is rolled back if the
- * pipeline cannot be told about it.
+ * and keeps those already stored.
+ *
+ * Nothing in the request is applied if the pipeline cannot be told about a
+ * change to `archive_enabled`, `is_allowed` or `is_gateway`.
  */
 export const devicesUpdateMutation = (options?: Partial<Options<DevicesUpdateData>>): UseMutationOptions<DevicesUpdateResponse, DefaultError, Options<DevicesUpdateData>> => {
     const mutationOptions: UseMutationOptions<DevicesUpdateResponse, DefaultError, Options<DevicesUpdateData>> = {
@@ -207,35 +235,14 @@ export const devicesUpdateMutation = (options?: Partial<Options<DevicesUpdateDat
     return mutationOptions;
 };
 
-export const detectorsListQueryKey = (options?: Options<DetectorsListData>) => createQueryKey('detectorsList', options);
-
-/**
- * List the catalog of alarm detector kinds.
- *
- * "measurement" scoped ones go in a channel's enabled_detectors, "device"
- * scoped ones (currently only absence) in the device's own
- * absence_detection_enabled.
- */
-export const detectorsListOptions = (options?: Options<DetectorsListData>) => queryOptions<DetectorsListResponse, DefaultError, DetectorsListResponse, ReturnType<typeof detectorsListQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await detectorsList({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: detectorsListQueryKey(options)
-});
-
 export const devicesMeasurementsListQueryKey = (options: Options<DevicesMeasurementsListData>) => createQueryKey('devicesMeasurementsList', options);
 
 /**
  * List the measurement channels this device produces, measured and computed alike.
  *
- * Entries appear on their own as telemetry arrives; only enabled_detectors
- * can be edited, on the per-channel detail route.
+ * Entries appear on their own as telemetry arrives. `enabled_detectors` is set by
+ * this device and may be null; `effective_detectors` is the result once
+ * the shared catalog default is applied.
  */
 export const devicesMeasurementsListOptions = (options: Options<DevicesMeasurementsListData>) => queryOptions<DevicesMeasurementsListResponse, DefaultError, DevicesMeasurementsListResponse, ReturnType<typeof devicesMeasurementsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -253,7 +260,7 @@ export const devicesMeasurementsListOptions = (options: Options<DevicesMeasureme
 export const devicesMeasurementsRetrieveQueryKey = (options: Options<DevicesMeasurementsRetrieveData>) => createQueryKey('devicesMeasurementsRetrieve', options);
 
 /**
- * Return one measurement channel for this device.
+ * Return one of this device's measurement channels.
  */
 export const devicesMeasurementsRetrieveOptions = (options: Options<DevicesMeasurementsRetrieveData>) => queryOptions<DevicesMeasurementsRetrieveResponse, DefaultError, DevicesMeasurementsRetrieveResponse, ReturnType<typeof devicesMeasurementsRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -269,10 +276,19 @@ export const devicesMeasurementsRetrieveOptions = (options: Options<DevicesMeasu
 });
 
 /**
- * Set which alarm detectors run for this device's channel.
+ * Choose which detectors alarm on this channel, and the range they
+ * check against, for this device.
  *
- * A null enabled_detectors inherits the telemetry variant's catalog
- * default; an explicit list (empty or not) overrides it for this device.
+ * Alarms are off until enabled. Sending `null` for enabled_detectors
+ * inherits whatever the shared catalog sets for the channel; sending an
+ * empty list silences it here regardless of that default. valid_min/
+ * valid_max have no catalog default: the range detector remains off
+ * until both are set here.
+ *
+ * Args:
+ * enabled_detectors: Detectors to run, or `null` to inherit.
+ * valid_min: Lower bound for the range detector. Must be provided together with valid_max.
+ * valid_max: Upper bound for the range detector. Must be provided together with valid_min.
  */
 export const devicesMeasurementsUpdateMutation = (options?: Partial<Options<DevicesMeasurementsUpdateData>>): UseMutationOptions<DevicesMeasurementsUpdateResponse, DefaultError, Options<DevicesMeasurementsUpdateData>> => {
     const mutationOptions: UseMutationOptions<DevicesMeasurementsUpdateResponse, DefaultError, Options<DevicesMeasurementsUpdateData>> = {
@@ -573,8 +589,9 @@ export const measurementsListQueryKey = (options?: Options<MeasurementsListData>
 /**
  * List the shared catalog of measurement types and their units.
  *
- * Sensor fields are named `telemetry:<variant>` and blueprint outputs
- * `derived:<blueprint>`.
+ * Sensor fields are named `telemetry:<variant>`. Blueprint outputs from
+ * every postprocessing share `computed:derived`, and data quality metrics
+ * use `computed:quality`.
  *
  * Args:
  * kind: Restrict to one namespace, one of `telemetry`, `device` or
@@ -670,11 +687,14 @@ export const meshesListQueryKey = (options?: Options<MeshesListData>) => createQ
 /**
  * List the meshes the caller may read, or every mesh for a superuser.
  *
- * Alongside their own, this includes public meshes. The pre-shared key is
- * included only for meshes the caller owns.
+ * Alongside their own, this includes public meshes. Without credentials,
+ * only public meshes are listed. The pre-shared key, the source and the
+ * terms status are included only for meshes the caller owns.
  *
- * List filters use `operator:value` or `operator:v1|v2` (same wire as the
- * dashboard URL). Bare values are treated as `is:<value>`.
+ * Args:
+ * owned: Restrict to meshes the caller owns. Defaults to false.
+ * source_id: Restrict to meshes bridged from one source. Matches
+ * only meshes the caller owns, or any mesh for a superuser.
  */
 export const meshesListOptions = (options?: Options<MeshesListData>) => queryOptions<MeshesListResponse, DefaultError, MeshesListResponse, ReturnType<typeof meshesListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -691,6 +711,23 @@ export const meshesListOptions = (options?: Options<MeshesListData>) => queryOpt
 
 /**
  * Create a mesh owned by the caller.
+ *
+ * A mesh on the default broker needs its mesh terms accepted, which are
+ * recorded with it. A mesh on a source is covered by the source's terms.
+ *
+ * Args:
+ * source_id: Source the mesh's traffic is bridged from, which must be
+ * one the caller created, or any source for a superuser. Leave
+ * unset for traffic on this instance's own broker.
+ * discover_gateways: Register gateways automatically once one of their
+ * packets decodes with this mesh's channel and pre-shared key.
+ * Defaults to `false`. Only an operator may switch it on for a mesh
+ * with a default or blank key.
+ * terms_version: The `version` of the mesh terms accepted. Required
+ * without a source, ignored with one, and ignored on an instance
+ * that does not enforce terms.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const meshesCreateMutation = (options?: Partial<Options<MeshesCreateData>>): UseMutationOptions<MeshesCreateResponse, DefaultError, Options<MeshesCreateData>> => {
     const mutationOptions: UseMutationOptions<MeshesCreateResponse, DefaultError, Options<MeshesCreateData>> = {
@@ -705,33 +742,6 @@ export const meshesCreateMutation = (options?: Partial<Options<MeshesCreateData>
     };
     return mutationOptions;
 };
-
-export const meshesTermsRetrieveQueryKey = (options?: Options<MeshesTermsRetrieveData>) => createQueryKey('meshesTermsRetrieve', options);
-
-/**
- * Return the terms an owner accepts to create a mesh on the default broker.
- *
- * Every statement must be accepted. Send the returned `version` back as
- * `terms_version` when creating the mesh, or when moving a mesh from a
- * source onto the default broker. The footnote states how long the mesh's
- * data is kept.
- *
- * Args:
- * locale: `en` or `es`. Defaults to `en`, which is also used for any
- * other value.
- */
-export const meshesTermsRetrieveOptions = (options?: Options<MeshesTermsRetrieveData>) => queryOptions<MeshesTermsRetrieveResponse, DefaultError, MeshesTermsRetrieveResponse, ReturnType<typeof meshesTermsRetrieveQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await meshesTermsRetrieve({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: meshesTermsRetrieveQueryKey(options)
-});
 
 /**
  * Delete a mesh and every device registered on it.
@@ -758,6 +768,9 @@ export const meshesRetrieveQueryKey = (options: Options<MeshesRetrieveData>) => 
 
 /**
  * Return one mesh.
+ *
+ * A public mesh is readable without credentials. The pre-shared key, the
+ * source and the terms status are included only for the mesh's owner.
  */
 export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => queryOptions<MeshesRetrieveResponse, DefaultError, MeshesRetrieveResponse, ReturnType<typeof meshesRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -795,7 +808,8 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
  * a default or blank key.
  * terms_version: The `version` of the mesh terms accepted. Required when
  * moving the mesh onto the default broker unless it already holds a
- * current acceptance; ignored otherwise.
+ * current acceptance, or the instance does not enforce terms;
+ * ignored otherwise.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
@@ -813,40 +827,13 @@ export const meshesUpdateMutation = (options?: Partial<Options<MeshesUpdateData>
     return mutationOptions;
 };
 
-/**
- * Accept the current mesh terms again, renewing the mesh. Its owner only.
- *
- * With a retention period configured, an acceptance lapses after that
- * period and the mesh is paused: its gateways are deregistered and its
- * readings are scheduled for deletion. Renewing resumes it and cancels the
- * deletion, as long as the grace period has not ended. A mesh on a source
- * is covered by the source's terms and answers `409`.
- *
- * Args:
- * terms_version: The `version` of the mesh terms accepted. Required.
- * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
- * to `en`.
- */
-export const meshesTermsAcceptanceCreateMutation = (options?: Partial<Options<MeshesTermsAcceptanceCreateData>>): UseMutationOptions<MeshesTermsAcceptanceCreateResponse, DefaultError, Options<MeshesTermsAcceptanceCreateData>> => {
-    const mutationOptions: UseMutationOptions<MeshesTermsAcceptanceCreateResponse, DefaultError, Options<MeshesTermsAcceptanceCreateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await meshesTermsAcceptanceCreate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const meshesDevicesListQueryKey = (options: Options<MeshesDevicesListData>) => createQueryKey('meshesDevicesList', options);
 
 /**
  * List every device registered on this mesh, gateways and nodes alike.
  *
- * Rejected registrations are shown only to the mesh's owner.
+ * A public mesh's devices are readable without credentials. Rejected
+ * registrations and admin keys are shown only to the mesh's owner.
  *
  * Args:
  * telemetry_variant: Restrict by reported telemetry variants, as
@@ -895,6 +882,35 @@ export const meshesLinksListOptions = (options: Options<MeshesLinksListData>) =>
     },
     queryKey: meshesLinksListQueryKey(options)
 });
+
+/**
+ * Accept the current mesh terms again, renewing the mesh. Its owner only.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the mesh is paused: its gateways are deregistered and its
+ * readings are scheduled for deletion. Renewing resumes it and cancels the
+ * deletion, as long as the grace period has not ended. A mesh on a source
+ * is covered by the source's terms and answers `409`. Answers `404` on an
+ * instance that does not enforce terms.
+ *
+ * Args:
+ * terms_version: The `version` of the mesh terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const meshesTermsAcceptanceCreateMutation = (options?: Partial<Options<MeshesTermsAcceptanceCreateData>>): UseMutationOptions<MeshesTermsAcceptanceCreateResponse, DefaultError, Options<MeshesTermsAcceptanceCreateData>> => {
+    const mutationOptions: UseMutationOptions<MeshesTermsAcceptanceCreateResponse, DefaultError, Options<MeshesTermsAcceptanceCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await meshesTermsAcceptanceCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const meshesTraceroutesListQueryKey = (options: Options<MeshesTraceroutesListData>) => createQueryKey('meshesTraceroutesList', options);
 
@@ -1000,6 +1016,33 @@ export const meshesTraceroutesListInfiniteOptions = (options: Options<MeshesTrac
     });
     return opts as Omit<typeof opts, 'initialData'>;
 };
+
+export const meshesTermsRetrieveQueryKey = (options?: Options<MeshesTermsRetrieveData>) => createQueryKey('meshesTermsRetrieve', options);
+
+/**
+ * Return the terms an owner accepts to create a mesh on the default broker.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the mesh, or when moving a mesh from a
+ * source onto the default broker. The footnote states how long the mesh's
+ * data is kept. Answers `404` on an instance that does not enforce terms.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const meshesTermsRetrieveOptions = (options?: Options<MeshesTermsRetrieveData>) => queryOptions<MeshesTermsRetrieveResponse, DefaultError, MeshesTermsRetrieveResponse, ReturnType<typeof meshesTermsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await meshesTermsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: meshesTermsRetrieveQueryKey(options)
+});
 
 export const metricsRetrieveQueryKey = (options?: Options<MetricsRetrieveData>) => createQueryKey('metricsRetrieve', options);
 
@@ -1139,10 +1182,12 @@ export const ownersCreateMutation = (options?: Partial<Options<OwnersCreateData>
 };
 
 /**
- * Remove an owner, along with their meshes and devices. Superusers only.
+ * Remove an owner, along with their meshes, devices, blueprints and sinks. Superusers only.
  *
- * Their gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * Their gateways are deregistered from the decoder and the credentials of
+ * their sinks revoked first, and nothing is removed if that fails.
+ * Blueprints other owners' devices still use are kept without an owner,
+ * editable by superusers only.
  */
 export const ownersDestroyMutation = (options?: Partial<Options<OwnersDestroyData>>): UseMutationOptions<OwnersDestroyResponse, DefaultError, Options<OwnersDestroyData>> => {
     const mutationOptions: UseMutationOptions<OwnersDestroyResponse, DefaultError, Options<OwnersDestroyData>> = {
@@ -1261,10 +1306,12 @@ export const ownersLogoutCreateMutation = (options?: Partial<Options<OwnersLogou
 };
 
 /**
- * Delete the authenticated owner, along with their meshes and devices.
+ * Delete the authenticated owner, along with their meshes, devices, blueprints and sinks.
  *
- * Their gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * Their gateways are deregistered from the decoder and the credentials of
+ * their sinks revoked first, and nothing is removed if that fails.
+ * Blueprints other owners' devices still use are kept without an owner,
+ * editable by superusers only.
  */
 export const ownersMeDestroyMutation = (options?: Partial<Options<OwnersMeDestroyData>>): UseMutationOptions<OwnersMeDestroyResponse, DefaultError, Options<OwnersMeDestroyData>> => {
     const mutationOptions: UseMutationOptions<OwnersMeDestroyResponse, DefaultError, Options<OwnersMeDestroyData>> = {
@@ -1455,7 +1502,8 @@ export const ownersMeRotateKeyCreateMutation = (options?: Partial<Options<Owners
 /**
  * Accept the current account terms, when they have changed since signing up.
  *
- * Account terms never lapse, so this pauses and resumes nothing.
+ * Account terms never lapse, so this pauses and resumes nothing. Answers
+ * `404` on an instance that does not enforce terms.
  *
  * Args:
  * terms_version: The `version` of the account terms accepted. Required.
@@ -1537,6 +1585,69 @@ export const ownersVerifyEmailRetrieveOptions = (options: Options<OwnersVerifyEm
     },
     queryKey: ownersVerifyEmailRetrieveQueryKey(options)
 });
+
+export const postprocessingBackfillsListQueryKey = (options?: Options<PostprocessingBackfillsListData>) => createQueryKey('postprocessingBackfillsList', options);
+
+/**
+ * List backfills across every device, oldest first. Superusers only.
+ *
+ * Args:
+ * status: Restrict to one status, such as `pending`.
+ */
+export const postprocessingBackfillsListOptions = (options?: Options<PostprocessingBackfillsListData>) => queryOptions<PostprocessingBackfillsListResponse, DefaultError, PostprocessingBackfillsListResponse, ReturnType<typeof postprocessingBackfillsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await postprocessingBackfillsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: postprocessingBackfillsListQueryKey(options)
+});
+
+/**
+ * Record how a claimed backfill finished. Superusers only.
+ *
+ * Args:
+ * status: `done` or `failed`.
+ * points_published: Derived values published.
+ * error: Why it failed.
+ */
+export const postprocessingBackfillsUpdateMutation = (options?: Partial<Options<PostprocessingBackfillsUpdateData>>): UseMutationOptions<PostprocessingBackfillsUpdateResponse, DefaultError, Options<PostprocessingBackfillsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<PostprocessingBackfillsUpdateResponse, DefaultError, Options<PostprocessingBackfillsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postprocessingBackfillsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Claim a pending backfill for processing and return everything needed to run it. Superusers only.
+ *
+ * Only one caller can claim a backfill. A backfill left running for over
+ * an hour is presumed abandoned and can be claimed again.
+ */
+export const postprocessingBackfillsClaimCreateMutation = (options?: Partial<Options<PostprocessingBackfillsClaimCreateData>>): UseMutationOptions<PostprocessingBackfillsClaimCreateResponse, DefaultError, Options<PostprocessingBackfillsClaimCreateData>> => {
+    const mutationOptions: UseMutationOptions<PostprocessingBackfillsClaimCreateResponse, DefaultError, Options<PostprocessingBackfillsClaimCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postprocessingBackfillsClaimCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const postprocessingBlueprintsListQueryKey = (options?: Options<PostprocessingBlueprintsListData>) => createQueryKey('postprocessingBlueprintsList', options);
 
@@ -1876,6 +1987,9 @@ export const readingsDevicesLatestRetrieveQueryKey = (options: Options<ReadingsD
 
 /**
  * Most recent readings, addressed by the device's registration ID.
+ *
+ * A device on a public mesh is readable without credentials. Rejected
+ * registrations are not.
  */
 export const readingsDevicesLatestRetrieveOptions = (options: Options<ReadingsDevicesLatestRetrieveData>) => queryOptions<ReadingsDevicesLatestRetrieveResponse, DefaultError, ReadingsDevicesLatestRetrieveResponse, ReturnType<typeof readingsDevicesLatestRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -2142,7 +2256,8 @@ export const readingsMeshesNodesLatestRetrieveQueryKey = (options: Options<Readi
  * Return a device's most recent readings.
  *
  * Without `payload_kind`, every channel the device has reported comes back in
- * one call, each annotated with its unit from the measurement catalog.
+ * one call, each annotated with its unit from the measurement catalog. A
+ * device on a public mesh is readable without credentials.
  *
  * Args:
  * payload_kind: Restrict to one family, for example
@@ -2169,9 +2284,13 @@ export const readingsMeshesNodesQualityRetrieveQueryKey = (options: Options<Read
  * Return data-quality figures for a device over a time range.
  *
  * Covers the number of readings recorded, alarms raised per detector, the
- * share of readings within their plausible range, and how complete each
- * channel was. Figures stay empty until the quality checks have run for the
- * device.
+ * share of the hours the device reported in that stayed within its
+ * configured ranges, and how complete each channel was. Figures stay empty
+ * until the quality checks have run for the device.
+ *
+ * Alarms are kept one by one for 30 days. A range reaching further back is
+ * answered from daily counts, so it is rounded to whole days and does not
+ * include the current day.
  *
  * Args:
  * start: Start of the range, as a relative duration such as `-24h`, a date
@@ -2199,9 +2318,13 @@ export const readingsMeshesNodesQualityRetrieveInfiniteQueryKey = (options: Opti
  * Return data-quality figures for a device over a time range.
  *
  * Covers the number of readings recorded, alarms raised per detector, the
- * share of readings within their plausible range, and how complete each
- * channel was. Figures stay empty until the quality checks have run for the
- * device.
+ * share of the hours the device reported in that stayed within its
+ * configured ranges, and how complete each channel was. Figures stay empty
+ * until the quality checks have run for the device.
+ *
+ * Alarms are kept one by one for 30 days. A range reaching further back is
+ * answered from daily counts, so it is rounded to whole days and does not
+ * include the current day.
  *
  * Args:
  * start: Start of the range, as a relative duration such as `-24h`, a date
@@ -2366,32 +2489,6 @@ export const sinksCreateMutation = (options?: Partial<Options<SinksCreateData>>)
     return mutationOptions;
 };
 
-export const sinksTermsRetrieveQueryKey = (options?: Options<SinksTermsRetrieveData>) => createQueryKey('sinksTermsRetrieve', options);
-
-/**
- * Return the terms an operator must accept to create a sink. Operators only.
- *
- * Every statement must be accepted. Send the returned `version` back as
- * `terms_version` when creating the sink. Answers `404` on an instance that
- * does not enforce terms or has no sinks.
- *
- * Args:
- * locale: `en` or `es`. Defaults to `en`, which is also used for any
- * other value.
- */
-export const sinksTermsRetrieveOptions = (options?: Options<SinksTermsRetrieveData>) => queryOptions<SinksTermsRetrieveResponse, DefaultError, SinksTermsRetrieveResponse, ReturnType<typeof sinksTermsRetrieveQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await sinksTermsRetrieve({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: sinksTermsRetrieveQueryKey(options)
-});
-
 /**
  * Delete a sink, revoke its credentials and disconnect its consumers. Operators only.
  *
@@ -2501,6 +2598,32 @@ export const sinksTermsAcceptanceCreateMutation = (options?: Partial<Options<Sin
     return mutationOptions;
 };
 
+export const sinksTermsRetrieveQueryKey = (options?: Options<SinksTermsRetrieveData>) => createQueryKey('sinksTermsRetrieve', options);
+
+/**
+ * Return the terms an operator must accept to create a sink. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the sink. Answers `404` on an instance that
+ * does not enforce terms or has no sinks.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sinksTermsRetrieveOptions = (options?: Options<SinksTermsRetrieveData>) => queryOptions<SinksTermsRetrieveResponse, DefaultError, SinksTermsRetrieveResponse, ReturnType<typeof sinksTermsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sinksTermsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sinksTermsRetrieveQueryKey(options)
+});
+
 export const sourcesListQueryKey = (options?: Options<SourcesListData>) => createQueryKey('sourcesList', options);
 
 /**
@@ -2540,7 +2663,8 @@ export const sourcesListOptions = (options?: Options<SourcesListData>) => queryO
  * are rejected.
  * qos: 0 or 1. Defaults to 1.
  * terms_version: The `version` of the source terms the caller accepted.
- * Required, and refused once the terms have changed.
+ * Required, and refused once the terms have changed, unless the
+ * instance does not enforce terms.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
@@ -2557,32 +2681,6 @@ export const sourcesCreateMutation = (options?: Partial<Options<SourcesCreateDat
     };
     return mutationOptions;
 };
-
-export const sourcesTermsRetrieveQueryKey = (options?: Options<SourcesTermsRetrieveData>) => createQueryKey('sourcesTermsRetrieve', options);
-
-/**
- * Return the terms an operator must accept to add a source. Operators only.
- *
- * Every statement must be accepted. Send the returned `version` back as
- * `terms_version` when creating the source. The footnote states how long
- * the source's data is kept.
- *
- * Args:
- * locale: `en` or `es`. Defaults to `en`, which is also used for any
- * other value.
- */
-export const sourcesTermsRetrieveOptions = (options?: Options<SourcesTermsRetrieveData>) => queryOptions<SourcesTermsRetrieveResponse, DefaultError, SourcesTermsRetrieveResponse, ReturnType<typeof sourcesTermsRetrieveQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await sourcesTermsRetrieve({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: sourcesTermsRetrieveQueryKey(options)
-});
 
 /**
  * Delete a source and stop bridging it. Operators only, on the sources they created.
@@ -2675,7 +2773,8 @@ export const sourcesRestartCreateMutation = (options?: Partial<Options<SourcesRe
  * With a retention period configured, an acceptance lapses after that
  * period and the source is paused. Renewing a paused source restarts its
  * bridge and cancels the deletion of its meshes' data, as long as the
- * grace period has not ended.
+ * grace period has not ended. Answers `404` on an instance that does not
+ * enforce terms.
  *
  * Args:
  * terms_version: The `version` of the source terms accepted. Required.
@@ -2695,6 +2794,58 @@ export const sourcesTermsAcceptanceCreateMutation = (options?: Partial<Options<S
     };
     return mutationOptions;
 };
+
+export const sourcesTermsRetrieveQueryKey = (options?: Options<SourcesTermsRetrieveData>) => createQueryKey('sourcesTermsRetrieve', options);
+
+/**
+ * Return the terms an operator must accept to add a source. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the source. The footnote states how long
+ * the source's data is kept. Answers `404` on an instance that does not
+ * enforce terms.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sourcesTermsRetrieveOptions = (options?: Options<SourcesTermsRetrieveData>) => queryOptions<SourcesTermsRetrieveResponse, DefaultError, SourcesTermsRetrieveResponse, ReturnType<typeof sourcesTermsRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await sourcesTermsRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: sourcesTermsRetrieveQueryKey(options)
+});
+
+export const statusEmailRetrieveQueryKey = (options?: Options<StatusEmailRetrieveData>) => createQueryKey('statusEmailRetrieve', options);
+
+/**
+ * Report whether the instance's emails are being accepted by its mail server. Superusers only.
+ *
+ * Covers every email registry sends: alarms and their summaries, sign up,
+ * password resets, terms and status notices. `ok` is false while the most
+ * recent one failed to send, and turns true again with the next success.
+ * It says nothing about delivery beyond the mail server, such as spam
+ * filtering. Counts cover the last 24 hours and start empty after Redis is
+ * cleared.
+ */
+export const statusEmailRetrieveOptions = (options?: Options<StatusEmailRetrieveData>) => queryOptions<StatusEmailRetrieveResponse, DefaultError, StatusEmailRetrieveResponse, ReturnType<typeof statusEmailRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await statusEmailRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: statusEmailRetrieveQueryKey(options)
+});
 
 export const telemetryVariantsListQueryKey = (options?: Options<TelemetryVariantsListData>) => createQueryKey('telemetryVariantsList', options);
 
@@ -2793,7 +2944,7 @@ export const telemetryVariantsMeasurementsListOptions = (options: Options<Teleme
 export const telemetryVariantsMeasurementsRetrieveQueryKey = (options: Options<TelemetryVariantsMeasurementsRetrieveData>) => createQueryKey('telemetryVariantsMeasurementsRetrieve', options);
 
 /**
- * Return one measurement channel and its catalog-wide default detector list.
+ * Return one measurement channel.
  */
 export const telemetryVariantsMeasurementsRetrieveOptions = (options: Options<TelemetryVariantsMeasurementsRetrieveData>) => queryOptions<TelemetryVariantsMeasurementsRetrieveResponse, DefaultError, TelemetryVariantsMeasurementsRetrieveResponse, ReturnType<typeof telemetryVariantsMeasurementsRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -2809,10 +2960,7 @@ export const telemetryVariantsMeasurementsRetrieveOptions = (options: Options<Te
 });
 
 /**
- * Set the catalog-wide default detector list for a channel. Superusers
- * only. The range detector's valid_min/valid_max have no catalog
- * default — set them per device instead, via PUT
- * /devices/{device_uuid}/measurements/{measurement_id}.
+ * Set which detectors run by default for a channel. Superusers only.
  */
 export const telemetryVariantsMeasurementsUpdateMutation = (options?: Partial<Options<TelemetryVariantsMeasurementsUpdateData>>): UseMutationOptions<TelemetryVariantsMeasurementsUpdateResponse, DefaultError, Options<TelemetryVariantsMeasurementsUpdateData>> => {
     const mutationOptions: UseMutationOptions<TelemetryVariantsMeasurementsUpdateResponse, DefaultError, Options<TelemetryVariantsMeasurementsUpdateData>> = {
@@ -2837,6 +2985,7 @@ export const termsRetrieveQueryKey = (options?: Options<TermsRetrieveData>) => c
  * stores no mesh data. Creating a mesh on the default broker accepts the
  * mesh terms instead. Every statement must be accepted. Send the returned
  * `version` back as `terms_version` when signing up. They never lapse.
+ * Answers `404` on an instance that does not enforce terms.
  *
  * Args:
  * locale: `en` or `es`. Defaults to `en`, which is also used for any

@@ -12,6 +12,7 @@
     "./runtime": "./src/api-runtime.ts"
   },
   "scripts": {
+    "openapi:sync": "node --experimental-strip-types scripts/sync-openapi.ts",
     "openapi-ts": "openapi-ts",
     "typecheck": "tsc --noEmit"
   },
