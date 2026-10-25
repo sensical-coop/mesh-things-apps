@@ -24,7 +24,7 @@ Una malla tiene un nombre de canal y una clave precompartida (PSK). El servicio 
 
 Una malla es **pública** cuando cualquier propietario verificado, así como un cliente de la API sin autenticar, puede leer sus dispositivos y lecturas. El acceso público nunca se extiende a las operaciones de escritura. Solo el propietario o un superusuario pueden modificar la malla, rechazar un nodo o consultar los nodos rechazados.
 
-El tráfico se recibe en el broker propio de la instancia o a través de una [fuente](/docs/sources): un broker y un topic remotos que importa un operador.
+El tráfico se recibe en el broker propio de la instancia o a través de una [fuente](/sources): un broker y un topic remotos que importa un operador.
 
 ## Pasarela y nodo
 
@@ -48,7 +48,7 @@ Una **variante de telemetría** es un tipo de mensaje protobuf, como `telemetry:
 
 ## Lectura
 
-Una lectura es una única muestra numérica, almacenada en InfluxDB con el identificador de la malla y el identificador del nodo. Los canales derivados, las métricas de calidad y las alarmas también se almacenan como lecturas, con sus propios nombres de medición. Véase [Almacenes de datos](/docs/data).
+Una lectura es una única muestra numérica, almacenada en InfluxDB con el identificador de la malla y el identificador del nodo. Los canales derivados, las métricas de calidad y las alarmas también se almacenan como lecturas, con sus propios nombres de medición. Véase [Almacenes de datos](/data).
 
 ## Roles
 

@@ -6,8 +6,7 @@ const search = createFromSource(docsSource, {
   async buildIndex(page) {
     const data = page.data.structuredData;
     const structuredData = typeof data === "function" ? await data() : data;
-    // `page.url` is root-relative (`/overview`). The app is mounted at `/docs`.
-    const url = page.url === "/" ? "/docs" : `/docs${page.url}`;
+    const url = page.url;
     return {
       title: page.data.title,
       description: page.data.description,

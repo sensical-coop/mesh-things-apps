@@ -1,6 +1,9 @@
 {$SITE_ADDRESS} {
-	handle /docs* {
-		reverse_proxy docs:80
+	# The docs app is rooted at /. /docs on this host only redirects there.
+	redir /docs {$DOCS_URL}/ 308
+	redir /docs/ {$DOCS_URL}/ 308
+	handle_path /docs/* {
+		redir {$DOCS_URL}{uri} 308
 	}
 
 	reverse_proxy web:80

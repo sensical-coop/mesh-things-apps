@@ -18,13 +18,13 @@ flowchart TD
 
 ## Ingesta
 
-Un puente MQTT copia el tráfico del broker de la instancia, y de las [fuentes](/docs/sources) registradas, en un bus de mensajes interno como paquetes en bruto. El bus desacopla la ingesta del descifrado, de modo que una interrupción temporal en las etapas posteriores no provoca la pérdida de paquetes.
+Un puente MQTT copia el tráfico del broker de la instancia, y de las [fuentes](/sources) registradas, en un bus de mensajes interno como paquetes en bruto. El bus desacopla la ingesta del descifrado, de modo que una interrupción temporal en las etapas posteriores no provoca la pérdida de paquetes.
 
 ## Descifrado
 
 El servicio de descifrado lee los paquetes en bruto y busca la clave de la malla por pasarela. Se descartan los paquetes de una pasarela desconocida o de un nodo rechazado. Los paquetes permitidos se descifran y se convierten en eventos estructurados que contienen el identificador de la malla, el identificador del nodo, el tipo de contenido y el contenido.
 
-Según la instancia, el descifrado se ejecuta como un servicio ligero o como un trabajo de procesamiento en flujo. El procesamiento en flujo aplica además la calibración y los detectores en flujo descritos en [Calidad y alarmas](/docs/quality).
+Según la instancia, el descifrado se ejecuta como un servicio ligero o como un trabajo de procesamiento en flujo. El procesamiento en flujo aplica además la calibración y los detectores en flujo descritos en [Calidad y alarmas](/quality).
 
 ## Almacenamiento y procesamiento
 
@@ -35,7 +35,7 @@ Varios componentes independientes consumen los eventos descifrados:
 - un escritor de archivo que almacena ficheros Parquet para los dispositivos que lo activan
 - los detectores y los trabajos programados que producen métricas de calidad, canales derivados y alarmas
 
-Véase [Almacenes de datos](/docs/data) para el contenido de cada almacén.
+Véase [Almacenes de datos](/data) para el contenido de cada almacén.
 
 ## APIs
 

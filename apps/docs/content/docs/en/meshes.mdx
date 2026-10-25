@@ -35,7 +35,7 @@ The console lists the owner's meshes at `/console/meshes`. The detail page of a 
 
 ## Traffic origin
 
-`source` is null when packets arrive on the instance's own broker. An operator can assign the mesh to one of their [sources](/docs/sources) instead. Removing a mesh from a source, or deleting the mesh, schedules the deletion of its stored readings after a grace period.
+`source` is null when packets arrive on the instance's own broker. An operator can assign the mesh to one of their [sources](/sources) instead. Removing a mesh from a source, or deleting the mesh, schedules the deletion of its stored readings after a grace period.
 
 On the default broker, the mesh terms apply, and the owner acts as data controller for that traffic. On a source, the source terms apply and the mesh form does not request acceptance again. When the terms expire:
 

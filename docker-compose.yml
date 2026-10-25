@@ -20,10 +20,14 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.docs
+      args:
+        VITE_WEB_URL: ${VITE_WEB_URL:-http://localhost:5173}
     restart: unless-stopped
     mem_limit: 256m
+    ports:
+      - "127.0.0.1:5175:80"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/docs/overview"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/overview"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -42,6 +46,7 @@ services:
       - "443:443"
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS}
+      DOCS_URL: ${DOCS_URL:-http://127.0.0.1:5175}
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

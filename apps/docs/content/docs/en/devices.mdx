@@ -54,8 +54,8 @@ Each channel supports the following settings:
 - `enabled_detectors = []` disables detectors on the channel.
 - `valid_min` and `valid_max` are set together for the range detector. When both are empty, the range is not checked.
 
-Absence detection is not configured per channel. It is enabled with `absence_detection_enabled` on the device. See [Quality and alarms](/docs/quality).
+Absence detection is not configured per channel. It is enabled with `absence_detection_enabled` on the device. See [Quality and alarms](/quality).
 
 ## Archive
 
-`archive_enabled` includes the device in the Parquet archive. The API accepts this setting only on a mesh whose owner is an operator, and only when the instance provides an archive. Disabling it stops the creation of new files and retains the files already written. The console labels this setting **S3 storage**. See [Archive](/docs/archive).
+`archive_enabled` includes the device in the Parquet archive. The API accepts this setting only on a mesh whose owner is an operator, and only when the instance provides an archive. Disabling it stops the creation of new files and retains the files already written. The console labels this setting **S3 storage**. See [Archive](/archive).

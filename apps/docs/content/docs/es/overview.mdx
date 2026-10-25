@@ -32,7 +32,7 @@ flowchart TD
 
 ## Procesamiento de paquetes
 
-1. **Ingesta.** El tráfico del broker MQTT se copia en la plataforma como paquetes en bruto. El broker puede ser el de la propia instancia o un broker remoto registrado como [fuente](/docs/sources).
+1. **Ingesta.** El tráfico del broker MQTT se copia en la plataforma como paquetes en bruto. El broker puede ser el de la propia instancia o un broker remoto registrado como [fuente](/sources).
 2. **Descifrado.** El servicio de descifrado descifra cada paquete con la clave precompartida de la malla y lo convierte en datos estructurados. Se descartan los paquetes de pasarelas desconocidas y de nodos rechazados.
 3. **Catalogación.** Cada paquete actualiza el registro: se crean o actualizan en PostgreSQL los dispositivos, las variantes de telemetría y los canales de medida.
 4. **Almacenamiento.** Las lecturas descifradas se escriben en InfluxDB. Los dispositivos que lo activan se archivan además en ficheros Parquet por horas.
@@ -52,8 +52,8 @@ El contrato HTTP se publica como documento OpenAPI en `/schema` en el host de la
 ## Páginas relacionadas
 
 <Cards>
-  <Card title="Conceptos" href="/docs/concepts" description="Malla, pasarela, nodo y los dos significados de canal." />
-  <Card title="Cuentas" href="/docs/accounts" description="Alta, autenticación y acceso a la clave de la malla." />
-  <Card title="Arquitectura" href="/docs/architecture" description="Componentes de la plataforma y flujo de datos entre ellos." />
-  <Card title="Almacenes de datos" href="/docs/data" description="Contenido de PostgreSQL, InfluxDB y el archivo Parquet." />
+  <Card title="Conceptos" href="/concepts" description="Malla, pasarela, nodo y los dos significados de canal." />
+  <Card title="Cuentas" href="/accounts" description="Alta, autenticación y acceso a la clave de la malla." />
+  <Card title="Arquitectura" href="/architecture" description="Componentes de la plataforma y flujo de datos entre ellos." />
+  <Card title="Almacenes de datos" href="/data" description="Contenido de PostgreSQL, InfluxDB y el archivo Parquet." />
 </Cards>

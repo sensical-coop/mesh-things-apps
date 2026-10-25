@@ -48,4 +48,4 @@ Text messages and routing packets are not stored.
 
 The archive contains one object per mesh and UTC hour. The columns include `node_id`, `packet_id`, `portnum`, `rx_time`, `hop_start`, `channel_id`, `gateway_id`, `payload_kind`, and `payload_json`. When a partition is rewritten, rows are deduplicated on `(node_id, packet_id, rx_time, payload_kind)`.
 
-Only devices with `archive_enabled` are archived. See [Archive](/docs/archive).
+Only devices with `archive_enabled` are archived. See [Archive](/archive).

@@ -5,21 +5,14 @@ import { fumadocsMdx } from "fumadocs-mdx/vite";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
-// `base` is both the asset prefix and the TanStack router basepath.
-// File routes stay root-relative (`/overview` → `/docs/overview`) so the prefix is applied once.
-// Nitro otherwise publishes the client build at `/assets`, which on this host belongs to apps/web.
+// The app is rooted at /. The public site redirects its own /docs to this origin.
+// Repo-root .env supplies VITE_WEB_URL, same file docker-compose reads.
 export default defineConfig({
-  base: "/docs/",
+  envDir: "../..",
   server: { port: 5175, strictPort: true },
   resolve: {
     alias: { "@": `${import.meta.dirname}/src` },
     dedupe: ["react", "react-dom", "@tanstack/react-router"],
   },
-  plugins: [
-    fumadocsMdx(),
-    tailwindcss(),
-    tanstackStart(),
-    react(),
-    nitro({ baseURL: "/docs" }),
-  ],
+  plugins: [fumadocsMdx(), tailwindcss(), tanstackStart(), react(), nitro()],
 });

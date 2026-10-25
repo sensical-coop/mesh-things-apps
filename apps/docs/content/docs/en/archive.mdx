@@ -35,7 +35,7 @@ The archive contains one object per mesh and UTC hour:
 
 **Data → Archive** (`/console/archive`) lists the user's meshes with their number of devices, number of files, total size, and latest hour. A superuser also sees meshes owned by other users that contain archived data. The detail page of a mesh shows which devices are included, followed by the files: one row per UTC day, newest first, each expanding to one download per hour.
 
-Each hourly download redirects to the object. A whole day, or a longer range, is exported as a job with `format: parquet`: a ZIP file with one folder per day, containing `YYYY-MM-DD/YYYY-MM-DD_HH.parquet`. The limits that apply to CSV exports also apply here: a maximum range of 366 days, one export at a time, and a link valid for 24 hours. See [Readings](/docs/readings).
+Each hourly download redirects to the object. A whole day, or a longer range, is exported as a job with `format: parquet`: a ZIP file with one folder per day, containing `YYYY-MM-DD/YYYY-MM-DD_HH.parquet`. The limits that apply to CSV exports also apply here: a maximum range of 366 days, one export at a time, and a link valid for 24 hours. See [Readings](/readings).
 
 ## Direct queries
 

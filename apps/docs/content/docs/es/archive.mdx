@@ -35,7 +35,7 @@ El archivo contiene un objeto por malla y hora UTC:
 
 **Datos → Archivo** (`/console/archive`) muestra las mallas del usuario con su número de dispositivos, número de ficheros, tamaño total y última hora archivada. Un superusuario ve también las mallas de otros usuarios que contienen datos archivados. La página de detalle de una malla muestra qué dispositivos están incluidos y, a continuación, los ficheros: una fila por día UTC, del más reciente al más antiguo, que se despliega en una descarga por hora.
 
-Cada descarga horaria redirige al objeto. Un día completo, o un rango más largo, se exporta como un trabajo con `format: parquet`: un fichero ZIP con una carpeta por día que contiene `YYYY-MM-DD/YYYY-MM-DD_HH.parquet`. Se aplican los mismos límites que a las exportaciones CSV: un rango máximo de 366 días, una exportación cada vez y un enlace válido durante 24 horas. Véase [Lecturas](/docs/readings).
+Cada descarga horaria redirige al objeto. Un día completo, o un rango más largo, se exporta como un trabajo con `format: parquet`: un fichero ZIP con una carpeta por día que contiene `YYYY-MM-DD/YYYY-MM-DD_HH.parquet`. Se aplican los mismos límites que a las exportaciones CSV: un rango máximo de 366 días, una exportación cada vez y un enlace válido durante 24 horas. Véase [Lecturas](/readings).
 
 ## Consultas directas
 

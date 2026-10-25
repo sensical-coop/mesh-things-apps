@@ -18,13 +18,13 @@ flowchart TD
 
 ## Ingestion
 
-An MQTT bridge copies traffic from the instance's broker, and from any registered [sources](/docs/sources), onto an internal message bus as raw packets. The bus decouples ingestion from decoding, so that a temporary interruption downstream does not lose packets.
+An MQTT bridge copies traffic from the instance's broker, and from any registered [sources](/sources), onto an internal message bus as raw packets. The bus decouples ingestion from decoding, so that a temporary interruption downstream does not lose packets.
 
 ## Decoding
 
 The decoder reads raw packets and looks up the mesh key by gateway. Packets from an unknown gateway or a rejected node are discarded. Allowed packets are decrypted and converted to structured events containing the mesh identifier, the node identifier, the payload type, and the payload.
 
-Depending on the instance, decoding runs either as a lightweight service or as a stream processing job. Stream processing also applies calibration and the stream detectors described in [Quality and alarms](/docs/quality).
+Depending on the instance, decoding runs either as a lightweight service or as a stream processing job. Stream processing also applies calibration and the stream detectors described in [Quality and alarms](/quality).
 
 ## Storage and processing
 
@@ -35,7 +35,7 @@ Decoded events are consumed by several independent components:
 - an archive writer that stores Parquet files for devices that opt in
 - the detectors and scheduled jobs that produce quality metrics, derived channels, and alarms
 
-See [Data stores](/docs/data) for the contents of each store.
+See [Data stores](/data) for the contents of each store.
 
 ## APIs
 

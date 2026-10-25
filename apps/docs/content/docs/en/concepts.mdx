@@ -24,7 +24,7 @@ A mesh has a channel name and a pre-shared key (PSK). The decoder uses this pair
 
 A mesh is **public** when any verified owner, as well as an unauthenticated API client, may read its devices and readings. Public access never extends to write operations. Only the owner or a superuser can modify the mesh, reject a node, or view rejected nodes.
 
-Traffic is received on the instance's own broker, or through a [source](/docs/sources): a remote broker and topic imported by an operator.
+Traffic is received on the instance's own broker, or through a [source](/sources): a remote broker and topic imported by an operator.
 
 ## Gateway and node
 
@@ -48,7 +48,7 @@ A **telemetry variant** is either a protobuf message type, such as `telemetry:en
 
 ## Reading
 
-A reading is a single numeric sample, stored in InfluxDB with the mesh identifier and the node identifier. Derived channels, quality metrics, and alarms are also stored as readings, under their own measurement names. See [Data stores](/docs/data).
+A reading is a single numeric sample, stored in InfluxDB with the mesh identifier and the node identifier. Derived channels, quality metrics, and alarms are also stored as readings, under their own measurement names. See [Data stores](/data).
 
 ## Roles
 

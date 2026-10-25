@@ -2,6 +2,12 @@
 
 Al trabajar en este repositorio en **TypeScript** y **React**, sigue las guías locales en `docs/`. Tienen prioridad sobre convenciones genéricas cuando entren en conflicto con el estilo del proyecto.
 
+## Git: una rama por pull request, cero worktrees
+
+Prohibido crear un worktree. `git worktree add` no se usa. Ni un checkout en `/tmp`, ni una carpeta hermana, ni un segundo directorio. Este repositorio tiene un solo directorio de trabajo, y el trabajo se hace aquí.
+
+Cada pull request sale de una rama nueva, creada en este directorio con `git switch -c`. El nombre lleva el número de la issue: `feat/<issue>-<slug>` (`fix/` o `chore/` si toca). No reutilices una rama para otra pull request. No hagas el cambio en `main`. Si la rama ya existe, cámbiate a ella aquí. No abras otro checkout para saltarte eso.
+
 ## Documentación de referencia
 
 | Guía | Archivo | Origen |
@@ -30,7 +36,7 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 | `packages/tsconfig` | TS compartido |
 | `packages/ui` | BoardUI + shadcn + ReUI + EvilCharts + mapcn. Destino de `pnpm shadcn`. Árbol en architecture. |
 | `apps/web` | Vite + React 19. Landing y consola. Ver tabla siguiente. |
-| `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`, URL pública `/docs`. |
+| `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`. La app sirve la raíz (`/overview`). El sitio redirige su `/docs` a ese origen (`DOCS_URL`). El logo del header enlaza a `VITE_WEB_URL`. |
 | `packages/contracts` | Hey API + Zod 4.6 generado. Solo borde HTTP. |
 | `packages/domain` | Vertical slices (sin Zod) |
 | `apps/api-mock` | HTTP in-memory; repos en `src/features/<name>/repository.ts`; parsea bodies con `@mtt/contracts/zod` |

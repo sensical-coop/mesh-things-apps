@@ -32,7 +32,7 @@ flowchart TD
 
 ## Packet processing
 
-1. **Ingestion.** Traffic from the MQTT broker is copied into the platform as raw packets. The broker can be the instance's own broker or a remote broker registered as a [source](/docs/sources).
+1. **Ingestion.** Traffic from the MQTT broker is copied into the platform as raw packets. The broker can be the instance's own broker or a remote broker registered as a [source](/sources).
 2. **Decoding.** The decoder decrypts each packet with the mesh pre-shared key and converts it to structured data. Packets from unknown gateways or rejected nodes are discarded.
 3. **Cataloguing.** Each packet updates the registry: devices, telemetry variants, and measurement channels are created or refreshed in PostgreSQL.
 4. **Storage.** Decoded readings are written to InfluxDB. Devices that opt in are also archived as hourly Parquet files.
@@ -52,8 +52,8 @@ The HTTP contract is published as an OpenAPI document at `/schema` on the API ho
 ## Related pages
 
 <Cards>
-  <Card title="Concepts" href="/docs/concepts" description="Mesh, gateway, node, and the two meanings of channel." />
-  <Card title="Accounts" href="/docs/accounts" description="Registration, authentication, and access to the mesh key." />
-  <Card title="Architecture" href="/docs/architecture" description="Platform components and the flow of data between them." />
-  <Card title="Data stores" href="/docs/data" description="Contents of PostgreSQL, InfluxDB, and the Parquet archive." />
+  <Card title="Concepts" href="/concepts" description="Mesh, gateway, node, and the two meanings of channel." />
+  <Card title="Accounts" href="/accounts" description="Registration, authentication, and access to the mesh key." />
+  <Card title="Architecture" href="/architecture" description="Platform components and the flow of data between them." />
+  <Card title="Data stores" href="/data" description="Contents of PostgreSQL, InfluxDB, and the Parquet archive." />
 </Cards>
