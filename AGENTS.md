@@ -15,7 +15,7 @@ Al trabajar en este repositorio en **TypeScript** y **React**, sigue las guías 
 | TypeScript | [docs/typescript-guidelines.md](./docs/typescript-guidelines.md) | MarsBased |
 | React | [docs/react-guidelines.md](./docs/react-guidelines.md) | MarsBased |
 
-Orden de verdad para **producto y HTTP**: architecture + ui-stories + OpenAPI. Login mock: Better Auth cookie + `/login` (email/password). El YAML vive en `docs/openapi.yaml`.
+Orden de verdad para **producto y HTTP**: architecture + ui-stories + OpenAPI. Login mock: Better Auth cookie + `/login` (email/password). El contrato es `docs/openapi.json`, copia del snapshot de la API: se trae con `pnpm openapi:sync`, nunca se edita a mano.
 
 Orden de verdad para **UI**: OA Design (look) → BoardUI (nombres de token y primitivas) → shadcn / ReUI (piezas extra). Si un componente BoardUI choca con OA (p. ej. `rounded-3xl` vs squircle), gana OA: `oa-squircle` / `oa-squircle-inset`, pills en acciones, peso ≤ 500.
 

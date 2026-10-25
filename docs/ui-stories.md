@@ -1,6 +1,6 @@
 # UI stories — Mesh Things (dashboard)
 
-Historias para **implementar interfaces**. El contrato HTTP es `docs/openapi.yaml`. Fase 1 no incluye cuenta, login ni API keys.
+Historias para **implementar interfaces**. El contrato HTTP es `docs/openapi.json`, copiado de la API con `pnpm openapi:sync`. Fase 1 no incluye cuenta, login ni API keys.
 
 Personas: **owner** (operador de malla). Superuser queda fuera de fase 1.
 
@@ -102,7 +102,7 @@ Registrarse no crea mallas, así que las condiciones se aceptan donde empiezan l
 - **Borrado de datos:** borrar una malla, o sacarla de su fuente, avisa de que sus lecturas se borran tras el periodo de gracia.
 - **Superuser:** pestaña “Deletions” (`/console/data-deletions`, `GET /data-deletions`): borrados programados por defecto, filtro por estado; los vencidos sin completar salen como “Overdue” con intentos y último error. La cabecera agrupa páginas en menús (`components/nav-menu.tsx`): “Automation” para todos (Alarms, “qué vigilar en cada medida”; Blueprints, “qué calcular a partir de las lecturas entrantes”) y, solo para superusers, “Management” (“Operator requests”, “Scheduled deletions”). Quedan: Meshes · Devices · Automation ▾ · Data ▾ (operators: Sources, Sinks, Archive) · Management ▾. En Management: el disparador muestra el total pendiente y cada elemento su contador (peticiones pendientes, borrados vencidos), ocultos si son cero. En móvil es un encabezado con sus dos enlaces.
 - **Instancia lite** (`REGISTRY__TERMS_ENFORCED=false`): la consola lo detecta sola (`GET /terms` responde 404) y oculta todo lo anterior: sin bloque en el registro, sin paso de condiciones al crear malla o fuente, sin paso de origen, sin columna, chips, avisos, banner ni panel. No envía `terms_version`. Si no sabe (cargando o error de red), actúa como si se aplicaran.
-- **Contrato:** `docs/openapi.yaml`, sincronizado con la API (ver `plans/sources.md`, “Terms per mesh”).
+- **Contrato:** `docs/openapi.json`, sincronizado con la API (ver `plans/sources.md`, “Terms per mesh”).
 
 ### Dispositivos
 
