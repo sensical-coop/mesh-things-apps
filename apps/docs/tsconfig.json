@@ -1,0 +1,11 @@
+{
+  "extends": "@mtt/tsconfig/react-vite.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src", "test", "vite.config.ts", "source.config.ts"]
+}

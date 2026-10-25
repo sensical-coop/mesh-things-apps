@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
 
-export type NotFoundKind = "page" | "mesh" | "device" | "blueprint" | "operatorRequest" | "docsPage";
+export type NotFoundKind = "page" | "mesh" | "device" | "blueprint" | "operatorRequest";
 
 export type NotFoundProps = {
   /** What was missing: picks the copy and where the way back leads. */
@@ -59,15 +59,6 @@ export function NotFound({ kind = "page" }: NotFoundProps): ReactElement {
       }),
       back: formatMessage({ id: "notFound.operatorRequest.back", defaultMessage: "Back to operator requests" }),
       to: routes.operatorRequests,
-    },
-    docsPage: {
-      title: formatMessage({ id: "notFound.docsPage.title", defaultMessage: "Page not found" }),
-      description: formatMessage({
-        id: "notFound.docsPage.description",
-        defaultMessage: "The documentation has no page at this address.",
-      }),
-      back: formatMessage({ id: "notFound.docsPage.back", defaultMessage: "Back to the documentation" }),
-      to: routes.docs,
     },
   }[kind];
 

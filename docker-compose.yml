@@ -16,6 +16,22 @@ services:
       timeout: 5s
       retries: 3
 
+  docs:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.docs
+      args:
+        VITE_WEB_URL: ${VITE_WEB_URL}
+    restart: unless-stopped
+    mem_limit: 256m
+    ports:
+      - "127.0.0.1:5175:80"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/overview"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -23,11 +39,14 @@ services:
     depends_on:
       web:
         condition: service_healthy
+      docs:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS}
+      DOCS_URL: ${DOCS_URL}
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

@@ -1660,8 +1660,5 @@
   "notFound.blueprint.back": "Volver a blueprints",
   "notFound.operatorRequest.title": "Solicitud no encontrada",
   "notFound.operatorRequest.description": "Esta solicitud de operador no existe.",
-  "notFound.operatorRequest.back": "Volver a solicitudes de operador",
-  "notFound.docsPage.title": "Página no encontrada",
-  "notFound.docsPage.description": "La documentación no contiene ninguna página en esta dirección.",
-  "notFound.docsPage.back": "Volver a la documentación"
+  "notFound.operatorRequest.back": "Volver a solicitudes de operador"
 }

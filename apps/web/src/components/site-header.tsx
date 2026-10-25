@@ -39,12 +39,12 @@ export function SiteHeader(): ReactElement {
           <BrandMark />
         </Link>
         <div className="relative z-10 flex items-center gap-2">
-          <Link
-            to={routes.docs}
+          <a
+            href={routes.docs}
             className="rounded-full px-2 py-2 text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
-          </Link>
+          </a>
           <LanguageSwitcher />
           <Button
             type="button"

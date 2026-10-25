@@ -1660,8 +1660,5 @@
   "notFound.blueprint.back": "Back to blueprints",
   "notFound.operatorRequest.title": "Request not found",
   "notFound.operatorRequest.description": "This operator request doesn't exist.",
-  "notFound.operatorRequest.back": "Back to operator requests",
-  "notFound.docsPage.title": "Page not found",
-  "notFound.docsPage.description": "The documentation has no page at this address.",
-  "notFound.docsPage.back": "Back to the documentation"
+  "notFound.operatorRequest.back": "Back to operator requests"
 }

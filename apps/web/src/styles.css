@@ -2,7 +2,6 @@
 @layer theme, base, vendor, components, utilities;
 
 @import "tailwindcss";
-@import "./pages/docs/styles.css";
 @import "@mtt/ui/boardui.css";
 @import "@mtt/ui/maplibre.css";
 @import "@fontsource-variable/inter-tight";
