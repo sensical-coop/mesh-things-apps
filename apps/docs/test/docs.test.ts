@@ -16,12 +16,12 @@ test("Fumadocs serves the same documentation pages in English and Spanish", asyn
     server: { middlewareMode: true },
   });
   try {
-    const { docsSource } = await server.ssrLoadModule("/src/lib/docs-source.ts");
+    const { docsSource } = await server.ssrLoadModule("/src/lib/source.ts");
     for (const language of ["en", "es"]) {
       assert.equal(docsSource.getPages(language).length, pages.length);
       for (const slug of pages) {
         const page = docsSource.getPage([slug], language);
-        assert.equal(page?.url, `/docs/${slug}`);
+        assert.equal(page?.url, `/${slug}`);
         assert.equal(typeof page?.data.title, "string");
         assert.equal(typeof page?.data.body, "function");
       }

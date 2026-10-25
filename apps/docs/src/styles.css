@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "./docs.css";
+@import "@mtt/ui/boardui.css";
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+@source "../../../packages/ui/src";
+
+@theme inline {
+  --font-heading: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
+  --font-sans: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-separator-border outline-border-focus-ring/50;
+  }
+
+  html {
+    @apply overflow-x-clip font-sans antialiased;
+
+    font-synthesis: none;
+  }
+
+  body {
+    @apply m-0 min-h-svh bg-background-full text-text-primary;
+  }
+}

@@ -1,4 +1,8 @@
 {$SITE_ADDRESS} {
+	handle /docs* {
+		reverse_proxy docs:80
+	}
+
 	reverse_proxy web:80
 
 	header {

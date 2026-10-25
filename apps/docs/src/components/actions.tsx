@@ -2,7 +2,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { toggleTheme } from "@mtt/ui/theme";
 import { cx } from "@mtt/ui/utils";
 import { RiMoonLine, RiSunLine } from "@remixicon/react";
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { useIntl } from "react-intl";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTheme } from "@/hooks/use-theme";

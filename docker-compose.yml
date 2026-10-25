@@ -16,12 +16,26 @@ services:
       timeout: 5s
       retries: 3
 
+  docs:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.docs
+    restart: unless-stopped
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/docs/overview"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     mem_limit: 128m
     depends_on:
       web:
+        condition: service_healthy
+      docs:
         condition: service_healthy
     ports:
       - "80:80"

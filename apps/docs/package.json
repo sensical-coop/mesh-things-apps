@@ -1,0 +1,41 @@
+{
+  "name": "docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5175 --strictPort",
+    "build": "vite build",
+    "start": "node .output/server/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types test/*.test.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter-tight": "^5.2.8",
+    "@fontsource/geist-mono": "^5.2.7",
+    "@mtt/ui": "workspace:*",
+    "@remixicon/react": "^4.9.0",
+    "@tanstack/react-router": "^1.170.38",
+    "@tanstack/react-start": "^1.169.3",
+    "fumadocs-core": "^16.17.3",
+    "fumadocs-mdx": "^15.4.7",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@^16.17.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-intl": "^12.1.1"
+  },
+  "devDependencies": {
+    "@mtt/tsconfig": "workspace:^",
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "beautiful-mermaid": "^1.1.3",
+    "nitro": "3.0.260903-beta",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.8.3",
+    "vite": "^8.3.0"
+  }
+}

@@ -29,7 +29,8 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 |---|---|
 | `packages/tsconfig` | TS compartido |
 | `packages/ui` | BoardUI + shadcn + ReUI + EvilCharts + mapcn. Destino de `pnpm shadcn`. Árbol en architecture. |
-| `apps/web` | Vite + React 19. Ver tabla siguiente. |
+| `apps/web` | Vite + React 19. Landing y consola. Ver tabla siguiente. |
+| `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`, URL pública `/docs`. |
 | `packages/contracts` | Hey API + Zod 4.6 generado. Solo borde HTTP. |
 | `packages/domain` | Vertical slices (sin Zod) |
 | `apps/api-mock` | HTTP in-memory; repos en `src/features/<name>/repository.ts`; parsea bodies con `@mtt/contracts/zod` |

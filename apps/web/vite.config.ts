@@ -1,7 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
-import { fumadocsMdx } from "fumadocs-mdx/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -12,7 +11,12 @@ export default defineConfig({
     // ponytail: Nitro does not scan routes until serverDir is set.
     serverDir: "server",
   },
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    proxy: {
+      "/docs": "http://127.0.0.1:5175",
+    },
+  },
   resolve: {
     alias: {
       "@": `${import.meta.dirname}/src`,
@@ -25,5 +29,5 @@ export default defineConfig({
   // MapLibre starts its worker as a module worker, from the app's own bundle.
   worker: { format: "es" },
   // ponytail: SPA + Nitro node_server, not TanStack Start. Start if we need SSR/server fns.
-  plugins: [fumadocsMdx(), nitro(), react(), tailwindcss()],
+  plugins: [nitro(), react(), tailwindcss()],
 });
