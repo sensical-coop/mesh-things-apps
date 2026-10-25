@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] },
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true
   },
