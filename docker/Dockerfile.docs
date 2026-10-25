@@ -9,7 +9,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps ./apps
 COPY packages ./packages
 RUN corepack prepare pnpm@10.6.1 --activate && pnpm install --frozen-lockfile
-ARG VITE_WEB_URL=http://localhost:5173
+ARG VITE_WEB_URL
 ENV VITE_WEB_URL=$VITE_WEB_URL
 RUN pnpm --filter docs build
 

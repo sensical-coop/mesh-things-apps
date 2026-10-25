@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.docs
       args:
-        VITE_WEB_URL: ${VITE_WEB_URL:-http://localhost:5173}
+        VITE_WEB_URL: ${VITE_WEB_URL}
     restart: unless-stopped
     mem_limit: 256m
     ports:
@@ -46,7 +46,7 @@ services:
       - "443:443"
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS}
-      DOCS_URL: ${DOCS_URL:-http://127.0.0.1:5175}
+      DOCS_URL: ${DOCS_URL}
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

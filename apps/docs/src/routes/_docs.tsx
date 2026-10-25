@@ -2,7 +2,7 @@ import { cx } from "@mtt/ui/utils";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/spacious";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
-import { type ComponentProps, type ReactNode } from "react";
+import { type MouseEvent, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { DocumentationActions } from "@/components/actions";
 import { BrandMark } from "@/components/brand";
@@ -18,10 +18,42 @@ export const Route = createFileRoute("/_docs")({
   component: DocumentationLayout,
 });
 
-// Fumadocs passes the public href as `to`. `href` keeps it a single root-relative path.
-function DocsLink({ href, prefetch = true, ...props }: { href?: string; prefetch?: boolean; children?: ReactNode } & Omit<ComponentProps<"a">, "href" | "children">) {
-  if (!href || href.startsWith("#") || /^[a-z]+:/i.test(href)) return <a href={href} {...props} />;
-  return <Link {...({ href, preload: prefetch ? "intent" : false, ...props } as ComponentProps<typeof Link>)} />;
+type DocsLinkProps = {
+  href?: string;
+  prefetch?: boolean;
+  children?: ReactNode;
+  className?: string;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  target?: string;
+  rel?: string;
+  title?: string;
+};
+
+// Fumadocs gives a public path (`/overview`). The splat route owns every page under `/`.
+function DocsLink({ href, prefetch = true, children, className, ...rest }: DocsLinkProps) {
+  if (!href || href.startsWith("#") || /^[a-z]+:/i.test(href)) {
+    return (
+      <a href={href} className={className} {...rest}>
+        {children}
+      </a>
+    );
+  }
+  const hashAt = href.indexOf("#");
+  const path = hashAt === -1 ? href : href.slice(0, hashAt);
+  const hash = hashAt === -1 ? undefined : href.slice(hashAt + 1);
+  const preload = prefetch ? "intent" : false;
+  if (path === "/" || path === "") {
+    return (
+      <Link to="/" hash={hash} preload={preload} className={className} {...rest}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <Link to="/$" params={{ _splat: path.replace(/^\//, "") }} hash={hash} preload={preload} className={className} {...rest}>
+      {children}
+    </Link>
+  );
 }
 
 function DocumentationLayout() {
