@@ -10,4 +10,12 @@ dist/
 apps/web/src/locales/en.extracted.json
 /dpa/
 /docs/GDPR-TODO.md
+
+# fumadocs-mdx regenerates this next to the Vite app
 .source/
+
+# Playwright MCP session dumps (screenshots, console logs, page yaml)
+.playwright-mcp/
+
+# Local codebase-memory graph. Regenerate with a full index; do not commit it.
+.codebase-memory/
