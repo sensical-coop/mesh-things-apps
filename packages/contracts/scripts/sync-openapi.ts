@@ -8,8 +8,7 @@ import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const REPO = "sensical-coop/mesh-things";
-// Until the mesh-things package lands on main, the snapshot only exists on this branch.
-const DEFAULT_REF = "feat/mesh-things-package";
+const DEFAULT_REF = "main";
 const SNAPSHOT_PATH = "server/mesh_things/src/mesh_things/client/openapi.json";
 const OUTPUT = fileURLToPath(new URL("../../../docs/openapi.json", import.meta.url));
 

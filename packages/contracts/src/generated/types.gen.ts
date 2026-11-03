@@ -83,7 +83,7 @@ export type ArchivePartition = {
 };
 
 /**
- * What the quality worker needs to run a claimed backfill.
+ * Details the quality worker needs to run a claimed backfill.
  */
 export type BackfillClaim = {
     readonly id: string;
@@ -403,7 +403,7 @@ export type EmailStatus = {
     ok: boolean;
     last_sent_at: string | null;
     /**
-     * Which email, such as `quality_alarm`.
+     * Template of the email, such as `quality_alarm`.
      */
     last_sent_template: string | null;
     last_failed_at: string | null;
@@ -431,7 +431,7 @@ export type Export = {
     created_at: string;
     finished_at: string | null;
     /**
-     * When the file is deleted and the export becomes `expired`.
+     * Time at which the file is deleted and the export becomes `expired`.
      */
     expires_at: string;
     filename: string;
@@ -554,7 +554,7 @@ export type Mesh = {
      */
     readonly terms_accepted_version?: string | null;
     /**
-     * When the mesh terms acceptance lapses. Null for no time limit, or on a source.
+     * Time at which the mesh terms acceptance lapses. Null for no time limit, or on a source.
      */
     readonly terms_expires_at?: string | null;
     /**
@@ -609,7 +609,7 @@ export type MeshCreate = {
      */
     readonly terms_accepted_version: string | null;
     /**
-     * When the mesh terms acceptance lapses. Null for no time limit, or on a source.
+     * Time at which the mesh terms acceptance lapses. Null for no time limit, or on a source.
      */
     readonly terms_expires_at: string | null;
     /**
@@ -894,7 +894,7 @@ export type OperatorRequestAdmin = {
 
 export type OperatorRequestCreate = {
     /**
-     * Why the operator role is needed. Shown to superusers.
+     * Reason the operator role is needed. Shown to superusers.
      */
     reason: string;
 };
@@ -1234,7 +1234,7 @@ export type Series = {
 export type SinkCreate = {
     label?: string | null;
     /**
-     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     * Readings to send: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
      */
     streams?: Array<StreamsEnum>;
     /**
@@ -1251,7 +1251,7 @@ export type SinkCredentials = {
     readonly id: string;
     readonly label: string | null;
     /**
-     * Which readings are sent: `decoded`, `derived`, `alarms`.
+     * Readings to send: `decoded`, `derived`, `alarms`.
      */
     readonly streams: Array<StreamsEnum>;
     readonly mesh_ids: Array<string>;
@@ -1270,12 +1270,12 @@ export type SinkCredentials = {
      */
     readonly connections: number | null;
     /**
-     * When the sink was paused because its terms lapsed.
+     * Time at which the sink was paused because its terms lapsed.
      */
     readonly paused_at: string | null;
     readonly terms_accepted_version: string | null;
     /**
-     * When the terms acceptance lapses. Null for no time limit.
+     * Time at which the terms acceptance lapses. Null for no time limit.
      */
     readonly terms_expires_at: string | null;
     readonly created_by_id: string | null;
@@ -1291,7 +1291,7 @@ export type SinkRead = {
     readonly id: string;
     readonly label: string | null;
     /**
-     * Which readings are sent: `decoded`, `derived`, `alarms`.
+     * Readings to send: `decoded`, `derived`, `alarms`.
      */
     readonly streams: Array<StreamsEnum>;
     readonly mesh_ids: Array<string>;
@@ -1310,12 +1310,12 @@ export type SinkRead = {
      */
     readonly connections: number | null;
     /**
-     * When the sink was paused because its terms lapsed.
+     * Time at which the sink was paused because its terms lapsed.
      */
     readonly paused_at: string | null;
     readonly terms_accepted_version: string | null;
     /**
-     * When the terms acceptance lapses. Null for no time limit.
+     * Time at which the terms acceptance lapses. Null for no time limit.
      */
     readonly terms_expires_at: string | null;
     readonly created_by_id: string | null;
@@ -1346,7 +1346,7 @@ export type SinkTermsAcceptance = {
 export type SinkWrite = {
     label?: string | null;
     /**
-     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     * Readings to send: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
      */
     streams?: Array<StreamsEnum>;
     /**
@@ -1406,12 +1406,12 @@ export type SourceRead = {
      */
     readonly status: string;
     /**
-     * When the source was paused because its terms lapsed.
+     * Time at which the source was paused because its terms lapsed.
      */
     readonly paused_at: string | null;
     readonly terms_accepted_version: string | null;
     /**
-     * When the terms acceptance lapses. Null when data is kept without a time limit.
+     * Time at which the terms acceptance lapses. Null when data is kept without a time limit.
      */
     readonly terms_expires_at: string | null;
 };
@@ -1579,7 +1579,7 @@ export type Traceroute = {
 };
 
 /**
- * What the quality worker needs to run a claimed backfill.
+ * Details the quality worker needs to run a claimed backfill.
  */
 export type BackfillClaimWritable = {
     start: string;
@@ -1814,7 +1814,7 @@ export type SinkCreateWritable = {
     terms_locale?: TermsLocaleEnum;
     label?: string | null;
     /**
-     * Which readings are sent: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
+     * Readings to send: `decoded`, `derived`, `alarms`. Defaults to `decoded`.
      */
     streams?: Array<StreamsEnum>;
     /**
@@ -2505,7 +2505,7 @@ export type MeshesLinksListData = {
          */
         node_id?: string;
         /**
-         * How far back a link must have been heard.
+         * Maximum time since a link was last heard.
          */
         since?: '24h' | '30d' | '7d';
     };
@@ -2544,7 +2544,7 @@ export type MeshesTraceroutesListData = {
          */
         before?: string;
         /**
-         * How many to return.
+         * Number of traceroutes to return.
          */
         limit?: number;
         /**
@@ -3213,7 +3213,7 @@ export type ReadingsDevicesLatestRetrieveData = {
     };
     query?: {
         /**
-         * How far back to search for a value, as a relative duration such as `-24h`, a date such as `2026-09-01`, or a timestamp such as `2026-09-01T13:45:00Z`.
+         * Earliest time to search for a value, as a relative duration such as `-24h`, a date such as `2026-09-01`, or a timestamp such as `2026-09-01T13:45:00Z`.
          */
         lookback?: string;
         /**
@@ -3404,7 +3404,7 @@ export type ReadingsMeshesNodesLatestRetrieveData = {
     };
     query?: {
         /**
-         * How far back to search for a value, as a relative duration such as `-24h`, a date such as `2026-09-01`, or a timestamp such as `2026-09-01T13:45:00Z`.
+         * Earliest time to search for a value, as a relative duration such as `-24h`, a date such as `2026-09-01`, or a timestamp such as `2026-09-01T13:45:00Z`.
          */
         lookback?: string;
         /**

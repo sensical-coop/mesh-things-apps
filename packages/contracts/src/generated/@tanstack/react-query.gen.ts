@@ -509,7 +509,7 @@ export const devicesPostprocessingsCalibrationsListOptions = (options: Options<D
  * Args:
  * step_key: Step being calibrated.
  * params: Calibration parameters of the step's algorithm.
- * valid_from: When this calibration takes effect. Defaults to now.
+ * valid_from: Time at which this calibration takes effect. Defaults to now.
  */
 export const devicesPostprocessingsCalibrationsCreateMutation = (options?: Partial<Options<DevicesPostprocessingsCalibrationsCreateData>>): UseMutationOptions<DevicesPostprocessingsCalibrationsCreateResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsCreateData>> => {
     const mutationOptions: UseMutationOptions<DevicesPostprocessingsCalibrationsCreateResponse, DefaultError, Options<DevicesPostprocessingsCalibrationsCreateData>> = {
@@ -866,7 +866,7 @@ export const meshesLinksListQueryKey = (options: Options<MeshesLinksListData>) =
  * deleted. A public mesh's links are readable without credentials.
  *
  * Args:
- * since: How far back a link must have been heard, one of `24h`, `7d`
+ * since: Maximum time since a link was last heard, one of `24h`, `7d`
  * or `30d`. Defaults to `7d`.
  * node_id: Only links to or from this node.
  */
@@ -925,7 +925,7 @@ export const meshesTraceroutesListQueryKey = (options: Options<MeshesTraceroutes
  * public mesh's traceroutes are readable without credentials.
  *
  * Args:
- * limit: How many to return, up to 500. Defaults to 50.
+ * limit: Number of traceroutes to return, up to 500. Defaults to 50.
  * before: Only traceroutes heard before this time, as an ISO 8601
  * timestamp. Pass the `heard_at` of the last one received to read
  * the next page.
@@ -986,7 +986,7 @@ export const meshesTraceroutesListInfiniteQueryKey = (options: Options<MeshesTra
  * public mesh's traceroutes are readable without credentials.
  *
  * Args:
- * limit: How many to return, up to 500. Defaults to 50.
+ * limit: Number of traceroutes to return, up to 500. Defaults to 50.
  * before: Only traceroutes heard before this time, as an ISO 8601
  * timestamp. Pass the `heard_at` of the last one received to read
  * the next page.
@@ -1442,7 +1442,7 @@ export const ownersMeOperatorRequestRetrieveOptions = (options?: Options<OwnersM
  * is already an operator cannot file one. Limited to 3 requests a day.
  *
  * Args:
- * reason: Why the role is needed. Shown to superusers. Required.
+ * reason: Reason the role is needed. Shown to superusers. Required.
  */
 export const ownersMeOperatorRequestCreateMutation = (options?: Partial<Options<OwnersMeOperatorRequestCreateData>>): UseMutationOptions<OwnersMeOperatorRequestCreateResponse, DefaultError, Options<OwnersMeOperatorRequestCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersMeOperatorRequestCreateResponse, DefaultError, Options<OwnersMeOperatorRequestCreateData>> = {
@@ -1613,7 +1613,7 @@ export const postprocessingBackfillsListOptions = (options?: Options<Postprocess
  * Args:
  * status: `done` or `failed`.
  * points_published: Derived values published.
- * error: Why it failed.
+ * error: Reason for the failure.
  */
 export const postprocessingBackfillsUpdateMutation = (options?: Partial<Options<PostprocessingBackfillsUpdateData>>): UseMutationOptions<PostprocessingBackfillsUpdateResponse, DefaultError, Options<PostprocessingBackfillsUpdateData>> => {
     const mutationOptions: UseMutationOptions<PostprocessingBackfillsUpdateResponse, DefaultError, Options<PostprocessingBackfillsUpdateData>> = {
@@ -1939,6 +1939,11 @@ export const readingsDevicesRetrieveQueryKey = (options: Options<ReadingsDevices
 
 /**
  * Readings over a time range, addressed by the device's registration ID.
+ *
+ * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
+ * readings and are left out unless one is asked for with `channel`.
+ * Downsampling covers numeric fields only, so text fields are also left out
+ * whenever `window` is set.
  */
 export const readingsDevicesRetrieveOptions = (options: Options<ReadingsDevicesRetrieveData>) => queryOptions<ReadingsDevicesRetrieveResponse, DefaultError, ReadingsDevicesRetrieveResponse, ReturnType<typeof readingsDevicesRetrieveQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -1957,6 +1962,11 @@ export const readingsDevicesRetrieveInfiniteQueryKey = (options: Options<Reading
 
 /**
  * Readings over a time range, addressed by the device's registration ID.
+ *
+ * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
+ * readings and are left out unless one is asked for with `channel`.
+ * Downsampling covers numeric fields only, so text fields are also left out
+ * whenever `window` is set.
  */
 export const readingsDevicesRetrieveInfiniteOptions = (options: Options<ReadingsDevicesRetrieveData>) => {
     const opts = infiniteQueryOptions<ReadingsDevicesRetrieveResponse, DefaultError, InfiniteData<ReadingsDevicesRetrieveResponse>, QueryKey<Options<ReadingsDevicesRetrieveData>>, string | Pick<QueryKey<Options<ReadingsDevicesRetrieveData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
@@ -2171,8 +2181,10 @@ export const readingsMeshesNodesRetrieveQueryKey = (options: Options<ReadingsMes
 /**
  * Return a device's readings for one measurement over a time range.
  *
- * Downsampling covers numeric fields only, so text fields such as
- * `timestamp_quality` are left out whenever `window` is set.
+ * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
+ * readings and are left out unless one is asked for with `channel`.
+ * Downsampling covers numeric fields only, so text fields are also left out
+ * whenever `window` is set.
  *
  * Args:
  * payload_kind: Family to read, for example `telemetry:environment_metrics`.
@@ -2207,8 +2219,10 @@ export const readingsMeshesNodesRetrieveInfiniteQueryKey = (options: Options<Rea
 /**
  * Return a device's readings for one measurement over a time range.
  *
- * Downsampling covers numeric fields only, so text fields such as
- * `timestamp_quality` are left out whenever `window` is set.
+ * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
+ * readings and are left out unless one is asked for with `channel`.
+ * Downsampling covers numeric fields only, so text fields are also left out
+ * whenever `window` is set.
  *
  * Args:
  * payload_kind: Family to read, for example `telemetry:environment_metrics`.
@@ -2262,7 +2276,7 @@ export const readingsMeshesNodesLatestRetrieveQueryKey = (options: Options<Readi
  * Args:
  * payload_kind: Restrict to one family, for example
  * `telemetry:environment_metrics`. Defaults to every one.
- * lookback: How far back to search for a value, as a relative duration, a
+ * lookback: Earliest time to search for a value, as a relative duration, a
  * date or a timestamp. Defaults to `-30d`.
  */
 export const readingsMeshesNodesLatestRetrieveOptions = (options: Options<ReadingsMeshesNodesLatestRetrieveData>) => queryOptions<ReadingsMeshesNodesLatestRetrieveResponse, DefaultError, ReadingsMeshesNodesLatestRetrieveResponse, ReturnType<typeof readingsMeshesNodesLatestRetrieveQueryKey>>({
@@ -2461,7 +2475,7 @@ export const sinksListOptions = (options?: Options<SinksListData>) => queryOptio
  *
  * Args:
  * label: Name for the sink.
- * streams: Which readings are sent: `decoded`, `derived` and `alarms`.
+ * streams: Readings to send: `decoded`, `derived` and `alarms`.
  * Defaults to `decoded`. Derived readings are sent only by
  * instances that run postprocessing, and alarms only by those that
  * run quality checks.

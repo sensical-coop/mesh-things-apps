@@ -78,7 +78,7 @@ export const zBackfillStatusEnum = z.enum([
 ]);
 
 /**
- * What the quality worker needs to run a claimed backfill.
+ * Details the quality worker needs to run a claimed backfill.
  */
 export const zBackfillClaim = z.object({
     id: z.uuid().readonly(),
@@ -243,8 +243,8 @@ export const zDeviceRead = z.object({
     node_id: z.int().readonly(),
     mesh_id: z.uuid().readonly(),
     label: z.string().readonly().nullable(),
-    is_gateway: z.boolean().readonly(),
-    is_allowed: z.boolean().readonly(),
+    is_gateway: z.boolean().readonly().default(false),
+    is_allowed: z.boolean().readonly().default(true),
     admin_keys_b64: z.array(z.string()).readonly().optional(),
     latitude: z.number().readonly().nullable(),
     longitude: z.number().readonly().nullable(),
@@ -1216,7 +1216,7 @@ export const zTraceroute = z.object({
 });
 
 /**
- * What the quality worker needs to run a claimed backfill.
+ * Details the quality worker needs to run a claimed backfill.
  */
 export const zBackfillClaimWritable = z.object({
     start: z.iso.datetime(),
