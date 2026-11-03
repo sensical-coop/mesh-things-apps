@@ -8,6 +8,13 @@ Prohibido crear un worktree. `git worktree add` no se usa. Ni un checkout en `/t
 
 Cada pull request sale de una rama nueva, creada en este directorio con `git switch -c`. El nombre lleva el número de la issue: `feat/<issue>-<slug>` (`fix/` o `chore/` si toca). No reutilices una rama para otra pull request. No hagas el cambio en `main`. Si la rama ya existe, cámbiate a ella aquí. No abras otro checkout para saltarte eso.
 
+## Commits y pull requests
+
+Sigue [CONTRIBUTING.md](./CONTRIBUTING.md): mensajes de commit, descripción de la pull request y el comentario de despliegue. Además:
+
+- Sin enlaces de sesión (`Claude-Session`, `claude.ai/code/...`) ni `Co-authored-by`, tampoco en los comentarios de la pull request.
+- Los comentarios de la pull request son tan concisos como su descripción. No repitas detalles de implementación que ya están en el diff.
+
 ## Documentación de referencia
 
 | Guía | Archivo | Origen |
