@@ -1,6 +1,8 @@
 {$SITE_ADDRESS} {
 	# The docs app is built with /docs as its base, so the path is passed on unchanged.
-	handle /docs* {
+	# `/docs*` would also match `/docs-foo`, which belongs to the web app.
+	@docs path /docs /docs/*
+	handle @docs {
 		reverse_proxy docs:80
 	}
 

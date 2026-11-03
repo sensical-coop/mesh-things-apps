@@ -12,7 +12,9 @@ import { defineConfig } from "vite";
 export default defineConfig({
   base: "/docs/",
   envDir: "../..",
-  server: { port: 5175, strictPort: true },
+  // Pages reached through the web dev server's /docs still open their reload socket here,
+  // since that server only forwards plain HTTP.
+  server: { port: 5175, strictPort: true, hmr: { clientPort: 5175 } },
   resolve: {
     alias: { "@": `${import.meta.dirname}/src` },
     dedupe: ["react", "react-dom", "@tanstack/react-router"],
