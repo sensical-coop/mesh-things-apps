@@ -16,7 +16,7 @@ export function LandingHero(): ReactElement {
           <h1 className="text-balance text-display-3-medium tracking-tight text-text-primary sm:text-display-2-medium">
             <FormattedMessage
               id="page.home.hero.title"
-              defaultMessage="The world's first <accent>storage and data solution for Meshtastic sensors</accent>"
+              defaultMessage="<accent>Storage and data solution</accent> for mesh sensors"
               values={richTextValues}
             />
           </h1>
@@ -25,7 +25,7 @@ export function LandingHero(): ReactElement {
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-title-3-regular text-text-secondary sm:text-title-1-regular">
             <FormattedMessage
               id="page.home.hero.subtitle"
-              defaultMessage="Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud."
+              defaultMessage="Collect data from <highlight>mesh sensor networks, starting with Meshtastic.</highlight> Deploy locally or on the cloud."
               values={richTextValues}
             />
           </p>

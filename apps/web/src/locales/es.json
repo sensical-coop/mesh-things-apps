@@ -496,8 +496,8 @@
   "console.footer.contact": "Contacto",
   "console.footer.api": "API",
 
-  "page.home.hero.title": "La primera <accent>solución de datos para sensores Meshtastic</accent> del mundo",
-  "page.home.hero.subtitle": "Recopila datos de sensores con <highlight>redes de sensores basadas en Meshtastic.</highlight> Despliega localmente o en la nube.",
+  "page.home.hero.title": "<accent>Solución de almacenamiento y datos</accent> para sensores en malla",
+  "page.home.hero.subtitle": "Recopila datos de <highlight>redes de sensores en malla, empezando por Meshtastic.</highlight> Despliega localmente o en la nube.",
   "page.home.hero.signIn": "Iniciar sesión",
   "page.home.hero.howItWorks": "Cómo funciona",
 
@@ -512,7 +512,7 @@
   "page.home.header.signUp": "Registrarse",
   "page.home.header.terms": "Términos",
 
-  "page.home.footer.tagline": "Almacenamiento y una consola para redes Meshtastic. Creado por Sensical SCCL en Barcelona.",
+  "page.home.footer.tagline": "Almacenamiento y una consola para redes de sensores en malla. Creado por Sensical SCCL en Barcelona.",
   "page.home.footer.product": "Producto",
   "page.home.footer.website": "Sitio web",
   "page.home.footer.contact": "Contacto",
@@ -520,7 +520,7 @@
 
   "page.home.faq.heading": "Preguntas <secondary>frecuentes</secondary>",
   "page.home.faq.meshtastic.q": "¿Qué es Mesh Things?",
-  "page.home.faq.meshtastic.a": "Una capa de almacenamiento y datos para redes Meshtastic y su telemetría. Los datos llegan por MQTT y se almacenan y procesan en Mesh Things. Mesh Things puede desplegarse localmente en una Raspberry Pi o en un servidor en la nube.",
+  "page.home.faq.meshtastic.a": "Una capa de almacenamiento y datos para redes de sensores en malla y su telemetría, empezando por Meshtastic. Los datos llegan por MQTT y se almacenan y procesan en Mesh Things. Mesh Things puede desplegarse localmente en una Raspberry Pi o en un servidor en la nube.",
   "page.home.faq.federated.q": "¿Se pueden compartir datos entre instancias?",
   "page.home.faq.federated.a": "Sí, puedes mantener los datos en local o enviarlos a un servidor en la nube.",
   "page.home.faq.globe.q": "¿La plataforma es de código abierto?",
@@ -530,7 +530,7 @@
 
   "page.home.extras.heading": "Elige tu tipo de despliegue. <secondary>Para tus sensores y tu plataforma.</secondary>",
   "page.home.extras.storage.title": "Almacenamiento para la malla",
-  "page.home.extras.storage.body": "Almacenamiento de series temporales para redes de sensores basadas en Meshtastic.",
+  "page.home.extras.storage.body": "Almacenamiento de series temporales para redes de sensores en malla.",
   "page.home.extras.gateways.title": "Elige quién publica los datos",
   "page.home.extras.gateways.body": "Un gateway registrado permite la ingesta de datos. Deshabilítalo y ese tráfico deja de almacenarse.",
   "page.home.extras.channels.title": "Visualiza tus datos",

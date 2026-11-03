@@ -496,8 +496,8 @@
   "console.footer.contact": "Contact",
   "console.footer.api": "API",
 
-  "page.home.hero.title": "The world's first <accent>storage and data solution for Meshtastic sensors</accent>",
-  "page.home.hero.subtitle": "Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud.",
+  "page.home.hero.title": "<accent>Storage and data solution</accent> for mesh sensors",
+  "page.home.hero.subtitle": "Collect data from <highlight>mesh sensor networks, starting with Meshtastic.</highlight> Deploy locally or on the cloud.",
   "page.home.hero.signIn": "Sign in",
   "page.home.hero.howItWorks": "How it works",
 
@@ -511,7 +511,7 @@
   "page.home.header.signUp": "Sign up",
   "page.home.header.terms": "Terms",
 
-  "page.home.footer.tagline": "Storage and a console for Meshtastic networks. Built by Sensical SCCL in Barcelona.",
+  "page.home.footer.tagline": "Storage and a console for mesh sensor networks. Built by Sensical SCCL in Barcelona.",
   "page.home.footer.product": "Product",
   "page.home.footer.website": "Website",
   "page.home.footer.contact": "Contact",
@@ -519,7 +519,7 @@
 
   "page.home.faq.heading": "Frequently asked <secondary>questions</secondary>",
   "page.home.faq.meshtastic.q": "What is Mesh Things?",
-  "page.home.faq.meshtastic.a": "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQTT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
+  "page.home.faq.meshtastic.a": "A storage and data layer for mesh sensor networks and their telemetry, starting with Meshtastic. The data comes from MQTT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
   "page.home.faq.federated.q": "Can data be shared across instances?",
   "page.home.faq.federated.a": "Yes, you can keep data local or send it to a cloud server.",
   "page.home.faq.globe.q": "Is the platform open source?",
@@ -529,7 +529,7 @@
 
   "page.home.extras.heading": "Choose your deployment type. <secondary>For your sensors and your platform.</secondary>",
   "page.home.extras.storage.title": "Storage for the mesh",
-  "page.home.extras.storage.body": "Timeseries storage for Meshtastic-based sensor networks.",
+  "page.home.extras.storage.body": "Timeseries storage for mesh sensor networks.",
   "page.home.extras.gateways.title": "Choose the data publishers",
   "page.home.extras.gateways.body": "A registered gateway allows data ingestion. Disallow it and that traffic stops being stored.",
   "page.home.extras.channels.title": "Visualize your data",

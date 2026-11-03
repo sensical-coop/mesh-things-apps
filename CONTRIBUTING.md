@@ -75,12 +75,17 @@ Then a short check in the browser, if the change is visible there.
 
 The server builds its own images. Run the commands from the deploy comment in the repository checkout.
 
+The Caddyfile is mounted into the container, so a plain `up -d` does not pick up an edit to it. Recreating the container does.
+
 | Change | Rebuild |
 |---|---|
-| `apps/web` or `packages/` | `web` |
+| `apps/web` or `packages/contracts` | `web` |
 | `apps/docs` | `docs` |
-| `docker/Dockerfile`, `docker/Dockerfile.docs` or the root workspace files | the images built from them |
-| `docker/Caddyfile`, or `SITE_ADDRESS` in `.env` | nothing: `docker compose up -d caddy` |
+| `packages/ui` or `packages/tsconfig`, which both apps build from | `web` and `docs` |
+| `docker/Dockerfile` or `docker/Dockerfile.docs` | the image built from it |
+| The root workspace files (`package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`) | `web` and `docs` |
+| `docker/Caddyfile` | nothing: `docker compose up -d --force-recreate caddy` |
+| `SITE_ADDRESS` in `.env` | nothing: `docker compose up -d caddy` |
 
 > **Note**
 > `VITE_API_URL`, `VITE_DISABLE_MOCK_API` and `VITE_WEB_URL` are compiled into the bundles when the image is built. After changing one in `.env`, rebuild the image that uses it. Restarting the container has no effect.
