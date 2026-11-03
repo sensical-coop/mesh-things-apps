@@ -1,6 +1,6 @@
 # Arquitectura — Mesh Things apps
 
-Monorepo (Turborepo + pnpm) para un dashboard Vite sobre **Mesh Things API 1.0.0**. El YAML es la fuente de verdad del hilo HTTP. La lógica de negocio no vive en React.
+Monorepo (Turborepo + pnpm) para un dashboard Vite sobre la **Mesh Things API**. Su OpenAPI, copiado del repo de la API, es la fuente de verdad del hilo HTTP. La lógica de negocio no vive en React.
 
 Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mock comparten schemas Zod **generados** por Hey API.
 
@@ -9,14 +9,14 @@ Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mo
 ## Piezas
 
 ```
-docs/openapi.yaml --> packages/contracts (Hey API)
+mesh-things (snapshot) --> docs/openapi.json --> packages/contracts (Hey API)
 apps/web --> packages/ui + packages/contracts
 apps/api-mock --> packages/domain + packages/contracts
 ```
 
 | Package / app | Qué es | Qué no es |
 |---|---|---|
-| `packages/contracts` | Output de `@hey-api/openapi-ts`. SDK fetch, tipos, **Zod** (request + response), `*Options` / `*Mutation`. | Código a mano. Se regenera si cambia el YAML. |
+| `packages/contracts` | Output de `@hey-api/openapi-ts`. SDK fetch, tipos, **Zod** (request + response), `*Options` / `*Mutation`. | Código a mano. Se regenera con `pnpm openapi:sync`. |
 | `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `authz`). Entidades, invariantes, puertos de repo. Como `@taller/domain`. | Tipos Hey API. No fetch. No React. |
 | `apps/api-mock` | Servidor HTTP que implementa las rutas de fase 1. Datos en memoria. Sesión Better Auth + cookie. Parsea bodies con Zod de contracts; mapea domain → JSON del OpenAPI. | Backend real. Persistencia. |
 | `apps/web` | Vite + React + TanStack. Chrome de consola (`layout`/`header`/`footer`), `router/`, `pages/`, `features/`, `components/` de app, `lib/`. Tests en `test/`. | Primitivas shadcn/BoardUI/ReUI/EvilCharts. Reglas de malla/device. |
@@ -139,11 +139,11 @@ Controllers (`app.ts`) siguen mapeando HTTP → repo → JSON OpenAPI.
 
 ## Contratos (Hey API + Zod 4.6)
 
-El YAML es el contrato. Zod **no se escribe a mano** para shapes OpenAPI. Vive en un solo sitio y se usa **solo en el borde HTTP**.
+El OpenAPI de la API es el contrato. Zod **no se escribe a mano** para shapes OpenAPI. Vive en un solo sitio y se usa **solo en el borde HTTP**.
 
 | Dónde | Qué hay |
 |---|---|
-| `docs/openapi.yaml` | Fuente de verdad |
+| `docs/openapi.json` | Copia del snapshot que genera la API (`server/mesh_things/src/mesh_things/client/openapi.json` en mesh-things). No editar: `pnpm openapi:sync` lo trae y regenera el cliente. |
 | `packages/contracts/src/generated/` | Output Hey API. Incluye `zod.gen.ts`. No editar. |
 | `@mtt/contracts/zod` | Import de schemas (`zMeshesCreateData`, `zDeviceRead`, …) |
 | `apps/web` forms | `safeParse` del `*Data` (envelope `{ body }` / `{ path, query }`) |
@@ -151,7 +151,7 @@ El YAML es el contrato. Zod **no se escribe a mano** para shapes OpenAPI. Vive e
 | `apps/api-mock` | `safeParse` del mismo `*Data` en POST; 400 con `error.issues` |
 | `packages/domain` | Nada de Zod. Entidades propias; el mock traduce DTO ↔ domain |
 
-Runtime: **Zod 4.6** (`zod@^4.6.5` en `@mtt/contracts`). Regenerar: `pnpm openapi-ts`.
+Runtime: **Zod 4.6** (`zod@^4.6.5` en `@mtt/contracts`). Sincronizar: `pnpm openapi:sync` (rama de la API con `OPENAPI_REF`; por defecto la de `packages/contracts/scripts/sync-openapi.ts`). Solo regenerar sin descargar: `pnpm openapi-ts`.
 
 Qué usar de 4.6 en este repo (y qué no):
 
@@ -167,8 +167,8 @@ Qué usar de 4.6 en este repo (y qué no):
 
 Evolución, en este orden:
 
-1. Cambia el YAML → `pnpm openapi-ts`. Web y mock siguen importando los mismos `z*`.
-2. Constraint extra (max length, uuid, enum) → YAML, no `.refine()` a mano encima del gen.
+1. Cambia la API (y su snapshot) → `pnpm openapi:sync`. Web y mock siguen importando los mismos `z*`.
+2. Constraint extra (max length, uuid, enum) → en la API, no `.refine()` a mano encima del gen.
 3. Invariante de negocio (PSK, disallow antes de mover) → `packages/domain`, no Zod.
 4. Cuando los POST dejen de ser dos formularios y haya TanStack Form: el schema sigue siendo el `z*Data` / `z*Create` generado.
 5. Compilar schemas (`z.compile`) solo si el mock o el cliente parsean payloads grandes (series de lecturas) y un profiler lo pide. Entonces un wrapper **fuera** de `generated/`, no parcheando el gen.
@@ -356,7 +356,7 @@ Pantallas US-11–31 siguen abiertas.
 pnpm dev
 ```
 
-Arranca Vite (`5173`) y el mock (`8787`). `VITE_API_URL` por defecto `http://localhost:8787`. Regenerar cliente: `pnpm openapi-ts`.
+Arranca Vite (`5173`) y el mock (`8787`). `VITE_API_URL` por defecto `http://localhost:8787`. Sincronizar el contrato: `pnpm openapi:sync`.
 
 `GET /meshes` sigue el schema OpenAPI `Mesh` (incluye `psk_b64`). La UI no lo pinta; `Mesh.toListItem()` es la forma de dominio sin PSK.
 

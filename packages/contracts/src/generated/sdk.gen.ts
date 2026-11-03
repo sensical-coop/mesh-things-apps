@@ -2,8 +2,8 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlgorithmsListData, AlgorithmsListResponses, DataDeletionsListData, DataDeletionsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponses, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponses, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponses, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponses, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponses, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponses, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponses, DevicesPostprocessingsListData, DevicesPostprocessingsListResponses, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponses, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesLinksListData, MeshesLinksListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponses, MeshesTermsRetrieveData, MeshesTermsRetrieveResponses, MeshesTraceroutesListData, MeshesTraceroutesListResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OperatorRequestsListData, OperatorRequestsListResponses, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponses, OperatorRequestsUpdateData, OperatorRequestsUpdateResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersDestroyData, OwnersDestroyResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponses, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersUpdateData, OwnersUpdateResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponses, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponses, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponses, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponses, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesPartitionsRetrieveErrors, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsDevicesTrafficRetrieveData, ReadingsDevicesTrafficRetrieveResponses, ReadingsExportsListData, ReadingsExportsListResponses, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateErrors, ReadingsMeshesExportsCreateResponses, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponses, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, ReadingsMeshesNodesTrafficRetrieveData, ReadingsMeshesNodesTrafficRetrieveResponses, ReadingsMeshesStatsRetrieveData, ReadingsMeshesStatsRetrieveResponses, SinksCreateData, SinksCreateResponses, SinksCredentialsCreateData, SinksCredentialsCreateResponses, SinksDestroyData, SinksDestroyResponses, SinksListData, SinksListResponses, SinksRetrieveData, SinksRetrieveResponses, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponses, SinksTermsRetrieveData, SinksTermsRetrieveResponses, SinksUpdateData, SinksUpdateResponses, SourcesCreateData, SourcesCreateResponses, SourcesDestroyData, SourcesDestroyResponses, SourcesListData, SourcesListResponses, SourcesRestartCreateData, SourcesRestartCreateResponses, SourcesRetrieveData, SourcesRetrieveResponses, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponses, SourcesTermsRetrieveData, SourcesTermsRetrieveResponses, SourcesUpdateData, SourcesUpdateResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses, TermsRetrieveData, TermsRetrieveResponses } from './types.gen';
-import { zAlgorithmsListData, zAlgorithmsListResponse, zDataDeletionsListData, zDataDeletionsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesPostprocessingsBackfillsCreateData, zDevicesPostprocessingsBackfillsCreateResponse, zDevicesPostprocessingsBackfillsListData, zDevicesPostprocessingsBackfillsListResponse, zDevicesPostprocessingsCalibrationsCreateData, zDevicesPostprocessingsCalibrationsCreateResponse, zDevicesPostprocessingsCalibrationsDestroyData, zDevicesPostprocessingsCalibrationsDestroyResponse, zDevicesPostprocessingsCalibrationsListData, zDevicesPostprocessingsCalibrationsListResponse, zDevicesPostprocessingsCreateData, zDevicesPostprocessingsCreateResponse, zDevicesPostprocessingsDestroyData, zDevicesPostprocessingsDestroyResponse, zDevicesPostprocessingsListData, zDevicesPostprocessingsListResponse, zDevicesPostprocessingsRetrieveData, zDevicesPostprocessingsRetrieveResponse, zDevicesPostprocessingsUpdateData, zDevicesPostprocessingsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesLinksListData, zMeshesLinksListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesTermsAcceptanceCreateData, zMeshesTermsAcceptanceCreateResponse, zMeshesTermsRetrieveData, zMeshesTermsRetrieveResponse, zMeshesTraceroutesListData, zMeshesTraceroutesListResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOperatorRequestsListData, zOperatorRequestsListResponse, zOperatorRequestsRetrieveData, zOperatorRequestsRetrieveResponse, zOperatorRequestsUpdateData, zOperatorRequestsUpdateResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersDestroyData, zOwnersDestroyResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeOperatorRequestCreateData, zOwnersMeOperatorRequestCreateResponse, zOwnersMeOperatorRequestRetrieveData, zOwnersMeOperatorRequestRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeTermsAcceptanceCreateData, zOwnersMeTermsAcceptanceCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersUpdateData, zOwnersUpdateResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zPostprocessingBlueprintsVersionsCreateData, zPostprocessingBlueprintsVersionsCreateResponse, zPostprocessingBlueprintsVersionsListData, zPostprocessingBlueprintsVersionsListResponse, zPostprocessingBlueprintsVersionsRetrieveData, zPostprocessingBlueprintsVersionsRetrieveResponse, zReadingsArchiveMeshesCredentialsCreateData, zReadingsArchiveMeshesCredentialsCreateResponse, zReadingsArchiveMeshesPartitionsRetrieveData, zReadingsArchiveMeshesRetrieveData, zReadingsArchiveMeshesRetrieveResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsDevicesTrafficRetrieveData, zReadingsDevicesTrafficRetrieveResponse, zReadingsExportsListData, zReadingsExportsListResponse, zReadingsMeshesExportsCreateData, zReadingsMeshesExportsCreateResponse, zReadingsMeshesExportsListData, zReadingsMeshesExportsListResponse, zReadingsMeshesExportsRetrieveData, zReadingsMeshesExportsRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zReadingsMeshesNodesTrafficRetrieveData, zReadingsMeshesNodesTrafficRetrieveResponse, zReadingsMeshesStatsRetrieveData, zReadingsMeshesStatsRetrieveResponse, zSinksCreateData, zSinksCreateResponse, zSinksCredentialsCreateData, zSinksCredentialsCreateResponse, zSinksDestroyData, zSinksDestroyResponse, zSinksListData, zSinksListResponse, zSinksRetrieveData, zSinksRetrieveResponse, zSinksTermsAcceptanceCreateData, zSinksTermsAcceptanceCreateResponse, zSinksTermsRetrieveData, zSinksTermsRetrieveResponse, zSinksUpdateData, zSinksUpdateResponse, zSourcesCreateData, zSourcesCreateResponse, zSourcesDestroyData, zSourcesDestroyResponse, zSourcesListData, zSourcesListResponse, zSourcesRestartCreateData, zSourcesRestartCreateResponse, zSourcesRetrieveData, zSourcesRetrieveResponse, zSourcesTermsAcceptanceCreateData, zSourcesTermsAcceptanceCreateResponse, zSourcesTermsRetrieveData, zSourcesTermsRetrieveResponse, zSourcesUpdateData, zSourcesUpdateResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse, zTermsRetrieveData, zTermsRetrieveResponse } from './zod.gen';
+import type { AlgorithmsListData, AlgorithmsListResponses, DataDeletionsListData, DataDeletionsListResponses, DetectorsListData, DetectorsListResponses, DevicesCreateData, DevicesCreateResponses, DevicesDestroyData, DevicesDestroyResponses, DevicesListData, DevicesListResponses, DevicesMeasurementsListData, DevicesMeasurementsListResponses, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponses, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponses, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponses, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponses, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponses, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponses, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponses, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponses, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponses, DevicesPostprocessingsListData, DevicesPostprocessingsListResponses, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponses, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponses, DevicesRetrieveData, DevicesRetrieveResponses, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponses, DevicesUpdateData, DevicesUpdateResponses, HealthRetrieveData, HealthRetrieveErrors, HealthRetrieveResponses, MeasurementsCreateData, MeasurementsCreateResponses, MeasurementsDestroyData, MeasurementsDestroyResponses, MeasurementsListData, MeasurementsListResponses, MeasurementsRetrieveData, MeasurementsRetrieveResponses, MeasurementsUpdateData, MeasurementsUpdateResponses, MeshesCreateData, MeshesCreateResponses, MeshesDestroyData, MeshesDestroyResponses, MeshesDevicesListData, MeshesDevicesListResponses, MeshesLinksListData, MeshesLinksListResponses, MeshesListData, MeshesListResponses, MeshesRetrieveData, MeshesRetrieveResponses, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponses, MeshesTermsRetrieveData, MeshesTermsRetrieveResponses, MeshesTraceroutesListData, MeshesTraceroutesListResponses, MeshesUpdateData, MeshesUpdateResponses, MetricsRetrieveData, MetricsRetrieveResponses, OperatorRequestsListData, OperatorRequestsListResponses, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponses, OperatorRequestsUpdateData, OperatorRequestsUpdateResponses, OwnersCreateData, OwnersCreateResponses, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponses, OwnersDestroyData, OwnersDestroyResponses, OwnersListData, OwnersListResponses, OwnersLoginCreateData, OwnersLoginCreateResponses, OwnersLogoutCreateData, OwnersLogoutCreateResponses, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponses, OwnersMeDestroyData, OwnersMeDestroyResponses, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponses, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponses, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponses, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponses, OwnersMeRetrieveData, OwnersMeRetrieveResponses, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponses, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponses, OwnersMeUpdateData, OwnersMeUpdateResponses, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponses, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponses, OwnersRetrieveData, OwnersRetrieveResponses, OwnersUpdateData, OwnersUpdateResponses, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponses, PostprocessingBackfillsClaimCreateData, PostprocessingBackfillsClaimCreateResponses, PostprocessingBackfillsListData, PostprocessingBackfillsListResponses, PostprocessingBackfillsUpdateData, PostprocessingBackfillsUpdateResponses, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponses, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponses, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponses, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponses, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponses, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponses, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponses, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponses, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponses, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesPartitionsRetrieveErrors, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponses, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponses, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponses, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponses, ReadingsDevicesTrafficRetrieveData, ReadingsDevicesTrafficRetrieveResponses, ReadingsExportsListData, ReadingsExportsListResponses, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateErrors, ReadingsMeshesExportsCreateResponses, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponses, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponses, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponses, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponses, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponses, ReadingsMeshesNodesTrafficRetrieveData, ReadingsMeshesNodesTrafficRetrieveResponses, ReadingsMeshesStatsRetrieveData, ReadingsMeshesStatsRetrieveResponses, SinksCreateData, SinksCreateResponses, SinksCredentialsCreateData, SinksCredentialsCreateResponses, SinksDestroyData, SinksDestroyResponses, SinksListData, SinksListResponses, SinksRetrieveData, SinksRetrieveResponses, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponses, SinksTermsRetrieveData, SinksTermsRetrieveResponses, SinksUpdateData, SinksUpdateResponses, SourcesCreateData, SourcesCreateResponses, SourcesDestroyData, SourcesDestroyResponses, SourcesListData, SourcesListResponses, SourcesRestartCreateData, SourcesRestartCreateResponses, SourcesRetrieveData, SourcesRetrieveResponses, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponses, SourcesTermsRetrieveData, SourcesTermsRetrieveResponses, SourcesUpdateData, SourcesUpdateResponses, StatusEmailRetrieveData, StatusEmailRetrieveResponses, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponses, TelemetryVariantsListData, TelemetryVariantsListResponses, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponses, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponses, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponses, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponses, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponses, TermsRetrieveData, TermsRetrieveResponses } from './types.gen';
+import { zAlgorithmsListData, zAlgorithmsListResponse, zDataDeletionsListData, zDataDeletionsListResponse, zDetectorsListData, zDetectorsListResponse, zDevicesCreateData, zDevicesCreateResponse, zDevicesDestroyData, zDevicesDestroyResponse, zDevicesListData, zDevicesListResponse, zDevicesMeasurementsListData, zDevicesMeasurementsListResponse, zDevicesMeasurementsRetrieveData, zDevicesMeasurementsRetrieveResponse, zDevicesMeasurementsUpdateData, zDevicesMeasurementsUpdateResponse, zDevicesPostprocessingsBackfillsCreateData, zDevicesPostprocessingsBackfillsCreateResponse, zDevicesPostprocessingsBackfillsListData, zDevicesPostprocessingsBackfillsListResponse, zDevicesPostprocessingsCalibrationsCreateData, zDevicesPostprocessingsCalibrationsCreateResponse, zDevicesPostprocessingsCalibrationsDestroyData, zDevicesPostprocessingsCalibrationsDestroyResponse, zDevicesPostprocessingsCalibrationsListData, zDevicesPostprocessingsCalibrationsListResponse, zDevicesPostprocessingsCreateData, zDevicesPostprocessingsCreateResponse, zDevicesPostprocessingsDestroyData, zDevicesPostprocessingsDestroyResponse, zDevicesPostprocessingsListData, zDevicesPostprocessingsListResponse, zDevicesPostprocessingsRetrieveData, zDevicesPostprocessingsRetrieveResponse, zDevicesPostprocessingsUpdateData, zDevicesPostprocessingsUpdateResponse, zDevicesRetrieveData, zDevicesRetrieveResponse, zDevicesTelemetryVariantsListData, zDevicesTelemetryVariantsListResponse, zDevicesUpdateData, zDevicesUpdateResponse, zHealthRetrieveData, zMeasurementsCreateData, zMeasurementsCreateResponse, zMeasurementsDestroyData, zMeasurementsDestroyResponse, zMeasurementsListData, zMeasurementsListResponse, zMeasurementsRetrieveData, zMeasurementsRetrieveResponse, zMeasurementsUpdateData, zMeasurementsUpdateResponse, zMeshesCreateData, zMeshesCreateResponse, zMeshesDestroyData, zMeshesDestroyResponse, zMeshesDevicesListData, zMeshesDevicesListResponse, zMeshesLinksListData, zMeshesLinksListResponse, zMeshesListData, zMeshesListResponse, zMeshesRetrieveData, zMeshesRetrieveResponse, zMeshesTermsAcceptanceCreateData, zMeshesTermsAcceptanceCreateResponse, zMeshesTermsRetrieveData, zMeshesTermsRetrieveResponse, zMeshesTraceroutesListData, zMeshesTraceroutesListResponse, zMeshesUpdateData, zMeshesUpdateResponse, zMetricsRetrieveData, zMetricsRetrieveResponse, zOperatorRequestsListData, zOperatorRequestsListResponse, zOperatorRequestsRetrieveData, zOperatorRequestsRetrieveResponse, zOperatorRequestsUpdateData, zOperatorRequestsUpdateResponse, zOwnersCreateData, zOwnersCreateResponse, zOwnersCsrfCookieRetrieveData, zOwnersCsrfCookieRetrieveResponse, zOwnersDestroyData, zOwnersDestroyResponse, zOwnersListData, zOwnersListResponse, zOwnersLoginCreateData, zOwnersLoginCreateResponse, zOwnersLogoutCreateData, zOwnersLogoutCreateResponse, zOwnersMeChangePasswordCreateData, zOwnersMeChangePasswordCreateResponse, zOwnersMeDestroyData, zOwnersMeDestroyResponse, zOwnersMeDevicesRetrieveData, zOwnersMeDevicesRetrieveResponse, zOwnersMeOperatorRequestCreateData, zOwnersMeOperatorRequestCreateResponse, zOwnersMeOperatorRequestRetrieveData, zOwnersMeOperatorRequestRetrieveResponse, zOwnersMeResendVerificationCreateData, zOwnersMeResendVerificationCreateResponse, zOwnersMeRetrieveData, zOwnersMeRetrieveResponse, zOwnersMeRotateKeyCreateData, zOwnersMeRotateKeyCreateResponse, zOwnersMeTermsAcceptanceCreateData, zOwnersMeTermsAcceptanceCreateResponse, zOwnersMeUpdateData, zOwnersMeUpdateResponse, zOwnersRequestPasswordResetCreateData, zOwnersRequestPasswordResetCreateResponse, zOwnersResetPasswordCreateData, zOwnersResetPasswordCreateResponse, zOwnersRetrieveData, zOwnersRetrieveResponse, zOwnersUpdateData, zOwnersUpdateResponse, zOwnersVerifyEmailRetrieveData, zOwnersVerifyEmailRetrieveResponse, zPostprocessingBackfillsClaimCreateData, zPostprocessingBackfillsClaimCreateResponse, zPostprocessingBackfillsListData, zPostprocessingBackfillsListResponse, zPostprocessingBackfillsUpdateData, zPostprocessingBackfillsUpdateResponse, zPostprocessingBlueprintsCreateData, zPostprocessingBlueprintsCreateResponse, zPostprocessingBlueprintsDestroyData, zPostprocessingBlueprintsDestroyResponse, zPostprocessingBlueprintsListData, zPostprocessingBlueprintsListResponse, zPostprocessingBlueprintsRetrieveData, zPostprocessingBlueprintsRetrieveResponse, zPostprocessingBlueprintsUpdateData, zPostprocessingBlueprintsUpdateResponse, zPostprocessingBlueprintsVersionsCreateData, zPostprocessingBlueprintsVersionsCreateResponse, zPostprocessingBlueprintsVersionsListData, zPostprocessingBlueprintsVersionsListResponse, zPostprocessingBlueprintsVersionsRetrieveData, zPostprocessingBlueprintsVersionsRetrieveResponse, zReadingsArchiveMeshesCredentialsCreateData, zReadingsArchiveMeshesCredentialsCreateResponse, zReadingsArchiveMeshesPartitionsRetrieveData, zReadingsArchiveMeshesRetrieveData, zReadingsArchiveMeshesRetrieveResponse, zReadingsDevicesLatestRetrieveData, zReadingsDevicesLatestRetrieveResponse, zReadingsDevicesQualityRetrieveData, zReadingsDevicesQualityRetrieveResponse, zReadingsDevicesRetrieveData, zReadingsDevicesRetrieveResponse, zReadingsDevicesTrafficRetrieveData, zReadingsDevicesTrafficRetrieveResponse, zReadingsExportsListData, zReadingsExportsListResponse, zReadingsMeshesExportsCreateData, zReadingsMeshesExportsCreateResponse, zReadingsMeshesExportsListData, zReadingsMeshesExportsListResponse, zReadingsMeshesExportsRetrieveData, zReadingsMeshesExportsRetrieveResponse, zReadingsMeshesNodesLatestRetrieveData, zReadingsMeshesNodesLatestRetrieveResponse, zReadingsMeshesNodesQualityRetrieveData, zReadingsMeshesNodesQualityRetrieveResponse, zReadingsMeshesNodesRetrieveData, zReadingsMeshesNodesRetrieveResponse, zReadingsMeshesNodesTrafficRetrieveData, zReadingsMeshesNodesTrafficRetrieveResponse, zReadingsMeshesStatsRetrieveData, zReadingsMeshesStatsRetrieveResponse, zSinksCreateData, zSinksCreateResponse, zSinksCredentialsCreateData, zSinksCredentialsCreateResponse, zSinksDestroyData, zSinksDestroyResponse, zSinksListData, zSinksListResponse, zSinksRetrieveData, zSinksRetrieveResponse, zSinksTermsAcceptanceCreateData, zSinksTermsAcceptanceCreateResponse, zSinksTermsRetrieveData, zSinksTermsRetrieveResponse, zSinksUpdateData, zSinksUpdateResponse, zSourcesCreateData, zSourcesCreateResponse, zSourcesDestroyData, zSourcesDestroyResponse, zSourcesListData, zSourcesListResponse, zSourcesRestartCreateData, zSourcesRestartCreateResponse, zSourcesRetrieveData, zSourcesRetrieveResponse, zSourcesTermsAcceptanceCreateData, zSourcesTermsAcceptanceCreateResponse, zSourcesTermsRetrieveData, zSourcesTermsRetrieveResponse, zSourcesUpdateData, zSourcesUpdateResponse, zStatusEmailRetrieveData, zStatusEmailRetrieveResponse, zTelemetryVariantsDestroyData, zTelemetryVariantsDestroyResponse, zTelemetryVariantsListData, zTelemetryVariantsListResponse, zTelemetryVariantsMeasurementsListData, zTelemetryVariantsMeasurementsListResponse, zTelemetryVariantsMeasurementsRetrieveData, zTelemetryVariantsMeasurementsRetrieveResponse, zTelemetryVariantsMeasurementsUpdateData, zTelemetryVariantsMeasurementsUpdateResponse, zTelemetryVariantsRetrieveData, zTelemetryVariantsRetrieveResponse, zTelemetryVariantsUpdateData, zTelemetryVariantsUpdateResponse, zTermsRetrieveData, zTermsRetrieveResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -62,7 +62,31 @@ export const dataDeletionsList = <ThrowOnError extends boolean = false>(options?
 });
 
 /**
- * List the caller's registered devices, or every device for a superuser.
+ * List the alarm detectors and what each one needs to trigger.
+ *
+ * - `scope`: where a detector is switched on: `measurement` ones go in a
+ * channel's `enabled_detectors`, `device` ones in the device's own
+ * `absence_detection_enabled`.
+ * - `requires` is the config that must also be set before the
+ * detector can trigger in the first place.
+ */
+export const detectorsList = <ThrowOnError extends boolean = false>(options?: Options<DetectorsListData, ThrowOnError>): RequestResult<DetectorsListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DetectorsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zDetectorsListData.parseAsync(data),
+    responseValidator: async (data) => await zDetectorsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/detectors',
+    ...options
+});
+
+/**
+ * List the devices the caller may read, or every device for a superuser.
+ *
+ * Alongside devices on their own meshes, this includes those on public
+ * meshes. Rejected registrations are shown only to the mesh's owner.
  *
  * Args:
  * mesh_id: Restrict to devices on one mesh.
@@ -71,14 +95,9 @@ export const dataDeletionsList = <ThrowOnError extends boolean = false>(options?
  * when false.
  * has_postprocessing: Restrict to devices with a postprocessing
  * attached, or to those without one when false.
- * label: Restrict by device label.
  * telemetry_variant: Restrict by reported telemetry variants, as
  * `has_any_of`, `has_all_of` or `has_none_of` followed by `:` and
  * variant ids separated by `|`. Bare ids mean `has_any_of`.
- *
- * List filters use `operator:value` or `operator:v1|v2` (same wire as the
- * dashboard URL). Bare values (`true`, a uuid, a label) are treated as
- * `is:<value>`.
  */
 export const devicesList = <ThrowOnError extends boolean = false>(options?: Options<DevicesListData, ThrowOnError>): RequestResult<DevicesListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DevicesListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesListData.parseAsync(data),
@@ -135,6 +154,8 @@ export const devicesDestroy = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Return one registered device.
+ *
+ * Rejected registrations are visible only to the mesh's owner.
  */
 export const devicesRetrieve = <ThrowOnError extends boolean = false>(options: Options<DevicesRetrieveData, ThrowOnError>): RequestResult<DevicesRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<DevicesRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesRetrieveData.parseAsync(data),
@@ -153,13 +174,17 @@ export const devicesRetrieve = <ThrowOnError extends boolean = false>(options: O
  *
  * Position and identity fields are filled in from what the device reports
  * until they are set here, after which the values given take precedence.
- * Disallowing a gateway stops its traffic being decoded.
+ * Disallowing a gateway stops its traffic being decoded. Turning a node into
+ * a gateway registers it with the decoder, which refuses a node number that
+ * another allowed gateway on the instance already uses.
  *
  * `archive_enabled` stores the device's readings in the Parquet archive from
  * then on. It is accepted only on a mesh owned by an operator and on
  * instances that run the archive. Turning it off stops storing new readings
- * and keeps those already stored. The setting is rolled back if the
- * pipeline cannot be told about it.
+ * and keeps those already stored.
+ *
+ * Nothing in the request is applied if the pipeline cannot be told about a
+ * change to `archive_enabled`, `is_allowed` or `is_gateway`.
  */
 export const devicesUpdate = <ThrowOnError extends boolean = false>(options: Options<DevicesUpdateData, ThrowOnError>): RequestResult<DevicesUpdateResponses, unknown, ThrowOnError> => (options.client ?? client).put<DevicesUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesUpdateData.parseAsync(data),
@@ -178,29 +203,11 @@ export const devicesUpdate = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
- * List the catalog of alarm detector kinds.
- *
- * "measurement" scoped ones go in a channel's enabled_detectors, "device"
- * scoped ones (currently only absence) in the device's own
- * absence_detection_enabled.
- */
-export const detectorsList = <ThrowOnError extends boolean = false>(options?: Options<DetectorsListData, ThrowOnError>): RequestResult<DetectorsListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DetectorsListResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zDetectorsListData.parseAsync(data),
-    responseValidator: async (data) => await zDetectorsListResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }, {
-            in: 'cookie',
-            name: 'sessionid',
-            type: 'apiKey'
-        }],
-    url: '/detectors',
-    ...options
-});
-
-/**
  * List the measurement channels this device produces, measured and computed alike.
  *
- * Entries appear on their own as telemetry arrives; only enabled_detectors
- * can be edited, on the per-channel detail route.
+ * Entries appear on their own as telemetry arrives. `enabled_detectors` is set by
+ * this device and may be null; `effective_detectors` is the result once
+ * the shared catalog default is applied.
  */
 export const devicesMeasurementsList = <ThrowOnError extends boolean = false>(options: Options<DevicesMeasurementsListData, ThrowOnError>): RequestResult<DevicesMeasurementsListResponses, unknown, ThrowOnError> => (options.client ?? client).get<DevicesMeasurementsListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesMeasurementsListData.parseAsync(data),
@@ -215,7 +222,7 @@ export const devicesMeasurementsList = <ThrowOnError extends boolean = false>(op
 });
 
 /**
- * Return one measurement channel for this device.
+ * Return one of this device's measurement channels.
  */
 export const devicesMeasurementsRetrieve = <ThrowOnError extends boolean = false>(options: Options<DevicesMeasurementsRetrieveData, ThrowOnError>): RequestResult<DevicesMeasurementsRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<DevicesMeasurementsRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesMeasurementsRetrieveData.parseAsync(data),
@@ -230,10 +237,19 @@ export const devicesMeasurementsRetrieve = <ThrowOnError extends boolean = false
 });
 
 /**
- * Set which alarm detectors run for this device's channel.
+ * Choose which detectors alarm on this channel, and the range they
+ * check against, for this device.
  *
- * A null enabled_detectors inherits the telemetry variant's catalog
- * default; an explicit list (empty or not) overrides it for this device.
+ * Alarms are off until enabled. Sending `null` for enabled_detectors
+ * inherits whatever the shared catalog sets for the channel; sending an
+ * empty list silences it here regardless of that default. valid_min/
+ * valid_max have no catalog default: the range detector remains off
+ * until both are set here.
+ *
+ * Args:
+ * enabled_detectors: Detectors to run, or `null` to inherit.
+ * valid_min: Lower bound for the range detector. Must be provided together with valid_max.
+ * valid_max: Upper bound for the range detector. Must be provided together with valid_min.
  */
 export const devicesMeasurementsUpdate = <ThrowOnError extends boolean = false>(options: Options<DevicesMeasurementsUpdateData, ThrowOnError>): RequestResult<DevicesMeasurementsUpdateResponses, unknown, ThrowOnError> => (options.client ?? client).put<DevicesMeasurementsUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesMeasurementsUpdateData.parseAsync(data),
@@ -514,8 +530,9 @@ export const healthRetrieve = <ThrowOnError extends boolean = false>(options?: O
 /**
  * List the shared catalog of measurement types and their units.
  *
- * Sensor fields are named `telemetry:<variant>` and blueprint outputs
- * `derived:<blueprint>`.
+ * Sensor fields are named `telemetry:<variant>`. Blueprint outputs from
+ * every postprocessing share `computed:derived`, and data quality metrics
+ * use `computed:quality`.
  *
  * Args:
  * kind: Restrict to one namespace, one of `telemetry`, `device` or
@@ -607,11 +624,14 @@ export const measurementsUpdate = <ThrowOnError extends boolean = false>(options
 /**
  * List the meshes the caller may read, or every mesh for a superuser.
  *
- * Alongside their own, this includes public meshes. The pre-shared key is
- * included only for meshes the caller owns.
+ * Alongside their own, this includes public meshes. Without credentials,
+ * only public meshes are listed. The pre-shared key, the source and the
+ * terms status are included only for meshes the caller owns.
  *
- * List filters use `operator:value` or `operator:v1|v2` (same wire as the
- * dashboard URL). Bare values are treated as `is:<value>`.
+ * Args:
+ * owned: Restrict to meshes the caller owns. Defaults to false.
+ * source_id: Restrict to meshes bridged from one source. Matches
+ * only meshes the caller owns, or any mesh for a superuser.
  */
 export const meshesList = <ThrowOnError extends boolean = false>(options?: Options<MeshesListData, ThrowOnError>): RequestResult<MeshesListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<MeshesListResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesListData.parseAsync(data),
@@ -627,6 +647,23 @@ export const meshesList = <ThrowOnError extends boolean = false>(options?: Optio
 
 /**
  * Create a mesh owned by the caller.
+ *
+ * A mesh on the default broker needs its mesh terms accepted, which are
+ * recorded with it. A mesh on a source is covered by the source's terms.
+ *
+ * Args:
+ * source_id: Source the mesh's traffic is bridged from, which must be
+ * one the caller created, or any source for a superuser. Leave
+ * unset for traffic on this instance's own broker.
+ * discover_gateways: Register gateways automatically once one of their
+ * packets decodes with this mesh's channel and pre-shared key.
+ * Defaults to `false`. Only an operator may switch it on for a mesh
+ * with a default or blank key.
+ * terms_version: The `version` of the mesh terms accepted. Required
+ * without a source, ignored with one, and ignored on an instance
+ * that does not enforce terms.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
  */
 export const meshesCreate = <ThrowOnError extends boolean = false>(options: Options<MeshesCreateData, ThrowOnError>): RequestResult<MeshesCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<MeshesCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesCreateData.parseAsync(data),
@@ -642,30 +679,6 @@ export const meshesCreate = <ThrowOnError extends boolean = false>(options: Opti
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * Return the terms an owner accepts to create a mesh on the default broker.
- *
- * Every statement must be accepted. Send the returned `version` back as
- * `terms_version` when creating the mesh, or when moving a mesh from a
- * source onto the default broker. The footnote states how long the mesh's
- * data is kept.
- *
- * Args:
- * locale: `en` or `es`. Defaults to `en`, which is also used for any
- * other value.
- */
-export const meshesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<MeshesTermsRetrieveData, ThrowOnError>): RequestResult<MeshesTermsRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<MeshesTermsRetrieveResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zMeshesTermsRetrieveData.parseAsync(data),
-    responseValidator: async (data) => await zMeshesTermsRetrieveResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }, {
-            in: 'cookie',
-            name: 'sessionid',
-            type: 'apiKey'
-        }],
-    url: '/meshes/terms',
-    ...options
 });
 
 /**
@@ -689,6 +702,9 @@ export const meshesDestroy = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Return one mesh.
+ *
+ * A public mesh is readable without credentials. The pre-shared key, the
+ * source and the terms status are included only for the mesh's owner.
  */
 export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Options<MeshesRetrieveData, ThrowOnError>): RequestResult<MeshesRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<MeshesRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zMeshesRetrieveData.parseAsync(data),
@@ -725,7 +741,8 @@ export const meshesRetrieve = <ThrowOnError extends boolean = false>(options: Op
  * a default or blank key.
  * terms_version: The `version` of the mesh terms accepted. Required when
  * moving the mesh onto the default broker unless it already holds a
- * current acceptance; ignored otherwise.
+ * current acceptance, or the instance does not enforce terms;
+ * ignored otherwise.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
@@ -746,39 +763,10 @@ export const meshesUpdate = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
- * Accept the current mesh terms again, renewing the mesh. Its owner only.
- *
- * With a retention period configured, an acceptance lapses after that
- * period and the mesh is paused: its gateways are deregistered and its
- * readings are scheduled for deletion. Renewing resumes it and cancels the
- * deletion, as long as the grace period has not ended. A mesh on a source
- * is covered by the source's terms and answers `409`.
- *
- * Args:
- * terms_version: The `version` of the mesh terms accepted. Required.
- * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
- * to `en`.
- */
-export const meshesTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<MeshesTermsAcceptanceCreateData, ThrowOnError>): RequestResult<MeshesTermsAcceptanceCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<MeshesTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zMeshesTermsAcceptanceCreateData.parseAsync(data),
-    responseValidator: async (data) => await zMeshesTermsAcceptanceCreateResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }, {
-            in: 'cookie',
-            name: 'sessionid',
-            type: 'apiKey'
-        }],
-    url: '/meshes/{mesh_id}/terms-acceptance',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * List every device registered on this mesh, gateways and nodes alike.
  *
- * Rejected registrations are shown only to the mesh's owner.
+ * A public mesh's devices are readable without credentials. Rejected
+ * registrations and admin keys are shown only to the mesh's owner.
  *
  * Args:
  * telemetry_variant: Restrict by reported telemetry variants, as
@@ -825,6 +813,37 @@ export const meshesLinksList = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
+ * Accept the current mesh terms again, renewing the mesh. Its owner only.
+ *
+ * With a retention period configured, an acceptance lapses after that
+ * period and the mesh is paused: its gateways are deregistered and its
+ * readings are scheduled for deletion. Renewing resumes it and cancels the
+ * deletion, as long as the grace period has not ended. A mesh on a source
+ * is covered by the source's terms and answers `409`. Answers `404` on an
+ * instance that does not enforce terms.
+ *
+ * Args:
+ * terms_version: The `version` of the mesh terms accepted. Required.
+ * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
+ * to `en`.
+ */
+export const meshesTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<MeshesTermsAcceptanceCreateData, ThrowOnError>): RequestResult<MeshesTermsAcceptanceCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<MeshesTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesTermsAcceptanceCreateData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesTermsAcceptanceCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/{mesh_id}/terms-acceptance',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List the traceroutes heard on this mesh, newest first.
  *
  * A traceroute heard by several gateways is listed once, with the most
@@ -850,6 +869,30 @@ export const meshesTraceroutesList = <ThrowOnError extends boolean = false>(opti
             type: 'apiKey'
         }],
     url: '/meshes/{mesh_id}/traceroutes',
+    ...options
+});
+
+/**
+ * Return the terms an owner accepts to create a mesh on the default broker.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the mesh, or when moving a mesh from a
+ * source onto the default broker. The footnote states how long the mesh's
+ * data is kept. Answers `404` on an instance that does not enforce terms.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const meshesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<MeshesTermsRetrieveData, ThrowOnError>): RequestResult<MeshesTermsRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<MeshesTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zMeshesTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zMeshesTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/meshes/terms',
     ...options
 });
 
@@ -983,10 +1026,12 @@ export const ownersCreate = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
- * Remove an owner, along with their meshes and devices. Superusers only.
+ * Remove an owner, along with their meshes, devices, blueprints and sinks. Superusers only.
  *
- * Their gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * Their gateways are deregistered from the decoder and the credentials of
+ * their sinks revoked first, and nothing is removed if that fails.
+ * Blueprints other owners' devices still use are kept without an owner,
+ * editable by superusers only.
  */
 export const ownersDestroy = <ThrowOnError extends boolean = false>(options: Options<OwnersDestroyData, ThrowOnError>): RequestResult<OwnersDestroyResponses, unknown, ThrowOnError> => (options.client ?? client).delete<OwnersDestroyResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersDestroyData.parseAsync(data),
@@ -1089,10 +1134,12 @@ export const ownersLogoutCreate = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * Delete the authenticated owner, along with their meshes and devices.
+ * Delete the authenticated owner, along with their meshes, devices, blueprints and sinks.
  *
- * Their gateways are deregistered from the decoder first, and nothing is
- * removed if that fails.
+ * Their gateways are deregistered from the decoder and the credentials of
+ * their sinks revoked first, and nothing is removed if that fails.
+ * Blueprints other owners' devices still use are kept without an owner,
+ * editable by superusers only.
  */
 export const ownersMeDestroy = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeDestroyData, ThrowOnError>): RequestResult<OwnersMeDestroyResponses, unknown, ThrowOnError> => (options?.client ?? client).delete<OwnersMeDestroyResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersMeDestroyData.parseAsync(data),
@@ -1278,14 +1325,15 @@ export const ownersMeRotateKeyCreate = <ThrowOnError extends boolean = false>(op
 /**
  * Accept the current account terms, when they have changed since signing up.
  *
- * Account terms never lapse, so this pauses and resumes nothing.
+ * Account terms never lapse, so this pauses and resumes nothing. Answers
+ * `404` on an instance that does not enforce terms.
  *
  * Args:
  * terms_version: The `version` of the account terms accepted. Required.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
-export const ownersMeTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeTermsAcceptanceCreateData, ThrowOnError>): RequestResult<OwnersMeTermsAcceptanceCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<OwnersMeTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
+export const ownersMeTermsAcceptanceCreate = <ThrowOnError extends boolean = false>(options?: Options<OwnersMeTermsAcceptanceCreateData, ThrowOnError>): RequestResult<OwnersMeTermsAcceptanceCreateResponses, unknown, ThrowOnError> => (options?.client ?? client).post<OwnersMeTermsAcceptanceCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersMeTermsAcceptanceCreateData.parseAsync(data),
     responseValidator: async (data) => await zOwnersMeTermsAcceptanceCreateResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }, {
@@ -1297,7 +1345,7 @@ export const ownersMeTermsAcceptanceCreate = <ThrowOnError extends boolean = fal
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options.headers
+        ...options?.headers
     }
 });
 
@@ -1346,6 +1394,66 @@ export const ownersVerifyEmailRetrieve = <ThrowOnError extends boolean = false>(
     requestValidator: async (data) => await zOwnersVerifyEmailRetrieveData.parseAsync(data),
     responseValidator: async (data) => await zOwnersVerifyEmailRetrieveResponse.parseAsync(data),
     url: '/owners/verify-email',
+    ...options
+});
+
+/**
+ * List backfills across every device, oldest first. Superusers only.
+ *
+ * Args:
+ * status: Restrict to one status, such as `pending`.
+ */
+export const postprocessingBackfillsList = <ThrowOnError extends boolean = false>(options?: Options<PostprocessingBackfillsListData, ThrowOnError>): RequestResult<PostprocessingBackfillsListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<PostprocessingBackfillsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBackfillsListData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBackfillsListResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-backfills',
+    ...options
+});
+
+/**
+ * Record how a claimed backfill finished. Superusers only.
+ *
+ * Args:
+ * status: `done` or `failed`.
+ * points_published: Derived values published.
+ * error: Why it failed.
+ */
+export const postprocessingBackfillsUpdate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBackfillsUpdateData, ThrowOnError>): RequestResult<PostprocessingBackfillsUpdateResponses, unknown, ThrowOnError> => (options.client ?? client).put<PostprocessingBackfillsUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBackfillsUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBackfillsUpdateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-backfills/{backfill_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Claim a pending backfill for processing and return everything needed to run it. Superusers only.
+ *
+ * Only one caller can claim a backfill. A backfill left running for over
+ * an hour is presumed abandoned and can be claimed again.
+ */
+export const postprocessingBackfillsClaimCreate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBackfillsClaimCreateData, ThrowOnError>): RequestResult<PostprocessingBackfillsClaimCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostprocessingBackfillsClaimCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zPostprocessingBackfillsClaimCreateData.parseAsync(data),
+    responseValidator: async (data) => await zPostprocessingBackfillsClaimCreateResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/postprocessing-backfills/{backfill_id}/claim',
     ...options
 });
 
@@ -1596,6 +1704,9 @@ export const readingsDevicesRetrieve = <ThrowOnError extends boolean = false>(op
 
 /**
  * Most recent readings, addressed by the device's registration ID.
+ *
+ * A device on a public mesh is readable without credentials. Rejected
+ * registrations are not.
  */
 export const readingsDevicesLatestRetrieve = <ThrowOnError extends boolean = false>(options: Options<ReadingsDevicesLatestRetrieveData, ThrowOnError>): RequestResult<ReadingsDevicesLatestRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<ReadingsDevicesLatestRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zReadingsDevicesLatestRetrieveData.parseAsync(data),
@@ -1765,7 +1876,8 @@ export const readingsMeshesNodesRetrieve = <ThrowOnError extends boolean = false
  * Return a device's most recent readings.
  *
  * Without `payload_kind`, every channel the device has reported comes back in
- * one call, each annotated with its unit from the measurement catalog.
+ * one call, each annotated with its unit from the measurement catalog. A
+ * device on a public mesh is readable without credentials.
  *
  * Args:
  * payload_kind: Restrict to one family, for example
@@ -1789,9 +1901,13 @@ export const readingsMeshesNodesLatestRetrieve = <ThrowOnError extends boolean =
  * Return data-quality figures for a device over a time range.
  *
  * Covers the number of readings recorded, alarms raised per detector, the
- * share of readings within their plausible range, and how complete each
- * channel was. Figures stay empty until the quality checks have run for the
- * device.
+ * share of the hours the device reported in that stayed within its
+ * configured ranges, and how complete each channel was. Figures stay empty
+ * until the quality checks have run for the device.
+ *
+ * Alarms are kept one by one for 30 days. A range reaching further back is
+ * answered from daily counts, so it is rounded to whole days and does not
+ * include the current day.
  *
  * Args:
  * start: Start of the range, as a relative duration such as `-24h`, a date
@@ -1920,7 +2036,7 @@ export const sinksList = <ThrowOnError extends boolean = false>(options?: Option
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
-export const sinksCreate = <ThrowOnError extends boolean = false>(options: Options<SinksCreateData, ThrowOnError>): RequestResult<SinksCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<SinksCreateResponses, unknown, ThrowOnError>({
+export const sinksCreate = <ThrowOnError extends boolean = false>(options?: Options<SinksCreateData, ThrowOnError>): RequestResult<SinksCreateResponses, unknown, ThrowOnError> => (options?.client ?? client).post<SinksCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zSinksCreateData.parseAsync(data),
     responseValidator: async (data) => await zSinksCreateResponse.parseAsync(data),
     security: [{ scheme: 'bearer', type: 'http' }, {
@@ -1932,31 +2048,8 @@ export const sinksCreate = <ThrowOnError extends boolean = false>(options: Optio
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options.headers
+        ...options?.headers
     }
-});
-
-/**
- * Return the terms an operator must accept to create a sink. Operators only.
- *
- * Every statement must be accepted. Send the returned `version` back as
- * `terms_version` when creating the sink. Answers `404` on an instance that
- * does not enforce terms or has no sinks.
- *
- * Args:
- * locale: `en` or `es`. Defaults to `en`, which is also used for any
- * other value.
- */
-export const sinksTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SinksTermsRetrieveData, ThrowOnError>): RequestResult<SinksTermsRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<SinksTermsRetrieveResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zSinksTermsRetrieveData.parseAsync(data),
-    responseValidator: async (data) => await zSinksTermsRetrieveResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }, {
-            in: 'cookie',
-            name: 'sessionid',
-            type: 'apiKey'
-        }],
-    url: '/sinks/terms',
-    ...options
 });
 
 /**
@@ -2066,6 +2159,29 @@ export const sinksTermsAcceptanceCreate = <ThrowOnError extends boolean = false>
 });
 
 /**
+ * Return the terms an operator must accept to create a sink. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the sink. Answers `404` on an instance that
+ * does not enforce terms or has no sinks.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sinksTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SinksTermsRetrieveData, ThrowOnError>): RequestResult<SinksTermsRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<SinksTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSinksTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSinksTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sinks/terms',
+    ...options
+});
+
+/**
  * List the sources the caller created, or every source for a superuser. Operators only.
  *
  * Each carries its bridge's status, `unknown` for all of them when the
@@ -2101,7 +2217,8 @@ export const sourcesList = <ThrowOnError extends boolean = false>(options?: Opti
  * are rejected.
  * qos: 0 or 1. Defaults to 1.
  * terms_version: The `version` of the source terms the caller accepted.
- * Required, and refused once the terms have changed.
+ * Required, and refused once the terms have changed, unless the
+ * instance does not enforce terms.
  * terms_locale: Locale the terms were shown in, `en` or `es`. Defaults
  * to `en`.
  */
@@ -2119,29 +2236,6 @@ export const sourcesCreate = <ThrowOnError extends boolean = false>(options: Opt
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * Return the terms an operator must accept to add a source. Operators only.
- *
- * Every statement must be accepted. Send the returned `version` back as
- * `terms_version` when creating the source. The footnote states how long
- * the source's data is kept.
- *
- * Args:
- * locale: `en` or `es`. Defaults to `en`, which is also used for any
- * other value.
- */
-export const sourcesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SourcesTermsRetrieveData, ThrowOnError>): RequestResult<SourcesTermsRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<SourcesTermsRetrieveResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zSourcesTermsRetrieveData.parseAsync(data),
-    responseValidator: async (data) => await zSourcesTermsRetrieveResponse.parseAsync(data),
-    security: [{ scheme: 'bearer', type: 'http' }, {
-            in: 'cookie',
-            name: 'sessionid',
-            type: 'apiKey'
-        }],
-    url: '/sources/terms',
-    ...options
 });
 
 /**
@@ -2230,7 +2324,8 @@ export const sourcesRestartCreate = <ThrowOnError extends boolean = false>(optio
  * With a retention period configured, an acceptance lapses after that
  * period and the source is paused. Renewing a paused source restarts its
  * bridge and cancels the deletion of its meshes' data, as long as the
- * grace period has not ended.
+ * grace period has not ended. Answers `404` on an instance that does not
+ * enforce terms.
  *
  * Args:
  * terms_version: The `version` of the source terms accepted. Required.
@@ -2251,6 +2346,52 @@ export const sourcesTermsAcceptanceCreate = <ThrowOnError extends boolean = fals
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Return the terms an operator must accept to add a source. Operators only.
+ *
+ * Every statement must be accepted. Send the returned `version` back as
+ * `terms_version` when creating the source. The footnote states how long
+ * the source's data is kept. Answers `404` on an instance that does not
+ * enforce terms.
+ *
+ * Args:
+ * locale: `en` or `es`. Defaults to `en`, which is also used for any
+ * other value.
+ */
+export const sourcesTermsRetrieve = <ThrowOnError extends boolean = false>(options?: Options<SourcesTermsRetrieveData, ThrowOnError>): RequestResult<SourcesTermsRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<SourcesTermsRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zSourcesTermsRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zSourcesTermsRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/sources/terms',
+    ...options
+});
+
+/**
+ * Report whether the instance's emails are being accepted by its mail server. Superusers only.
+ *
+ * Covers every email registry sends: alarms and their summaries, sign up,
+ * password resets, terms and status notices. `ok` is false while the most
+ * recent one failed to send, and turns true again with the next success.
+ * It says nothing about delivery beyond the mail server, such as spam
+ * filtering. Counts cover the last 24 hours and start empty after Redis is
+ * cleared.
+ */
+export const statusEmailRetrieve = <ThrowOnError extends boolean = false>(options?: Options<StatusEmailRetrieveData, ThrowOnError>): RequestResult<StatusEmailRetrieveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<StatusEmailRetrieveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zStatusEmailRetrieveData.parseAsync(data),
+    responseValidator: async (data) => await zStatusEmailRetrieveResponse.parseAsync(data),
+    security: [{ scheme: 'bearer', type: 'http' }, {
+            in: 'cookie',
+            name: 'sessionid',
+            type: 'apiKey'
+        }],
+    url: '/status/email',
+    ...options
 });
 
 /**
@@ -2339,7 +2480,7 @@ export const telemetryVariantsMeasurementsList = <ThrowOnError extends boolean =
 });
 
 /**
- * Return one measurement channel and its catalog-wide default detector list.
+ * Return one measurement channel.
  */
 export const telemetryVariantsMeasurementsRetrieve = <ThrowOnError extends boolean = false>(options: Options<TelemetryVariantsMeasurementsRetrieveData, ThrowOnError>): RequestResult<TelemetryVariantsMeasurementsRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<TelemetryVariantsMeasurementsRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zTelemetryVariantsMeasurementsRetrieveData.parseAsync(data),
@@ -2354,10 +2495,7 @@ export const telemetryVariantsMeasurementsRetrieve = <ThrowOnError extends boole
 });
 
 /**
- * Set the catalog-wide default detector list for a channel. Superusers
- * only. The range detector's valid_min/valid_max have no catalog
- * default — set them per device instead, via PUT
- * /devices/{device_uuid}/measurements/{measurement_id}.
+ * Set which detectors run by default for a channel. Superusers only.
  */
 export const telemetryVariantsMeasurementsUpdate = <ThrowOnError extends boolean = false>(options: Options<TelemetryVariantsMeasurementsUpdateData, ThrowOnError>): RequestResult<TelemetryVariantsMeasurementsUpdateResponses, unknown, ThrowOnError> => (options.client ?? client).put<TelemetryVariantsMeasurementsUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zTelemetryVariantsMeasurementsUpdateData.parseAsync(data),
@@ -2382,6 +2520,7 @@ export const telemetryVariantsMeasurementsUpdate = <ThrowOnError extends boolean
  * stores no mesh data. Creating a mesh on the default broker accepts the
  * mesh terms instead. Every statement must be accepted. Send the returned
  * `version` back as `terms_version` when signing up. They never lapse.
+ * Answers `404` on an instance that does not enforce terms.
  *
  * Args:
  * locale: `en` or `es`. Defaults to `en`, which is also used for any

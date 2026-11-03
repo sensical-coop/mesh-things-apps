@@ -156,7 +156,7 @@ export function TopologySection({
                   {
                     id: "page.meshes.detail.network.links.coverage",
                     defaultMessage:
-                      "{drawn} of {pairs, plural, one {# link} other {# links}} drawn: a link needs a position on both nodes, and {positioned} of {devices} registered nodes have one. Faded pins have no drawable link. Thicker lines are stronger signals.",
+                      "{pairs,plural,one{{drawn} of # link drawn. A link needs both nodes to report position ({positioned} of {devices} registered nodes have one).} other{{drawn} of # links drawn. A link needs both nodes to report position ({positioned} of {devices} registered nodes have one).}}",
                   },
                   { drawn, pairs: pairs.length, positioned: positions.size, devices: devices.length },
                 )}
@@ -269,7 +269,7 @@ export function TopologySection({
               <FrameDescription>
                 {formatMessage({
                   id: "page.meshes.detail.network.traceroutes.description",
-                  defaultMessage: "Newest first. Select one to draw its route on the map or graph.",
+                  defaultMessage: "Select one to draw its route on the map or graph.",
                 })}
               </FrameDescription>
             </FrameHeader>
@@ -318,7 +318,7 @@ function RelaysFrame({
           {formatMessage({
             id: "page.meshes.detail.network.relays.description",
             defaultMessage:
-              "The node that passed each relayed packet on to a gateway. The firmware reports only the last byte of its number, so each comes with the registered nodes it could be; a gateway that also hears a candidate directly makes it the likely one.",
+              "The node that passed each relayed packet on to a gateway. Note: the node only reports the last byte of its number, so each comes with the potential registered nodes. If a gateway also hears a candidate directly, this makes it the likely one.",
           })}
         </FrameDescription>
       </FrameHeader>

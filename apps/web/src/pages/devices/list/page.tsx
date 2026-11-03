@@ -156,7 +156,7 @@ export function DevicesPage(): ReactElement {
   const hasPostprocessing = listQueryBoolean(filters.queryString, "has_postprocessing");
   const devices = useQuery(
     deviceRepository.list(
-      hasPostprocessing === undefined ? undefined : { query: { has_postprocessing: String(hasPostprocessing) } },
+      hasPostprocessing === undefined ? undefined : { query: { has_postprocessing: hasPostprocessing } },
     ),
   );
   const meshNames = new Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)]));

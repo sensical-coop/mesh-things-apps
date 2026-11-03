@@ -8,6 +8,7 @@
     "typecheck": "turbo run typecheck",
     "lint": "pnpm lint:css && pnpm lint:classes",
     "test": "turbo run test",
+    "openapi:sync": "pnpm --filter @mtt/contracts openapi:sync && pnpm --filter @mtt/contracts openapi-ts",
     "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts",
     "shadcn": "pnpm dlx shadcn@latest --cwd apps/web",
     "lint:css": "stylelint \"apps/**/*.css\" \"packages/**/*.css\"",

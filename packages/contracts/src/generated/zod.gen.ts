@@ -53,6 +53,18 @@ export const zArchiveManifest = z.object({
 });
 
 /**
+ * * `done` - done
+ * * `failed` - failed
+ */
+export const zBackfillResultStatusEnum = z.enum(['done', 'failed']);
+
+export const zBackfillResult = z.object({
+    status: zBackfillResultStatusEnum,
+    points_published: z.int().gte(0).optional().default(0),
+    error: z.string().nullish()
+});
+
+/**
  * * `pending` - Pending
  * * `running` - Running
  * * `done` - Done
@@ -64,6 +76,26 @@ export const zBackfillStatusEnum = z.enum([
     'done',
     'failed'
 ]);
+
+/**
+ * What the quality worker needs to run a claimed backfill.
+ */
+export const zBackfillClaim = z.object({
+    id: z.uuid().readonly(),
+    postprocessing_id: z.uuid().readonly(),
+    start: z.iso.datetime(),
+    stop: z.iso.datetime().optional(),
+    include_dependants: z.boolean().optional(),
+    status: zBackfillStatusEnum,
+    points_published: z.int().readonly(),
+    error: z.string().readonly().nullable(),
+    created_at: z.iso.datetime().readonly(),
+    started_at: z.iso.datetime().readonly().nullable(),
+    finished_at: z.iso.datetime().readonly().nullable(),
+    mesh_id: z.uuid().readonly(),
+    node_id: z.int().readonly(),
+    plans: z.array(z.record(z.string(), z.unknown())).readonly()
+});
 
 export const zBlankEnum = z.enum(['']);
 
@@ -114,15 +146,23 @@ export const zDetail = z.object({
     detail: z.string()
 });
 
-/**
- * GET /detectors - the static catalog of alarm detector kinds.
- */
 export const zDetector = z.object({
-    name: z.string().readonly(),
-    scope: z.enum(['measurement', 'device']).readonly(),
-    requires: z.array(z.string()).readonly(),
-    description: z.string().readonly()
+    name: z.string(),
+    scope: z.string(),
+    requires: z.array(z.string()),
+    description: z.string()
 });
+
+/**
+ * * `completeness` - completeness
+ * * `flat_value` - flat_value
+ * * `range` - range
+ */
+export const zDetectorEnum = z.enum([
+    'completeness',
+    'flat_value',
+    'range'
+]);
 
 /**
  * POST /devices input
@@ -141,10 +181,16 @@ export const zDeviceCreate = z.object({
 });
 
 /**
- * PUT /devices/{device_uuid}/measurements/{measurement_id}: enabled_detectors, valid_min, and valid_max are editable. valid_min/valid_max must be set or cleared together.
+ * PUT /devices/{uuid}/measurements/{id}
+ *
+ * Sets which detectors this channel runs, and the range they check against.
+ *
+ * enabled_detectors: null inherits the catalog default; [] silences the
+ * channel on this device. valid_min/valid_max have no catalog default,
+ * and must be set or cleared together.
  */
 export const zDeviceMeasurementUpdate = z.object({
-    enabled_detectors: z.array(z.string()).nullish(),
+    enabled_detectors: z.array(zDetectorEnum).nullish(),
     valid_min: z.number().nullish(),
     valid_max: z.number().nullish()
 });
@@ -187,10 +233,10 @@ export const zDeviceQualityResponse = z.object({
 });
 
 /**
- * admin_keys_b64 is ONLY shown to the device's actual mesh owner (superusers can't see this).
+ * admin_keys_b64 and the archive fields are shown only to the mesh owner and superusers.
  *
- * `uuid` is the registration; `node_id` is the Meshtastic node number, the same
- * word the readings role uses. The storage column is still `device_id`.
+ * `uuid` is the registration; `node_id` is the Meshtastic node number.
+ * The storage column is `device_id`.
  */
 export const zDeviceRead = z.object({
     uuid: z.uuid().readonly(),
@@ -199,10 +245,6 @@ export const zDeviceRead = z.object({
     label: z.string().readonly().nullable(),
     is_gateway: z.boolean().readonly(),
     is_allowed: z.boolean().readonly(),
-    absence_detection_enabled: z.boolean().readonly(),
-    archive_enabled: z.boolean().readonly().optional(),
-    archive_enabled_at: z.iso.datetime().readonly().nullish(),
-    archive_enabled_by: z.uuid().readonly().nullish(),
     admin_keys_b64: z.array(z.string()).readonly().optional(),
     latitude: z.number().readonly().nullable(),
     longitude: z.number().readonly().nullable(),
@@ -214,6 +256,10 @@ export const zDeviceRead = z.object({
     nodeinfo_overridden: z.boolean().readonly(),
     reading_interval_seconds: z.int().readonly().nullable(),
     publish_interval_seconds: z.int().readonly().nullable(),
+    absence_detection_enabled: z.boolean().readonly(),
+    archive_enabled: z.boolean().readonly().optional(),
+    archive_enabled_at: z.iso.datetime().readonly().nullish(),
+    archive_enabled_by: z.uuid().readonly().nullish(),
     last_seen: z.iso.datetime().readonly().nullable(),
     discovered_at: z.iso.datetime().readonly().nullable(),
     telemetry_variant_ids: z.array(z.uuid()).readonly(),
@@ -222,14 +268,12 @@ export const zDeviceRead = z.object({
 });
 
 /**
- * node_id/mesh are fixed at creation. Role is editable
+ * node_id/mesh are fixed at creation. Role and whether it is a gateway are editable.
  */
 export const zDeviceUpdate = z.object({
     label: z.string().max(255).nullish(),
     is_allowed: z.boolean().optional(),
     is_gateway: z.boolean().optional(),
-    absence_detection_enabled: z.boolean().optional(),
-    archive_enabled: z.boolean().optional(),
     latitude: z.number().nullish(),
     longitude: z.number().nullish(),
     name: z.string().max(255).nullish(),
@@ -237,7 +281,20 @@ export const zDeviceUpdate = z.object({
     hardware_type: z.string().max(64).nullish(),
     role: z.string().max(32).nullish(),
     reading_interval_seconds: z.int().gte(0).lte(2147483647).nullish(),
-    publish_interval_seconds: z.int().gte(0).lte(2147483647).nullish()
+    publish_interval_seconds: z.int().gte(0).lte(2147483647).nullish(),
+    absence_detection_enabled: z.boolean().optional(),
+    archive_enabled: z.boolean().optional()
+});
+
+export const zEmailStatus = z.object({
+    ok: z.boolean(),
+    last_sent_at: z.iso.datetime().nullable(),
+    last_sent_template: z.string().nullable(),
+    last_failed_at: z.iso.datetime().nullable(),
+    last_failed_template: z.string().nullable(),
+    last_error: z.string().nullable(),
+    sent_24h: z.int(),
+    failed_24h: z.int()
 });
 
 /**
@@ -305,6 +362,9 @@ export const zLatestReadingsResponse = z.object({
     readings: z.array(zLatestReading)
 });
 
+/**
+ * Mesh terms, needed only for a mesh on the default broker; a source's terms cover the rest.
+ */
 export const zMesh = z.object({
     id: z.uuid().readonly(),
     channel_id: z.string().max(255),
@@ -322,33 +382,22 @@ export const zMesh = z.object({
 });
 
 /**
- * POST /meshes input
+ * Creating a mesh: its own schema component, so the response's owner-only fields can be optional.
  */
 export const zMeshCreate = z.object({
+    id: z.uuid().readonly(),
     channel_id: z.string().max(255),
     psk_b64: z.string(),
     label: z.string().max(255).nullish(),
+    owner_id: z.uuid().readonly(),
+    is_public: z.boolean().optional(),
     source_id: z.uuid().nullish(),
-    discover_gateways: z.boolean().optional()
-});
-
-export const zNodePort = z.object({
-    portnum: z.int().nullable(),
-    name: z.string(),
-    packets: z.int()
-});
-
-export const zMeshRelayCandidate = z.object({
-    node_id: z.int(),
-    device_uuid: z.uuid()
-});
-
-export const zMeshRelay = z.object({
-    gateway_id: z.int(),
-    device_uuid: z.uuid().nullable(),
-    relay: z.int(),
-    receptions: z.int(),
-    candidates: z.array(zMeshRelayCandidate)
+    terms_accepted_version: z.string().readonly().nullable(),
+    terms_expires_at: z.iso.datetime().readonly().nullable(),
+    paused_at: z.iso.datetime().readonly().nullable(),
+    discover_gateways: z.boolean().optional(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
 });
 
 export const zMeshGatewayPair = z.object({
@@ -381,6 +430,19 @@ export const zMeshNodeTraffic = z.object({
     device_uuid: z.uuid().nullable(),
     packets: z.int(),
     receptions: z.int()
+});
+
+export const zMeshRelayCandidate = z.object({
+    node_id: z.int(),
+    device_uuid: z.uuid()
+});
+
+export const zMeshRelay = z.object({
+    gateway_id: z.int(),
+    device_uuid: z.uuid().nullable(),
+    relay: z.int(),
+    receptions: z.int(),
+    candidates: z.array(zMeshRelayCandidate)
 });
 
 export const zMeshSignalBucket = z.object({
@@ -425,6 +487,12 @@ export const zMetricsResponse = z.object({
     owners: z.int(),
     meshes: z.int(),
     active_gateways: z.int()
+});
+
+export const zNodePort = z.object({
+    portnum: z.int().nullable(),
+    name: z.string(),
+    packets: z.int()
 });
 
 export const zNullEnum = z.unknown();
@@ -534,7 +602,7 @@ export const zOwnerResetPassword = z.object({
 export const zOwnerUpdate = z.object({
     name: z.string().max(255).optional(),
     email: z.email().optional(),
-    alarm_email_cooldown_seconds: z.int().gte(0).lte(2592000).nullish(),
+    alarm_email_cooldown_seconds: z.int().gte(0).lte(2147483647).nullish(),
     status_alerts_enabled: z.boolean().optional(),
     source_rate_alerts_enabled: z.boolean().optional()
 });
@@ -544,28 +612,16 @@ export const zPoint = z.object({
     value: z.unknown()
 });
 
+export const zMeshActivity = z.object({
+    nodes: z.array(zPoint),
+    gateways: z.array(zPoint)
+});
+
 export const zMeshAirtime = z.object({
     channel: z.string(),
     mean: z.number().nullable(),
     peak: z.number().nullable(),
     points: z.array(zPoint)
-});
-
-export const zNodeTrafficResponse = z.object({
-    mesh_id: z.string(),
-    node_id: z.int(),
-    range: z.string(),
-    window: z.string(),
-    hourly_start: z.iso.datetime(),
-    packets: z.int(),
-    receptions: z.int(),
-    ports: z.array(zNodePort),
-    points: z.array(zPoint)
-});
-
-export const zMeshActivity = z.object({
-    nodes: z.array(zPoint),
-    gateways: z.array(zPoint)
 });
 
 export const zMeshTraffic = z.object({
@@ -593,6 +649,18 @@ export const zMeshStatsResponse = z.object({
     gateway_pairs: z.array(zMeshGatewayPair),
     relays: z.array(zMeshRelay),
     activity: zMeshActivity
+});
+
+export const zNodeTrafficResponse = z.object({
+    mesh_id: z.string(),
+    node_id: z.int(),
+    range: z.string(),
+    window: z.string(),
+    hourly_start: z.iso.datetime(),
+    packets: z.int(),
+    receptions: z.int(),
+    ports: z.array(zNodePort),
+    points: z.array(zPoint)
 });
 
 export const zPostprocessingBackfill = z.object({
@@ -663,53 +731,6 @@ export const zPostprocessingBlueprintCreate = z.object({
     notes: z.string().nullish()
 });
 
-export const zResendVerification = z.object({
-    next: z.string().optional()
-});
-
-/**
- * * `traceroute` - Traceroute
- * * `neighborinfo` - Neighborinfo
- * * `direct` - Direct
- */
-export const zRfLinkSourceEnum = z.enum([
-    'traceroute',
-    'neighborinfo',
-    'direct'
-]);
-
-export const zRfLink = z.object({
-    from_node: z.int(),
-    to_node: z.int(),
-    from_device_uuid: z.uuid().nullable(),
-    to_device_uuid: z.uuid().nullable(),
-    source: zRfLinkSourceEnum,
-    samples: z.int(),
-    snr_mean: z.number(),
-    last_snr: z.number().nullable(),
-    first_seen: z.iso.datetime(),
-    last_seen: z.iso.datetime(),
-    distance_km: z.number().nullable()
-});
-
-export const zTraceroute = z.object({
-    id: z.int(),
-    from_node: z.int(),
-    to_node: z.int(),
-    packet_id: z.int(),
-    request_id: z.int().nullable(),
-    origin: z.int(),
-    target: z.int(),
-    towards: z.array(z.int()),
-    snr_towards: z.array(z.number().nullable()),
-    back: z.array(z.int()),
-    snr_back: z.array(z.number().nullable()),
-    complete: z.boolean(),
-    gateway_ids: z.array(z.int()),
-    heard_at: z.iso.datetime(),
-    distance_km: z.number().nullable()
-});
-
 /**
  * * `0` - 0
  * * `1` - 1
@@ -776,13 +797,13 @@ export const zDeviceMeasurement = z.object({
     id: z.uuid().readonly(),
     telemetry_variant_id: z.uuid().readonly(),
     measurement_type: zMeasurementTypeRead,
-    enabled_detectors: z.array(z.string()).nullish(),
+    produced_by: z.uuid().readonly().nullable(),
+    enabled_detectors: z.unknown(),
     effective_detectors: z.array(z.string()).readonly(),
-    valid_min: z.number().nullish(),
-    valid_max: z.number().nullish(),
+    valid_min: z.number().readonly().nullable(),
+    valid_max: z.number().readonly().nullable(),
     first_seen: z.iso.datetime().readonly(),
-    last_seen: z.iso.datetime().readonly().nullable(),
-    produced_by: z.uuid().readonly().nullable()
+    last_seen: z.iso.datetime().readonly().nullable()
 });
 
 /**
@@ -826,6 +847,35 @@ export const zDataDeletion = z.object({
     completed_at: z.iso.datetime().readonly().nullable()
 });
 
+export const zResendVerification = z.object({
+    next: z.string().optional()
+});
+
+/**
+ * * `traceroute` - Traceroute
+ * * `neighborinfo` - Neighborinfo
+ * * `direct` - Direct
+ */
+export const zRfLinkSourceEnum = z.enum([
+    'traceroute',
+    'neighborinfo',
+    'direct'
+]);
+
+export const zRfLink = z.object({
+    from_node: z.int(),
+    to_node: z.int(),
+    from_device_uuid: z.uuid().nullable(),
+    to_device_uuid: z.uuid().nullable(),
+    source: zRfLinkSourceEnum,
+    samples: z.int(),
+    snr_mean: z.number(),
+    last_snr: z.number().nullable(),
+    first_seen: z.iso.datetime(),
+    last_seen: z.iso.datetime(),
+    distance_km: z.number().nullable()
+});
+
 /**
  * * `member` - Member
  * * `operator` - Operator
@@ -847,7 +897,7 @@ export const zOwnerProfile = z.object({
     email_verification_sent_at: z.iso.datetime().readonly().nullable(),
     last_login: z.iso.datetime().readonly().nullable(),
     created_at: z.iso.datetime().readonly(),
-    alarm_email_cooldown_seconds: z.int().gte(0).lte(2592000).readonly().nullable(),
+    alarm_email_cooldown_seconds: z.int().readonly().nullable(),
     status_alerts_enabled: z.boolean().readonly(),
     source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.string().readonly().nullable(),
@@ -857,8 +907,8 @@ export const zOwnerProfile = z.object({
 /**
  * The full record, for the owner themselves and for superusers.
  *
- * `last_login` tracks password logins only: a bearer-key request never
- * updates it, so it is null for an owner who has only ever used their API key.
+ * `last_login` tracks session sign-ins (signup and password login) only: a
+ * bearer-key request never updates it.
  */
 export const zOwnerRead = z.object({
     id: z.uuid().readonly(),
@@ -872,7 +922,7 @@ export const zOwnerRead = z.object({
     email_verification_sent_at: z.iso.datetime().readonly().nullable(),
     last_login: z.iso.datetime().readonly().nullable(),
     created_at: z.iso.datetime().readonly(),
-    alarm_email_cooldown_seconds: z.int().gte(0).lte(2592000).readonly().nullable(),
+    alarm_email_cooldown_seconds: z.int().readonly().nullable(),
     status_alerts_enabled: z.boolean().readonly(),
     source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.string().readonly().nullable()
@@ -897,7 +947,7 @@ export const zOwnerWithApiKey = z.object({
     email_verification_sent_at: z.iso.datetime().readonly().nullable(),
     last_login: z.iso.datetime().readonly().nullable(),
     created_at: z.iso.datetime().readonly(),
-    alarm_email_cooldown_seconds: z.int().gte(0).lte(2592000).readonly().nullable(),
+    alarm_email_cooldown_seconds: z.int().readonly().nullable(),
     status_alerts_enabled: z.boolean().readonly(),
     source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.string().readonly().nullable(),
@@ -1052,19 +1102,17 @@ export const zSinkWrite = z.object({
 export const zTelemetryVariantMeasurementRead = z.object({
     id: z.uuid().readonly(),
     measurement_type: zMeasurementTypeRead,
-    default_enabled_detectors: z.array(z.string()).readonly(),
+    default_enabled_detectors: z.unknown(),
     created_at: z.iso.datetime().readonly(),
     updated_at: z.iso.datetime().readonly()
 });
 
 /**
- * PUT /telemetry-variants/{id}/measurements/{link_id}. Only the
- * catalog-wide default detector list is editable. Superusers only —
- * the range detector's valid_min/valid_max live per-device on
- * DeviceMeasurementUpdate instead, with no catalog default.
+ * PUT /telemetry-variants/{id}/measurements/{link_id}. Only
+ * default_enabled_detectors is editable.
  */
 export const zTelemetryVariantMeasurementUpdate = z.object({
-    default_enabled_detectors: z.array(z.string()).optional()
+    default_enabled_detectors: z.array(zDetectorEnum).optional()
 });
 
 export const zTelemetryVariantRead = z.object({
@@ -1107,23 +1155,7 @@ export const zTermsLocaleEnum = z.enum(['en', 'es']);
  * Accepting the current terms of `terms_kind`.
  */
 export const zAccountTermsAcceptance = z.object({
-    terms_version: z.string(),
-    terms_locale: zTermsLocaleEnum.optional()
-});
-
-/**
- * Accepting the current terms of `terms_kind`.
- */
-export const zSinkTermsAcceptance = z.object({
-    terms_version: z.string(),
-    terms_locale: zTermsLocaleEnum.optional()
-});
-
-/**
- * Accepting the current terms of `terms_kind`.
- */
-export const zSourceTermsAcceptance = z.object({
-    terms_version: z.string(),
+    terms_version: z.string().optional(),
     terms_locale: zTermsLocaleEnum.optional()
 });
 
@@ -1131,7 +1163,23 @@ export const zSourceTermsAcceptance = z.object({
  * Accepting the current terms of `terms_kind`.
  */
 export const zMeshTermsAcceptance = z.object({
-    terms_version: z.string(),
+    terms_version: z.string().optional(),
+    terms_locale: zTermsLocaleEnum.optional()
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSinkTermsAcceptance = z.object({
+    terms_version: z.string().optional(),
+    terms_locale: zTermsLocaleEnum.optional()
+});
+
+/**
+ * Accepting the current terms of `terms_kind`.
+ */
+export const zSourceTermsAcceptance = z.object({
+    terms_version: z.string().optional(),
     terms_locale: zTermsLocaleEnum.optional()
 });
 
@@ -1147,6 +1195,33 @@ export const zTerms = z.object({
     description: z.string(),
     statements: z.array(zTermsStatement),
     footnote: z.string()
+});
+
+export const zTraceroute = z.object({
+    id: z.int(),
+    from_node: z.int(),
+    to_node: z.int(),
+    packet_id: z.int(),
+    request_id: z.int().nullable(),
+    origin: z.int(),
+    target: z.int(),
+    towards: z.array(z.int()),
+    snr_towards: z.array(z.number().nullable()),
+    back: z.array(z.int()),
+    snr_back: z.array(z.number().nullable()),
+    complete: z.boolean(),
+    gateway_ids: z.array(z.int()),
+    heard_at: z.iso.datetime(),
+    distance_km: z.number().nullable()
+});
+
+/**
+ * What the quality worker needs to run a claimed backfill.
+ */
+export const zBackfillClaimWritable = z.object({
+    start: z.iso.datetime(),
+    stop: z.iso.datetime().optional(),
+    include_dependants: z.boolean().optional()
 });
 
 /**
@@ -1175,27 +1250,16 @@ export const zDeviceCreateWritable = z.object({
     role: z.string().nullish()
 });
 
-/**
- * GET /devices/{uuid}/measurements - a flat list of the channels for this device
- */
-export const zDeviceMeasurementWritable = z.object({
-    enabled_detectors: z.array(z.string()).nullish(),
-    valid_min: z.number().nullish(),
-    valid_max: z.number().nullish()
-});
-
 export const zDevicePostprocessingWritable = z.record(z.string(), z.unknown());
 
 /**
- * node_id/mesh are fixed at creation. Role is editable
+ * node_id/mesh are fixed at creation. Role and whether it is a gateway are editable.
  */
 export const zDeviceUpdateWritable = z.object({
     label: z.string().max(255).nullish(),
     admin_keys_b64: z.array(z.string()).optional(),
     is_allowed: z.boolean().optional(),
     is_gateway: z.boolean().optional(),
-    absence_detection_enabled: z.boolean().optional(),
-    archive_enabled: z.boolean().optional(),
     latitude: z.number().nullish(),
     longitude: z.number().nullish(),
     name: z.string().max(255).nullish(),
@@ -1203,28 +1267,36 @@ export const zDeviceUpdateWritable = z.object({
     hardware_type: z.string().max(64).nullish(),
     role: z.string().max(32).nullish(),
     reading_interval_seconds: z.int().gte(0).lte(2147483647).nullish(),
-    publish_interval_seconds: z.int().gte(0).lte(2147483647).nullish()
+    publish_interval_seconds: z.int().gte(0).lte(2147483647).nullish(),
+    absence_detection_enabled: z.boolean().optional(),
+    archive_enabled: z.boolean().optional()
 });
 
+/**
+ * Mesh terms, needed only for a mesh on the default broker; a source's terms cover the rest.
+ */
 export const zMeshWritable = z.object({
     channel_id: z.string().max(255),
     psk_b64: z.string().optional(),
     label: z.string().max(255).nullish(),
     is_public: z.boolean().optional(),
     source_id: z.uuid().nullish(),
+    terms_version: z.string().optional(),
+    terms_locale: zTermsLocaleEnum.optional(),
     discover_gateways: z.boolean().optional()
 });
 
 /**
- * POST /meshes input
+ * Creating a mesh: its own schema component, so the response's owner-only fields can be optional.
  */
 export const zMeshCreateWritable = z.object({
     channel_id: z.string().max(255),
     psk_b64: z.string(),
     label: z.string().max(255).nullish(),
+    is_public: z.boolean().optional(),
+    source_id: z.uuid().nullish(),
     terms_version: z.string().optional(),
     terms_locale: zTermsLocaleEnum.optional(),
-    source_id: z.uuid().nullish(),
     discover_gateways: z.boolean().optional()
 });
 
@@ -1342,12 +1414,13 @@ export const zDataDeletionsListQuery = z.object({
 
 export const zDataDeletionsListResponse = z.array(zDataDeletion);
 
+export const zDetectorsListResponse = z.array(zDetector);
+
 export const zDevicesListQuery = z.object({
-    has_postprocessing: z.string().optional(),
-    is_allowed: z.string().optional(),
-    is_gateway: z.string().optional(),
-    mesh_id: z.string().optional(),
-    label: z.string().optional(),
+    has_postprocessing: z.boolean().optional(),
+    is_allowed: z.boolean().optional(),
+    is_gateway: z.boolean().optional(),
+    mesh_id: z.uuid().optional(),
     telemetry_variant: z.string().optional()
 });
 
@@ -1379,8 +1452,6 @@ export const zDevicesUpdatePath = z.object({
 });
 
 export const zDevicesUpdateResponse = zDeviceRead;
-
-export const zDetectorsListResponse = z.array(zDetector);
 
 export const zDevicesMeasurementsListPath = z.object({
     device_uuid: z.uuid()
@@ -1533,8 +1604,6 @@ export const zMeasurementsUpdatePath = z.object({
 export const zMeasurementsUpdateResponse = zMeasurementTypeRead;
 
 export const zMeshesListQuery = z.object({
-    label: z.string().optional(),
-    channel_id: z.string().optional(),
     owned: z.boolean().optional(),
     source_id: z.uuid().optional()
 });
@@ -1544,12 +1613,6 @@ export const zMeshesListResponse = z.array(zMesh);
 export const zMeshesCreateBody = zMeshCreateWritable;
 
 export const zMeshesCreateResponse = zMesh;
-
-export const zMeshesTermsRetrieveQuery = z.object({
-    locale: z.string().optional()
-});
-
-export const zMeshesTermsRetrieveResponse = zTerms;
 
 export const zMeshesDestroyPath = z.object({
     mesh_id: z.uuid()
@@ -1573,14 +1636,6 @@ export const zMeshesUpdatePath = z.object({
 });
 
 export const zMeshesUpdateResponse = zMesh;
-
-export const zMeshesTermsAcceptanceCreateBody = zMeshTermsAcceptance;
-
-export const zMeshesTermsAcceptanceCreatePath = z.object({
-    mesh_id: z.uuid()
-});
-
-export const zMeshesTermsAcceptanceCreateResponse = zMesh;
 
 export const zMeshesDevicesListPath = z.object({
     mesh_id: z.uuid()
@@ -1607,6 +1662,14 @@ export const zMeshesLinksListQuery = z.object({
 
 export const zMeshesLinksListResponse = z.array(zRfLink);
 
+export const zMeshesTermsAcceptanceCreateBody = zMeshTermsAcceptance;
+
+export const zMeshesTermsAcceptanceCreatePath = z.object({
+    mesh_id: z.uuid()
+});
+
+export const zMeshesTermsAcceptanceCreateResponse = zMesh;
+
 export const zMeshesTraceroutesListPath = z.object({
     mesh_id: z.uuid()
 });
@@ -1618,6 +1681,12 @@ export const zMeshesTraceroutesListQuery = z.object({
 });
 
 export const zMeshesTraceroutesListResponse = z.array(zTraceroute);
+
+export const zMeshesTermsRetrieveQuery = z.object({
+    locale: z.string().optional()
+});
+
+export const zMeshesTermsRetrieveResponse = zTerms;
 
 export const zMetricsRetrieveResponse = zMetricsResponse;
 
@@ -1730,6 +1799,31 @@ export const zOwnersVerifyEmailRetrieveQuery = z.object({
 });
 
 export const zOwnersVerifyEmailRetrieveResponse = zDetail;
+
+export const zPostprocessingBackfillsListQuery = z.object({
+    status: z.enum([
+        'done',
+        'failed',
+        'pending',
+        'running'
+    ]).optional()
+});
+
+export const zPostprocessingBackfillsListResponse = z.array(zPostprocessingBackfill);
+
+export const zPostprocessingBackfillsUpdateBody = zBackfillResult;
+
+export const zPostprocessingBackfillsUpdatePath = z.object({
+    backfill_id: z.uuid()
+});
+
+export const zPostprocessingBackfillsUpdateResponse = zPostprocessingBackfill;
+
+export const zPostprocessingBackfillsClaimCreatePath = z.object({
+    backfill_id: z.uuid()
+});
+
+export const zPostprocessingBackfillsClaimCreateResponse = zBackfillClaim;
 
 export const zPostprocessingBlueprintsListQuery = z.object({
     owned: z.boolean().optional()
@@ -1985,12 +2079,6 @@ export const zSinksCreateBody = zSinkCreateWritable;
 
 export const zSinksCreateResponse = zSinkCredentials;
 
-export const zSinksTermsRetrieveQuery = z.object({
-    locale: z.string().optional()
-});
-
-export const zSinksTermsRetrieveResponse = zTerms;
-
 export const zSinksDestroyPath = z.object({
     sink_id: z.uuid()
 });
@@ -2028,17 +2116,17 @@ export const zSinksTermsAcceptanceCreatePath = z.object({
 
 export const zSinksTermsAcceptanceCreateResponse = zSinkRead;
 
+export const zSinksTermsRetrieveQuery = z.object({
+    locale: z.string().optional()
+});
+
+export const zSinksTermsRetrieveResponse = zTerms;
+
 export const zSourcesListResponse = z.array(zSourceRead);
 
 export const zSourcesCreateBody = zSourceCreateWritable;
 
 export const zSourcesCreateResponse = zSourceRead;
-
-export const zSourcesTermsRetrieveQuery = z.object({
-    locale: z.string().optional()
-});
-
-export const zSourcesTermsRetrieveResponse = zTerms;
 
 export const zSourcesDestroyPath = z.object({
     source_id: z.uuid()
@@ -2076,6 +2164,14 @@ export const zSourcesTermsAcceptanceCreatePath = z.object({
 });
 
 export const zSourcesTermsAcceptanceCreateResponse = zSourceRead;
+
+export const zSourcesTermsRetrieveQuery = z.object({
+    locale: z.string().optional()
+});
+
+export const zSourcesTermsRetrieveResponse = zTerms;
+
+export const zStatusEmailRetrieveResponse = zEmailStatus;
 
 export const zTelemetryVariantsListResponse = z.array(zTelemetryVariantRead);
 
@@ -2142,6 +2238,12 @@ export const zDataDeletionsListData = z.object({
     query: zDataDeletionsListQuery.optional()
 });
 
+export const zDetectorsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
 export const zDevicesListData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -2169,12 +2271,6 @@ export const zDevicesRetrieveData = z.object({
 export const zDevicesUpdateData = z.object({
     body: zDevicesUpdateBody.optional(),
     path: zDevicesUpdatePath,
-    query: z.never().optional()
-});
-
-export const zDetectorsListData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
     query: z.never().optional()
 });
 
@@ -2310,12 +2406,6 @@ export const zMeshesCreateData = z.object({
     query: z.never().optional()
 });
 
-export const zMeshesTermsRetrieveData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: zMeshesTermsRetrieveQuery.optional()
-});
-
 export const zMeshesDestroyData = z.object({
     body: z.never().optional(),
     path: zMeshesDestroyPath,
@@ -2334,12 +2424,6 @@ export const zMeshesUpdateData = z.object({
     query: z.never().optional()
 });
 
-export const zMeshesTermsAcceptanceCreateData = z.object({
-    body: zMeshesTermsAcceptanceCreateBody,
-    path: zMeshesTermsAcceptanceCreatePath,
-    query: z.never().optional()
-});
-
 export const zMeshesDevicesListData = z.object({
     body: z.never().optional(),
     path: zMeshesDevicesListPath,
@@ -2352,10 +2436,22 @@ export const zMeshesLinksListData = z.object({
     query: zMeshesLinksListQuery.optional()
 });
 
+export const zMeshesTermsAcceptanceCreateData = z.object({
+    body: zMeshesTermsAcceptanceCreateBody.optional(),
+    path: zMeshesTermsAcceptanceCreatePath,
+    query: z.never().optional()
+});
+
 export const zMeshesTraceroutesListData = z.object({
     body: z.never().optional(),
     path: zMeshesTraceroutesListPath,
     query: zMeshesTraceroutesListQuery.optional()
+});
+
+export const zMeshesTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zMeshesTermsRetrieveQuery.optional()
 });
 
 export const zMetricsRetrieveData = z.object({
@@ -2485,7 +2581,7 @@ export const zOwnersMeRotateKeyCreateData = z.object({
 });
 
 export const zOwnersMeTermsAcceptanceCreateData = z.object({
-    body: zOwnersMeTermsAcceptanceCreateBody,
+    body: zOwnersMeTermsAcceptanceCreateBody.optional(),
     path: z.never().optional(),
     query: z.never().optional()
 });
@@ -2506,6 +2602,24 @@ export const zOwnersVerifyEmailRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
     query: zOwnersVerifyEmailRetrieveQuery
+});
+
+export const zPostprocessingBackfillsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zPostprocessingBackfillsListQuery.optional()
+});
+
+export const zPostprocessingBackfillsUpdateData = z.object({
+    body: zPostprocessingBackfillsUpdateBody,
+    path: zPostprocessingBackfillsUpdatePath,
+    query: z.never().optional()
+});
+
+export const zPostprocessingBackfillsClaimCreateData = z.object({
+    body: z.never().optional(),
+    path: zPostprocessingBackfillsClaimCreatePath,
+    query: z.never().optional()
 });
 
 export const zPostprocessingBlueprintsListData = z.object({
@@ -2659,15 +2773,9 @@ export const zSinksListData = z.object({
 });
 
 export const zSinksCreateData = z.object({
-    body: zSinksCreateBody,
+    body: zSinksCreateBody.optional(),
     path: z.never().optional(),
     query: z.never().optional()
-});
-
-export const zSinksTermsRetrieveData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: zSinksTermsRetrieveQuery.optional()
 });
 
 export const zSinksDestroyData = z.object({
@@ -2695,9 +2803,15 @@ export const zSinksCredentialsCreateData = z.object({
 });
 
 export const zSinksTermsAcceptanceCreateData = z.object({
-    body: zSinksTermsAcceptanceCreateBody,
+    body: zSinksTermsAcceptanceCreateBody.optional(),
     path: zSinksTermsAcceptanceCreatePath,
     query: z.never().optional()
+});
+
+export const zSinksTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zSinksTermsRetrieveQuery.optional()
 });
 
 export const zSourcesListData = z.object({
@@ -2710,12 +2824,6 @@ export const zSourcesCreateData = z.object({
     body: zSourcesCreateBody,
     path: z.never().optional(),
     query: z.never().optional()
-});
-
-export const zSourcesTermsRetrieveData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: zSourcesTermsRetrieveQuery.optional()
 });
 
 export const zSourcesDestroyData = z.object({
@@ -2743,8 +2851,20 @@ export const zSourcesRestartCreateData = z.object({
 });
 
 export const zSourcesTermsAcceptanceCreateData = z.object({
-    body: zSourcesTermsAcceptanceCreateBody,
+    body: zSourcesTermsAcceptanceCreateBody.optional(),
     path: zSourcesTermsAcceptanceCreatePath,
+    query: z.never().optional()
+});
+
+export const zSourcesTermsRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: zSourcesTermsRetrieveQuery.optional()
+});
+
+export const zStatusEmailRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
     query: z.never().optional()
 });
 

@@ -677,7 +677,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const parsed = zOwnersCreateData.safeParse({ body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     const { name, email, password } = parsed.data.body;
-    const termsError = termsVersionError("account", parsed.data.body.terms_version);
+    const termsError = termsVersionError("account", parsed.data.body?.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     const nextError = returnPathError(parsed.data.body.next);
     if (Object.keys(nextError).length) return c.json(nextError, 400);
@@ -708,7 +708,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     };
     db.actors.set(actor.id, actor);
     // Signing up accepts the current account terms; they don't lapse, as an account stores no mesh data.
-    recordAcceptance("account", actor.id, termsLocale(parsed.data.body.terms_locale));
+    recordAcceptance("account", actor.id, termsLocale(parsed.data.body?.terms_locale));
     if (TERMS_ENFORCED) db.accountTerms.set(actor.id, TERMS_VERSIONS.account);
     const token = newId();
     db.verificationTokens.set(token, actor.id);
@@ -888,7 +888,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     }
     // On the default broker the mesh's own terms apply; on a source, the source's.
     if (sourceId === null) {
-      const termsError = termsVersionError("mesh", parsed.data.body.terms_version);
+      const termsError = termsVersionError("mesh", parsed.data.body?.terms_version);
       if (Object.keys(termsError).length) return c.json(termsError, 400);
     }
     const mesh = await db.meshes.insert({
@@ -901,7 +901,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     });
     if (sourceId === null) {
       mesh.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
-      mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.body.terms_locale));
+      mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.body?.terms_locale));
     }
     return c.json(meshJson(mesh, true), 201);
   });
@@ -921,12 +921,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zMeshesTermsAcceptanceCreateData.safeParse({ path: { mesh_id: mesh.id }, body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("mesh", parsed.data.body.terms_version);
+    const termsError = termsVersionError("mesh", parsed.data.body?.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Renewing resumes a paused mesh and cancels the deletion its lapse scheduled.
     if (mesh.pausedAt) cancelMeshDeletions([mesh.id], "terms_lapsed", null);
     mesh.termsAcceptedVersion = TERMS_VERSIONS.mesh;
-    mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.body.terms_locale));
+    mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.body?.terms_locale));
     mesh.pausedAt = null;
     return c.json(meshJson(mesh, true), 201);
   });
@@ -1271,7 +1271,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zSourcesTermsAcceptanceCreateData.safeParse({ path: { source_id: source.id }, body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("source", parsed.data.body.terms_version);
+    const termsError = termsVersionError("source", parsed.data.body?.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     if (source.pausedAt && bridgeFails(source)) {
       return c.json({ detail: "Failed to restart the bridge, terms NOT renewed: connection refused" }, 502);
@@ -1282,7 +1282,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       cancelMeshDeletions(attached.map((mesh) => mesh.id), "terms_lapsed", source.id);
     }
     source.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.source : null;
-    source.termsExpiresAt = recordAcceptance("source", actor.id, termsLocale(parsed.data.body.terms_locale), source.id);
+    source.termsExpiresAt = recordAcceptance("source", actor.id, termsLocale(parsed.data.body?.terms_locale), source.id);
     source.pausedAt = null;
     return c.json(sourceReadJson(source), 201);
   });
@@ -1372,7 +1372,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zSinksCreateData.safeParse({ body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const input = parsed.data.body;
+    const input = parsed.data.body ?? {};
     const errors = {
       ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
       ...(await sinkTargetErrors(actor, input)),
@@ -1410,11 +1410,11 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zSinksTermsAcceptanceCreateData.safeParse({ path: { sink_id: sink.id }, body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("sink", parsed.data.body.terms_version);
+    const termsError = termsVersionError("sink", parsed.data.body?.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Renewing resumes a paused sink with the same credentials; a sink stores nothing to restore.
     sink.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.sink : null;
-    sink.termsExpiresAt = recordAcceptance("sink", actor.id, termsLocale(parsed.data.body.terms_locale));
+    sink.termsExpiresAt = recordAcceptance("sink", actor.id, termsLocale(parsed.data.body?.terms_locale));
     sink.pausedAt = null;
     return c.json(sinkReadJson(sink, sinkConnections(sink)), 201);
   });
@@ -1502,10 +1502,10 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const body: unknown = await c.req.json().catch(() => null);
     const parsed = zOwnersMeTermsAcceptanceCreateData.safeParse({ body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("account", parsed.data.body.terms_version);
+    const termsError = termsVersionError("account", parsed.data.body?.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Accepting changed account terms; nothing is paused by them.
-    recordAcceptance("account", actor.id, termsLocale(parsed.data.body.terms_locale));
+    recordAcceptance("account", actor.id, termsLocale(parsed.data.body?.terms_locale));
     if (TERMS_ENFORCED) db.accountTerms.set(actor.id, TERMS_VERSIONS.account);
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerReadJson(actor, verification, ownerTerms(actor.id)), 201);

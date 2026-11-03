@@ -44,7 +44,7 @@ export function MeshTrafficTab({ meshId, devices }: { meshId: string; devices: D
         description={formatMessage({
           id: "page.meshes.detail.network.scope",
           defaultMessage:
-            "Every packet this mesh's gateways heard, including text, routing and packets that could not be decrypted.",
+            "Statistics for packets in this mesh's gateways (including text, routing and packets that could not be decrypted).",
         })}
       />
       {stats.isPending ? (
@@ -289,7 +289,7 @@ function NetworkFigures({
             label={utilizationLabel}
             hint={formatMessage({
               id: "page.meshes.detail.network.utilizationChartHint",
-              defaultMessage: "Mean across the nodes that report it",
+              defaultMessage: "Mean Ch. Util across nodes that report it.",
             })}
           />
         ) : (
@@ -305,7 +305,7 @@ function NetworkFigures({
           </KpiPanel>
         )}
       </div>
-      <p className="text-pretty text-caption-1-regular text-text-tertiary">
+      <p className="text-caption-1-regular text-pretty text-text-tertiary">
         {formatMessage(
           {
             id: "page.meshes.detail.network.hourlyNote",
@@ -327,7 +327,7 @@ function NetworkFigures({
           title={formatMessage({ id: "page.meshes.detail.network.nodes.title", defaultMessage: "Busiest nodes" })}
           description={formatMessage({
             id: "page.meshes.detail.network.nodes.description",
-            defaultMessage: "Packets sent, top 20.",
+            defaultMessage: "Packets sent.",
           })}
           rows={nodeRows}
         />
@@ -335,7 +335,7 @@ function NetworkFigures({
           title={formatMessage({ id: "page.meshes.detail.network.gateways.title", defaultMessage: "Gateway share" })}
           description={formatMessage({
             id: "page.meshes.detail.network.gateways.description",
-            defaultMessage: "Share of all receptions each gateway made, and its mean SNR.",
+            defaultMessage: "Share of all receptions per gateway, and mean SNR.",
           })}
           rows={gatewayRows}
         />
@@ -343,7 +343,7 @@ function NetworkFigures({
           title={formatMessage({ id: "page.meshes.detail.network.hops.title", defaultMessage: "Hops" })}
           description={formatMessage({
             id: "page.meshes.detail.network.hops.description",
-            defaultMessage: "Hops each packet took before a gateway first heard it.",
+            defaultMessage: "Hops per packet until a gateway saw it.",
           })}
           rows={hopRows}
         />
@@ -351,7 +351,7 @@ function NetworkFigures({
           title={formatMessage({ id: "page.meshes.detail.network.snr.title", defaultMessage: "SNR" })}
           description={formatMessage({
             id: "page.meshes.detail.network.snr.description",
-            defaultMessage: "Receptions heard over the air, per 2.5 dB.",
+            defaultMessage: "Receptions heard over the air (every 2.5 dB).",
           })}
           rows={signalRows(stats.signal.snr, "dB")}
         />
@@ -359,7 +359,7 @@ function NetworkFigures({
           title={formatMessage({ id: "page.meshes.detail.network.rssi.title", defaultMessage: "RSSI" })}
           description={formatMessage({
             id: "page.meshes.detail.network.rssi.description",
-            defaultMessage: "Receptions heard over the air, per 10 dBm.",
+            defaultMessage: "Receptions heard over the air (every 10 dBm).",
           })}
           rows={signalRows(stats.signal.rssi, "dBm")}
         />
@@ -392,7 +392,7 @@ function GatewayOverlap({
       hint={formatMessage({
         id: "page.meshes.detail.network.overlap.hint",
         defaultMessage:
-          "Packets two gateways both heard, the share of each one's receptions, and how much stronger the first heard them.",
+          "Packets seen by two gateways, including how much those represent of each one's receptions, and how much stronger the first gateway saw them.",
       })}
     >
       {stats.gateway_pairs.length ? (
@@ -405,7 +405,7 @@ function GatewayOverlap({
               <span className="min-w-0 truncate text-body-2-regular text-text-primary">
                 {name(pair.gateway_a, pair.device_uuid_a)} ↔ {name(pair.gateway_b, pair.device_uuid_b)}
               </span>
-              <span className="text-caption-1-regular tabular-nums text-text-tertiary">
+              <span className="text-caption-1-regular text-text-tertiary tabular-nums">
                 {[
                   formatMessage(
                     { id: "page.meshes.detail.network.overlap.packets", defaultMessage: "{count} packets" },
