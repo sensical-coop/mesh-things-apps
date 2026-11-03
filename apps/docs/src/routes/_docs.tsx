@@ -73,7 +73,7 @@ function DocumentationLayout() {
   const { formatMessage } = useIntl();
 
   return (
-    <RootProvider components={{ Link: DocsLink }} theme={{ enabled: false }} search={{ options: { api: "/api/search" } }} i18n={{ locale, defaultLanguage: "en", hideLocale: "always", translations }}>
+    <RootProvider components={{ Link: DocsLink }} theme={{ enabled: false }} search={{ options: { api: "/docs/api/search" } }} i18n={{ locale, defaultLanguage: "en", hideLocale: "always", translations }}>
       <div className="docs-portal">
         <DocsLayout
           tree={docsSource.getPageTree(locale)}

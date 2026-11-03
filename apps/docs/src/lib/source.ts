@@ -12,7 +12,7 @@ export const docsI18n = defineI18n({
   fallbackLanguage: "en",
 });
 
-// Pages live at the app root (`/overview`). The public site redirects its `/docs` here.
+// Urls stay root-relative (`/overview`): links go through the router, whose basepath adds `/docs`.
 export const docsSource = loader({
   baseUrl: "/",
   i18n: docsI18n,

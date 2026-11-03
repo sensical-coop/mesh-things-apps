@@ -36,7 +36,7 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 | `packages/tsconfig` | TS compartido |
 | `packages/ui` | BoardUI + shadcn + ReUI + EvilCharts + mapcn. Destino de `pnpm shadcn`. Árbol en architecture. |
 | `apps/web` | Vite + React 19. Landing y consola. Ver tabla siguiente. |
-| `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`. La app sirve la raíz (`/overview`). El sitio redirige su `/docs` a ese origen (`DOCS_URL`). El logo del header enlaza a `VITE_WEB_URL`. |
+| `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`. La app se construye con base `/docs` (`/docs/overview`) y Caddy le pasa el `/docs` del sitio. El logo del header enlaza a `VITE_WEB_URL`. |
 | `packages/contracts` | Hey API + Zod 4.6 generado. Solo borde HTTP. |
 | `packages/domain` | Vertical slices (sin Zod) |
 | `apps/api-mock` | HTTP in-memory; repos en `src/features/<name>/repository.ts`; parsea bodies con `@mtt/contracts/zod` |

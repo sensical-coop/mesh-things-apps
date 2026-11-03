@@ -4,7 +4,8 @@ import { docsSource } from "@/lib/source";
 
 const search = createFromSource(docsSource, {
   buildIndex(page) {
-    const url = page.url;
+    // Search navigates by public href, which carries the `/docs` base.
+    const url = page.url === "/" ? "/docs" : `/docs${page.url}`;
     return {
       title: page.data.title,
       description: page.data.description,

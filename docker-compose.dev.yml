@@ -12,6 +12,7 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       HOME: /tmp
+      DOCS_DEV_URL: http://docs:5175
     volumes:
       - .:/app
     # Dependencies come from the host's `pnpm install`; running pnpm in here would see a
@@ -37,6 +38,8 @@ services:
     volumes:
       - .:/app
     command: ["node_modules/.bin/vite", "--host", "0.0.0.0", "--port", "5175", "--strictPort"]
+    ports: !override
+      - "127.0.0.1:5175:5175"
     mem_limit: 2g
     restart: "no"
     healthcheck:
