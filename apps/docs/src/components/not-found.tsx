@@ -19,7 +19,7 @@ export function DocumentationNotFound(): ReactElement {
           })}
         </p>
         <a
-          href="/overview"
+          href="/docs/overview"
           className="mt-2 inline-flex items-center gap-2 rounded-full bg-background-primary-default px-3 py-2 text-body-medium text-text-primary"
         >
           <RiArrowLeftLine aria-hidden className="size-4" />

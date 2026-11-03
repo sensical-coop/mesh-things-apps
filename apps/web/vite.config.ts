@@ -1,31 +1,30 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
-import { defineConfig, loadEnv, type Plugin } from "vite";
+import { request } from "node:http";
+import { defineConfig, type Plugin } from "vite";
 
-// The public site's /docs is a redirect to the docs app root. Same in local dev.
-function redirectDocs(docsUrl: string): Plugin {
-  const origin = docsUrl.replace(/\/$/, "");
+// Production serves /docs from the docs app through Caddy. In dev the same path is piped to
+// the docs dev server here, ahead of Nitro, which would otherwise answer with the SPA.
+function proxyDocs(target: string): Plugin {
   return {
-    name: "redirect-docs",
+    name: "proxy-docs",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const raw = req.url ?? "";
-        const path = raw.split("?")[0] ?? "";
-        if (path !== "/docs" && !path.startsWith("/docs/")) return next();
-        const rest = path.slice("/docs".length) || "/";
-        const query = raw.includes("?") ? raw.slice(raw.indexOf("?")) : "";
-        res.statusCode = 302;
-        res.setHeader("Location", `${origin}${rest}${query}`);
-        res.end();
+        const url = req.url ?? "";
+        if (url !== "/docs" && !url.startsWith("/docs/") && !url.startsWith("/docs?")) return next();
+        const upstream = request(new URL(url, target), { method: req.method, headers: req.headers }, (response) => {
+          res.writeHead(response.statusCode ?? 502, response.headers);
+          response.pipe(res);
+        });
+        upstream.on("error", next);
+        req.pipe(upstream);
       });
     },
   };
 }
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, `${import.meta.dirname}/../..`, "");
-  return {
+export default defineConfig({
   // Repo-root .env (also read by docker-compose) drives local dev too, so
   // VITE_API_URL / VITE_DISABLE_MOCK_API only need to be set in one place.
   envDir: "../..",
@@ -48,6 +47,6 @@ export default defineConfig(({ mode }) => {
   // MapLibre starts its worker as a module worker, from the app's own bundle.
   worker: { format: "es" },
   // ponytail: SPA + Nitro node_server, not TanStack Start. Start if we need SSR/server fns.
-  plugins: [redirectDocs(env.DOCS_URL || "http://127.0.0.1:5175"), nitro(), react(), tailwindcss()],
-  };
+  // The dev compose overlay runs the docs server in another container.
+  plugins: [proxyDocs(process.env.DOCS_DEV_URL ?? "http://127.0.0.1:5175"), nitro(), react(), tailwindcss()],
 });
