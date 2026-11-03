@@ -11,7 +11,7 @@ const faqs = [
     qDefault: "What is Mesh Things?",
     aId: "page.home.faq.meshtastic.a",
     aDefault:
-      "A storage and data layer for mesh sensor networks and their telemetry, starting with Meshtastic. The data comes from MQTT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
+      "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQQT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
   },
   {
     id: "federated",

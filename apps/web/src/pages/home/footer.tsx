@@ -23,7 +23,7 @@ export function LandingFooter(): ReactElement {
           <p className="text-body-regular text-text-secondary">
             {formatMessage({
               id: "page.home.footer.tagline",
-              defaultMessage: "Storage and a console for mesh sensor networks. Built by Sensical SCCL in Barcelona.",
+              defaultMessage: "Storage and a console for Meshtastic networks. Built by Sensical SCCL in Barcelona.",
             })}
           </p>
         </div>

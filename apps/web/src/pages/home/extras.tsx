@@ -9,7 +9,7 @@ const extras = [
     titleId: "page.home.extras.storage.title",
     titleDefault: "Storage for the mesh",
     bodyId: "page.home.extras.storage.body",
-    bodyDefault: "Timeseries storage for mesh sensor networks.",
+    bodyDefault: "Timeseries storage for Meshtastic-based sensor networks.",
   },
   {
     id: "gateways",
