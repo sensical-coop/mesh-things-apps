@@ -464,7 +464,7 @@ export const devicesPostprocessingsCalibrationsList = <ThrowOnError extends bool
  * Args:
  * step_key: Step being calibrated.
  * params: Calibration parameters of the step's algorithm.
- * valid_from: When this calibration takes effect. Defaults to now.
+ * valid_from: Time at which this calibration takes effect. Defaults to now.
  */
 export const devicesPostprocessingsCalibrationsCreate = <ThrowOnError extends boolean = false>(options: Options<DevicesPostprocessingsCalibrationsCreateData, ThrowOnError>): RequestResult<DevicesPostprocessingsCalibrationsCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<DevicesPostprocessingsCalibrationsCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zDevicesPostprocessingsCalibrationsCreateData.parseAsync(data),
@@ -796,7 +796,7 @@ export const meshesDevicesList = <ThrowOnError extends boolean = false>(options:
  * deleted. A public mesh's links are readable without credentials.
  *
  * Args:
- * since: How far back a link must have been heard, one of `24h`, `7d`
+ * since: Maximum time since a link was last heard, one of `24h`, `7d`
  * or `30d`. Defaults to `7d`.
  * node_id: Only links to or from this node.
  */
@@ -854,7 +854,7 @@ export const meshesTermsAcceptanceCreate = <ThrowOnError extends boolean = false
  * public mesh's traceroutes are readable without credentials.
  *
  * Args:
- * limit: How many to return, up to 500. Defaults to 50.
+ * limit: Number of traceroutes to return, up to 500. Defaults to 50.
  * before: Only traceroutes heard before this time, as an ISO 8601
  * timestamp. Pass the `heard_at` of the last one received to read
  * the next page.
@@ -1263,7 +1263,7 @@ export const ownersMeOperatorRequestRetrieve = <ThrowOnError extends boolean = f
  * is already an operator cannot file one. Limited to 3 requests a day.
  *
  * Args:
- * reason: Why the role is needed. Shown to superusers. Required.
+ * reason: Reason the role is needed. Shown to superusers. Required.
  */
 export const ownersMeOperatorRequestCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeOperatorRequestCreateData, ThrowOnError>): RequestResult<OwnersMeOperatorRequestCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<OwnersMeOperatorRequestCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersMeOperatorRequestCreateData.parseAsync(data),
@@ -1421,7 +1421,7 @@ export const postprocessingBackfillsList = <ThrowOnError extends boolean = false
  * Args:
  * status: `done` or `failed`.
  * points_published: Derived values published.
- * error: Why it failed.
+ * error: Reason for the failure.
  */
 export const postprocessingBackfillsUpdate = <ThrowOnError extends boolean = false>(options: Options<PostprocessingBackfillsUpdateData, ThrowOnError>): RequestResult<PostprocessingBackfillsUpdateResponses, unknown, ThrowOnError> => (options.client ?? client).put<PostprocessingBackfillsUpdateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zPostprocessingBackfillsUpdateData.parseAsync(data),
@@ -1689,6 +1689,11 @@ export const readingsArchiveMeshesPartitionsRetrieve = <ThrowOnError extends boo
 
 /**
  * Readings over a time range, addressed by the device's registration ID.
+ *
+ * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
+ * readings and are left out unless one is asked for with `channel`.
+ * Downsampling covers numeric fields only, so text fields are also left out
+ * whenever `window` is set.
  */
 export const readingsDevicesRetrieve = <ThrowOnError extends boolean = false>(options: Options<ReadingsDevicesRetrieveData, ThrowOnError>): RequestResult<ReadingsDevicesRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<ReadingsDevicesRetrieveResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zReadingsDevicesRetrieveData.parseAsync(data),
@@ -1842,8 +1847,10 @@ export const readingsMeshesExportsRetrieve = <ThrowOnError extends boolean = fal
 /**
  * Return a device's readings for one measurement over a time range.
  *
- * Downsampling covers numeric fields only, so text fields such as
- * `timestamp_quality` are left out whenever `window` is set.
+ * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
+ * readings and are left out unless one is asked for with `channel`.
+ * Downsampling covers numeric fields only, so text fields are also left out
+ * whenever `window` is set.
  *
  * Args:
  * payload_kind: Family to read, for example `telemetry:environment_metrics`.
@@ -1882,7 +1889,7 @@ export const readingsMeshesNodesRetrieve = <ThrowOnError extends boolean = false
  * Args:
  * payload_kind: Restrict to one family, for example
  * `telemetry:environment_metrics`. Defaults to every one.
- * lookback: How far back to search for a value, as a relative duration, a
+ * lookback: Earliest time to search for a value, as a relative duration, a
  * date or a timestamp. Defaults to `-30d`.
  */
 export const readingsMeshesNodesLatestRetrieve = <ThrowOnError extends boolean = false>(options: Options<ReadingsMeshesNodesLatestRetrieveData, ThrowOnError>): RequestResult<ReadingsMeshesNodesLatestRetrieveResponses, unknown, ThrowOnError> => (options.client ?? client).get<ReadingsMeshesNodesLatestRetrieveResponses, unknown, ThrowOnError>({
@@ -2022,7 +2029,7 @@ export const sinksList = <ThrowOnError extends boolean = false>(options?: Option
  *
  * Args:
  * label: Name for the sink.
- * streams: Which readings are sent: `decoded`, `derived` and `alarms`.
+ * streams: Readings to send: `decoded`, `derived` and `alarms`.
  * Defaults to `decoded`. Derived readings are sent only by
  * instances that run postprocessing, and alarms only by those that
  * run quality checks.
