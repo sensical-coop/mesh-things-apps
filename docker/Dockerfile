@@ -9,6 +9,8 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+# `pnpm install` runs the root `prepare` script, which installs the git hooks and skips without git.
+COPY scripts ./scripts
 COPY apps/web ./apps/web
 COPY packages ./packages
 RUN corepack prepare pnpm@10.6.1 --activate && pnpm install --frozen-lockfile
