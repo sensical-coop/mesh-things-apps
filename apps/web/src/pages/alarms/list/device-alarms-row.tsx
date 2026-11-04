@@ -28,7 +28,7 @@ export type DeviceAlarmsRowProps = {
 export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: DeviceAlarmsRowProps): ReactElement {
   const { formatMessage } = useIntl();
   const measurements = useQuery({
-    ...deviceRepository.measurements({ path: { device_uuid: device.uuid } }),
+    ...deviceRepository.measurements(device.uuid),
     enabled: expanded,
   });
   const groups = useMemo(

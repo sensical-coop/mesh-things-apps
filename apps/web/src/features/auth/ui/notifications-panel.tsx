@@ -1,4 +1,4 @@
-import { zOwnersMeUpdateData } from "@mtt/contracts/zod";
+import { OwnerUpdate } from "@mtt/contracts";
 import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@mtt/ui/components/ui/field";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
@@ -54,23 +54,21 @@ export function NotificationsPanel(): ReactElement {
     const form = new FormData(event.currentTarget);
     const raw = String(form.get("alarm_cooldown_hours") ?? "").trim();
     const seconds = raw === "" ? null : Math.round(Number(raw) * SECONDS_PER_HOUR);
-    const parsed = zOwnersMeUpdateData.safeParse({
-      body: {
-        alarm_email_cooldown_seconds: seconds,
-        ...(isOperator
-          ? {
-              status_alerts_enabled: form.get("status_alerts_enabled") === "on",
-              source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
-            }
-          : {}),
-      },
+    const parsed = OwnerUpdate.safeParse({
+      alarm_email_cooldown_seconds: seconds,
+      ...(isOperator
+        ? {
+            status_alerts_enabled: form.get("status_alerts_enabled") === "on",
+            source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
+          }
+        : {}),
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? null);
       return;
     }
     setError(null);
-    update.mutate({ body: parsed.data.body });
+    update.mutate({ data: parsed.data });
   }
 
   return (

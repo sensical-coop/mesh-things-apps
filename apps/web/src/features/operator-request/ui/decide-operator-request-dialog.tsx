@@ -1,5 +1,4 @@
-import type { OperatorRequestAdmin } from "@mtt/contracts";
-import { zOperatorRequestsUpdateData } from "@mtt/contracts/zod";
+import { OperatorRequestDecision as operatorRequestDecisionSchema, type OperatorRequestAdmin } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Textarea } from "@mtt/ui/components/ui/textarea";
@@ -36,7 +35,7 @@ export function DecideOperatorRequestDialog({
     onSuccess: async (decided) => {
       await queryClient.invalidateQueries({ queryKey: operatorRequestRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: operatorRequestRepository.retrieveKey({ path: { request_id: decided.id } }),
+        queryKey: operatorRequestRepository.retrieveKey(decided.id),
       });
       // The requester's role changed; the owner directory shows it.
       await queryClient.invalidateQueries({ queryKey: authRepository.listKey() });
@@ -57,16 +56,13 @@ export function DecideOperatorRequestDialog({
     event.preventDefault();
     if (!request) return;
     const form = new FormData(event.currentTarget);
-    const parsed = zOperatorRequestsUpdateData.safeParse({
-      path: { request_id: request.id },
-      body: { decision, note: String(form.get("note") ?? "").trim() },
-    });
+    const parsed = operatorRequestDecisionSchema.safeParse({ decision, note: String(form.get("note") ?? "").trim() });
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    decide.mutate(parsed.data);
+    decide.mutate({ requestId: request.id, data: parsed.data });
   }
 
   return (

@@ -9916,5 +9916,10 @@
         "name": "sessionid"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "https://api.sensical.es"
+    }
+  ]
 }

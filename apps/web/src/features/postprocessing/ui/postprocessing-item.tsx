@@ -43,16 +43,14 @@ export function PostprocessingItem({
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const version = useQuery(
-    blueprintRepository.version({
-      path: { blueprint_id: postprocessing.blueprint_id, number: postprocessing.blueprint_version },
-    }),
+    blueprintRepository.version(postprocessing.blueprint_id, postprocessing.blueprint_version),
   );
   const [refused, setRefused] = useState<string[]>([]);
   const toggle = useMutation({
     ...postprocessingRepository.update(),
     onSuccess: async () => {
       setRefused([]);
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
+      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
     },
     onError: (error) => setRefused(errorMessages(error)),
   });
@@ -82,8 +80,9 @@ export function PostprocessingItem({
             disabled={toggle.isPending}
             onClick={() =>
               toggle.mutate({
-                path: { device_uuid: deviceUuid, postprocessing_id: postprocessing.id },
-                body: { is_enabled: !postprocessing.is_enabled },
+                deviceUuid,
+                postprocessingId: postprocessing.id,
+                data: { is_enabled: !postprocessing.is_enabled },
               })
             }
           >

@@ -62,7 +62,7 @@ export function DeviceSettingsDialog({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }),
+        queryKey: deviceRepository.retrieveKey(device.uuid),
       });
       await onSaved?.();
       onClose();
@@ -101,8 +101,8 @@ export function DeviceSettingsDialog({
     setError(null);
     setFieldErrors({});
     update.mutate({
-      path: { device_uuid: device.uuid },
-      body: {
+      deviceUuid: device.uuid,
+      data: {
         is_allowed: form.get("is_allowed") === "on",
         is_gateway: form.get("is_gateway") === "on",
         absence_detection_enabled: form.get("absence_detection_enabled") === "on",

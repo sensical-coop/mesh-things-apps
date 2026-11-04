@@ -24,7 +24,7 @@ export function DeleteSourceDialog({ source, onClose }: DeleteSourceDialogProps)
   const queryClient = useQueryClient();
   // The API refuses to delete a source that meshes use, so list them up front.
   const attached = useQuery({
-    ...meshRepository.list({ query: { source_id: source?.id ?? "" } }),
+    ...meshRepository.list({ source_id: source?.id ?? "" }),
     enabled: source !== null,
   });
   const attachedMeshes = attached.data ?? [];
@@ -114,7 +114,7 @@ export function DeleteSourceDialog({ source, onClose }: DeleteSourceDialogProps)
             variant="danger"
             size="small"
             disabled={destroy.isPending || blocked}
-            onClick={() => source && destroy.mutate({ path: { source_id: source.id } })}
+            onClick={() => source && destroy.mutate({ sourceId: source.id })}
           >
             {destroy.isPending
               ? formatMessage({ id: "feature.source.deleteDialog.deleting", defaultMessage: "Deleting" })

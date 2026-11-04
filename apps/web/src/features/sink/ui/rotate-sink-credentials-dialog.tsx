@@ -71,7 +71,7 @@ export function RotateSinkCredentialsDialog({ sink, onClose, onRotated }: Rotate
             type="button"
             size="small"
             disabled={rotate.isPending}
-            onClick={() => sink && rotate.mutate({ path: { sink_id: sink.id } })}
+            onClick={() => sink && rotate.mutate({ sinkId: sink.id })}
           >
             {rotate.isPending
               ? formatMessage({ id: "feature.sink.rotate.issuing", defaultMessage: "Issuing" })

@@ -22,11 +22,11 @@ export function TermsBanner(): ReactElement | null {
   // Nothing lapses on an instance that asks for no terms.
   const enforced = useTermsEnforced() === true;
   const owned = useQuery({
-    ...meshRepository.list({ query: { owned: true } }),
+    ...meshRepository.list({ owned: true }),
     enabled: me !== undefined && enforced,
   });
   const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: me !== undefined && enforced,
     // The current version changes only when the terms are republished.
     staleTime: 5 * 60_000,

@@ -108,7 +108,7 @@ export function Header(): ReactElement {
           <button
             type="button"
             className={cx(headerLinkClass, "hidden md:inline")}
-            onClick={() => logout.mutate({})}
+            onClick={() => logout.mutate()}
           >
             {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
           </button>
@@ -159,7 +159,7 @@ export function Header(): ReactElement {
           <button
             type="button"
             className={cx(headerLinkClass, "w-full px-3 py-2 text-start")}
-            onClick={() => logout.mutate({})}
+            onClick={() => logout.mutate()}
           >
             {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
           </button>

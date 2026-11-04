@@ -22,12 +22,12 @@ export function useArchiveCredentials(meshId: string | undefined): ArchiveCreden
     ...archiveRepository.credentials(),
     onSuccess: (credentials, variables) => {
       setFailure(null);
-      setIssued({ meshId: variables.path.mesh_id, credentials });
+      setIssued({ meshId: variables.meshId, credentials });
     },
     onError: (error, variables) => {
       const { status, detail } = readApiError(error);
       setFailure({
-        meshId: variables.path.mesh_id,
+        meshId: variables.meshId,
         message:
           status === 404
             ? formatMessage({
@@ -42,7 +42,7 @@ export function useArchiveCredentials(meshId: string | undefined): ArchiveCreden
   return {
     credentials: issued && issued.meshId === meshId ? issued.credentials : null,
     issue: () => {
-      if (meshId) mutation.mutate({ path: { mesh_id: meshId } });
+      if (meshId) mutation.mutate({ meshId: meshId });
     },
     pending: mutation.isPending,
     error: failure && failure.meshId === meshId ? failure.message : null,

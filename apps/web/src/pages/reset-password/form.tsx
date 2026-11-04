@@ -120,7 +120,7 @@ export function ResetPasswordForm({ token }: { token: string | null }): ReactEle
     }
 
     try {
-      await resetPassword.mutateAsync({ body: { token, new_password: newPassword } });
+      await resetPassword.mutateAsync({ data: { token, new_password: newPassword } });
       setSucceeded(true);
     } catch (caught) {
       const formatted = formatResetError(caught, formatMessage);

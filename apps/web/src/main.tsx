@@ -1,5 +1,4 @@
-import { client } from "@mtt/contracts/client";
-import { attachCsrfHeader, attachErrorStatus } from "@mtt/contracts/runtime";
+import { setApiBaseUrl } from "@mtt/contracts/runtime";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -12,12 +11,7 @@ import { API_URL } from "@/lib/api-url";
 import { readApiError } from "@/lib/api-errors";
 import "./styles.css";
 
-client.setConfig({
-  baseUrl: API_URL,
-  credentials: "include",
-});
-client.interceptors.request.use(attachCsrfHeader);
-client.interceptors.error.use(attachErrorStatus);
+setApiBaseUrl(API_URL);
 // csrftoken cookie for a returning user with valid session
 void authRepository.csrf().catch(() => {});
 

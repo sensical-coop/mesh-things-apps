@@ -14,7 +14,7 @@ export function VerifyEmailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const [token] = useQueryState("token", parseAsString);
   const verify = useQuery({
-    ...authRepository.verifyEmail({ query: { token: token ?? "" } }),
+    ...authRepository.verifyEmail({ token: token ?? "" }),
     enabled: Boolean(token),
     retry: false,
   });

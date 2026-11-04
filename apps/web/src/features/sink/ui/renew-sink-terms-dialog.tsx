@@ -44,8 +44,8 @@ export function RenewSinkTermsDialog({ sink, onClose, onRenewed }: RenewSinkTerm
           ? close()
           : sink &&
             renew.mutate({
-              path: { sink_id: sink.id },
-              body: { terms_version: acceptance.version, terms_locale: acceptance.locale },
+              sinkId: sink.id,
+              data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
             })
       }
       acceptLabel={

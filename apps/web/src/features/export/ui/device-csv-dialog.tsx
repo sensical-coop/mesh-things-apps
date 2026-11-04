@@ -33,7 +33,7 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
   const { formatWhen } = useFormatters();
   const [range, setRange] = useState<ExportRange>(() => lastDays(7));
   const exports = useQuery({
-    ...exportRepository.meshList({ path: { mesh_id: device.mesh_id } }),
+    ...exportRepository.meshList(device.mesh_id),
     refetchInterval: (query) => pollInterval(query.state.data),
   });
   const requested = useRequestExport();

@@ -12,9 +12,6 @@
     "test": {
       "dependsOn": ["^test"]
     },
-    "openapi-ts": {
-      "cache": false
-    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },

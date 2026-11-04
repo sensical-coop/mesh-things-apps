@@ -4,7 +4,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { cx } from "@mtt/ui/utils/cx";
 import { RiCollapseDiagonalLine, RiExpandDiagonalLine, RiMapLine, RiShareLine } from "@remixicon/react";
-import { type UseQueryResult, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { routes } from "@/router";
@@ -58,11 +58,11 @@ export function TopologySection({
   const [traceLimit, setTraceLimit] = useState(TRACEROUTE_PAGE);
   const [selected, setSelected] = useState<number | null>(null);
   const links = useQuery({
-    ...meshRepository.links({ path: { mesh_id: meshId }, query: { since: LINK_WINDOWS[range] } }),
+    ...meshRepository.links(meshId, { since: LINK_WINDOWS[range] }),
     refetchInterval: REFRESH_MS,
   });
   const traceroutes = useQuery({
-    ...meshRepository.traceroutes({ path: { mesh_id: meshId }, query: { limit: traceLimit } }),
+    ...meshRepository.traceroutes(meshId, { limit: traceLimit }),
     refetchInterval: REFRESH_MS,
   });
 
@@ -400,7 +400,7 @@ function TraceroutePanel({
   nodeName,
   snr,
 }: {
-  traceroutes: UseQueryResult<Traceroute[]>;
+  traceroutes: { data: Traceroute[] | undefined; isPending: boolean };
   limit: number;
   onMore: () => void;
   selected: number | null;

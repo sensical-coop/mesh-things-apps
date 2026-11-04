@@ -14,7 +14,7 @@ export function MeshTopologyTab({ meshId, devices }: { meshId: string; devices: 
   const [range] = useStatsRange();
   // The same query as the Traffic tab, so switching tabs reuses its cached figures for the relays.
   const stats = useQuery({
-    ...readingsRepository.meshStats({ path: { mesh_id: meshId }, query: { range } }),
+    ...readingsRepository.meshStats(meshId, { range }),
     refetchInterval: REFRESH_MS,
   });
   return (

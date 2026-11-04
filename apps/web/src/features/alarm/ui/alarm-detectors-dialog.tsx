@@ -1,4 +1,4 @@
-import { zDetectorEnum } from "@mtt/contracts/zod";
+import { DetectorEnum } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,10 +41,10 @@ export function AlarmDetectorsDialog({
 
   const updateMeasurement = useMutation(deviceRepository.measurementUpdate());
 
-  const device = useQuery({ ...deviceRepository.retrieve({ path: { device_uuid: deviceUuid } }), enabled: open });
-  const measurements = useQuery({ ...deviceRepository.measurements({ path: { device_uuid: deviceUuid } }), enabled: open });
+  const device = useQuery({ ...deviceRepository.retrieve(deviceUuid), enabled: open });
+  const measurements = useQuery({ ...deviceRepository.measurements(deviceUuid), enabled: open });
   const row = measurements.data?.find((m) => m.measurement_type.channel === channel);
-  const variants = useQuery({ ...deviceRepository.telemetryVariants({ path: { device_uuid: deviceUuid } }), enabled: open });
+  const variants = useQuery({ ...deviceRepository.telemetryVariants(deviceUuid), enabled: open });
   const variant = variants.data?.find((v) => v.telemetry_variant.id === row?.telemetry_variant_id);
   const detectorsQuery = useQuery({ ...alarmRepository.detectors(), enabled: open });
   const measurementDetectors = (detectorsQuery.data ?? []).filter((d) => d.scope === "measurement");
@@ -58,7 +58,7 @@ export function AlarmDetectorsDialog({
     if (!row) return;
     const form = new FormData(event.currentTarget);
     const enabledDetectors = measurementDetectors.flatMap((d) => {
-      const name = zDetectorEnum.safeParse(d.name);
+      const name = DetectorEnum.safeParse(d.name);
       return name.success && form.get(`detector-${d.name}`) === "on" ? [name.data] : [];
     });
     const min = String(form.get("valid_min") ?? "").trim();
@@ -75,15 +75,12 @@ export function AlarmDetectorsDialog({
     setError(null);
     setFieldErrors({});
     try {
-      await updateMeasurement.mutateAsync({
-        path: { device_uuid: deviceUuid, measurement_id: row.id },
-        body: {
+      await updateMeasurement.mutateAsync({ deviceUuid, measurementId: row.id, data: {
           enabled_detectors: enabledDetectors,
           valid_min: min === "" ? null : Number(min),
           valid_max: max === "" ? null : Number(max),
-        },
-      });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
+        } });
+      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
       onClose();
     } catch (failure) {
       const { fields } = readApiError(failure);

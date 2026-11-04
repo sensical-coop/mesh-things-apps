@@ -32,7 +32,7 @@ export function OperatorRequestsPage(): ReactElement {
   const { me } = useMe();
   const allowed = canDecideOperatorRequests(me);
   const [status, setStatus] = useState<OperatorRequestStatusFilter>("pending");
-  const requests = useQuery({ ...operatorRequestRepository.list({ query: { status } }), enabled: allowed });
+  const requests = useQuery({ ...operatorRequestRepository.list({ status }), enabled: allowed });
   const [deciding, setDeciding] = useState<{ request: OperatorRequestAdmin; decision: OperatorRequestDecision } | null>(
     null,
   );

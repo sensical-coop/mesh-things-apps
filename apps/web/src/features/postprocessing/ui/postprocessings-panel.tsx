@@ -33,7 +33,7 @@ type Open =
 export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, canEdit }: PostprocessingsPanelProps): ReactElement | null {
   const { formatMessage } = useIntl();
   const { me } = useMe();
-  const attached = useQuery(postprocessingRepository.list({ path: { device_uuid: deviceUuid } }));
+  const attached = useQuery(postprocessingRepository.list(deviceUuid));
   const blueprints = useQuery(blueprintRepository.list());
   const algorithms = useQuery(blueprintRepository.algorithms());
   const [open, setOpen] = useState<Open>(null);
@@ -41,9 +41,7 @@ export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, ca
   const attachable = (blueprints.data ?? []).filter((row) => canAttachBlueprint(row, meshOwnerId, me));
   const calibrating = open?.kind === "calibrate" ? open.postprocessing : null;
   const calibratingVersion = useQuery({
-    ...blueprintRepository.version({
-      path: { blueprint_id: calibrating?.blueprint_id ?? "", number: calibrating?.blueprint_version ?? 0 },
-    }),
+    ...blueprintRepository.version(calibrating?.blueprint_id ?? "", calibrating?.blueprint_version ?? 0),
     enabled: calibrating !== null,
   });
   const rows = attached.data ?? [];

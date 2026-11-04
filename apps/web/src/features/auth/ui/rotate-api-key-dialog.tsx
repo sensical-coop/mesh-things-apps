@@ -68,7 +68,7 @@ export function RotateApiKeyDialog({ open, onClose }: { open: boolean; onClose: 
             <Button type="button" variant="secondary" size="small" onClick={close}>
               {formatMessage({ id: "feature.auth.rotateKey.cancel", defaultMessage: "Cancel" })}
             </Button>
-            <Button type="button" size="small" disabled={rotate.isPending} onClick={() => rotate.mutate({})}>
+            <Button type="button" size="small" disabled={rotate.isPending} onClick={() => rotate.mutate()}>
               {rotate.isPending
                 ? formatMessage({ id: "feature.auth.rotateKey.generating", defaultMessage: "Generating" })
                 : formatMessage({ id: "feature.auth.rotateKey.confirm", defaultMessage: "Generate new key" })}

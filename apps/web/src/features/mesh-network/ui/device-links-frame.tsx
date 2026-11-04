@@ -17,9 +17,9 @@ export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactEleme
   const { formatMessage, formatNumber } = useIntl();
   const { formatLastSeen } = useFormatters();
   const links = useQuery(
-    meshRepository.links({ path: { mesh_id: device.mesh_id }, query: { since: "7d", node_id: String(device.node_id) } }),
+    meshRepository.links(device.mesh_id, { since: "7d", node_id: String(device.node_id) }),
   );
-  const meshDevices = useQuery(meshRepository.devices({ path: { mesh_id: device.mesh_id } }));
+  const meshDevices = useQuery(meshRepository.devices(device.mesh_id));
   const byNode = useMemo(() => new Map((meshDevices.data ?? []).map((d) => [d.node_id, d])), [meshDevices.data]);
 
   const sourceLabel: Record<RfLink["source"], string> = {

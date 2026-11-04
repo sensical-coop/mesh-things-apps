@@ -53,7 +53,7 @@ export function ArchivePage(): ReactElement {
     archivable[0];
   // Only the chosen mesh's file list: one request, however many meshes there are.
   const currentManifest = useQuery({
-    ...archiveRepository.manifest({ path: { mesh_id: current?.id ?? "00000000-0000-4000-8000-000000000000" } }),
+    ...archiveRepository.manifest(current?.id ?? "00000000-0000-4000-8000-000000000000"),
     enabled: current != null,
     // A 404 on one's own mesh means the instance runs no archive; asking again won't help.
     retry: false,

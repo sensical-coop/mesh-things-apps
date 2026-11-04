@@ -1,35 +1,34 @@
 import {
-  zDevicesCreateData,
-  zDevicesMeasurementsUpdateData,
-  zDevicesUpdateData,
-  zMeshesCreateData,
-  zMeshesTermsAcceptanceCreateData,
-  zMeshesUpdateData,
-  zOwnersCreateData,
-  zOwnersMeResendVerificationCreateData,
-  zOwnersLoginCreateData,
-  zOwnersMeUpdateData,
-  zOwnersRequestPasswordResetCreateData,
-  zOwnersResetPasswordCreateData,
-  zDevicesPostprocessingsBackfillsCreateData,
-  zDevicesPostprocessingsCalibrationsCreateData,
-  zDevicesPostprocessingsCreateData,
-  zDevicesPostprocessingsUpdateData,
-  zPostprocessingBlueprintsCreateData,
-  zPostprocessingBlueprintsUpdateData,
-  zPostprocessingBlueprintsVersionsCreateData,
-  zOperatorRequestsUpdateData,
-  zOwnersMeOperatorRequestCreateData,
-  zOwnersMeTermsAcceptanceCreateData,
-  zSourcesTermsAcceptanceCreateData,
-  zSourcesCreateData,
-  zSourcesUpdateData,
-  zSinksCreateData,
-  zSinksTermsAcceptanceCreateData,
-  zSinksUpdateData,
-  zTelemetryVariantsMeasurementsUpdateData,
-  zReadingsMeshesExportsCreateData,
-} from "@mtt/contracts/zod";
+  AccountTermsAcceptance,
+  BlueprintVersionRequest,
+  DeviceCreate,
+  DeviceMeasurementUpdate,
+  DevicePostprocessingWrite,
+  DeviceUpdate,
+  ExportRequest,
+  MeshCreateRequest,
+  MeshTermsAcceptance,
+  MeshUpdate,
+  OperatorRequestCreate,
+  OperatorRequestDecision,
+  OwnerCreate,
+  OwnerLogin,
+  OwnerRequestPasswordReset,
+  OwnerResetPassword,
+  OwnerUpdate,
+  PostprocessingBackfillRequest,
+  PostprocessingBlueprintCreate,
+  PostprocessingBlueprintUpdate,
+  ResendVerification,
+  SinkCreate,
+  SinkTermsAcceptance,
+  SinkWrite,
+  SourceCreateRequest,
+  SourceTermsAcceptance,
+  SourceUpdateRequest,
+  StepCalibrationRequest,
+  TelemetryVariantMeasurementUpdate,
+} from "@mtt/contracts";
 import { matchesDeviceFilter, type Device } from "@mtt/domain/device/Device";
 import {
   matchesTelemetryVariantFilter,
@@ -620,11 +619,11 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.post("/owners/login", async (c) => {
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersLoginCreateData.safeParse({ body });
+    const parsed = OwnerLogin.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     try {
       const result = await auth.api.signInEmail({
-        body: { email: parsed.data.body.email, password: parsed.data.body.password },
+        body: { email: parsed.data.email, password: parsed.data.password },
         headers: c.req.raw.headers,
         returnHeaders: true,
       });
@@ -642,9 +641,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.post("/owners/request-password-reset", async (c) => {
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersRequestPasswordResetCreateData.safeParse({ body });
+    const parsed = OwnerRequestPasswordReset.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const actor = [...db.actors.values()].find((candidate) => candidate.email === parsed.data.body.email);
+    const actor = [...db.actors.values()].find((candidate) => candidate.email === parsed.data.email);
     if (actor) {
       for (const [existingToken, entry] of db.passwordResetTokens) {
         if (entry.ownerId === actor.id) db.passwordResetTokens.delete(existingToken);
@@ -658,9 +657,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.post("/owners/reset-password", async (c) => {
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersResetPasswordCreateData.safeParse({ body });
+    const parsed = OwnerResetPassword.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const { token, new_password: newPassword } = parsed.data.body;
+    const { token, new_password: newPassword } = parsed.data;
     const entry = db.passwordResetTokens.get(token);
     const expired =
       !entry || Date.now() > Date.parse(entry.sentAt) + PASSWORD_RESET_TTL_HOURS * 60 * 60 * 1000;
@@ -674,12 +673,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.post("/owners", async (c) => {
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersCreateData.safeParse({ body });
+    const parsed = OwnerCreate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const { name, email, password } = parsed.data.body;
-    const termsError = termsVersionError("account", parsed.data.body?.terms_version);
+    const { name, email, password } = parsed.data;
+    const termsError = termsVersionError("account", parsed.data.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
-    const nextError = returnPathError(parsed.data.body.next);
+    const nextError = returnPathError(parsed.data.next);
     if (Object.keys(nextError).length) return c.json(nextError, 400);
     let result;
     try {
@@ -708,13 +707,13 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     };
     db.actors.set(actor.id, actor);
     // Signing up accepts the current account terms; they don't lapse, as an account stores no mesh data.
-    recordAcceptance("account", actor.id, termsLocale(parsed.data.body?.terms_locale));
+    recordAcceptance("account", actor.id, termsLocale(parsed.data.terms_locale));
     if (TERMS_ENFORCED) db.accountTerms.set(actor.id, TERMS_VERSIONS.account);
     const token = newId();
     db.verificationTokens.set(token, actor.id);
     const verification = { emailVerifiedAt: null, emailVerificationSentAt: now };
     db.verifications.set(actor.id, verification);
-    console.info(`[mock] verification link for ${email}: ${verificationLink(token, parsed.data.body.next)}`);
+    console.info(`[mock] verification link for ${email}: ${verificationLink(token, parsed.data.next)}`);
     return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${token}`, ownerTerms(actor.id)), 201);
   });
 
@@ -741,9 +740,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
 
   app.post("/owners/me/resend-verification", async (c) => {
     const body: unknown = await c.req.json().catch(() => undefined);
-    const parsed = zOwnersMeResendVerificationCreateData.safeParse({ body });
+    const parsed = ResendVerification.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const next = parsed.data.body?.next;
+    const next = parsed.data.next;
     const nextError = returnPathError(next);
     if (Object.keys(nextError).length) return c.json(nextError, 400);
     const actor = c.get("actor");
@@ -784,9 +783,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.put("/owners/me", async (c) => {
     const actor = c.get("actor");
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersMeUpdateData.safeParse({ body });
+    const parsed = OwnerUpdate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const patch = parsed.data.body ?? {};
+    const patch = parsed.data;
     if (patch.name !== undefined) actor.name = patch.name;
     if (patch.alarm_email_cooldown_seconds !== undefined) {
       actor.alarmEmailCooldownSeconds = patch.alarm_email_cooldown_seconds;
@@ -880,28 +879,28 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "You do not have permission to perform this action." }, 403);
     }
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zMeshesCreateData.safeParse({ body });
+    const parsed = MeshCreateRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const sourceId = parsed.data.body.source_id ?? null;
+    const sourceId = parsed.data.source_id ?? null;
     if (sourceId !== null && !(await canAttachSource(actor, sourceId, null))) {
       return c.json({ source_id: [`Invalid pk "${sourceId}" - object does not exist.`] }, 400);
     }
     // On the default broker the mesh's own terms apply; on a source, the source's.
     if (sourceId === null) {
-      const termsError = termsVersionError("mesh", parsed.data.body?.terms_version);
+      const termsError = termsVersionError("mesh", parsed.data.terms_version);
       if (Object.keys(termsError).length) return c.json(termsError, 400);
     }
     const mesh = await db.meshes.insert({
-      channelId: parsed.data.body.channel_id,
-      pskB64: parsed.data.body.psk_b64,
-      label: parsed.data.body.label ?? null,
+      channelId: parsed.data.channel_id,
+      pskB64: parsed.data.psk_b64,
+      label: parsed.data.label ?? null,
       ownerId: actor.id,
       sourceId,
-      discoverGateways: parsed.data.body.discover_gateways ?? false,
+      discoverGateways: parsed.data.discover_gateways ?? false,
     });
     if (sourceId === null) {
       mesh.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
-      mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.body?.terms_locale));
+      mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.terms_locale));
     }
     return c.json(meshJson(mesh, true), 201);
   });
@@ -919,14 +918,14 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "This mesh is on a source; its source's terms apply" }, 409);
     }
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zMeshesTermsAcceptanceCreateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    const parsed = MeshTermsAcceptance.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("mesh", parsed.data.body?.terms_version);
+    const termsError = termsVersionError("mesh", parsed.data.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Renewing resumes a paused mesh and cancels the deletion its lapse scheduled.
     if (mesh.pausedAt) cancelMeshDeletions([mesh.id], "terms_lapsed", null);
     mesh.termsAcceptedVersion = TERMS_VERSIONS.mesh;
-    mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.body?.terms_locale));
+    mesh.termsExpiresAt = recordAcceptance("mesh", actor.id, termsLocale(parsed.data.terms_locale));
     mesh.pausedAt = null;
     return c.json(meshJson(mesh, true), 201);
   });
@@ -979,9 +978,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "You do not have permission to perform this action." }, 403);
     }
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    const parsed = MeshUpdate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const patch = parsed.data.body ?? {};
+    const patch = parsed.data;
     if (patch.source_id && !(await canAttachSource(actor, patch.source_id, mesh.sourceId))) {
       return c.json({ source_id: [`Invalid pk "${patch.source_id}" - object does not exist.`] }, 400);
     }
@@ -1053,22 +1052,22 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.post("/devices", async (c) => {
     const actor = c.get("actor");
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesCreateData.safeParse({ body });
+    const parsed = DeviceCreate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const mesh = await db.meshes.get(parsed.data.body.mesh_id);
+    const mesh = await db.meshes.get(parsed.data.mesh_id);
     if (!mesh) return c.json({ detail: "Mesh not found" }, 400);
     if (!canWriteMesh(actor, mesh)) {
       return c.json({ detail: "You do not have permission to perform this action." }, 403);
     }
     const device = await db.devices.insert({
-      nodeId: parsed.data.body.node_id,
-      meshId: parsed.data.body.mesh_id,
-      isGateway: parsed.data.body.is_gateway,
-      label: parsed.data.body.label ?? null,
-      name: parsed.data.body.name ?? null,
-      shortName: parsed.data.body.short_name ?? null,
-      latitude: parsed.data.body.latitude ?? null,
-      longitude: parsed.data.body.longitude ?? null,
+      nodeId: parsed.data.node_id,
+      meshId: parsed.data.mesh_id,
+      isGateway: parsed.data.is_gateway,
+      label: parsed.data.label ?? null,
+      name: parsed.data.name ?? null,
+      shortName: parsed.data.short_name ?? null,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
     });
     return c.json(await deviceOut(actor, device), 201);
   });
@@ -1090,12 +1089,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "You do not have permission to perform this action." }, 403);
     }
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesUpdateData.safeParse({
-      path: { device_uuid: c.req.param("device_uuid") },
-      body,
-    });
+    const parsed = DeviceUpdate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const patch = parsed.data.body ?? {};
+    const patch = parsed.data;
     if (patch.archive_enabled && !existing.archiveEnabled) {
       const owner = db.actors.get(mesh.ownerId);
       if (!ARCHIVE_ENABLED) return c.json({ archive_enabled: ["This instance has no archive."] }, 400);
@@ -1151,12 +1147,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const found = await findDeviceMeasurement(db, device, c.req.param("measurement_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesMeasurementsUpdateData.safeParse({
-      path: { device_uuid: device.uuid, measurement_id: c.req.param("measurement_id") },
-      body,
-    });
+    const parsed = DeviceMeasurementUpdate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const patch = parsed.data.body ?? {};
+    const patch = parsed.data;
     if ("enabled_detectors" in patch) {
       const enabledDetectors = patch.enabled_detectors ?? null;
       if (enabledDetectors) {
@@ -1225,9 +1218,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zSourcesCreateData.safeParse({ body });
+    const parsed = SourceCreateRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const input = parsed.data.body;
+    const input = parsed.data;
     const errors = {
       ...sourceErrors(input),
       ...credentialErrors(input.username, input.password),
@@ -1269,9 +1262,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "Only the operator who created this source can accept its terms" }, 403);
     }
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zSourcesTermsAcceptanceCreateData.safeParse({ path: { source_id: source.id }, body });
+    const parsed = SourceTermsAcceptance.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("source", parsed.data.body?.terms_version);
+    const termsError = termsVersionError("source", parsed.data.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     if (source.pausedAt && bridgeFails(source)) {
       return c.json({ detail: "Failed to restart the bridge, terms NOT renewed: connection refused" }, 502);
@@ -1282,7 +1275,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       cancelMeshDeletions(attached.map((mesh) => mesh.id), "terms_lapsed", source.id);
     }
     source.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.source : null;
-    source.termsExpiresAt = recordAcceptance("source", actor.id, termsLocale(parsed.data.body?.terms_locale), source.id);
+    source.termsExpiresAt = recordAcceptance("source", actor.id, termsLocale(parsed.data.terms_locale), source.id);
     source.pausedAt = null;
     return c.json(sourceReadJson(source), 201);
   });
@@ -1311,10 +1304,10 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const source = await sourceForOperator(actor, c.req.param("source_id"));
     if (!source) return c.json({ detail: "Source not found" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zSourcesUpdateData.safeParse({ path: { source_id: source.id }, body });
+    const parsed = SourceUpdateRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     // Any subset of the fields; "" or null removes the password and keeps the username.
-    const input = parsed.data.body ?? {};
+    const input = parsed.data;
     const server = input.server?.trim();
     const topic = input.topic?.trim();
     const username = input.username === undefined ? source.username : input.username;
@@ -1370,9 +1363,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zSinksCreateData.safeParse({ body });
+    const parsed = SinkCreate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const input = parsed.data.body ?? {};
+    const input = parsed.data;
     const errors = {
       ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
       ...(await sinkTargetErrors(actor, input)),
@@ -1408,13 +1401,13 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "Only the operator who created this sink can accept its terms" }, 403);
     }
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zSinksTermsAcceptanceCreateData.safeParse({ path: { sink_id: sink.id }, body });
+    const parsed = SinkTermsAcceptance.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("sink", parsed.data.body?.terms_version);
+    const termsError = termsVersionError("sink", parsed.data.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Renewing resumes a paused sink with the same credentials; a sink stores nothing to restore.
     sink.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.sink : null;
-    sink.termsExpiresAt = recordAcceptance("sink", actor.id, termsLocale(parsed.data.body?.terms_locale));
+    sink.termsExpiresAt = recordAcceptance("sink", actor.id, termsLocale(parsed.data.terms_locale));
     sink.pausedAt = null;
     return c.json(sinkReadJson(sink, sinkConnections(sink)), 201);
   });
@@ -1435,10 +1428,10 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const sink = await sinkForOperator(actor, c.req.param("sink_id"));
     if (!sink) return c.json({ detail: "Sink not found" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zSinksUpdateData.safeParse({ path: { sink_id: sink.id }, body });
+    const parsed = SinkWrite.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     // Any subset; a list sent replaces the current one, a list left out is kept.
-    const input = parsed.data.body ?? {};
+    const input = parsed.data;
     const errors = {
       ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
       ...(await sinkTargetErrors(actor, input)),
@@ -1500,12 +1493,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   app.post("/owners/me/terms-acceptance", async (c) => {
     const actor = c.get("actor");
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersMeTermsAcceptanceCreateData.safeParse({ body });
+    const parsed = AccountTermsAcceptance.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const termsError = termsVersionError("account", parsed.data.body?.terms_version);
+    const termsError = termsVersionError("account", parsed.data.terms_version);
     if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Accepting changed account terms; nothing is paused by them.
-    recordAcceptance("account", actor.id, termsLocale(parsed.data.body?.terms_locale));
+    recordAcceptance("account", actor.id, termsLocale(parsed.data.terms_locale));
     if (TERMS_ENFORCED) db.accountTerms.set(actor.id, TERMS_VERSIONS.account);
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerReadJson(actor, verification, ownerTerms(actor.id)), 201);
@@ -1524,9 +1517,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     if (!canRequestOperator(actor)) return c.json({ detail: "You are already an operator" }, 409);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOwnersMeOperatorRequestCreateData.safeParse({ body });
+    const parsed = OperatorRequestCreate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const reason = parsed.data.body.reason.trim();
+    const reason = parsed.data.reason.trim();
     if (!reason) return c.json({ reason: ["This field may not be blank."] }, 400);
     if (db.operatorRequests.some((row) => row.ownerId === actor.id && row.status === "pending")) {
       return c.json({ detail: "You already have a pending operator request" }, 409);
@@ -1575,12 +1568,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const row = db.operatorRequests.find((candidate) => candidate.id === c.req.param("request_id"));
     if (!row) return c.json({ detail: "Operator request not found" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zOperatorRequestsUpdateData.safeParse({ path: { request_id: row.id }, body });
+    const parsed = OperatorRequestDecision.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     if (row.status !== "pending") return c.json({ detail: `This request was already ${row.status}` }, 409);
-    const approve = parsed.data.body.decision === "approve";
+    const approve = parsed.data.decision === "approve";
     row.status = approve ? "approved" : "rejected";
-    row.decisionNote = parsed.data.body.note ?? "";
+    row.decisionNote = parsed.data.note ?? "";
     row.decidedById = actor.id;
     row.decidedAt = nowIso();
     const requester = db.actors.get(row.ownerId);
@@ -1626,19 +1619,19 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     if (actor.role === "staff") return c.json(NO_PERMISSION, 403);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zPostprocessingBlueprintsCreateData.safeParse({ body });
+    const parsed = PostprocessingBlueprintCreate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const result = versionFromBody(parsed.data.body, 1);
+    const result = versionFromBody(parsed.data, 1);
     if ("errors" in result) return c.json(result.errors, 400);
-    if (nameTaken(actor, parsed.data.body.name)) {
-      return c.json({ detail: `You already have a blueprint named '${parsed.data.body.name}'` }, 409);
+    if (nameTaken(actor, parsed.data.name)) {
+      return c.json({ detail: `You already have a blueprint named '${parsed.data.name}'` }, 409);
     }
     const now = nowIso();
     const row: BlueprintRow = {
       id: newId(),
-      name: parsed.data.body.name,
-      description: parsed.data.body.description || null,
-      isPublic: parsed.data.body.is_public ?? false,
+      name: parsed.data.name,
+      description: parsed.data.description || null,
+      isPublic: parsed.data.is_public ?? false,
       ownerId: actor.id,
       versions: [result.version],
       createdAt: now,
@@ -1660,9 +1653,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!row) return c.json({ detail: "Not found" }, 404);
     if (!canWriteBlueprint(actor, row)) return c.json(NO_PERMISSION, 403);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zPostprocessingBlueprintsUpdateData.safeParse({ path: { blueprint_id: row.id }, body });
+    const parsed = PostprocessingBlueprintUpdate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const patch = parsed.data.body ?? {};
+    const patch = parsed.data;
     if (patch.name !== undefined && nameTaken(actor, patch.name, row.id)) {
       return c.json({ detail: `You already have a blueprint named '${patch.name}'` }, 409);
     }
@@ -1697,9 +1690,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!row) return c.json({ detail: "Not found" }, 404);
     if (!canWriteBlueprint(actor, row)) return c.json(NO_PERMISSION, 403);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zPostprocessingBlueprintsVersionsCreateData.safeParse({ path: { blueprint_id: row.id }, body });
+    const parsed = BlueprintVersionRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const result = versionFromBody(parsed.data.body, latestVersion(row).number + 1);
+    const result = versionFromBody(parsed.data, latestVersion(row).number + 1);
     if ("errors" in result) return c.json(result.errors, 400);
     row.versions.push(result.version);
     row.updatedAt = nowIso();
@@ -1853,9 +1846,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if ("error" in found) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
     const { device, mesh } = found;
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesPostprocessingsCreateData.safeParse({ path: { device_uuid: device.uuid }, body });
+    const parsed = DevicePostprocessingWrite.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const data = parsed.data.body ?? {};
+    const data = parsed.data;
     if (!data.blueprint_id) return c.json({ blueprint_id: ["This field is required."] }, 400);
     if (data.output_prefix !== undefined && !PREFIX_PATTERN.test(data.output_prefix)) {
       return c.json({ output_prefix: ["Use lowercase letters, digits and underscores"] }, 400);
@@ -1911,9 +1904,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const resolved = row ? versionOf(row) : null;
     if (!row || !resolved) return c.json({ detail: "Postprocessing not found on this device" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesPostprocessingsUpdateData.safeParse({ path: { device_uuid: device.uuid, postprocessing_id: row.id }, body });
+    const parsed = DevicePostprocessingWrite.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const data = parsed.data.body ?? {};
+    const data = parsed.data;
     if (data.blueprint_id && data.blueprint_id !== row.blueprintId) {
       return c.json({ blueprint_id: ["Detach this postprocessing and attach the other blueprint instead"] }, 400);
     }
@@ -1981,18 +1974,15 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const resolved = row ? versionOf(row) : null;
     if (!row || !resolved) return c.json({ detail: "Postprocessing not found on this device" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesPostprocessingsCalibrationsCreateData.safeParse({
-      path: { device_uuid: found.device.uuid, postprocessing_id: row.id },
-      body,
-    });
+    const parsed = StepCalibrationRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const { step_key: stepKey, valid_from: validFrom } = parsed.data.body;
+    const { step_key: stepKey, valid_from: validFrom } = parsed.data;
     const step = resolved.version.steps.find((candidate) => candidate.key === stepKey);
     if (!step) {
       const keys = resolved.version.steps.map((candidate) => `'${candidate.key}'`).join(", ");
       return c.json({ step_key: [`No step '${stepKey}', expected one of [${keys}]`] }, 400);
     }
-    const params = plainRecord(parsed.data.body.params);
+    const params = plainRecord(parsed.data.params);
     if (!params) return c.json({ params: ["Must be an object"] }, 400);
     const errors = validateCalibration(step.function_name, params);
     if (errors.length) return c.json({ params: errors }, 400);
@@ -2040,14 +2030,11 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const row = attachedTo(found.device, c.req.param("postprocessing_id"));
     if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zDevicesPostprocessingsBackfillsCreateData.safeParse({
-      path: { device_uuid: found.device.uuid, postprocessing_id: row.id },
-      body,
-    });
+    const parsed = PostprocessingBackfillRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     const now = nowIso();
-    const stop = parsed.data.body.stop ?? now;
-    const start = parsed.data.body.start;
+    const stop = parsed.data.stop ?? now;
+    const start = parsed.data.start;
     if (Date.parse(start) >= Date.parse(stop)) return c.json({ start: ["Must be before stop"] }, 400);
     if (Date.parse(stop) - Date.parse(start) > MAX_BACKFILL_DAYS * 86_400_000) {
       return c.json({ start: [`A backfill covers at most ${MAX_BACKFILL_DAYS} days. Split it`] }, 400);
@@ -2059,7 +2046,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       postprocessingId: row.id,
       start,
       stop,
-      includeDependants: parsed.data.body.include_dependants ?? false,
+      includeDependants: parsed.data.include_dependants ?? false,
       status: "pending" as const,
       pointsPublished: 0,
       error: null,
@@ -2101,12 +2088,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const temp = types.find((t) => t.id === MEAS_TEMP_ID);
     if (!temp) return c.json({ detail: "Not found" }, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zTelemetryVariantsMeasurementsUpdateData.safeParse({
-      path: { telemetry_variant_id: c.req.param("telemetry_variant_id"), link_id: c.req.param("link_id") },
-      body,
-    });
+    const parsed = TelemetryVariantMeasurementUpdate.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const patch = parsed.data.body ?? {};
+    const patch = parsed.data;
     if (patch.default_enabled_detectors) {
       const unknownNames = patch.default_enabled_detectors.filter((name) => !MEASUREMENT_DETECTORS.includes(name));
       if (unknownNames.length) {
@@ -2249,10 +2233,10 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const refusal = await exportRefusal(actor, meshId);
     if (refusal) return c.json(refusal, 404);
     const body: unknown = await c.req.json().catch(() => null);
-    const parsed = zReadingsMeshesExportsCreateData.safeParse({ body, path: { mesh_id: meshId } });
+    const parsed = ExportRequest.safeParse(body);
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
-    const { format, start, stop } = parsed.data.body;
-    const nodeIds = parsed.data.body.node_ids?.length ? [...parsed.data.body.node_ids].sort((a, b) => a - b) : null;
+    const { format, start, stop } = parsed.data;
+    const nodeIds = parsed.data.node_ids?.length ? [...parsed.data.node_ids].sort((a, b) => a - b) : null;
     if (stop < start) return c.json({ stop: ["Must not be before start."] }, 400);
     if (daysBetween(start, stop) > EXPORT_MAX_DAYS) {
       return c.json({ stop: [`An export covers at most ${EXPORT_MAX_DAYS} days.`] }, 400);

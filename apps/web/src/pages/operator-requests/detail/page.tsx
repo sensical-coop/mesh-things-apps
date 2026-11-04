@@ -27,7 +27,7 @@ export function OperatorRequestPage(): ReactElement {
   const allowed = canDecideOperatorRequests(me);
   const { requestId } = useParams({ from: routes.operatorRequest });
   const request = useQuery({
-    ...operatorRequestRepository.retrieve({ path: { request_id: requestId } }),
+    ...operatorRequestRepository.retrieve(requestId),
     enabled: allowed,
   });
   if (isNotFoundError(request.error)) throw notFound();

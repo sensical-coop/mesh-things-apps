@@ -40,7 +40,7 @@ export function SinksPage(): ReactElement {
   const enforced = useTermsEnforced();
   const termsEnforced = enforced !== false;
   const currentTerms = useQuery({
-    ...termsRepository.sink({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.sink({ locale: termsLocale(locale) }),
     enabled: isOperator && enforced === true,
   });
   const sinks = useQuery({ ...sinkRepository.list(), enabled: isOperator });

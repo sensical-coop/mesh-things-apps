@@ -36,7 +36,7 @@ export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormPro
   const [meshId, setMeshId] = useState(initial.meshId);
   const [nodeIds, setNodeIds] = useState<number[] | null>(initial.nodeIds);
   const [range, setRange] = useState(initial.range);
-  const devices = useQuery({ ...meshRepository.devices({ path: { mesh_id: meshId || NIL_MESH } }), enabled: Boolean(meshId) });
+  const devices = useQuery({ ...meshRepository.devices(meshId || NIL_MESH), enabled: Boolean(meshId) });
   const problem = rangeProblem(range.start, range.stop);
   const noneChosen = nodeIds !== null && nodeIds.length === 0;
 

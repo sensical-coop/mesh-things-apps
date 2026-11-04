@@ -28,9 +28,9 @@ export function BlueprintPage(): ReactElement {
   const navigate = useNavigate();
   const { blueprintId } = useParams({ from: routes.blueprint });
   const { me, meId, ownerName } = useOwnerDirectory();
-  const blueprint = useQuery(blueprintRepository.retrieve({ path: { blueprint_id: blueprintId } }));
+  const blueprint = useQuery(blueprintRepository.retrieve(blueprintId));
   if (isNotFoundError(blueprint.error)) throw notFound();
-  const versions = useQuery(blueprintRepository.versions({ path: { blueprint_id: blueprintId } }));
+  const versions = useQuery(blueprintRepository.versions(blueprintId));
   const [editing, setEditing] = useState(false);
   const [addingVersion, setAddingVersion] = useState(false);
   const [deleting, setDeleting] = useState(false);

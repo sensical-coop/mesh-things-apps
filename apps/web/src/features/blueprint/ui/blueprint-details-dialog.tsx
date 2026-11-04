@@ -28,7 +28,7 @@ export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsD
     ...blueprintRepository.update(),
     onSuccess: async (row) => {
       await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
-      await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey({ path: { blueprint_id: row.id } }) });
+      await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey(row.id) });
       onClose();
     },
     onError: (error) => {
@@ -47,8 +47,8 @@ export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsD
     const form = new FormData(event.currentTarget);
     setNameError(undefined);
     update.mutate({
-      path: { blueprint_id: blueprint.id },
-      body: {
+      blueprintId: blueprint.id,
+      data: {
         name: String(form.get("name") ?? "").trim(),
         description: String(form.get("description") ?? "").trim() || null,
         is_public: form.get("is_public") === "on",

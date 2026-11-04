@@ -1,30 +1,30 @@
 import {
-  meshesTermsAcceptanceCreateMutation,
-  meshesTermsRetrieveOptions,
-  ownersMeTermsAcceptanceCreateMutation,
-  sinksTermsAcceptanceCreateMutation,
-  sinksTermsRetrieveOptions,
-  sourcesTermsAcceptanceCreateMutation,
-  sourcesTermsRetrieveOptions,
-  termsRetrieveOptions,
-} from "@mtt/contracts/query";
+  getMeshesTermsAcceptanceCreateMutationOptions,
+  getMeshesTermsRetrieveQueryOptions,
+  getOwnersMeTermsAcceptanceCreateMutationOptions,
+  getSinksTermsAcceptanceCreateMutationOptions,
+  getSinksTermsRetrieveQueryOptions,
+  getSourcesTermsAcceptanceCreateMutationOptions,
+  getSourcesTermsRetrieveQueryOptions,
+  getTermsRetrieveQueryOptions,
+} from "@mtt/contracts/api";
 import { readApiError } from "@/lib/api-errors";
 import type { TermsLocale } from "@/features/terms/model";
 
 /** The API owns the terms: their text and version come from these routes. */
 export const termsRepository = {
   /** Account terms, accepted at signup; readable without an account. They don't lapse. */
-  account: termsRetrieveOptions,
+  account: getTermsRetrieveQueryOptions,
   /** Mesh terms, accepted per mesh on the default broker. */
-  mesh: meshesTermsRetrieveOptions,
+  mesh: getMeshesTermsRetrieveQueryOptions,
   /** Source terms, accepted per source; operators only. */
-  source: sourcesTermsRetrieveOptions,
+  source: getSourcesTermsRetrieveQueryOptions,
   /** Sink terms, accepted per sink; operators only. */
-  sink: sinksTermsRetrieveOptions,
-  acceptAccount: ownersMeTermsAcceptanceCreateMutation,
-  renewMesh: meshesTermsAcceptanceCreateMutation,
-  renewSource: sourcesTermsAcceptanceCreateMutation,
-  renewSink: sinksTermsAcceptanceCreateMutation,
+  sink: getSinksTermsRetrieveQueryOptions,
+  acceptAccount: getOwnersMeTermsAcceptanceCreateMutationOptions,
+  renewMesh: getMeshesTermsAcceptanceCreateMutationOptions,
+  renewSource: getSourcesTermsAcceptanceCreateMutationOptions,
+  renewSink: getSinksTermsAcceptanceCreateMutationOptions,
 };
 
 /**
@@ -34,7 +34,7 @@ export const termsRepository = {
  */
 export function accountTermsQuery(locale: TermsLocale) {
   return {
-    ...termsRetrieveOptions({ query: { locale } }),
+    ...getTermsRetrieveQueryOptions({ locale }),
     retry: (failures: number, error: unknown) => readApiError(error).status !== 404 && failures < 3,
     staleTime: 5 * 60_000,
   };

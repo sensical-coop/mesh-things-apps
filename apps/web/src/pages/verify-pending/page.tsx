@@ -28,6 +28,9 @@ export function VerifyPendingPage(): ReactElement {
   if (me.isPending) return <div className="min-h-svh bg-background-full" />;
   if (me.error) return <Navigate to={routes.signup} />;
   if (isOwnerSession(me)) return <Navigate to={routes.meshes} />;
+  if (!me.data) return <div className="min-h-svh bg-background-full" />;
+
+  const owner = me.data;
 
   return (
     <main className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-background-secondary-default px-4 py-16 sm:px-6 sm:py-24">
@@ -48,18 +51,18 @@ export function VerifyPendingPage(): ReactElement {
                   defaultMessage="We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account."
                   values={{
                     strong: (chunks: ReactNode) => <strong>{chunks}</strong>,
-                    email: me.data.email,
+                    email: owner.email,
                   }}
                 />
               </StatusCopy>
             </div>
-            <ResendButton sentAt={me.data.email_verification_sent_at} />
+            <ResendButton sentAt={owner.email_verification_sent_at} />
             <Button
               type="button"
               size="small"
               variant="secondary"
               disabled={logout.isPending}
-              onClick={() => logout.mutate({})}
+              onClick={() => logout.mutate()}
             >
               {formatMessage({ id: "page.verifyPending.signOut", defaultMessage: "Not you? Sign out" })}
             </Button>

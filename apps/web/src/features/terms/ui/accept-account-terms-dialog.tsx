@@ -37,7 +37,7 @@ export function AcceptAccountTermsDialog({ open, onClose }: AcceptAccountTermsDi
       onAccepted={(acceptance) =>
         // No terms on this instance: nothing to accept.
         acceptance
-          ? accept.mutate({ body: { terms_version: acceptance.version, terms_locale: acceptance.locale } })
+          ? accept.mutate({ data: { terms_version: acceptance.version, terms_locale: acceptance.locale } })
           : close()
       }
       acceptLabel={formatMessage({ id: "feature.terms.account.accept", defaultMessage: "Accept terms" })}

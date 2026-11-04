@@ -44,9 +44,9 @@ export function RenewSourceTermsDialog({ source, onClose, onRenewed }: RenewSour
           ? close()
           : source &&
             renew.mutate({
-          path: { source_id: source.id },
-          body: { terms_version: acceptance.version, terms_locale: acceptance.locale },
-        })
+              sourceId: source.id,
+              data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
+            })
       }
       acceptLabel={
         source

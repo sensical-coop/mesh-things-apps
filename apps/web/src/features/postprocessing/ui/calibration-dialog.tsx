@@ -41,8 +41,7 @@ export function CalibrationDialog({
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
   const queryClient = useQueryClient();
-  const path = { device_uuid: deviceUuid, postprocessing_id: postprocessing.id };
-  const history = useQuery(postprocessingRepository.calibrations({ path }));
+  const history = useQuery(postprocessingRepository.calibrations(deviceUuid, postprocessing.id));
   const steps = calibratedSteps(version, algorithms);
   const [stepKey, setStepKey] = useState(steps[0]?.key ?? "");
   const step = steps.find((row) => row.key === stepKey);
@@ -50,8 +49,8 @@ export function CalibrationDialog({
   const [messages, setMessages] = useState<string[]>([]);
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.calibrationsKey({ path }) });
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
+    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.calibrationsKey(deviceUuid, postprocessing.id) });
+    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
   }
 
   const calibrate = useMutation({
@@ -88,8 +87,9 @@ export function CalibrationDialog({
       if (text) params[param.name] = parseParam(text);
     }
     calibrate.mutate({
-      path,
-      body: { step_key: step.key, params, valid_from: localInputToIso(String(form.get("valid_from") ?? "")) },
+      deviceUuid,
+      postprocessingId: postprocessing.id,
+      data: { step_key: step.key, params, valid_from: localInputToIso(String(form.get("valid_from") ?? "")) },
     });
   }
 
@@ -228,7 +228,13 @@ export function CalibrationDialog({
                           id: "feature.postprocessing.calibration.remove",
                           defaultMessage: "Remove this calibration",
                         })}
-                        onClick={() => remove.mutate({ path: { ...path, calibration_id: row.id } })}
+                        onClick={() =>
+                          remove.mutate({
+                            deviceUuid,
+                            postprocessingId: postprocessing.id,
+                            calibrationId: row.id,
+                          })
+                        }
                       />
                     ) : null}
                   </li>

@@ -34,7 +34,7 @@ export function DataDeletionsPage(): ReactElement {
   const { me, ownerName } = useOwnerDirectory();
   const allowed = canSeeDataDeletions(me);
   const [status, setStatus] = useState<DataDeletionStatusFilter>("pending");
-  const deletions = useQuery({ ...dataDeletionRepository.list({ query: { status } }), enabled: allowed });
+  const deletions = useQuery({ ...dataDeletionRepository.list({ status }), enabled: allowed });
   // Names for meshes and sources that still exist; a deleted mesh shows its id.
   const meshes = useQuery({ ...meshRepository.list(), enabled: allowed });
   const sources = useQuery({ ...sourceRepository.list(), enabled: allowed });

@@ -21,7 +21,7 @@ export function RenewMeshTermsDialog({ mesh, onClose }: RenewMeshTermsDialogProp
     ...termsRepository.renewMesh(),
     onSuccess: async (renewed) => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      await queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey({ path: { mesh_id: renewed.id } }) });
+      await queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey(renewed.id) });
       close();
     },
   });
@@ -43,9 +43,9 @@ export function RenewMeshTermsDialog({ mesh, onClose }: RenewMeshTermsDialogProp
           ? close()
           : mesh &&
             renew.mutate({
-          path: { mesh_id: mesh.id },
-          body: { terms_version: acceptance.version, terms_locale: acceptance.locale },
-        })
+              meshId: mesh.id,
+              data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
+            })
       }
       acceptLabel={
         mesh

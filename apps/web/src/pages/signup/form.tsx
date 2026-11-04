@@ -136,7 +136,7 @@ export function SignupForm(): ReactElement {
     await authRepository.csrf();
     try {
       await signup.mutateAsync({
-        body: {
+        data: {
           name: String(form.get("name") ?? ""),
           email: String(form.get("email") ?? ""),
           password: String(form.get("password") ?? ""),

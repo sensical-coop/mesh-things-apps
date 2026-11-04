@@ -79,7 +79,7 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
       if (!device) return;
       await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }),
+        queryKey: deviceRepository.retrieveKey(device.uuid),
       });
       stopEditing();
     },
@@ -98,8 +98,8 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
   function save() {
     if (!device || !draft) return;
     update.mutate({
-      path: { device_uuid: device.uuid },
-      body: { latitude: draft.lat, longitude: draft.lng },
+      deviceUuid: device.uuid,
+      data: { latitude: draft.lat, longitude: draft.lng },
     });
   }
 

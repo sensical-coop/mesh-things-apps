@@ -50,7 +50,7 @@ export function PostprocessingDialog({
   const [messages, setMessages] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const versions = useQuery({
-    ...blueprintRepository.versions({ path: { blueprint_id: blueprintId } }),
+    ...blueprintRepository.versions(blueprintId),
     enabled: blueprintId !== "",
   });
   const newest = [...(versions.data ?? [])].sort((a, b) => b.number - a.number);
@@ -58,9 +58,9 @@ export function PostprocessingDialog({
   const channels = bindableChannels(measurements, postprocessing?.id);
 
   async function saved() {
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
-    await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
-    await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: deviceUuid } }) });
+    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
+    await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
+    await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(deviceUuid) });
     await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
     onClose();
   }
@@ -127,9 +127,9 @@ export function PostprocessingDialog({
       tolerance_seconds: tolerance,
     };
     if (postprocessing) {
-      update.mutate({ path: { device_uuid: deviceUuid, postprocessing_id: postprocessing.id }, body });
+      update.mutate({ deviceUuid, postprocessingId: postprocessing.id, data: body });
     } else {
-      attach.mutate({ path: { device_uuid: deviceUuid }, body: { ...body, blueprint_id: blueprintId } });
+      attach.mutate({ deviceUuid, data: { ...body, blueprint_id: blueprintId } });
     }
   }
 

@@ -57,7 +57,7 @@ export function LoginForm(): ReactElement {
     try {
       await authRepository.csrf();
       await login.mutateAsync({
-        body: {
+        data: {
           email: String(form.get("email") ?? ""),
           password: String(form.get("password") ?? ""),
         },

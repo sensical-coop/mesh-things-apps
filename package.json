@@ -8,8 +8,8 @@
     "typecheck": "turbo run typecheck",
     "lint": "pnpm lint:css && pnpm lint:classes",
     "test": "turbo run test",
-    "openapi:sync": "pnpm --filter @mtt/contracts openapi:sync && pnpm --filter @mtt/contracts openapi-ts",
-    "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts",
+    "openapi:sync": "pnpm --filter @mtt/contracts openapi:sync && pnpm --filter @mtt/contracts openapi:generate",
+    "openapi:generate": "pnpm --filter @mtt/contracts openapi:generate",
     "shadcn": "pnpm dlx shadcn@latest --cwd apps/web",
     "lint:css": "stylelint \"apps/**/*.css\" \"packages/**/*.css\"",
     "lint:classes": "eslint \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\"",
@@ -36,8 +36,7 @@
     ],
     "overrides": {
       "zod@>=4.0.0 <4.6.6": "4.6.6",
-      "source-map-js@<1.2.2": "1.2.2",
-      "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2"
+      "source-map-js@<1.2.2": "1.2.2"
     }
   },
   "browserslist": [

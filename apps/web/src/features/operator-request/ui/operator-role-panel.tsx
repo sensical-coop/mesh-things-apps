@@ -1,4 +1,4 @@
-import { zOwnersMeOperatorRequestCreateData } from "@mtt/contracts/zod";
+import { OperatorRequestCreate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Textarea } from "@mtt/ui/components/ui/textarea";
@@ -57,10 +57,8 @@ export function OperatorRolePanel(): ReactElement | null {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const parsed = zOwnersMeOperatorRequestCreateData.safeParse({
-      body: { reason: String(form.get("reason") ?? "").trim() },
-    });
-    if (!parsed.success || parsed.data.body.reason === "") {
+    const parsed = OperatorRequestCreate.safeParse({ reason: String(form.get("reason") ?? "").trim() });
+    if (!parsed.success || parsed.data.reason === "") {
       setErrors(
         parsed.success
           ? {
@@ -74,7 +72,7 @@ export function OperatorRolePanel(): ReactElement | null {
       return;
     }
     setErrors({});
-    create.mutate({ body: parsed.data.body });
+    create.mutate({ data: parsed.data });
   }
 
   const request = mine.data;

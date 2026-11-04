@@ -39,10 +39,10 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: mesh.id } }) }),
-        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey({ path: { mesh_id: mesh.id } }) }),
+        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(mesh.id) }),
+        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey(mesh.id) }),
         ...devices.map((device) =>
-          queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }) }),
+          queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(device.uuid) }),
         ),
       ]),
     onSuccess: onClose,

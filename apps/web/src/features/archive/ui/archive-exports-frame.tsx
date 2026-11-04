@@ -39,7 +39,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
   const { formatMessage } = useIntl();
   const [range, setRange] = useState<ExportRange>(() => wholeArchive(manifest));
   const exports = useQuery({
-    ...exportRepository.meshList({ path: { mesh_id: meshId } }),
+    ...exportRepository.meshList(meshId),
     refetchInterval: (query) => pollInterval(query.state.data),
   });
   const rows = (exports.data ?? []).filter((row) => row.format === "parquet");

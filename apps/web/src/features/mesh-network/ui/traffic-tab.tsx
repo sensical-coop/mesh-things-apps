@@ -33,7 +33,7 @@ export function MeshTrafficTab({ meshId, devices }: { meshId: string; devices: D
   const [range] = useStatsRange();
   // react-query pauses the interval while the tab is hidden; the tab unmounts this when it is not selected.
   const stats = useQuery({
-    ...readingsRepository.meshStats({ path: { mesh_id: meshId }, query: { range } }),
+    ...readingsRepository.meshStats(meshId, { range }),
     refetchInterval: REFRESH_MS,
   });
   const byUuid = useMemo(() => new Map(devices.map((device) => [device.uuid, device])), [devices]);

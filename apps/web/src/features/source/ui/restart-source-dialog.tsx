@@ -80,7 +80,7 @@ export function RestartSourceDialog({ source, onClose, onRestarted }: RestartSou
             type="button"
             size="small"
             disabled={restart.isPending}
-            onClick={() => source && restart.mutate({ path: { source_id: source.id } })}
+            onClick={() => source && restart.mutate({ sourceId: source.id })}
           >
             {restart.isPending
               ? formatMessage({ id: "feature.source.restartDialog.restarting", defaultMessage: "Restarting" })

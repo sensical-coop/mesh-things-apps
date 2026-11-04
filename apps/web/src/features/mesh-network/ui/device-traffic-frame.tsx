@@ -13,7 +13,7 @@ import { RankedBars } from "./ranked-bars";
 /** What a device transmitted over the last week, by kind of packet. */
 export function DeviceTrafficFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
-  const traffic = useQuery(readingsRepository.deviceTraffic({ path: { device_uuid: device.uuid }, query: { range: "7d" } }));
+  const traffic = useQuery(readingsRepository.deviceTraffic(device.uuid, { range: "7d" }));
   const title = formatMessage({ id: "page.devices.detail.traffic.title", defaultMessage: "Traffic" });
   return (
     <Frame className="shadow-card">

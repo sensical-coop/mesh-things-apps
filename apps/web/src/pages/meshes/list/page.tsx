@@ -1,5 +1,5 @@
 import type { DeviceRead, Mesh } from "@mtt/contracts";
-import { zMeshesCreateData } from "@mtt/contracts/zod";
+import { MeshCreateRequest } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
@@ -86,7 +86,7 @@ export function MeshesPage(): ReactElement {
   const enforced = useTermsEnforced();
   const termsEnforced = enforced !== false;
   const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: enforced === true,
   });
   const [meshToDelete, setMeshToDelete] = useState<MeshRow | null>(null);
@@ -502,18 +502,16 @@ function CreateMeshDialog({
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
     const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
-    const parsed = zMeshesCreateData.safeParse({
-      body: {
-        channel_id: String(form.get("channel_id") ?? "").trim(),
-        psk_b64: String(form.get("psk_b64") ?? ""),
-        label: label === "" ? null : label,
-        discover_gateways: form.get("discover_gateways") === "on",
-        ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
-        // Required on the default broker; a mesh on a source is covered by the source's terms.
-        ...(picked === DEFAULT_BROKER && termsAcceptance
-          ? { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
-          : {}),
-      },
+    const parsed = MeshCreateRequest.safeParse({
+      channel_id: String(form.get("channel_id") ?? "").trim(),
+      psk_b64: String(form.get("psk_b64") ?? ""),
+      label: label === "" ? null : label,
+      discover_gateways: form.get("discover_gateways") === "on",
+      ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
+      // Required on the default broker; a mesh on a source is covered by the source's terms.
+      ...(picked === DEFAULT_BROKER && termsAcceptance
+        ? { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
+        : {}),
     });
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
@@ -521,10 +519,10 @@ function CreateMeshDialog({
     }
     setErrors({});
     if (termsEnforced && picked === DEFAULT_BROKER && !termsAcceptance) {
-      setAwaitingTerms({ body: parsed.data.body });
+      setAwaitingTerms({ data: parsed.data });
       return;
     }
-    create.mutate({ body: parsed.data.body });
+    create.mutate({ data: parsed.data });
   }
 
   return (
@@ -643,7 +641,7 @@ function CreateMeshDialog({
           if (!awaitingTerms) return;
           create.mutate(
             acceptance
-              ? { body: { ...awaitingTerms.body, terms_version: acceptance.version, terms_locale: acceptance.locale } }
+              ? { data: { ...awaitingTerms.data, terms_version: acceptance.version, terms_locale: acceptance.locale } }
               : awaitingTerms,
           );
           setAwaitingTerms(null);

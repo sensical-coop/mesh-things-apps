@@ -1,4 +1,4 @@
-import { zOwnersMeUpdateData } from "@mtt/contracts/zod";
+import { OwnerUpdate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
@@ -47,18 +47,16 @@ export function ProfilePage(): ReactElement {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const parsed = zOwnersMeUpdateData.safeParse({
-      body: {
-        name: String(form.get("name") ?? "").trim(),
-        email: String(form.get("email") ?? "").trim(),
-      },
+    const parsed = OwnerUpdate.safeParse({
+      name: String(form.get("name") ?? "").trim(),
+      email: String(form.get("email") ?? "").trim(),
     });
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    update.mutate({ body: parsed.data.body });
+    update.mutate({ data: parsed.data });
   }
 
   return (

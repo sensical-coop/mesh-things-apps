@@ -42,12 +42,12 @@ export function TermsDialog({
   error = null,
 }: TermsDialogProps): ReactElement {
   const { formatMessage, locale } = useIntl();
-  const query = { query: { locale: termsLocale(locale) } };
+  const localeParam = { locale: termsLocale(locale) };
   const options = {
-    account: termsRepository.account(query),
-    mesh: termsRepository.mesh(query),
-    source: termsRepository.source(query),
-    sink: termsRepository.sink(query),
+    account: termsRepository.account(localeParam),
+    mesh: termsRepository.mesh(localeParam),
+    source: termsRepository.source(localeParam),
+    sink: termsRepository.sink(localeParam),
   }[kind];
   // A 404 means terms are off on this instance: an answer, not worth retrying.
   const terms = useQuery({

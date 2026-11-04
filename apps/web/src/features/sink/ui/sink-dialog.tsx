@@ -1,5 +1,5 @@
 import type { SinkCredentials, SinkRead, StreamsEnum } from "@mtt/contracts";
-import { zSinksCreateData, zSinksUpdateData } from "@mtt/contracts/zod";
+import { SinkCreate, SinkWrite } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@mtt/ui/components/ui/field";
@@ -193,19 +193,19 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
     const streamsError = sinkStreamsError(chosenStreams);
     setFormError(null);
     if (editing) {
-      const parsed = zSinksUpdateData.safeParse({ path: { sink_id: sink.id }, body });
+      const parsed = SinkWrite.safeParse(body);
       const next = { ...(streamsError ? { streams: streamsError } : {}), ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
       setErrors(next);
-      if (parsed.success && Object.keys(next).length === 0) update.mutate(parsed.data);
+      if (parsed.success && Object.keys(next).length === 0) update.mutate({ sinkId: sink.id, data: parsed.data });
       return;
     }
     const withTerms = termsAcceptance
       ? { ...body, terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
       : body;
-    const parsed = zSinksCreateData.safeParse({ body: withTerms });
+    const parsed = SinkCreate.safeParse(withTerms);
     const next = { ...(streamsError ? { streams: streamsError } : {}), ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
     setErrors(next);
-    if (parsed.success && Object.keys(next).length === 0) create.mutate({ body: parsed.data.body });
+    if (parsed.success && Object.keys(next).length === 0) create.mutate({ data: parsed.data });
   }
 
   return (

@@ -70,22 +70,19 @@ export function DeviceDetailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { deviceUuid } = useParams({ from: routes.device });
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(DEVICE_TABS).withDefault("status"));
-  const device = useQuery(deviceRepository.retrieve({ path: { device_uuid: deviceUuid } }));
+  const device = useQuery(deviceRepository.retrieve(deviceUuid));
   if (isNotFoundError(device.error)) throw notFound();
   const mesh = useQuery({
-    ...meshRepository.retrieve({
-      path: { mesh_id: device.data?.mesh_id ?? "00000000-0000-4000-8000-000000000000" },
-    }),
+    ...meshRepository.retrieve(device.data?.mesh_id ?? "00000000-0000-4000-8000-000000000000"),
     enabled: Boolean(device.data?.mesh_id),
   });
   const catalog = useQuery(readingsRepository.catalog());
-  const seen = useQuery(deviceRepository.measurements({ path: { device_uuid: deviceUuid } }));
-  const variants = useQuery(deviceRepository.telemetryVariants({ path: { device_uuid: deviceUuid } }));
-  const latest = useQuery(readingsRepository.latest({ path: { device_uuid: deviceUuid } }));
+  const seen = useQuery(deviceRepository.measurements(deviceUuid));
+  const variants = useQuery(deviceRepository.telemetryVariants(deviceUuid));
+  const latest = useQuery(readingsRepository.latest(deviceUuid));
   const quality = useQuery(
-    readingsRepository.quality({
-      path: { device_uuid: deviceUuid },
-      query: { start: "-24h" },
+    readingsRepository.quality(deviceUuid, {
+      start: "-24h",
     }),
   );
   const names = useMemo(
@@ -309,10 +306,10 @@ function DeviceStatusTab({
   meshOwnerId,
   onViewChart,
 }: {
-  device: UseQueryResult<DeviceRead>;
-  quality: UseQueryResult<DeviceQualityResponse>;
-  variants: UseQueryResult<DeviceTelemetryVariant[]>;
-  seen: UseQueryResult<DeviceMeasurement[]>;
+  device: UseQueryResult<DeviceRead, unknown>;
+  quality: UseQueryResult<DeviceQualityResponse, unknown>;
+  variants: UseQueryResult<DeviceTelemetryVariant[], unknown>;
+  seen: UseQueryResult<DeviceMeasurement[], unknown>;
   names: NamesByChannel;
   canEdit: boolean;
   canArchive: boolean;
@@ -838,15 +835,12 @@ function DeviceDashboardTab({
   const windowMs = parseWindowMs(resolution);
   const seriesQueries = useQueries({
     queries: chartChannels.map((channel) => ({
-      ...readingsRepository.series({
-        path: { device_uuid: deviceUuid },
-        query: {
-          channel,
-          start: rangeQuery.start,
-          stop: rangeQuery.stop,
-          window: resolution,
-          agg,
-        },
+      ...readingsRepository.series(deviceUuid, {
+        channel,
+        start: rangeQuery.start,
+        stop: rangeQuery.stop,
+        window: resolution,
+        agg,
       }),
       enabled: ready,
     })),

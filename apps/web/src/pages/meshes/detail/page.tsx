@@ -1,5 +1,5 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { zDevicesCreateData } from "@mtt/contracts/zod";
+import { DeviceCreate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils/cx";
 import {
@@ -90,9 +90,9 @@ export function MeshDetailPage(): ReactElement {
   // Its own key, so the Topology tab's larger view does not enlarge this one too.
   const [fleetSize, setFleetSize] = useQueryState("fleet", parseAsStringLiteral(FLEET_MAP_SIZES));
   const fleetLarge = fleetSize === "large";
-  const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
+  const mesh = useQuery(meshRepository.retrieve(meshId));
   if (isNotFoundError(mesh.error)) throw notFound();
-  const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
+  const devices = useQuery(meshRepository.devices(meshId));
   const { me, isOperator, ownerName } = useOwnerDirectory();
   const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });
   const [open, setOpen] = useState(false);
@@ -104,7 +104,7 @@ export function MeshDetailPage(): ReactElement {
   // A self-hosted instance asks for no terms: no chip, no notice.
   const termsEnforced = useTermsEnforced() === true;
   const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: termsEnforced,
   });
   const termsStanding =
@@ -559,7 +559,7 @@ export function MeshDetailPage(): ReactElement {
           open
           onClose={() => setSettingsDevice(null)}
           onSaved={() =>
-            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: meshId } }) })
+            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(meshId) })
           }
         />
       ) : null}
@@ -584,7 +584,7 @@ function RegisterDeviceDialog({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: meshRepository.devicesKey({ path: { mesh_id: meshId } }),
+        queryKey: meshRepository.devicesKey(meshId),
       });
       onClose();
     },
@@ -606,20 +606,18 @@ function RegisterDeviceDialog({
       });
       return;
     }
-    const parsed = zDevicesCreateData.safeParse({
-      body: {
-        mesh_id: meshId,
-        node_id: Number(nodeId),
-        is_gateway: true,
-        label: label === "" ? null : label,
-      },
+    const parsed = DeviceCreate.safeParse({
+      mesh_id: meshId,
+      node_id: Number(nodeId),
+      is_gateway: true,
+      label: label === "" ? null : label,
     });
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    create.mutate({ body: parsed.data.body });
+    create.mutate({ data: parsed.data });
   }
 
   return (

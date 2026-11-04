@@ -39,6 +39,8 @@ No usar la API key del owner en `localStorage`. El UI va por **cookie de sesión
 
 ## 3. Hey API
 
+> Sustituido: el cliente lo genera Orval. Config y uso actuales en [architecture.md](./architecture.md#contratos-orval--zod-46).
+
 Pinear versión exacta: el codegen no sigue semver clásico.
 
 ```bash

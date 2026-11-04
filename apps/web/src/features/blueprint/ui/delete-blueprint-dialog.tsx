@@ -68,7 +68,7 @@ export function DeleteBlueprintDialog({ blueprint, onClose, onDeleted }: DeleteB
             variant="danger"
             size="small"
             disabled={destroy.isPending || inUse || !blueprint}
-            onClick={() => blueprint && destroy.mutate({ path: { blueprint_id: blueprint.id } })}
+            onClick={() => blueprint && destroy.mutate({ blueprintId: blueprint.id })}
           >
             {destroy.isPending
               ? formatMessage({ id: "feature.blueprint.deleteDialog.deleting", defaultMessage: "Deleting" })

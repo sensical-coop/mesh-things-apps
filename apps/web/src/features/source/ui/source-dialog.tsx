@@ -1,5 +1,5 @@
 import type { SourceRead } from "@mtt/contracts";
-import { zSourcesCreateData, zSourcesUpdateData } from "@mtt/contracts/zod";
+import { SourceCreateRequest, SourceUpdateRequest } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "@mtt/ui/components/ui/field";
@@ -162,16 +162,16 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
     const checks = validateSourceFields(body);
     setFormError(null);
     if (editing) {
-      const parsed = zSourcesUpdateData.safeParse({ path: { source_id: source.id }, body });
+      const parsed = SourceUpdateRequest.safeParse(body);
       const next = { ...checks, ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
       setErrors(next);
-      if (parsed.success && Object.keys(next).length === 0) update.mutate(parsed.data);
+      if (parsed.success && Object.keys(next).length === 0) update.mutate({ sourceId: source.id, data: parsed.data });
       return;
     }
-    const parsed = zSourcesCreateData.safeParse({ body });
+    const parsed = SourceCreateRequest.safeParse(body);
     const next = { ...checks, ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
     setErrors(next);
-    if (parsed.success && Object.keys(next).length === 0) create.mutate({ body: parsed.data.body });
+    if (parsed.success && Object.keys(next).length === 0) create.mutate({ data: parsed.data });
   }
 
   return (

@@ -11,11 +11,11 @@ import { operatorRequestRepository } from "@/features/operator-request/repositor
 export function useSuperuserCounts(): { pendingRequests: number; overdueDeletions: number } {
   const { isSuperuser } = useMe();
   const requests = useQuery({
-    ...operatorRequestRepository.list({ query: { status: "pending" } }),
+    ...operatorRequestRepository.list({ status: "pending" }),
     enabled: isSuperuser,
   });
   const deletions = useQuery({
-    ...dataDeletionRepository.list({ query: { status: "pending" } }),
+    ...dataDeletionRepository.list({ status: "pending" }),
     enabled: isSuperuser,
   });
   const now = new Date();

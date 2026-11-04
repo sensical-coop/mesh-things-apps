@@ -2,22 +2,22 @@
 
 Monorepo (Turborepo + pnpm) para un dashboard Vite sobre la **Mesh Things API**. Su OpenAPI, copiado del repo de la API, es la fuente de verdad del hilo HTTP. La lógica de negocio no vive en React.
 
-Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mock comparten schemas Zod **generados** por Hey API.
+Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mock comparten schemas Zod **generados** por Orval.
 
 ---
 
 ## Piezas
 
 ```
-mesh-things (snapshot) --> docs/openapi.json --> packages/contracts (Hey API)
+mesh-things (snapshot) --> docs/openapi.json --> packages/contracts (Orval)
 apps/web --> packages/ui + packages/contracts
 apps/api-mock --> packages/domain + packages/contracts
 ```
 
 | Package / app | Qué es | Qué no es |
 |---|---|---|
-| `packages/contracts` | Output de `@hey-api/openapi-ts`. SDK fetch, tipos, **Zod** (request + response), `*Options` / `*Mutation`. | Código a mano. Se regenera con `pnpm openapi:sync`. |
-| `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `authz`). Entidades, invariantes, puertos de repo. Como `@taller/domain`. | Tipos Hey API. No fetch. No React. |
+| `packages/contracts` | Output de Orval: funciones fetch, `get*QueryOptions` / `get*MutationOptions`, y un **Zod** + tipo por componente (`Mesh`, `MeshCreateRequest`, …). | Código a mano salvo `orval.config.ts` y el fetcher `src/api-runtime.ts`. Se regenera con `pnpm openapi:sync`. |
+| `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `authz`). Entidades, invariantes, puertos de repo. Como `@taller/domain`. | Tipos generados. No fetch. No React. |
 | `apps/api-mock` | Servidor HTTP que implementa las rutas de fase 1. Datos en memoria. Sesión Better Auth + cookie. Parsea bodies con Zod de contracts; mapea domain → JSON del OpenAPI. | Backend real. Persistencia. |
 | `apps/web` | Vite + React + TanStack. Chrome de consola (`layout`/`header`/`footer`), `router/`, `pages/`, `features/`, `components/` de app, `lib/`. Tests en `test/`. | Primitivas shadcn/BoardUI/ReUI/EvilCharts. Reglas de malla/device. |
 | `packages/ui` | Tokens OA/BoardUI y **todas** las primitivas instaladas (BoardUI, shadcn, ReUI, EvilCharts, mapcn). Destino del CLI `pnpm shadcn`. | Páginas, fetch, features, chrome de consola. |
@@ -119,7 +119,7 @@ Arranque (para no ciclar `layout` ↔ `app-router`):
 | Forms de app | `src/components/form/` | Wrappers de producto. Inputs shadcn en `@mtt/ui`. |
 | Format | `src/lib/format.ts` | Fechas, duraciones, números. |
 | Shader login | `src/pages/login/shader-backdrop.tsx` | Cinta WebGL detrás de la tarjeta. **No** es `DialogOverlay` (`@mtt/ui/components/ui/dialog`). |
-| Feature HTTP | `src/features/<name>/repository.ts` | Único sitio de esa feature que importa `@mtt/contracts/query` (y SDK auth). |
+| Feature HTTP | `src/features/<name>/repository.ts` | Único sitio de esa feature que importa `@mtt/contracts/api`. |
 | Presentación | `src/features/<name>/model.ts` | Títulos, silent, role label. Sin fetch. |
 | UI de feature | `src/features/<name>/ui/` | Solo si se reutiliza en varias rutas (badges de device). Piezas de una sola página van junto a `page.tsx`. |
 | Página | `src/pages/<ruta>/` | Mismo nivel que `features/`. `home/`, `login/`, `meshes/`, `devices/`, `blueprints/`. `route.ts` + `page.tsx`. Extra de detalle (p. ej. `chart-range.ts`) vive en esa carpeta. La landing no es una feature. |
@@ -137,57 +137,60 @@ Controllers (`app.ts`) siguen mapeando HTTP → repo → JSON OpenAPI.
 
 ---
 
-## Contratos (Hey API + Zod 4.6)
+## Contratos (Orval + Zod 4.6)
 
 El OpenAPI de la API es el contrato. Zod **no se escribe a mano** para shapes OpenAPI. Vive en un solo sitio y se usa **solo en el borde HTTP**.
 
 | Dónde | Qué hay |
 |---|---|
-| `docs/openapi.json` | Copia del snapshot que genera la API (`server/mesh_things/src/mesh_things/client/openapi.json` en mesh-things). No editar: `pnpm openapi:sync` lo trae y regenera el cliente. |
-| `packages/contracts/src/generated/` | Output Hey API. Incluye `zod.gen.ts`. No editar. |
-| `@mtt/contracts/zod` | Import de schemas (`zMeshesCreateData`, `zDeviceRead`, …) |
-| `apps/web` forms | `safeParse` del `*Data` (envelope `{ body }` / `{ path, query }`) |
-| `apps/web` SDK | `validator: true` → `parseAsync` de request/response |
-| `apps/api-mock` | `safeParse` del mismo `*Data` en POST; 400 con `error.issues` |
+| `docs/openapi.json` | Copia del schema que sirve la API en `https://api.sensical.es/schema`. No editar: `pnpm openapi:sync` lo trae y regenera el cliente. |
+| `packages/contracts/src/generated/` | Output Orval: `api.ts` (fetch + React Query) y `model.zod.ts` (Zod + tipos). No editar. |
+| `@mtt/contracts` | Schemas y tipos con el mismo nombre (`Mesh`, `MeshCreateRequest`, `DeviceRead`, …) |
+| `@mtt/contracts/api` | Funciones (`meshesUpdate(meshId, body)`), `get*QueryOptions`, `get*QueryKey`, `get*MutationOptions`. Solo desde `repository.ts` |
+| `@mtt/contracts/runtime` | `apiFetch` (mutator de Orval: base URL, cookie, CSRF, error DRF con `status`, `parse` del response) y `setApiBaseUrl` |
+| `apps/web` forms | `safeParse` del schema del body (`MeshCreateRequest.safeParse(body)`) |
+| `apps/web` SDK | `apiFetch` recibe el Zod del response (`includeZodSchemaInArguments`) y lo parsea |
+| `apps/api-mock` | `safeParse` del mismo schema de body en POST/PATCH; 400 con `error.issues` |
 | `packages/domain` | Nada de Zod. Entidades propias; el mock traduce DTO ↔ domain |
 
-Runtime: **Zod 4.6** (`zod@^4.6.5` en `@mtt/contracts`). Sincronizar: `pnpm openapi:sync` (rama de la API con `OPENAPI_REF`; por defecto la de `packages/contracts/scripts/sync-openapi.ts`). Solo regenerar sin descargar: `pnpm openapi-ts`.
+drf-spectacular comparte componentes entre request y response. `orval.config.ts` los separa al generar: el body sin campos `readOnly` pasa a `<Nombre>Request` y el response pierde los `writeOnly`. Si el backend activa `COMPONENT_SPLIT_REQUEST`, ese transformer sobra.
+
+Runtime: **Zod 4.6** (`zod@^4.6.5` en `@mtt/contracts`). Sincronizar: `pnpm openapi:sync` (por defecto `https://api.sensical.es`; otra API con `OPENAPI_URL`, p. ej. `OPENAPI_URL=http://localhost`). Solo regenerar sin descargar: `pnpm openapi:generate`.
 
 Qué usar de 4.6 en este repo (y qué no):
 
 | Feature 4.6 | En el borde MTT |
 |---|---|
 | `safeParse` + issues | **Sí.** Forms y mock necesitan mensajes. El error map es **lazy**: leer `result.error` en el mismo tick que el parse, no después de un `z.config()`. |
-| SDK `parseAsync` | **Sí.** Hay que devolver el output tipado, no un boolean. |
+| `parse` del response | **Sí.** Hay que devolver el output tipado, no un boolean. |
 | `.validate()` | **No** en forms/mock/SDK. No construye issues ni output. Solo si algún día hace falta un gate “¿es JSON válido?” sin enseñar errores. |
-| `z.compile()` / `z.withParser()` | **No** hasta CSP (`new Function`) o coste medido. El gen de Hey API no emite parsers compilados. |
-| `z.fromJSONSchema()` | **No.** Duplicaría Hey API. Si el YAML gana `minProperties` / `uniqueItems` / `contains`, regenerar; el plugin Zod los traduce. |
-| `z.iban()`, `@zod/mini` | **No.** El OpenAPI no tiene IBANs; Mini no es lo que emite Hey API. |
+| `z.compile()` / `z.withParser()` | **No** hasta CSP (`new Function`) o coste medido. Orval no emite parsers compilados. |
+| `z.fromJSONSchema()` | **No.** Duplicaría Orval. Si el YAML gana `minProperties` / `uniqueItems` / `contains`, regenerar. |
+| `z.iban()`, `@zod/mini` | **No.** El OpenAPI no tiene IBANs; Mini no es lo que emite Orval. |
 | `z.email()` / `z.url()` | Gratis en schemas ya generados (`Owner*`, `vocabulary_uri`). 4.6 rechaza URLs inválidas más barato y el patrón de email deja de usar lookaheads. |
 
 Evolución, en este orden:
 
-1. Cambia la API (y su snapshot) → `pnpm openapi:sync`. Web y mock siguen importando los mismos `z*`.
+1. Cambia la API (y se despliega, o corre en local) → `pnpm openapi:sync`. Web y mock siguen importando los mismos schemas.
 2. Constraint extra (max length, uuid, enum) → en la API, no `.refine()` a mano encima del gen.
 3. Invariante de negocio (PSK, disallow antes de mover) → `packages/domain`, no Zod.
-4. Cuando los POST dejen de ser dos formularios y haya TanStack Form: el schema sigue siendo el `z*Data` / `z*Create` generado.
+4. Cuando los POST dejen de ser dos formularios y haya TanStack Form: el schema sigue siendo el del body generado.
 5. Compilar schemas (`z.compile`) solo si el mock o el cliente parsean payloads grandes (series de lecturas) y un profiler lo pide. Entonces un wrapper **fuera** de `generated/`, no parcheando el gen.
 
-Config Hey API (`packages/contracts/openapi-ts.config.ts`):
+Config Orval (`packages/contracts/orval.config.ts`):
 
-- `@hey-api/client-fetch` + `runtimeConfigPath` (base URL, `credentials` cuando exista auth)
-- `@hey-api/typescript`
-- `@hey-api/sdk` con **`validator: true`** (valida request/response con Zod)
-- `@hey-api/zod` (requests y responses)
-- `@tanstack/react-query` (`queryOptions` + `mutationOptions`)
+- `client: "react-query"`, `httpClient: "fetch"`, `mode: "single"`
+- `schemas: { type: "zod", mode: "single" }` → `model.zod.ts`
+- `mutator: apiFetch` + `includeZodSchemaInArguments` (un mutator propio salta la validación de Orval; así el fetcher parsea el response)
+- Transformer de input que separa request/response (ver arriba)
 
 Nadie reexporta tipos a mano “porque el gen es feo”. Si el YAML cambia: regenerar, no parchear `packages/contracts`.
 
 Uso en web:
 
-- Queries: `useQuery(deviceRepository.list({ query: { mesh_id } }))` (las `*Options` viven en el repository de la feature)
-- Mutaciones: `...deviceRepository.create()` + invalidar query keys del mismo repository
-- Forms: `zMeshesCreateData` / `zDevicesCreateData` con `safeParse` (hoy); el mismo schema si pasa a TanStack Form
+- Queries: `useQuery(deviceRepository.list({ mesh_id }))` (las `get*QueryOptions` viven en el repository de la feature)
+- Mutaciones: `...deviceRepository.create()` + `mutate({ data })` / `mutate({ meshId, data })`; invalidar con las `get*QueryKey` del mismo repository
+- Forms: `MeshCreateRequest` / `DeviceCreate` con `safeParse` (hoy); el mismo schema si pasa a TanStack Form
 
 Uso en mock:
 
@@ -348,7 +351,7 @@ Imagen frontend: `docker build -f docker/Dockerfile .` — `vite build` con plug
 
 ## Orden de montaje
 
-Hecho: workspace, `packages/ui`, `packages/contracts` (Hey API + Zod), `packages/domain`, `apps/api-mock`, web Query contra `GET /meshes`.
+Hecho: workspace, `packages/ui`, `packages/contracts` (Orval + Zod), `packages/domain`, `apps/api-mock`, web Query contra `GET /meshes`.
 
 Pantallas US-11–31 siguen abiertas.
 

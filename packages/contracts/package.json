@@ -4,16 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/generated/index.ts",
-    "./client": "./src/generated/client.gen.ts",
-    "./query": "./src/generated/@tanstack/react-query.gen.ts",
-    "./types": "./src/generated/types.gen.ts",
-    "./zod": "./src/generated/zod.gen.ts",
+    ".": "./src/generated/model.zod.ts",
+    "./api": "./src/generated/api.ts",
     "./runtime": "./src/api-runtime.ts"
   },
   "scripts": {
     "openapi:sync": "node --experimental-strip-types scripts/sync-openapi.ts",
-    "openapi-ts": "openapi-ts",
+    "openapi:generate": "orval",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -24,9 +21,9 @@
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.99.0",
     "@mtt/tsconfig": "workspace:^",
     "@types/node": "^22.15.21",
+    "orval": "8.46.0",
     "typescript": "^5.8.3"
   }
 }

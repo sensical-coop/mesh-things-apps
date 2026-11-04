@@ -44,8 +44,8 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
 
   async function saved(blueprintId: string) {
     await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey({ path: { blueprint_id: blueprintId } }) });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.versionsKey({ path: { blueprint_id: blueprintId } }) });
+    await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey(blueprintId) });
+    await queryClient.invalidateQueries({ queryKey: blueprintRepository.versionsKey(blueprintId) });
     onSaved?.(blueprintId);
     onClose();
   }
@@ -87,12 +87,12 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
     setNameError(undefined);
     const body = versionBody(draft);
     if (blueprint) {
-      addVersion.mutate({ path: { blueprint_id: blueprint.id }, body });
+      addVersion.mutate({ blueprintId: blueprint.id, data: body });
       return;
     }
     const form = new FormData(event.currentTarget);
     create.mutate({
-      body: {
+      data: {
         name: String(form.get("name") ?? "").trim(),
         description: String(form.get("description") ?? "").trim() || null,
         is_public: form.get("is_public") === "on",

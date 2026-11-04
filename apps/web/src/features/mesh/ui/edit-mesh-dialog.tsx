@@ -1,5 +1,5 @@
 import type { Mesh } from "@mtt/contracts";
-import { zMeshesUpdateData } from "@mtt/contracts/zod";
+import { MeshUpdate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
@@ -78,7 +78,7 @@ export function EditMeshDialog({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: meshRepository.retrieveKey({ path: { mesh_id: mesh.id } }),
+        queryKey: meshRepository.retrieveKey(mesh.id),
       });
       await onSaved?.();
       onClose();
@@ -91,7 +91,7 @@ export function EditMeshDialog({
   const enforced = useTermsEnforced();
   const termsEnforced = enforced !== false;
   const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: enforced === true && canPickSource && currentSource !== null,
   });
   const termsCurrent = ["ok", "expiring"].includes(
@@ -103,7 +103,7 @@ export function EditMeshDialog({
       now: new Date(),
     }),
   );
-  const [awaitingTerms, setAwaitingTerms] = useState<Parameters<typeof update.mutate>[0] | null>(null);
+  const [awaitingTerms, setAwaitingTerms] = useState<{ meshId: string; data: MeshUpdate } | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -136,17 +136,17 @@ export function EditMeshDialog({
       // Only a change moves the gateways, so an unchanged source isn't resent.
       if (sourceId !== currentSource) body.source_id = sourceId;
     }
-    const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    const parsed = MeshUpdate.safeParse(body);
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    if (termsEnforced && currentSource !== null && parsed.data.body?.source_id === null && !termsCurrent) {
-      setAwaitingTerms(parsed.data);
+    if (termsEnforced && currentSource !== null && parsed.data?.source_id === null && !termsCurrent) {
+      setAwaitingTerms({ meshId: mesh.id, data: parsed.data });
       return;
     }
-    update.mutate(parsed.data);
+    update.mutate({ meshId: mesh.id, data: parsed.data });
   }
 
   return (
@@ -299,8 +299,8 @@ export function EditMeshDialog({
           update.mutate(
             acceptance
               ? {
-                  ...awaitingTerms,
-                  body: { ...awaitingTerms.body, terms_version: acceptance.version, terms_locale: acceptance.locale },
+                  meshId: awaitingTerms.meshId,
+                  data: { ...awaitingTerms.data, terms_version: acceptance.version, terms_locale: acceptance.locale },
                 }
               : awaitingTerms,
           );

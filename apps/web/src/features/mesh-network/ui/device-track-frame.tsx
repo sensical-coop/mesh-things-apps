@@ -18,10 +18,7 @@ import { tokenColor } from "../token-color";
 export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage } = useIntl();
   const positions = useQuery(
-    readingsRepository.series({
-      path: { device_uuid: device.uuid },
-      query: { payload_kind: "device:position", start: "-7d" },
-    }),
+    readingsRepository.series(device.uuid, { payload_kind: "device:position", start: "-7d" }),
   );
   const track = useMemo(() => {
     const series = positions.data?.series ?? [];

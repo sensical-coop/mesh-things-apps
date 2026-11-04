@@ -23,13 +23,13 @@ export function DeviceAbsenceToggle({ device }: DeviceAbsenceToggleProps): React
   function onClick() {
     update.mutate(
       {
-        path: { device_uuid: device.uuid },
-        body: { absence_detection_enabled: !device.absence_detection_enabled },
+        deviceUuid: device.uuid,
+        data: { absence_detection_enabled: !device.absence_detection_enabled },
       },
       {
         onSuccess: () =>
           Promise.all([
-            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: device.mesh_id } }) }),
+            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(device.mesh_id) }),
             queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
           ]),
       },

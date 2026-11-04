@@ -33,9 +33,9 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }) }),
-        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: device.mesh_id } }) }),
-        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey({ path: { mesh_id: device.mesh_id } }) }),
+        queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(device.uuid) }),
+        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(device.mesh_id) }),
+        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey(device.mesh_id) }),
       ]);
       onClose();
     },
@@ -58,7 +58,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
       return;
     }
     setError(null);
-    update.mutate({ path: { device_uuid: device.uuid }, body: { archive_enabled: enabled } });
+    update.mutate({ deviceUuid: device.uuid, data: { archive_enabled: enabled } });
   }
 
   return (

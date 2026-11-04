@@ -82,7 +82,7 @@ export function DeleteSinkDialog({ sink, onClose, onEdit }: DeleteSinkDialogProp
               variant="danger"
               size="small"
               disabled={destroy.isPending}
-              onClick={() => sink && destroy.mutate({ path: { sink_id: sink.id } })}
+              onClick={() => sink && destroy.mutate({ sinkId: sink.id })}
             >
               {destroy.isPending
                 ? formatMessage({ id: "feature.sink.deleteDialog.deleting", defaultMessage: "Deleting" })

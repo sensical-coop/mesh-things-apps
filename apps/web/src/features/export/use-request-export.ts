@@ -26,12 +26,12 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
       onCreated?.(row);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: exportRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: exportRepository.meshListKey({ path: { mesh_id: row.mesh_id } }) }),
+        queryClient.invalidateQueries({ queryKey: exportRepository.meshListKey(row.mesh_id) }),
       ]);
     },
   });
 
-  const refusal = mutation.error ? readApiError(mutation.error) : undefined;
+  const refusal = mutation.isError ? readApiError(mutation.error) : undefined;
   const busy = refusal?.status === 429;
   let error: string | undefined;
   if (refusal) {
@@ -54,7 +54,7 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
   }
 
   return {
-    request: (meshId, body) => mutation.mutate({ path: { mesh_id: meshId }, body }),
+    request: (meshId, body) => mutation.mutate({ meshId: meshId, data: body }),
     pending: mutation.isPending,
     created: mutation.data,
     error,

@@ -43,7 +43,7 @@ export function SourcesPage(): ReactElement {
   const termsEnforced = enforced !== false;
   // The current version, to tell a source accepted under older terms.
   const currentTerms = useQuery({
-    ...termsRepository.source({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.source({ locale: termsLocale(locale) }),
     enabled: isOperator && enforced === true,
   });
   const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });

@@ -4,7 +4,7 @@ Historias para **implementar interfaces**. El contrato HTTP es `docs/openapi.jso
 
 Personas: **owner** (operador de malla). Superuser queda fuera de fase 1.
 
-Formato: job → pantalla → contrato (operación OpenAPI). Los formularios y el parseo de respuestas en la web usan **schemas Zod generados** en `packages/contracts` (Hey API), no Zod a mano.
+Formato: job → pantalla → contrato (operación OpenAPI). Los formularios y el parseo de respuestas en la web usan **schemas Zod generados** en `packages/contracts` (Orval), no Zod a mano.
 
 ---
 

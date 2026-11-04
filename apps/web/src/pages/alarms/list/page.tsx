@@ -44,7 +44,7 @@ export function AlarmsPage(): ReactElement {
   );
   const current = editableMeshes.find((mesh) => mesh.id === selected) ?? editableMeshes[0];
   const devices = useQuery({
-    ...meshRepository.devices({ path: { mesh_id: current?.id ?? "00000000-0000-4000-8000-000000000000" } }),
+    ...meshRepository.devices(current?.id ?? "00000000-0000-4000-8000-000000000000"),
     enabled: current != null,
   });
   // One catalog request names every variant, instead of one per device.
