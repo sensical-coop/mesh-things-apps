@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/generated/model.zod.ts",
     "./api": "./src/generated/api.ts",
-    "./runtime": "./src/api-runtime.ts"
+    "./runtime": "./src/api-runtime.ts",
+    "./errors": "./src/api-errors.ts"
   },
   "scripts": {
     "openapi:sync": "node --experimental-strip-types scripts/sync-openapi.ts",

@@ -8,7 +8,7 @@ import { DocumentationActions } from "@/components/actions";
 import { BrandMark } from "@/components/brand";
 import { DocumentationHeader } from "@/components/header";
 import { useDocsTranslations } from "@/hooks/use-docs-translations";
-import { useLocale } from "@/hooks/use-locale";
+import { useLocale } from "@mtt/ui/hooks/use-locale";
 import { docsSource } from "@/lib/source";
 import { webAppUrl } from "@/lib/web-app-url";
 

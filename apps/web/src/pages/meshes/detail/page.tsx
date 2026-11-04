@@ -1,5 +1,4 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { DeviceCreate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils/cx";
 import {
@@ -18,19 +17,16 @@ import {
   RiEyeOffLine,
   RiFileCopyLine,
 } from "@remixicon/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { type ReactElement, useMemo, useState } from "react";
 import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
-import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
-import { FormField } from "@/components/form/form-field";
-import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
@@ -41,7 +37,7 @@ import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceLastSeen, devicePosition, deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
-import { NodeIdField } from "@/features/device/ui/node-id-field";
+import { GatewayForm } from "@/features/device/ui/gateway-form";
 import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
@@ -49,13 +45,11 @@ import { matchesListQuery } from "@/lib/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
 import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
-import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshStatus, meshTermsStanding, meshTitle } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
@@ -64,7 +58,7 @@ import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
-import { termsLocale } from "@/features/terms/model";
+import { termsLocale } from "@mtt/ui/terms";
 import { termsRepository } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
@@ -577,49 +571,6 @@ function RegisterDeviceDialog({
   onClose: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
-  const queryClient = useQueryClient();
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const create = useMutation({
-    ...deviceRepository.create(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
-      await queryClient.invalidateQueries({
-        queryKey: meshRepository.devicesKey(meshId),
-      });
-      onClose();
-    },
-    onError: (error) => setErrors(readApiError(error).fields),
-  });
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const label = String(form.get("label") ?? "").trim();
-    // Empty when the node id doesn't parse; NodeIdField always posts decimal.
-    const nodeId = String(form.get("node_id") ?? "");
-    if (nodeId === "") {
-      setErrors({
-        node_id: formatMessage({
-          id: "page.meshes.detail.registerGatewayDialog.nodeIdInvalid",
-          defaultMessage: "Enter a valid node ID.",
-        }),
-      });
-      return;
-    }
-    const parsed = DeviceCreate.safeParse({
-      mesh_id: meshId,
-      node_id: Number(nodeId),
-      is_gateway: true,
-      label: label === "" ? null : label,
-    });
-    if (!parsed.success) {
-      setErrors(issueErrors(parsed.error.issues));
-      return;
-    }
-    setErrors({});
-    create.mutate({ data: parsed.data });
-  }
-
   return (
     <Modal
       open={open}
@@ -630,43 +581,7 @@ function RegisterDeviceDialog({
       })}
       onClose={onClose}
     >
-      <form className="flex flex-col gap-5" onSubmit={onSubmit}>
-        <FieldGroup>
-          <FormField
-            id="device-label"
-            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" })}
-            error={errors.label}
-          >
-            <Input id="device-label" name="label" autoComplete="off" />
-          </FormField>
-          <NodeIdField id="device-node" name="node_id" error={errors.node_id} />
-        </FieldGroup>
-        {create.error ? (
-          <StatusCopy>
-            {formatMessage({
-              id: "page.meshes.detail.registerGatewayDialog.error",
-              defaultMessage: "Registration failed. Check node ID and try again.",
-            })}
-            {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
-          </StatusCopy>
-        ) : null}
-        <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.meshes.detail.registerGatewayDialog.cancel", defaultMessage: "Cancel" })}
-          </Button>
-          <Button type="submit" size="small" disabled={create.isPending}>
-            {create.isPending
-              ? formatMessage({
-                  id: "page.meshes.detail.registerGatewayDialog.registering",
-                  defaultMessage: "Registering gateway",
-                })
-              : formatMessage({
-                  id: "page.meshes.detail.registerGatewayDialog.title",
-                  defaultMessage: "Register gateway",
-                })}
-          </Button>
-        </div>
-      </form>
+      {open ? <GatewayForm meshId={meshId} onCancel={onClose} onRegistered={async () => onClose()} /> : null}
     </Modal>
   );
 }

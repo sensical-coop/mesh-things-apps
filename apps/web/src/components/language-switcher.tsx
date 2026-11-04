@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { useLocale } from "@/hooks/use-locale";
-import { SUPPORTED_LOCALES, type Locale } from "@/lib/locale";
+import { useLocale } from "@mtt/ui/hooks/use-locale";
+import { SUPPORTED_LOCALES, type Locale } from "@mtt/ui/locale";
 
 const LOCALE_LABELS: Record<Locale, string> = {
   en: "EN",

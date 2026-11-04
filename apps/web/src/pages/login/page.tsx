@@ -1,16 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
-import { Navigate } from "@tanstack/react-router";
+import { Navigate, useSearch } from "@tanstack/react-router";
 import { type ReactElement } from "react";
 import { AuthHeader } from "@/components/auth-header";
+import { safeReturnPath } from "@/lib/return-path";
 import { routes } from "@/router";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
+import { isOwnerSession } from "@mtt/ui/session";
 import { LoginForm } from "./form";
 
 export function LoginPage(): ReactElement {
+  const { accountDeleted, next } = useSearch({ from: routes.login });
   const me = useQuery({ ...authRepository.me(), retry: false });
-  if (isOwnerSession(me)) return <Navigate to={routes.meshes} />;
+  const dest = safeReturnPath(next);
+  if (isOwnerSession(me)) {
+    if (dest) {
+      window.location.assign(dest);
+      return <div className="min-h-svh bg-background-full" />;
+    }
+    return <Navigate to={routes.meshes} />;
+  }
   if (me.isSuccess && !me.data.is_active) return <Navigate to={routes.verifyPending} />;
 
   return (
@@ -18,7 +27,7 @@ export function LoginPage(): ReactElement {
       <ShaderBackdrop />
       <AuthHeader />
       <div className="relative w-full max-w-md">
-        <LoginForm />
+        <LoginForm accountDeleted={accountDeleted} next={next} />
       </div>
     </main>
   );

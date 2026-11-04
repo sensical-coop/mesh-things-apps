@@ -1,15 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
+import { formatNodeId, parseNodeId } from "@mtt/ui/forms/node-id";
 import {
   deviceLastSeen,
   devicePosition,
   deviceRoleLabel,
   deviceSilent,
   deviceTitle,
-  formatNodeId,
   parseCoordinate,
-  parseNodeId,
   roundCoordinate,
 } from "../src/features/device/model.ts";
 

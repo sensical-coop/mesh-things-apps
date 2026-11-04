@@ -6,7 +6,7 @@ import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { pageHeadingClass } from "@/lib/page-heading";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { useMe } from "@/features/auth/use-me";
 import { canUseArchive, summarizeArchive } from "@/features/archive/model";
 import { archiveRepository } from "@/features/archive/repository";

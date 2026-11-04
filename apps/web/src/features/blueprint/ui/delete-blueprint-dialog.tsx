@@ -6,7 +6,7 @@ import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type DeleteBlueprintDialogProps = {

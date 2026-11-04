@@ -1,0 +1,10 @@
+:80 {
+	# Vite emits files at the root of dist and absolute /start/… URLs. `/start` (no slash) redirects.
+	@bare path /start
+	redir @bare /start/ 308
+	handle_path /start/* {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -1,23 +1,13 @@
+import type { TermsLocale } from "@mtt/ui/terms";
+
 /** Account terms at signup; mesh terms per mesh on the default broker; source and sink terms per source and sink. */
 export type TermsKind = "account" | "mesh" | "source" | "sink";
-
-export type TermsLocale = "en" | "es";
 
 /** What was accepted: sent back as `terms_version` and `terms_locale`. */
 export type TermsAcceptance = { version: string; locale: TermsLocale };
 
 /** Mirrors the API's REGISTRY__TERMS_RENEWAL_NOTICE_DAYS default: when renewal is offered early. */
 export const TERMS_RENEWAL_NOTICE_DAYS = 30;
-
-/** The API serves `en` and `es`; any other console language gets English. */
-export function termsLocale(intlLocale: string): TermsLocale {
-  return intlLocale.toLowerCase().startsWith("es") ? "es" : "en";
-}
-
-/** Every statement the API sent must be ticked; an empty list accepts nothing. */
-export function allStatementsAccepted(statementIds: readonly string[], accepted: ReadonlySet<string>): boolean {
-  return statementIds.length > 0 && statementIds.every((id) => accepted.has(id));
-}
 
 /**
  * Where an acceptance stands (a mesh's, a source's, or an owner's account terms,
@@ -46,14 +36,3 @@ export function termsStanding(input: {
   return "ok";
 }
 
-/**
- * Whether this instance asks for terms, from the answer to `GET /terms`. A self-hosted
- * instance (REGISTRY__TERMS_ENFORCED=false) answers 404 on every terms route. Unknown
- * (still loading, or another error) is `undefined`, and callers treat it as enforced:
- * the console never skips terms on a mere network error.
- */
-export function termsEnforcedFrom(state: { loaded: boolean; errorStatus: number | undefined }): boolean | undefined {
-  if (state.loaded) return true;
-  if (state.errorStatus === 404) return false;
-  return undefined;
-}

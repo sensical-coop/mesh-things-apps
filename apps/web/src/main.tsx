@@ -8,7 +8,7 @@ import { Layout } from "./layout";
 import { authRepository } from "@/features/auth/repository";
 import { router } from "@/router/app-router";
 import { API_URL } from "@/lib/api-url";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import "./styles.css";
 
 setApiBaseUrl(API_URL);

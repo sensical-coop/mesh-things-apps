@@ -13,6 +13,7 @@ services:
     environment:
       HOME: /tmp
       DOCS_DEV_URL: http://docs:5175
+      ONBOARDING_DEV_URL: http://onboarding:5176
     volumes:
       - .:/app
     # Dependencies come from the host's `pnpm install`; running pnpm in here would see a
@@ -23,6 +24,23 @@ services:
     command: ["node_modules/.bin/vite", "--host", "0.0.0.0", "--port", "5174", "--strictPort"]
     ports: !override
       - "127.0.0.1:5174:5174"
+    mem_limit: 2g
+    restart: "no"
+    healthcheck:
+      disable: true
+
+  onboarding:
+    build: !reset null
+    image: node:22-bookworm-slim
+    working_dir: /app/apps/onboarding
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /tmp
+    volumes:
+      - .:/app
+    command: ["node_modules/.bin/vite", "--host", "0.0.0.0", "--port", "5176", "--strictPort"]
+    ports: !override
+      - "127.0.0.1:5176:5176"
     mem_limit: 2g
     restart: "no"
     healthcheck:

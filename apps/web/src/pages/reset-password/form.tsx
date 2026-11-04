@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";

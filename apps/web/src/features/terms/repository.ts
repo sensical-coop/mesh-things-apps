@@ -8,8 +8,8 @@ import {
   getSourcesTermsRetrieveQueryOptions,
   getTermsRetrieveQueryOptions,
 } from "@mtt/contracts/api";
-import { readApiError } from "@/lib/api-errors";
-import type { TermsLocale } from "@/features/terms/model";
+import { readApiError } from "@mtt/contracts/errors";
+import type { TermsLocale } from "@mtt/ui/terms";
 
 /** The API owns the terms: their text and version come from these routes. */
 export const termsRepository = {

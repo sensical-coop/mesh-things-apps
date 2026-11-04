@@ -6,7 +6,7 @@ import { RiCalendarLine } from "@remixicon/react";
 import { type ReactElement, useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { useIntl } from "react-intl";
-import { useLocale } from "@/hooks/use-locale";
+import { useLocale } from "@mtt/ui/hooks/use-locale";
 import {
   CHART_RANGE_PRESETS,
   type DeviceChartRange,

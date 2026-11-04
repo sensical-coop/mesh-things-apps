@@ -5,14 +5,14 @@ import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@m
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
-import { SaveButton } from "@/components/form/save-button";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormNumber } from "@mtt/ui/forms/form-number";
+import { SaveButton } from "@mtt/ui/forms/save-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
 import { useMe } from "@/features/auth/use-me";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 const SECONDS_PER_HOUR = 3600;
@@ -31,7 +31,7 @@ const sectionTitleClass = "text-body-medium text-text-primary";
  * or a source is unusually busy.
  */
 export function NotificationsPanel(): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
   const { me, isOperator } = useMe();
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export function NotificationsPanel(): ReactElement {
                     defaultMessage: "Minimum time between quality-alarm emails. Leave empty to use the server default.",
                   })}
                 >
-                  <FormNumber
+                  <FormNumber locale={locale}
                     id="profile-alarm-cooldown"
                     name="alarm_cooldown_hours"
                     min={0}
@@ -174,7 +174,16 @@ export function NotificationsPanel(): ReactElement {
               </StatusCopy>
             ) : null}
             <div className={dialogActionsClass}>
-              <SaveButton pending={update.isPending} saved={update.isSuccess} savedKey={update.submittedAt} />
+              <SaveButton
+                pending={update.isPending}
+                saved={update.isSuccess}
+                savedKey={update.submittedAt}
+                labels={{
+                  save: formatMessage({ id: "common.saveButton.save", defaultMessage: "Save changes" }),
+                  saving: formatMessage({ id: "common.saveButton.saving", defaultMessage: "Saving" }),
+                  saved: formatMessage({ id: "common.saveButton.saved", defaultMessage: "Saved" }),
+                }}
+              />
             </div>
           </form>
         )}

@@ -6,8 +6,8 @@ import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { draftProblemMessage } from "@/features/blueprint/draft-problem-message";
@@ -21,7 +21,7 @@ import {
 } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { VersionEditor } from "@/features/blueprint/ui/version-editor";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type BlueprintDialogProps = {

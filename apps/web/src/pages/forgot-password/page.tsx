@@ -5,7 +5,7 @@ import { AuthHeader } from "@/components/auth-header";
 import { routes } from "@/router";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
+import { isOwnerSession } from "@mtt/ui/session";
 import { ForgotPasswordForm } from "./form";
 
 export function ForgotPasswordPage(): ReactElement {

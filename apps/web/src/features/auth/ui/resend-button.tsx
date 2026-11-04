@@ -4,9 +4,16 @@ import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { secondsUntilResendAllowed } from "./resend-cooldown";
+import { secondsUntilResendAllowed } from "@mtt/ui/resend-cooldown";
 
-export function ResendButton({ sentAt }: { sentAt: string | null }): ReactElement {
+export function ResendButton({
+  sentAt,
+  next,
+}: {
+  sentAt: string | null;
+  /** Allow-listed return path sent with the resend, when the flow has one. */
+  next?: string;
+}): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +55,13 @@ export function ResendButton({ sentAt }: { sentAt: string | null }): ReactElemen
 
   return (
     <div className="flex flex-col gap-2">
-      <Button type="button" size="small" variant="secondary" disabled={disabled} onClick={() => resend.mutate({})}>
+      <Button
+        type="button"
+        size="small"
+        variant="secondary"
+        disabled={disabled}
+        onClick={() => resend.mutate(next ? { data: { next } } : {})}
+      >
         {label}
       </Button>
       {error ? <StatusCopy>{error}</StatusCopy> : null}

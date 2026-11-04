@@ -26,9 +26,11 @@ export function FormField({
       </FieldLabel>
       {children}
       {hint ? (
-        <FieldDescription className="text-caption-1-regular text-text-tertiary">{hint}</FieldDescription>
+        <FieldDescription id={`${id}-hint`} className="text-caption-1-regular text-text-tertiary">
+          {hint}
+        </FieldDescription>
       ) : null}
-      {error ? <FieldError>{error}</FieldError> : null}
+      {error ? <FieldError id={`${id}-error`}>{error}</FieldError> : null}
     </Field>
   );
 }

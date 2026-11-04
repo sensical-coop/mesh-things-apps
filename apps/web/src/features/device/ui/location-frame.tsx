@@ -8,7 +8,7 @@ import { type ReactElement, useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage } from "@/lib/api-errors";
+import { formLevelMessage } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { deviceTitle, roundCoordinate } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";

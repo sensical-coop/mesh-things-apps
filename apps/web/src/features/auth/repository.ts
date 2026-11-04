@@ -14,6 +14,7 @@ import {
   getOwnersResetPasswordCreateMutationOptions,
   getOwnersVerifyEmailRetrieveQueryOptions,
   ownersCsrfCookieRetrieve,
+  ownersVerifyEmailRetrieve,
 } from "@mtt/contracts/api";
 
 export const authRepository = {
@@ -29,7 +30,12 @@ export const authRepository = {
   listKey: getOwnersListQueryKey,
   resendVerification: getOwnersMeResendVerificationCreateMutationOptions,
   rotateKey: getOwnersMeRotateKeyCreateMutationOptions,
-  verifyEmail: getOwnersVerifyEmailRetrieveQueryOptions,
+  // The token is single-use. The query function never reads `signal`: if it did, a remount would cancel the
+  // first request after the server spent the token, and the refetch would get a 400.
+  verifyEmail: (params: Parameters<typeof getOwnersVerifyEmailRetrieveQueryOptions>[0]) => ({
+    ...getOwnersVerifyEmailRetrieveQueryOptions(params),
+    queryFn: () => ownersVerifyEmailRetrieve(params),
+  }),
   requestPasswordReset: getOwnersRequestPasswordResetCreateMutationOptions,
   resetPassword: getOwnersResetPasswordCreateMutationOptions,
 };

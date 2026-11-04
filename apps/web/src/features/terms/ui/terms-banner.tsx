@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import { useMe } from "@/features/auth/use-me";
 import { meshTermsStanding } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
-import { termsLocale } from "@/features/terms/model";
+import { termsLocale } from "@mtt/ui/terms";
 import { termsRepository } from "@/features/terms/repository";
 import { useAccountTermsStanding } from "@/features/terms/use-account-terms-standing";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";

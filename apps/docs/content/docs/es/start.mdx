@@ -1,0 +1,16 @@
+---
+title: Configura tu primera malla
+description: La configuración guiada de /start, desde una cuenta hasta una pasarela que envía.
+---
+
+`/start` lleva a un propietario nuevo desde una cuenta hasta una malla, una pasarela y la consola. Lleva unos 10 minutos. Hace falta la app de Meshtastic y una radio con Wi-Fi o Ethernet.
+
+La dirección guarda la malla y el paso (`/start?mesh=<id>&step=<key>`). Al recargar, se reanuda con lo que el servidor ya tiene. No guarda el progreso en ningún otro sitio.
+
+## Qué se indica
+
+La malla usa el nombre de canal y la clave de la app de Meshtastic. La pasarela se registra con su identificador de nodo, en hexadecimal o decimal. En el paso de conexión, activa MQTT, activa el enlace ascendente de ese canal y deja el cifrado activado. El host del broker, el puerto y el usuario de la pasarela los da quien administra Mesh Things. No forman parte de la aplicación web.
+
+## Si la pasarela deja de enviar
+
+El último paso puede avisarte por correo cuando la pasarela deja de enviar. El mensaje llega a la cuenta tras varios intervalos perdidos. No indica una espera fija, porque la alarma solo se ejecuta donde la instancia tiene un detector para ella.

@@ -2,7 +2,7 @@ import type { SourceRead } from "@mtt/contracts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { termsRepository } from "@/features/terms/repository";

@@ -8,9 +8,9 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
+import { isOwnerSession } from "@mtt/ui/session";
 import { routes } from "@/router";
-import { ResendButton } from "./resend-button";
+import { ResendButton } from "@/features/auth/ui/resend-button";
 
 export function VerifyPendingPage(): ReactElement {
   const { formatMessage } = useIntl();

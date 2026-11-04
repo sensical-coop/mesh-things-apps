@@ -1,4 +1,4 @@
-import type { Locale } from "@/lib/locale";
+import type { Locale } from "@mtt/ui/locale";
 import en from "@/locales/en.json";
 import es from "@/locales/es.json";
 

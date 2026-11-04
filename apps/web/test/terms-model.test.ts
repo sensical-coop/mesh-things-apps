@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { allStatementsAccepted, termsLocale, termsStanding } from "../src/features/terms/model.ts";
+import { termsStanding } from "../src/features/terms/model.ts";
+import { allStatementsAccepted, termsEnforcedFrom, termsLocale } from "../../../packages/ui/src/terms.ts";
 
 test("every statement the API sent must be accepted, not just some", () => {
   const ids = ["controller", "authority", "sensitive"];
@@ -33,8 +34,7 @@ test("termsStanding: no acceptance, an older version, or close to lapsing", () =
   assert.equal(termsStanding(base), "ok");
 });
 
-test("termsEnforcedFrom: only a 404 turns terms off; anything unknown counts as on", async () => {
-  const { termsEnforcedFrom } = await import("../src/features/terms/model.ts");
+test("termsEnforcedFrom: only a 404 turns terms off; anything unknown counts as on", () => {
   assert.equal(termsEnforcedFrom({ loaded: true, errorStatus: undefined }), true);
   assert.equal(termsEnforcedFrom({ loaded: false, errorStatus: 404 }), false);
   // Still loading, a server error, or no connection: unknown, and callers keep asking for terms.

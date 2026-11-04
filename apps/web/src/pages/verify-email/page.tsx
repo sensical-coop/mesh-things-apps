@@ -2,22 +2,36 @@ import { Frame, FramePanel } from "@mtt/ui/reui/frame";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { parseAsString, useQueryState } from "nuqs";
-import { type ReactElement } from "react";
+import { type ReactElement, useEffect } from "react";
 import { useIntl } from "react-intl";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
+import { isOwnerSession } from "@mtt/ui/session";
+import { safeReturnPath } from "@/lib/return-path";
 import { routes } from "@/router";
 
 export function VerifyEmailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const [token] = useQueryState("token", parseAsString);
+  const [next] = useQueryState("next", parseAsString);
+  const dest = safeReturnPath(next);
   const verify = useQuery({
     ...authRepository.verifyEmail({ token: token ?? "" }),
     enabled: Boolean(token),
     retry: false,
   });
+  const me = useQuery({
+    ...authRepository.me(),
+    retry: false,
+    enabled: verify.isSuccess && Boolean(dest),
+  });
+  const signedIn = Boolean(dest) && isOwnerSession(me);
+
+  useEffect(() => {
+    if (signedIn && dest) window.location.assign(dest);
+  }, [signedIn, dest]);
 
   return (
     <main className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-background-secondary-default px-4 py-16 sm:px-6 sm:py-24">
@@ -46,12 +60,26 @@ export function VerifyEmailPage(): ReactElement {
                     defaultMessage: "Your email address has been verified. You can now sign in.",
                   })}
                 </StatusCopy>
-                <Link
-                  to={routes.login}
-                  className="text-body-medium text-text-primary underline underline-offset-2"
-                >
-                  {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
-                </Link>
+                {dest && signedIn ? (
+                  <a href={dest} className="text-body-medium text-text-primary underline underline-offset-2">
+                    {formatMessage({ id: "page.verifyEmail.continue", defaultMessage: "Continue" })}
+                  </a>
+                ) : dest ? (
+                  <Link
+                    to={routes.login}
+                    search={{ next: dest }}
+                    className="text-body-medium text-text-primary underline underline-offset-2"
+                  >
+                    {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
+                  </Link>
+                ) : (
+                  <Link
+                    to={routes.login}
+                    className="text-body-medium text-text-primary underline underline-offset-2"
+                  >
+                    {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
+                  </Link>
+                )}
               </>
             ) : (
               <>

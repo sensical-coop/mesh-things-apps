@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { issueErrors, readApiError } from "../src/lib/api-errors.ts";
+import { formLevelMessage, issueErrors, readApiError } from "../../../packages/contracts/src/api-errors.ts";
 
 test("readApiError maps DRF field errors to their first message", () => {
   assert.deepEqual(readApiError({ server: ["Must be host:port.", "Other"], topic: ["Blocked."], status: 400 }), {
@@ -30,8 +30,7 @@ test("issueErrors keys zod issues by their last path segment", () => {
   );
 });
 
-test("formLevelMessage prefers non_field_errors, then detail", async () => {
-  const { formLevelMessage } = await import("../src/lib/api-errors.ts");
+test("formLevelMessage prefers non_field_errors, then detail", () => {
   assert.equal(formLevelMessage({ non_field_errors: ["Pair them"], detail: "x" }), "Pair them");
   assert.equal(formLevelMessage({ detail: "Not allowed", status: 403 }), "Not allowed");
   assert.equal(formLevelMessage({ server: ["bad"] }), undefined);

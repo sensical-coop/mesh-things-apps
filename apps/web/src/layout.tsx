@@ -1,5 +1,5 @@
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
+import { isOwnerSession } from "@mtt/ui/session";
 import { cx } from "@mtt/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet, RouterProvider } from "@tanstack/react-router";

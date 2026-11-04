@@ -1,7 +1,7 @@
 import type { Export, ExportRequest } from "@mtt/contracts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { exportRepository } from "@/features/export/repository";
 
 export type RequestExportState = {

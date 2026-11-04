@@ -37,8 +37,15 @@
     "./components/evilcharts/ui/*": "./src/components/evilcharts/ui/*.tsx",
     "./components/evilcharts/charts/*": "./src/components/evilcharts/charts/*.tsx",
     "./components/*": "./src/components/*.tsx",
+    "./forms/node-id": "./src/forms/node-id.ts",
+    "./forms/text-links": "./src/forms/text-links.ts",
+    "./forms/*": "./src/forms/*.tsx",
     "./*": "./src/*.tsx",
-    "./maplibre.css": "./src/vendor/maplibre.css"
+    "./maplibre.css": "./src/vendor/maplibre.css",
+    "./locale": "./src/locale.ts",
+    "./session": "./src/session.ts",
+    "./resend-cooldown": "./src/resend-cooldown.ts",
+    "./terms": "./src/terms.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

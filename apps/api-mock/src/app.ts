@@ -153,7 +153,7 @@ import {
 
 type Env = { Variables: { actor: Actor } };
 
-const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with apps/web resend-cooldown.ts
+const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with packages/ui/src/resend-cooldown.ts
 /** Mirrors REGISTRY__FRONTEND_RETURN_PATHS: pages a verification link may send the owner back to. */
 const FRONTEND_RETURN_PATHS = (process.env.MOCK_FRONTEND_RETURN_PATHS ?? "/start").split(",").filter(Boolean);
 

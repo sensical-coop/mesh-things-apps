@@ -2,7 +2,7 @@ import type { Mesh } from "@mtt/contracts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { termsRepository } from "@/features/terms/repository";

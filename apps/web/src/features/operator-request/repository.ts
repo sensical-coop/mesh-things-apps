@@ -9,7 +9,7 @@ import {
   ownersMeOperatorRequestRetrieve,
 } from "@mtt/contracts/api";
 import { queryOptions } from "@tanstack/react-query";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 
 export const operatorRequestRepository = {
   /** The caller's latest request, or `null` when they never asked. */

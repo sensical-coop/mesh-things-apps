@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { RESEND_COOLDOWN_SECONDS, secondsUntilResendAllowed } from "../src/pages/verify-pending/resend-cooldown.ts";
+import { RESEND_COOLDOWN_SECONDS, secondsUntilResendAllowed } from "../../../packages/ui/src/resend-cooldown.ts";
 
 test("no cooldown before any email has been sent", () => {
   assert.equal(secondsUntilResendAllowed(null, Date.now()), 0);

@@ -20,13 +20,14 @@ import { RotateSinkCredentialsDialog } from "@/features/sink/ui/rotate-sink-cred
 import { SinkCredentialsDialog } from "@/features/sink/ui/sink-credentials-dialog";
 import { SinkDialog } from "@/features/sink/ui/sink-dialog";
 import { SinkStatusChip } from "@/features/sink/ui/sink-status-chip";
-import { termsLocale, termsStanding, type TermsAcceptance } from "@/features/terms/model";
+import { termsStanding, type TermsAcceptance } from "@/features/terms/model";
+import { termsLocale } from "@mtt/ui/terms";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { useFormatters } from "@/hooks/use-formatters";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { routes } from "@/router";
 

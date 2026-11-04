@@ -1,6 +1,5 @@
 import type { DeviceRead, Mesh } from "@mtt/contracts";
-import { MeshCreateRequest } from "@mtt/contracts";
-import { Button } from "@mtt/ui/components/base/buttons/button";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
   FrameDescription,
@@ -9,36 +8,31 @@ import {
   FrameTitle,
 } from "@mtt/ui/reui/frame";
 import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
-import { type FormEvent, type ReactElement, useMemo, useState } from "react";
+import { type ReactElement, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
-import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { sourceTitle } from "@/features/source/model";
-import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { matchesListQuery } from "@/lib/list-filter";
 import { routes } from "@/router";
-import { dialogActionsClass } from "@/lib/dialog-actions";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { Modal } from "@/components/modal";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { MeshForm } from "@/features/mesh/ui/mesh-form";
 import { meshRepository } from "@/features/mesh/repository";
 import { MESH_STATUS_RANK, canEditMesh, meshStatus, meshTitle } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
-import { termsLocale, type TermsAcceptance } from "@/features/terms/model";
+import { type TermsAcceptance } from "@/features/terms/model";
+import { termsLocale } from "@mtt/ui/terms";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
@@ -366,7 +360,12 @@ export function MeshesPage(): ReactElement {
         <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
           {formatMessage({ id: "page.meshes.list.title", defaultMessage: "Meshes" })}
         </h1>
-        <Button type="button" size="small" leadingIcon={RiAddLine} onClick={startCreate}>
+        {rows.length === 0 && !meshes.isPending && !filters.active ? (
+          <ButtonLink href="/start" size="small">
+            {formatMessage({ id: "page.meshes.list.setupFirst", defaultMessage: "Set up your first mesh" })}
+          </ButtonLink>
+        ) : null}
+        <Button type="button" size="small" variant={rows.length === 0 && !filters.active ? "secondary" : "primary"} leadingIcon={RiAddLine} onClick={startCreate}>
           {formatMessage({ id: "page.meshes.list.createMesh", defaultMessage: "Create mesh" })}
         </Button>
       </div>
@@ -469,62 +468,8 @@ function CreateMeshDialog({
   onClose: () => void;
 }): ReactElement {
   const open = start !== null;
-  const termsAcceptance = start?.termsAcceptance ?? null;
-  const termsEnforced = useTermsEnforced() !== false;
   const { formatMessage } = useIntl();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  // Only operators have sources to offer; everyone else's meshes use the default broker.
-  const { isOperator } = useOwnerDirectory();
-  const sources = useQuery({ ...sourceRepository.list(), enabled: open && isOperator });
-  const sourceItems = [
-    {
-      label: formatMessage({ id: "page.meshes.list.createDialog.defaultBroker", defaultMessage: "Default broker" }),
-      value: DEFAULT_BROKER,
-    },
-    ...(sources.data ?? []).map((source) => ({ label: sourceTitle(source), value: source.id })),
-  ];
-  const create = useMutation({
-    ...meshRepository.create(),
-    onSuccess: async (mesh) => {
-      await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      onClose();
-      void navigate({ to: routes.mesh, params: { meshId: mesh.id } });
-    },
-    onError: (error) => setErrors(readApiError(error).fields),
-  });
-  // Switching to the default broker in the form, after starting from a source, asks for the terms on save.
-  const [awaitingTerms, setAwaitingTerms] = useState<Parameters<typeof create.mutate>[0] | null>(null);
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const label = String(form.get("label") ?? "").trim();
-    const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
-    const parsed = MeshCreateRequest.safeParse({
-      channel_id: String(form.get("channel_id") ?? "").trim(),
-      psk_b64: String(form.get("psk_b64") ?? ""),
-      label: label === "" ? null : label,
-      discover_gateways: form.get("discover_gateways") === "on",
-      ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
-      // Required on the default broker; a mesh on a source is covered by the source's terms.
-      ...(picked === DEFAULT_BROKER && termsAcceptance
-        ? { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
-        : {}),
-    });
-    if (!parsed.success) {
-      setErrors(issueErrors(parsed.error.issues));
-      return;
-    }
-    setErrors({});
-    if (termsEnforced && picked === DEFAULT_BROKER && !termsAcceptance) {
-      setAwaitingTerms({ data: parsed.data });
-      return;
-    }
-    create.mutate({ data: parsed.data });
-  }
-
   return (
     <Modal
       open={open}
@@ -535,118 +480,18 @@ function CreateMeshDialog({
       })}
       onClose={onClose}
     >
-      <form key={start ? `${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}` : "closed"} className="flex flex-col gap-5" onSubmit={onSubmit}>
-        <FieldGroup>
-          <FormField
-            id="mesh-label"
-            label={formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" })}
-            hint={formatMessage({
-              id: "page.meshes.list.createDialog.labelHint",
-              defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
-            })}
-            error={errors.label}
-          >
-            <Input id="mesh-label" name="label" autoComplete="off" />
-          </FormField>
-          <FormField
-            id="mesh-channel"
-            label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" })}
-            hint={formatMessage({
-              id: "page.meshes.list.createDialog.channelIdHint",
-              defaultMessage: "The Meshtastic channel name.",
-            })}
-            error={errors.channel_id}
-          >
-            <Input id="mesh-channel" name="channel_id" required autoComplete="off" />
-          </FormField>
-          <FormField
-            id="mesh-psk"
-            label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
-            hint={formatMessage({
-              id: "page.meshes.list.createDialog.pskHint",
-              defaultMessage: "The channel's pre-shared key, in Base64.",
-            })}
-            error={errors.psk_b64}
-          >
-            <Input id="mesh-psk" name="psk_b64" type="password" required autoComplete="new-password" />
-          </FormField>
-          <div className="flex flex-col gap-1">
-            <FormCheckbox
-              id="mesh-discover-gateways"
-              name="discover_gateways"
-              label={formatMessage({
-                id: "page.meshes.list.createDialog.discoverGateways",
-                defaultMessage: "Add gateways automatically",
-              })}
-            />
-            <p className="pl-7 text-caption-1-regular text-text-tertiary">
-              {formatMessage({
-                id: "page.meshes.list.createDialog.discoverGatewaysHint",
-                defaultMessage:
-                  "Registers any gateway whose packets decode with this channel and PSK, so you don't add them one by one. Only an operator can use it with a default or blank PSK.",
-              })}
-            </p>
-          </div>
-          {isOperator ? (
-            <FormField
-              id="mesh-source"
-              label={formatMessage({ id: "page.meshes.list.createDialog.source", defaultMessage: "Source" })}
-              hint={formatMessage({
-                id: "page.meshes.list.createDialog.sourceHint",
-                defaultMessage: "Where this mesh's gateways publish. Leave on the default broker unless you bridge it.",
-              })}
-              error={errors.source_id}
-            >
-              <FormSelect
-                id="mesh-source"
-                name="source_id"
-                items={sourceItems}
-                defaultValue={start?.sourceId ?? DEFAULT_BROKER}
-              />
-            </FormField>
-          ) : null}
-        </FieldGroup>
-        {create.error ? (
-          <StatusCopy>
-            {formatMessage({
-              id: "page.meshes.list.createDialog.error",
-              defaultMessage: "The mesh was not created. Check the fields and try again.",
-            })}
-            {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
-            {errors.terms_version
-              ? ` ${formatMessage({
-                  id: "page.meshes.list.createDialog.termsChanged",
-                  defaultMessage: "The mesh terms changed. Close this dialog and accept the current terms.",
-                })}`
-              : ""}
-          </StatusCopy>
-        ) : null}
-        <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.meshes.list.createDialog.cancel", defaultMessage: "Cancel" })}
-          </Button>
-          <Button type="submit" size="small" disabled={create.isPending}>
-            {create.isPending
-              ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
-              : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}
-          </Button>
-        </div>
-      </form>
-      <TermsDialog
-        open={awaitingTerms !== null}
-        kind="mesh"
-        onClose={() => setAwaitingTerms(null)}
-        acceptLabel={formatMessage({ id: "page.meshes.list.createDialog.acceptAndCreate", defaultMessage: "Accept and create" })}
-        onAccepted={(acceptance) => {
-          if (!awaitingTerms) return;
-          create.mutate(
-            acceptance
-              ? { data: { ...awaitingTerms.data, terms_version: acceptance.version, terms_locale: acceptance.locale } }
-              : awaitingTerms,
-          );
-          setAwaitingTerms(null);
-        }}
-      />
+      {open && start ? (
+        <MeshForm
+          key={`${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}`}
+          sourceId={start.sourceId}
+          termsAcceptance={start.termsAcceptance}
+          onCancel={onClose}
+          onCreated={async (mesh) => {
+            onClose();
+            await navigate({ to: routes.mesh, params: { meshId: mesh.id } });
+          }}
+        />
+      ) : null}
     </Modal>
   );
 }

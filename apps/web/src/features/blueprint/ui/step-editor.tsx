@@ -4,8 +4,8 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import {
   calibrationParams,
   configParams,

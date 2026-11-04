@@ -43,6 +43,7 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 | `packages/tsconfig` | TS compartido |
 | `packages/ui` | BoardUI + shadcn + ReUI + EvilCharts + mapcn. Destino de `pnpm shadcn`. Árbol en architecture. |
 | `apps/web` | Vite + React 19. Landing y consola. Ver tabla siguiente. |
+| `apps/onboarding` | Vite + React 19. Alta guiada en `/start` (`base: /start/`, dev `:5176`). Mismo origen que web: Caddy en prod, proxy de Vite en dev. |
 | `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`. La app se construye con base `/docs` (`/docs/overview`) y Caddy le pasa el `/docs` del sitio. El logo del header enlaza a `VITE_WEB_URL`. |
 | `packages/contracts` | Hey API + Zod 4.6 generado. Solo borde HTTP. |
 | `packages/domain` | Vertical slices (sin Zod) |
@@ -62,7 +63,7 @@ Detalle y árbol: [docs/architecture.md](./docs/architecture.md). Resumen:
 | `src/components/` | Producto: `form/`, `kpi/`, `series/`, brand, flag, modal, … Un `.tsx` = un componente. |
 | `src/lib/` | Helpers sin JSX (`format`, `page-heading`, `dialog-actions`). |
 | `src/features/<name>/` | Entidades de negocio: `repository.ts`, opcional `model.ts` / `ui/`. Sin rutas. |
-| `src/pages/` | Rutas (`home`, `login`, `meshes`, `devices`, `blueprints`). `route.ts` + `page.tsx`; invocan features. |
+| `src/pages/` | Rutas (`home`, `login`, `meshes`, `devices`, `blueprints`). `route.ts` + `page.tsx`; invocan features. `/start` no es una ruta de web. |
 | `test/` | `node:test`. Prohibido `*.test.ts` bajo `src/`. |
 
 Web **no** importa domain. Primitivas **no** viven en `apps/web/src`. Zod 4.6 generado vive en `@mtt/contracts/zod` (borde HTTP). No editar output de `openapi-ts`.

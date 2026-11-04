@@ -1,7 +1,7 @@
 import { Input } from "@mtt/ui/components/ui/input";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { EXPORT_MAX_DAYS, daysInRange, rangeProblem, utcToday } from "@/features/export/model";
 
 export type ExportRange = { start: string; stop: string };

@@ -5,9 +5,9 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
-import { FormSelect } from "@/components/form/form-select";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormNumber } from "@mtt/ui/forms/form-number";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { errorMessages, PREFIX_PATTERN, versionOutputFields } from "@/features/blueprint/model";
@@ -15,7 +15,7 @@ import { blueprintRepository } from "@/features/blueprint/repository";
 import { deviceRepository } from "@/features/device/repository";
 import { bindableChannels, channelLabel } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 const AUTO = "__auto__";
@@ -41,7 +41,7 @@ export function PostprocessingDialog({
   postprocessing,
   onClose,
 }: PostprocessingDialogProps): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
   const [blueprintId, setBlueprintId] = useState(postprocessing?.blueprint_id ?? "");
   const [versionNumber, setVersionNumber] = useState<number | null>(postprocessing?.blueprint_version ?? null);
@@ -271,7 +271,7 @@ export function PostprocessingDialog({
               })}
               error={fieldErrors.tolerance_seconds}
             >
-              <FormNumber
+              <FormNumber locale={locale}
                 id="postprocessing-tolerance"
                 name="tolerance_seconds"
                 min={1}

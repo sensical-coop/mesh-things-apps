@@ -2,7 +2,7 @@ import type { ArchiveCredentials } from "@mtt/contracts";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useIntl } from "react-intl";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { archiveRepository } from "@/features/archive/repository";
 
 export type ArchiveCredentialsState = {

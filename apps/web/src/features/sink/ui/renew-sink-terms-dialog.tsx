@@ -2,7 +2,7 @@ import type { SinkRead } from "@mtt/contracts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 import { termsRepository } from "@/features/terms/repository";

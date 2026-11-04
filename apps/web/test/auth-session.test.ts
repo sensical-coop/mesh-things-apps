@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isOwnerSession } from "../src/features/auth/session.ts";
+import { isOwnerSession } from "../../../packages/ui/src/session.ts";
 
 test("stale me data after a failed refetch is not a session", () => {
   assert.equal(isOwnerSession({ isSuccess: true, data: { is_active: true } }), true);

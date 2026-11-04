@@ -6,7 +6,7 @@ import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@m
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
@@ -15,7 +15,7 @@ import { canRequestOperator } from "@/features/operator-request/model";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
 import { useFormatters } from "@/hooks/use-formatters";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { routes } from "@/router";
 import { RouterButtonLink } from "@/components/router-button-link";

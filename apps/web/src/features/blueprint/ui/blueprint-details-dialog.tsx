@@ -6,12 +6,12 @@ import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type BlueprintDetailsDialogProps = {

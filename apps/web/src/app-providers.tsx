@@ -2,8 +2,8 @@ import type { ReactElement, ReactNode } from "react";
 import { IntlProvider } from "react-intl";
 import { z } from "zod";
 import { en, es } from "zod/locales";
-import { useLocale } from "@/hooks/use-locale";
-import { DEFAULT_LOCALE, type Locale } from "@/lib/locale";
+import { useLocale } from "@mtt/ui/hooks/use-locale";
+import { DEFAULT_LOCALE, type Locale } from "@mtt/ui/locale";
 import { MESSAGES } from "@/lib/messages";
 
 const ZOD_LOCALE_PACKS: Record<Locale, typeof en> = { en, es };

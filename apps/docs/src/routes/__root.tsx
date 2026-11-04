@@ -1,8 +1,8 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { IntlProvider } from "react-intl";
 import appCss from "@/styles.css?url";
-import { useLocale } from "@/hooks/use-locale";
-import { DEFAULT_LOCALE } from "@/lib/locale";
+import { useLocale } from "@mtt/ui/hooks/use-locale";
+import { DEFAULT_LOCALE } from "@mtt/ui/locale";
 import { MESSAGES } from "@/lib/messages";
 
 const themeScript = `(function(){try{var stored=localStorage.getItem("boardui:theme");var dark=stored?stored==="dark":false;document.documentElement.classList.toggle("dark",dark);}catch(e){document.documentElement.classList.remove("dark");}})();`;

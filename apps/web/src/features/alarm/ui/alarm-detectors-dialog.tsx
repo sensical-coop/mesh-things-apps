@@ -4,13 +4,13 @@ import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormNumber } from "@mtt/ui/forms/form-number";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { alarmRepository } from "@/features/alarm/repository";
 import { deviceRepository } from "@/features/device/repository";
@@ -34,7 +34,7 @@ export function AlarmDetectorsDialog({
   channel: string;
   label: string;
 }): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -148,7 +148,7 @@ export function AlarmDetectorsDialog({
                         })}
                         error={fieldErrors.valid_min}
                       >
-                        <FormNumber
+                        <FormNumber locale={locale}
                           id="detector-valid-min"
                           name="valid_min"
                           step="any"
@@ -163,7 +163,7 @@ export function AlarmDetectorsDialog({
                         })}
                         error={fieldErrors.valid_max}
                       >
-                        <FormNumber
+                        <FormNumber locale={locale}
                           id="detector-valid-max"
                           name="valid_max"
                           step="any"

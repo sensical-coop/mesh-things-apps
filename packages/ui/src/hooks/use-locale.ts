@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { getLocale, LOCALE_EVENT, type Locale, setLocale } from "@/lib/locale";
+import { getLocale, LOCALE_EVENT, type Locale, setLocale } from "../locale";
 
 function subscribeLocale(onStoreChange: () => void): () => void {
   globalThis.addEventListener(LOCALE_EVENT, onStoreChange);
