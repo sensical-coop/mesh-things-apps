@@ -7,13 +7,13 @@
 
 ## 1. Backend dependency (meshtastic-things, separate issue and pull request)
 
-- [ ] 1.1 Open a backend issue for `GET /owners/me/gateway-broker` (design.md §3) as graale-ws. Verify the issue is linked from #61.
-- [ ] 1.2 Implement the endpoint (verified owner only, 404 when unconfigured), the env vars in `env.example`, the docstring, the `docs/features.md` row and the client version bump. Verify with registry tests for 200, 403 (unverified) and 404 (unconfigured).
+- [x] 1.1 Open a backend issue for `GET /owners/me/gateway-broker` (design.md §3) as graale-ws. Verify the issue is linked from #61. Done in sensical-coop/mesh-things#88.
+- [x] 1.2 Implement the endpoint (verified owner only, 404 when unconfigured), the env vars in `env.example`, the docstring, the `docs/features.md` row and the client version bump. Verify with registry tests for 200, 403 (unverified) and 404 (unconfigured). Done on `feat/88-gateway-broker` (sensical-coop/mesh-things#88).
 
 ## 2. Contract and mock
 
-- [ ] 2.1 Sync `docs/openapi.json` (`pnpm openapi:sync`), regenerate `packages/contracts`, and check `MeshCreate` against `/schema`. Verify that the generated client exposes the broker operation and that `pnpm typecheck` passes.
-- [ ] 2.2 Mock: serve the broker endpoint from `MOCK_GATEWAY_BROKER_*` (404 when unset). Verify with `curl` against :8787 with and without the env.
+- [x] 2.1 Sync `docs/openapi.json` (`pnpm openapi:sync`), regenerate `packages/contracts`, and check `MeshCreate` against `/schema`. Verify that the generated client exposes the broker operation and that `pnpm typecheck` passes. Client: `ownersMeGatewayBrokerRetrieve` / `GatewayBroker`.
+- [x] 2.2 Mock: serve the broker endpoint from `MOCK_GATEWAY_BROKER_*` (404 when unset). Verify with `curl` against :8787 with and without the env.
 - [ ] 2.3 Mock: new gateways start with `last_seen: null`, become seen after `MOCK_GATEWAY_SEEN_AFTER_MS`, and two nodes appear. Verify by creating a gateway and polling `GET /meshes/{id}/devices`.
 
 ## 3. Shared building blocks

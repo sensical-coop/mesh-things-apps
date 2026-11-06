@@ -53,6 +53,7 @@ Leer no es editar: en una malla pública ajena el lector no ve PSK ni devices re
 Autenticadas con cookie Better Auth (`mtt_session`), salvo login, CSRF y `/health`.
 
 - `POST /owners/login`, `POST /owners/logout`, `GET /owners/me`: sesión. El perfil incluye solo devices visibles.
+- `GET /owners/me/gateway-broker`: owner verificado. `{host, port, tls, username, password}` y `Cache-Control: no-store`. 401 anónimo, 403 si el email no está verificado. 404 `{"detail": "No gateway broker configured"}` si `MOCK_GATEWAY_BROKER_HOST` no está definido. Con host: `MOCK_GATEWAY_BROKER_PORT` (por defecto 8883), `MOCK_GATEWAY_BROKER_TLS` (por defecto activo; `false` o `0` lo apaga), `MOCK_GATEWAY_BROKER_USERNAME`, `MOCK_GATEWAY_BROKER_PASSWORD`.
 - `GET /owners`, `GET /owners/{id}`: directorio público o registro completo según la tabla.
 - `GET/POST /meshes` (`?owned=true` para solo las propias), `GET /meshes/{id}`: filtro + PSK según rol. 404 si no se puede leer.
 - `GET/POST /devices`, `PUT /devices/{id}`: el write exige `canWriteMesh` sobre la malla del device.

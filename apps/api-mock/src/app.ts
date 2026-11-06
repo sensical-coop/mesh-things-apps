@@ -61,6 +61,7 @@ import {
 } from "@mtt/domain/authz/authz";
 import { validateSource, type Source } from "@mtt/domain/source/Source";
 import { orderStreams, type Sink } from "@mtt/domain/sink/Sink";
+import { gatewayBrokerFromEnv } from "./features/broker/repository";
 import { SINKS_ENABLED } from "./features/sink/repository";
 import type { DataDeletionReason } from "./features/data-deletion/repository";
 import {
@@ -153,7 +154,7 @@ import {
 
 type Env = { Variables: { actor: Actor } };
 
-const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with packages/ui/src/resend-cooldown.ts
+const RESEND_COOLDOWN_SECONDS = 60; // keep in sync with features/auth/resend-cooldown.ts in apps/web and apps/onboarding
 /** Mirrors REGISTRY__FRONTEND_RETURN_PATHS: pages a verification link may send the owner back to. */
 const FRONTEND_RETURN_PATHS = (process.env.MOCK_FRONTEND_RETURN_PATHS ?? "/start").split(",").filter(Boolean);
 
@@ -778,6 +779,13 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerProfileJson(actor, await devicesJson(actor, await devicesFor(db, actor)), verification, ownerTerms(actor.id)));
+  });
+
+  app.get("/owners/me/gateway-broker", (c) => {
+    const broker = gatewayBrokerFromEnv();
+    if (!broker) return c.json({ detail: "No gateway broker configured" }, 404);
+    c.header("Cache-Control", "no-store");
+    return c.json(broker);
   });
 
   app.put("/owners/me", async (c) => {
