@@ -10,10 +10,10 @@
     "test": "node --test --experimental-strip-types test/*.test.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.5",
+    "@hono/node-server": "^2.1.6",
     "@mtt/contracts": "workspace:*",
     "@mtt/domain": "workspace:*",
-    "better-auth": "^1.7.5",
+    "better-auth": "^1.7.17",
     "hono": "^4.13.11"
   },
   "devDependencies": {
