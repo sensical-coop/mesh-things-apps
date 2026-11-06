@@ -49,7 +49,7 @@ export function ExportsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[44rem] text-left text-body-2-regular">
+      <table className="w-full min-w-176 text-left text-body-2-regular">
         <thead>
           <tr>
             {meshTitles ? (
@@ -76,7 +76,7 @@ export function ExportsTable({
               </td>
               <td className={cn(cellClass, "whitespace-nowrap tabular-nums")}>{daysLabel(row)}</td>
               <td className={cellClass}>
-                <div className="flex min-w-[9rem] flex-col items-start gap-1">
+                <div className="flex min-w-36 flex-col items-start gap-1">
                   <ExportStatusChip status={row.status} />
                   {row.status === "running" ? (
                     <div

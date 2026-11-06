@@ -9,8 +9,7 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { type TermsAcceptance, type TermsKind } from "@/features/terms/model";
-import { allStatementsAccepted, termsLocale } from "@mtt/ui/terms";
+import { allStatementsAccepted, type TermsAcceptance, type TermsKind, termsLocale } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { routes } from "@/router";
 

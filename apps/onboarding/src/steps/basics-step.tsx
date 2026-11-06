@@ -2,10 +2,11 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { cx } from "@mtt/ui/utils";
-import { BasicsDiagram, type BasicsConcept } from "./basics-diagram";
+import { BasicsFigure } from "@/figures/basics/figure";
+import type { BasicsConcept } from "@/figures/basics/model";
 import { StepHeading } from "./step-heading";
 
-const CONCEPTS: BasicsConcept[] = ["mesh", "gateway", "node", "reading"];
+const CONCEPTS: BasicsConcept[] = ["node", "gateway", "mesh", "reading"];
 
 export function BasicsStep({ onContinue }: { onContinue: () => void }): ReactElement {
   const { formatMessage } = useIntl();
@@ -42,39 +43,42 @@ export function BasicsStep({ onContinue }: { onContinue: () => void }): ReactEle
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 text-pretty">
       <StepHeading>
-        {formatMessage({ id: "page.start.basics.title", defaultMessage: "How a mesh reaches your readings" })}
+        {formatMessage({ id: "page.start.basics.title", defaultMessage: "How readings arrive" })}
       </StepHeading>
       <p className="text-body-medium text-text-secondary">
         {formatMessage({
           id: "page.start.basics.lead",
-          defaultMessage: "Nodes talk to a gateway. The gateway publishes to MQTT. Mesh Things stores the readings.",
+          defaultMessage: "Nodes reach a gateway. The gateway publishes to MQTT, and Mesh Things stores the readings.",
         })}
       </p>
-      <BasicsDiagram selected={selected} />
-      <div role="radiogroup" aria-label={formatMessage({ id: "page.start.basics.cards", defaultMessage: "Concepts" })} className="grid gap-3 sm:grid-cols-2">
+      <BasicsFigure selected={selected} />
+      <div
+        role="group"
+        aria-label={formatMessage({ id: "page.start.basics.cards", defaultMessage: "Concepts" })}
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {CONCEPTS.map((id) => {
           const on = selected === id;
           return (
             <button
               key={id}
               type="button"
-              role="radio"
-              aria-checked={on}
+              aria-pressed={on}
               onClick={() => setSelected(id)}
               className={cx(
-                "oa-squircle border p-4 text-start transition-[opacity,transform] duration-150 motion-reduce:transition-none",
-                on ? "border-accent-500 bg-background-primary-default" : "border-separator-border opacity-80",
+                "flex flex-col oa-squircle border p-4 text-start transition-colors duration-150 motion-reduce:transition-none",
+                on ? "border-accent-500" : "border-separator-border",
               )}
             >
               <span className="block text-body-medium text-text-primary">{copy[id].title}</span>
-              <span className="text-body-small mt-1 block text-text-secondary">{copy[id].body}</span>
+              <span className="mt-1 block text-body-2-regular text-text-secondary">{copy[id].body}</span>
             </button>
           );
         })}
       </div>
-      <p className="text-body-small text-text-secondary">
+      <p className="text-body-2-regular text-text-secondary">
         <a className="underline" href="/docs/concepts">
           {formatMessage({ id: "page.start.basics.docs", defaultMessage: "Read the concepts page" })}
         </a>

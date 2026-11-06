@@ -28,7 +28,7 @@ export function StatsRangeBar({ description }: { description: string }): ReactEl
   };
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-pretty text-body-2-regular text-text-secondary">{description}</p>
+      <p className="text-body-2-regular text-pretty text-text-secondary">{description}</p>
       <Select
         items={MESH_STATS_RANGES.map((value) => ({ value, label: labels[value] }))}
         value={range}

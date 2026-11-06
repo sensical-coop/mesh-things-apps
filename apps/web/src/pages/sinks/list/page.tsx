@@ -20,8 +20,7 @@ import { RotateSinkCredentialsDialog } from "@/features/sink/ui/rotate-sink-cred
 import { SinkCredentialsDialog } from "@/features/sink/ui/sink-credentials-dialog";
 import { SinkDialog } from "@/features/sink/ui/sink-dialog";
 import { SinkStatusChip } from "@/features/sink/ui/sink-status-chip";
-import { termsStanding, type TermsAcceptance } from "@/features/terms/model";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale, termsStanding, type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
@@ -103,7 +102,7 @@ export function SinksPage(): ReactElement {
       col.accessor("connections", {
         header: formatMessage({ id: "page.sinks.list.columns.consumers", defaultMessage: "Consumers" }),
         cell: (info) => (
-          <span className="tabular-nums text-text-secondary">{info.getValue() ?? "—"}</span>
+          <span className="text-text-secondary tabular-nums">{info.getValue() ?? "—"}</span>
         ),
       }),
       col.accessor("paused_at", {

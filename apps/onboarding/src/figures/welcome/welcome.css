@@ -1,0 +1,21 @@
+/* The nodes and their hops are drawn in the theme accent. */
+.welcome-figure {
+  --anatomy-lit: var(--color-accent-500);
+}
+
+.welcome-figure .iso-plate {
+  padding: 16px;
+}
+
+/* Wide screens: the plate fills its column, so its bottom edge meets the step's button. */
+@media (width >= 64rem) {
+  .welcome-figure,
+  .welcome-figure .iso-plate {
+    height: 100%;
+  }
+
+  .welcome-figure .iso-plate {
+    display: flex;
+    align-items: center;
+  }
+}

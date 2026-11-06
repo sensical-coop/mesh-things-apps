@@ -65,7 +65,7 @@ export function PostprocessingItem({
           <Link
             to={routes.blueprint}
             params={{ blueprintId: postprocessing.blueprint_id }}
-            className="min-w-0 rounded-full text-body-medium break-words text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="min-w-0 rounded-full text-body-medium wrap-break-word text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {postprocessing.blueprint_name}
           </Link>
@@ -101,7 +101,7 @@ export function PostprocessingItem({
             const bound = postprocessing.input_bindings[slot];
             const row = bound ? byId.get(bound) : undefined;
             return (
-              <dd key={slot} className="min-w-0 break-words text-text-primary">
+              <dd key={slot} className="min-w-0 wrap-break-word text-text-primary">
                 <span className="font-mono">{slot}</span>
                 <span className="text-text-tertiary"> ← </span>
                 {row ? (
@@ -120,7 +120,7 @@ export function PostprocessingItem({
             {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Outputs" })}
           </dt>
           {postprocessing.outputs.map((output) => (
-            <dd key={output.measurement_id} className="min-w-0 font-mono break-words text-text-primary">
+            <dd key={output.measurement_id} className="min-w-0 font-mono wrap-break-word text-text-primary">
               {output.channel}
               {output.unit ? <span className="text-text-tertiary"> ({output.unit})</span> : null}
             </dd>

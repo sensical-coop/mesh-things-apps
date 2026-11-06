@@ -1,4 +1,4 @@
-// Keep in sync with RESEND_COOLDOWN_SECONDS in apps/api-mock/src/app.ts.
+// Keep in sync with RESEND_COOLDOWN_SECONDS in apps/api-mock/src/app.ts and apps/onboarding.
 export const RESEND_COOLDOWN_SECONDS = 60;
 
 export function secondsUntilResendAllowed(sentAt: string | null, now: number): number {

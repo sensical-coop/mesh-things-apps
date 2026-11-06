@@ -83,7 +83,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
         </div>
       </div>
       {algorithm?.doc ? (
-        <p className="line-clamp-3 whitespace-pre-line text-caption-1-regular text-text-tertiary">{algorithm.doc.trim()}</p>
+        <p className="line-clamp-3 text-caption-1-regular whitespace-pre-line text-text-tertiary">{algorithm.doc.trim()}</p>
       ) : null}
       <FormField
         id={`${id}-key`}

@@ -92,7 +92,7 @@ export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormPro
             </FieldLabel>
           </Field>
           {nodeIds !== null ? (
-            <ul className="oa-squircle-inset flex max-h-56 flex-col gap-2 overflow-y-auto bg-background-secondary-default p-3">
+            <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto oa-squircle-inset bg-background-secondary-default p-3">
               {(devices.data ?? []).map((device) => (
                 <li key={device.uuid}>
                   <Field orientation="horizontal">

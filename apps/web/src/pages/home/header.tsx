@@ -27,9 +27,8 @@ export function LandingHeader(): ReactElement {
   }, []);
 
   return (
-    <header data-scrolled={scrolled} className="landing-header-morph group sticky top-0 z-sticky h-16 w-full px-4 sm:h-20 sm:px-6">
-      <div className="landing-header-pill relative mx-auto flex h-14 w-full max-w-full items-center justify-between px-0 sm:h-16 sm:max-w-4xl sm:px-4">
-        <span aria-hidden className="glass-noise absolute inset-0 rounded-full" />
+    <header data-scrolled={scrolled} className="group sticky top-0 z-sticky h-16 w-full px-4 sm:h-20 sm:px-6">
+      <div className="relative mx-auto flex h-14 w-full max-w-full items-center justify-between px-0 sm:h-16 sm:max-w-4xl sm:px-4">
         <div className="relative z-10 flex items-center gap-7">
           <Link
             to={routes.home}
@@ -51,7 +50,7 @@ export function LandingHeader(): ReactElement {
           </nav>
         </div>
         <div className="relative z-10 flex items-center gap-2">
-          <a href={routes.docs} className={cn(navLinkClass, "px-2 py-2")}>
+          <a href={routes.docs} className={cn(navLinkClass, "p-2 ")}>
             {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
           </a>
           <LanguageSwitcher />

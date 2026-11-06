@@ -17,7 +17,7 @@ This project uses BoardUI (React + Tailwind CSS v4, source-owned components unde
 - Borders: `border-border-button-default` / `-hover`, hairlines `border-separator-border`, tables `border-border-table`, errors `border-border-error-default`.
 - Icons: `text-foreground-icon-primary` through `text-foreground-icon-quaternary`.
 - Charts: the `chart-1` … `chart-5` tokens (plus `-active` variants). CTAs and selection states: the `accent-50` … `accent-950` ramp.
-- Dark mode flips tokens via the `.dark` class on `<html>`. Do not write `dark:` overrides with raw colors; if a token pair looks wrong in dark mode, pick a different token, not a literal.
+- Dark mode flips tokens via the `.dark` class on `<html>`. No `dark:` colour overrides at all (lint rejects them): if a pair looks wrong in dark mode, add a light/dark token in `src/oa.css` (`bg-field`, `ring-invalid-ring`, `bg-destructive-surface`, …) and use that. `dark:hidden`/`dark:block` for logo swaps is fine.
 
 ## Typography: composite utilities only
 
@@ -36,7 +36,13 @@ This project uses BoardUI (React + Tailwind CSS v4, source-owned components unde
 - Merge classes with `cx()` from `@mtt/ui/utils/cx` (tailwind-merge aware of BoardUI's composite text styles). No string concatenation, no plain `clsx`.
 - Icons come from `@remixicon/react`, passed as component references (`leadingIcon={RiAddLine}`), not rendered elements.
 - Form components build on `react-aria-components`; extend the installed BoardUI form components rather than raw `<input>`/`<select>`.
-- Focus states: `outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring`.
+- Focus states: `outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring`.
+
+## Enforced by lint (`pnpm lint`, `pnpm lint:css`)
+
+- Classes: sorted and canonical; no unknown classes (custom ones are `@utility` in CSS); no raw palette, `-[#hex]`, `!` important, `transition-all`, `outline-none`, `vh`/`-screen` (use `svh`), weight above 500, or arbitrary `animate|ease|duration|delay-[…]` (add a token to `oa.css` `@theme`).
+- CSS: no IDs, at most two compound selectors (wrap third-party markup in `:where()`), no `!important`, no `vh`, hex only in `oa.css`/`theme.css`. Responsive tokens are redefined under `@variant sm` in the token layer; JS reads breakpoints from `hooks/use-mobile.ts`.
+- Custom properties in `style={{ "--x": … }}` type-check without casts (`src/css-properties.d.ts`).
 
 When unsure about a token, a component's API, or working example code, ask the BoardUI MCP server: `get_theme`, `get_component`, `get_usage_examples`.
 <!-- boardui:rules:end -->

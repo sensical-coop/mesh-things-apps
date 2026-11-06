@@ -1,0 +1,14 @@
+/* The selected concept is drawn in the theme accent, matching the selected card's border. */
+.basics-figure {
+  --anatomy-lit: var(--color-accent-500);
+}
+
+/* No corner text to clear, so the bench fills the plate. */
+.basics-figure .iso-plate {
+  padding: 12px;
+}
+
+/* Caps the height on wide screens; the tight viewBox still draws the bench larger than the shared 480×240 box did. */
+.basics-figure .iso-svg {
+  max-height: 360px;
+}

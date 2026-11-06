@@ -1,18 +1,26 @@
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import type { Mesh } from "@mtt/contracts";
 import { MeshCreateRequest } from "@mtt/contracts";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { Button } from "@mtt/ui/components/base/buttons/button";
 import { MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
 import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
-import { allStatementsAccepted, termsLocale } from "@mtt/ui/terms";
+import { allStatementsAccepted, termsLocale } from "@/features/terms/model";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { type ReactElement, useState } from "react";
+import { type ReactElement, type ReactNode, useId, useState } from "react";
 import { useIntl } from "react-intl";
 import { meshRepository } from "@/features/mesh/repository";
 import { termsRepository } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 
-export function MeshForm({ onCreated }: { onCreated: (mesh: Mesh) => void }): ReactElement {
+/** `children` places the fields and the footer (terms, submit, error), which may sit apart in the layout. */
+export function MeshForm({
+  onCreated,
+  children,
+}: {
+  onCreated: (mesh: Mesh) => void;
+  children: (fields: ReactNode, footer: ReactNode) => ReactElement;
+}): ReactElement {
+  const formId = useId();
   const { formatMessage, locale } = useIntl();
   const termsOff = useTermsEnforced() === false;
   const terms = useQuery({
@@ -22,7 +30,7 @@ export function MeshForm({ onCreated }: { onCreated: (mesh: Mesh) => void }): Re
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
-  const [pendingValues, setPendingValues] = useState<MeshFormValues | null>(null);
+  const [termsMissing, setTermsMissing] = useState(false);
   const create = useMutation({
     ...meshRepository.create(),
     onSuccess: async (mesh) => {
@@ -56,25 +64,27 @@ export function MeshForm({ onCreated }: { onCreated: (mesh: Mesh) => void }): Re
       return;
     }
     if (!terms.data) return;
-    setPendingValues(values);
-    if (allStatementsAccepted(statements.map((statement) => statement.id), accepted)) {
-      submitParsed(values, { version: terms.data.version, locale: termsLocale(terms.data.locale) });
-    }
+    const acceptedAll = allStatementsAccepted(statements.map((statement) => statement.id), accepted);
+    setTermsMissing(!acceptedAll);
+    if (acceptedAll) submitParsed(values, { version: terms.data.version, locale: termsLocale(terms.data.locale) });
   }
 
-  return (
-    <div className="flex flex-col gap-5">
+  const submitLabel = create.isPending
+    ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
+    : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" });
+
+  return children(
       <UiMeshForm
         labels={{
-          label: formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" }),
+          label: formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Name" }),
           labelHint: formatMessage({
             id: "page.meshes.list.createDialog.labelHint",
-            defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
+            defaultMessage: "Optional. The console shows this instead of the channel name.",
           }),
-          channel: formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" }),
+          channel: formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel name" }),
           channelHint: formatMessage({
             id: "page.meshes.list.createDialog.channelIdHint",
-            defaultMessage: "The Meshtastic channel name.",
+            defaultMessage: "The channel name in the Meshtastic app.",
           }),
           psk: formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" }),
           pskHint: formatMessage({
@@ -88,45 +98,42 @@ export function MeshForm({ onCreated }: { onCreated: (mesh: Mesh) => void }): Re
         }}
         errors={errors}
         pending={create.isPending}
-        submitLabel={
-          create.isPending
-            ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
-            : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })
-        }
+        submitLabel={submitLabel}
         onSubmit={onSubmit}
-      />
-      {pendingValues && terms.data && !termsOff && !termsNotRequired ? (
-        <div className="flex flex-col gap-3">
-          <TermsChecklist
-            idPrefix="mesh-terms"
-            statements={statements}
-            accepted={accepted}
-            onToggle={(id, checked) => {
-              setAccepted((current) => {
-                const next = new Set(current);
-                if (checked) next.add(id);
-                else next.delete(id);
-                return next;
-              });
-            }}
-            footnote={
-              <a className="underline" href="/terms" target="_blank" rel="noreferrer">
-                {formatMessage({ id: "feature.terms.termsLink", defaultMessage: "Read the Mesh Things Terms." })}
-              </a>
-            }
-          />
-          <Button
-            type="button"
-            size="small"
-            disabled={!allStatementsAccepted(statements.map((statement) => statement.id), accepted) || create.isPending}
-            onClick={() =>
-              submitParsed(pendingValues, { version: terms.data.version, locale: termsLocale(terms.data.locale) })
-            }
-          >
-            {formatMessage({ id: "page.meshes.list.createDialog.acceptAndCreate", defaultMessage: "Accept and create" })}
-          </Button>
-        </div>
-      ) : null}
+        formId={formId}
+      />,
+      <>
+          {terms.data && !termsOff && !termsNotRequired ? (
+            <div className="flex flex-col gap-3">
+              <TermsChecklist
+                idPrefix="mesh-terms"
+                statements={statements}
+                accepted={accepted}
+                onToggle={(id, checked) => {
+                  setAccepted((current) => {
+                    const next = new Set(current);
+                    if (checked) next.add(id);
+                    else next.delete(id);
+                    return next;
+                  });
+                  setTermsMissing(false);
+                }}
+                footnote={
+                  <a className="underline" href="/terms" target="_blank" rel="noreferrer">
+                    {formatMessage({ id: "feature.terms.termsLink", defaultMessage: "Read the Mesh Things Terms." })}
+                  </a>
+                }
+              />
+              {termsMissing ? (
+                <p className="text-caption-1-regular text-accent-500" role="alert">
+                  {formatMessage({ id: "page.start.mesh.termsRequired", defaultMessage: "Accept each statement to create the mesh." })}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        <Button type="submit" form={formId} size="medium" disabled={create.isPending}>
+          {submitLabel}
+        </Button>
       {create.error ? (
         <p className="text-body-medium text-text-secondary" role="alert">
           {formatMessage({
@@ -136,6 +143,6 @@ export function MeshForm({ onCreated }: { onCreated: (mesh: Mesh) => void }): Re
           {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
         </p>
       ) : null}
-    </div>
+      </>,
   );
 }

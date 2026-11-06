@@ -31,6 +31,7 @@ export function MeshForm({
   extraFields,
   onCancel,
   cancelLabel,
+  formId,
 }: {
   labels: MeshFormLabels;
   errors?: Record<string, string | undefined>;
@@ -41,6 +42,8 @@ export function MeshForm({
   extraFields?: ReactNode;
   onCancel?: () => void;
   cancelLabel?: string;
+  /** Renders no actions: a submit button elsewhere on the page targets the form with `form={formId}`. */
+  formId?: string;
 }): ReactElement {
   const [psk, setPsk] = useState("");
   const publicPsk = psk === PUBLIC_DEFAULT_PSK;
@@ -61,8 +64,8 @@ export function MeshForm({
   }
 
   return (
-    <form className="flex flex-col gap-5" onSubmit={submit}>
-      <FieldGroup>
+    <form id={formId} className="flex flex-col gap-5" onSubmit={submit}>
+      <FieldGroup className="gap-3">
         <FormField id="mesh-label" label={labels.label} hint={labels.labelHint} error={errors?.label}>
           <Input id="mesh-label" name="label" autoComplete="off" aria-invalid={errors?.label ? true : undefined} aria-describedby={errors?.label ? "mesh-label-error" : "mesh-label-hint"} />
         </FormField>
@@ -95,16 +98,18 @@ export function MeshForm({
         ) : null}
         {extraFields}
       </FieldGroup>
-      <div className={actionsClass}>
-        {onCancel ? (
-          <Button type="button" variant="secondary" size="small" onClick={onCancel}>
-            {cancelLabel}
+      {formId ? null : (
+        <div className={actionsClass}>
+          {onCancel ? (
+            <Button type="button" variant="secondary" size="small" onClick={onCancel}>
+              {cancelLabel}
+            </Button>
+          ) : null}
+          <Button type="submit" size="small" disabled={pending}>
+            {submitLabel}
           </Button>
-        ) : null}
-        <Button type="submit" size="small" disabled={pending}>
-          {submitLabel}
-        </Button>
-      </div>
+        </div>
+      )}
     </form>
   );
 }

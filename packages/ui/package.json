@@ -42,10 +42,7 @@
     "./forms/*": "./src/forms/*.tsx",
     "./*": "./src/*.tsx",
     "./maplibre.css": "./src/vendor/maplibre.css",
-    "./locale": "./src/locale.ts",
-    "./session": "./src/session.ts",
-    "./resend-cooldown": "./src/resend-cooldown.ts",
-    "./terms": "./src/terms.ts"
+    "./locale": "./src/locale.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

@@ -9,6 +9,8 @@ export default {
     "**/.output/**",
     "**/.agents/**",
     "**/.cursor/**",
+    /* Vendored isometric kit; its stylesheet mirrors the one embedded in iso-kit.ts. */
+    "apps/onboarding/src/iso/iso.css",
   ],
   rules: {
     "at-rule-no-unknown": [
@@ -58,5 +60,23 @@ export default {
       true,
       { ignoreAtRules: ["utility", "theme"] },
     ],
+
+    /* CSS guidelines: flat specificity, no !important, svh over vh, colours from tokens. */
+    "selector-max-id": 0,
+    "selector-max-compound-selectors": 2,
+    "declaration-no-important": true,
+    "unit-disallowed-list": ["vh"],
+    "color-no-hex": true,
+    "declaration-property-value-disallowed-list": {
+      transition: ["/\\ball\\b/"],
+      "transition-property": ["all"],
+    },
   },
+  overrides: [
+    {
+      /* Token files: the only place a primitive colour is written. */
+      files: ["packages/ui/src/oa.css", "packages/ui/src/boardui/theme.css"],
+      rules: { "color-no-hex": null },
+    },
+  ],
 };

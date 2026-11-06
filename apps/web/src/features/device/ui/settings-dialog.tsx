@@ -35,7 +35,7 @@ function IntervalSecondsField({ id, name, label, hint, defaultValue, error }: In
         <div className="min-w-0 flex-1">
           <FormNumber locale={locale} id={id} name={name} min={0} defaultValue={defaultValue ?? undefined} onValueChange={setSeconds} />
         </div>
-        <p className="shrink-0 whitespace-nowrap text-caption-1-regular text-text-tertiary tabular-nums" aria-live="polite">
+        <p className="shrink-0 text-caption-1-regular whitespace-nowrap text-text-tertiary tabular-nums" aria-live="polite">
           {formatSecondsAsHms(seconds)}
         </p>
       </div>

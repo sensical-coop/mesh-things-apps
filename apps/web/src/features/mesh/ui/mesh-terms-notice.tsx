@@ -43,7 +43,7 @@ export function MeshTermsNotice({ mesh, standing, canRenew }: MeshTermsNoticePro
     }),
   }[standing];
   return (
-    <div className="oa-squircle mb-6 flex flex-wrap items-center justify-between gap-3 bg-background-secondary-default px-4 py-3 shadow-card">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 oa-squircle bg-background-secondary-default px-4 py-3 shadow-card">
       <StatusCopy className="text-text-primary">{message}</StatusCopy>
       {canRenew ? (
         <Button type="button" size="small" onClick={() => setOpen(true)}>

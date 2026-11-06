@@ -46,7 +46,7 @@ export function GatewayForm({
     <div className="flex flex-col gap-5">
       <UiGatewayForm
         labels={{
-          label: formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" }),
+          label: formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Name" }),
           node: {
             label: formatMessage({ id: "feature.device.nodeIdField.label", defaultMessage: "Node ID" }),
             hint: formatMessage({
@@ -83,12 +83,13 @@ export function GatewayForm({
               })
         }
         onSubmit={onSubmit}
+        layout="page"
       />
       {create.error ? (
         <p className="text-body-medium text-text-secondary" role="alert">
           {formatMessage({
             id: "page.meshes.detail.registerGatewayDialog.error",
-            defaultMessage: "Registration failed. Check node ID and try again.",
+            defaultMessage: "The gateway was not registered. Check the node ID and try again.",
           })}
           {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
         </p>

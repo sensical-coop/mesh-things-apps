@@ -32,5 +32,5 @@ export function ArchiveMeshSummary({ devices, archived, summary }: ArchiveMeshSu
       );
     }
   }
-  return <p className="text-body-regular tabular-nums text-text-secondary">{parts.join(" · ")}</p>;
+  return <p className="text-body-regular text-text-secondary tabular-nums">{parts.join(" · ")}</p>;
 }

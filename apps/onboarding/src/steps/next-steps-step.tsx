@@ -1,11 +1,14 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
+import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { deviceRepository } from "@/features/device/repository";
 import { meshRepository } from "@/features/mesh/repository";
+import { NextStepsFigure } from "@/figures/next-steps/figure";
 import { StepHeading } from "./step-heading";
+import { StepLayout } from "./step-layout";
 
 const DEFAULT_PUBLISH_INTERVAL_SECONDS = 1800;
 
@@ -46,7 +49,7 @@ export function NextStepsStep({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <StepLayout figure={<NextStepsFigure />}>
       <StepHeading>
         {formatMessage({ id: "page.start.next.title", defaultMessage: "What you can do next" })}
       </StepHeading>
@@ -62,19 +65,17 @@ export function NextStepsStep({
           defaultMessage: "Blueprints live under Blueprints. A blueprint derives a new channel from readings a device already sends.",
         })}
       </p>
-      <label className="flex items-start gap-3 text-body-medium text-text-primary">
-        <input
-          type="checkbox"
-          className="mt-1"
-          checked={on}
-          onChange={(event) => setOn(event.target.checked)}
-        />
+      <label
+        htmlFor="start-absence"
+        className="flex cursor-pointer items-start gap-3 oa-squircle-inset border border-separator-border p-4 text-body-medium text-text-primary has-data-checked:border-accent-500"
+      >
+        <Checkbox id="start-absence" className="mt-0.5" checked={on} onCheckedChange={(checked) => setOn(checked === true)} />
         <span>
           {formatMessage({ id: "page.start.next.toggle", defaultMessage: "Email me if {name} stops sending" }, { name })}
-          <span className="text-body-small mt-1 block text-text-secondary">
+          <span className="mt-1 block text-body-2-regular text-text-secondary">
             {formatMessage({
               id: "page.start.next.toggleHelp",
-              defaultMessage: "The email goes to this account after several missed intervals. It does not fire on a single gap.",
+              defaultMessage: "The email goes to this account after several missed intervals. One gap does not send it.",
             })}
           </span>
         </span>
@@ -90,6 +91,6 @@ export function NextStepsStep({
       <Button type="button" size="medium" disabled={update.isPending} onClick={finish}>
         {formatMessage({ id: "page.start.next.finish", defaultMessage: "Finish setup" })}
       </Button>
-    </div>
+    </StepLayout>
   );
 }

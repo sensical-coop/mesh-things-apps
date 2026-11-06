@@ -76,7 +76,7 @@ export function LoginForm({
   }
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">

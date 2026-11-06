@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { readApiError } from "@mtt/contracts/errors";
-import { termsEnforcedFrom, termsLocale } from "@mtt/ui/terms";
+import { termsEnforcedFrom, termsLocale } from "@/features/terms/model";
 import { accountTermsQuery } from "@/features/terms/repository";
 
 /**

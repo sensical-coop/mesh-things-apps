@@ -31,7 +31,7 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
   return (
     <div className={cx("pointer-events-none relative isolate h-full min-h-52 overflow-hidden", className)} aria-hidden>
       <Map
-        className="absolute inset-0 h-full w-full"
+        className="absolute inset-0 size-full "
         styles={OPEN_FREE_MAP}
         cooperativeGestures={false}
         dragPan={false}
@@ -68,7 +68,7 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
           </MapMarker>
         ))}
       </Map>
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-background-primary-default/90 to-transparent px-3 pb-2.5 pt-8">
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-linear-to-t from-background-primary-default/90 to-transparent px-3 pt-8 pb-2.5">
         <ul className="flex items-center gap-3">
           <li className="flex items-center gap-1.5">
             <DeviceDot isGateway />

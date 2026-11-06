@@ -50,7 +50,7 @@ export function MeshTrafficTab({ meshId, devices }: { meshId: string; devices: D
       {stats.isPending ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-hidden>
           {[0, 1, 2, 3].map((slot) => (
-            <div key={slot} className="oa-squircle-inset h-24 bg-background-secondary-default" />
+            <div key={slot} className="h-24 oa-squircle-inset bg-background-secondary-default" />
           ))}
         </div>
       ) : null}
@@ -170,7 +170,7 @@ function NetworkFigures({
 
   return (
     <>
-      <div className="oa-arrive grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group">
+      <div className="grid oa-arrive gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group">
         <Kpi
           icon={RiStackLine}
           label={formatMessage({ id: "page.meshes.detail.network.kpi.packets", defaultMessage: "Packets" })}
@@ -396,7 +396,7 @@ function GatewayOverlap({
       })}
     >
       {stats.gateway_pairs.length ? (
-        <ul className="oa-arrive flex max-h-52 flex-col overflow-y-auto" aria-label={title}>
+        <ul className="flex max-h-52 oa-arrive flex-col overflow-y-auto" aria-label={title}>
           {stats.gateway_pairs.map((pair) => (
             <li
               key={`${pair.gateway_a}-${pair.gateway_b}`}

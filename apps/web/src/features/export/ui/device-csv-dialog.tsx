@@ -95,7 +95,7 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
             <h3 className="text-caption-1-medium text-text-secondary">
               {formatMessage({ id: "feature.export.device.latest", defaultMessage: "Latest download of this device" })}
             </h3>
-            <div className="oa-squircle-inset flex flex-col gap-3 bg-background-secondary-default p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 oa-squircle-inset bg-background-secondary-default p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-col gap-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <ExportStatusChip status={latest.status} />

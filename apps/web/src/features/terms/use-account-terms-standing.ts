@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { useMe } from "@/features/auth/use-me";
-import { termsStanding, type TermsStanding } from "@/features/terms/model";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale, termsStanding, type TermsStanding } from "@/features/terms/model";
 import { accountTermsQuery } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 

@@ -1,6 +1,6 @@
 import { readApiError } from "@mtt/contracts/errors";
 import { SignupForm as UiSignupForm } from "@mtt/ui/forms/signup-form";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale } from "@/features/terms/model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
@@ -81,7 +81,7 @@ export function SignupForm(): ReactElement {
           fieldText ||
             formatMessage({
               id: "page.signup.form.error.generic",
-              defaultMessage: "Something went wrong. Check the details and try again.",
+              defaultMessage: "The account was not created. Check the details and try again.",
             }),
         );
       }

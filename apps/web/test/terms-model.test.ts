@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { termsStanding } from "../src/features/terms/model.ts";
-import { allStatementsAccepted, termsEnforcedFrom, termsLocale } from "../../../packages/ui/src/terms.ts";
+import { allStatementsAccepted, termsEnforcedFrom, termsLocale, termsStanding } from "../src/features/terms/model.ts";
 
 test("every statement the API sent must be accepted, not just some", () => {
   const ids = ["controller", "authority", "sensitive"];

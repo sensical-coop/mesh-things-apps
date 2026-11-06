@@ -8,7 +8,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@mtt/ui/session";
+import { isOwnerSession } from "@/features/auth/session";
 import { routes } from "@/router";
 import { ResendButton } from "@/features/auth/ui/resend-button";
 
@@ -35,11 +35,11 @@ export function VerifyPendingPage(): ReactElement {
   return (
     <main className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-background-secondary-default px-4 py-16 sm:px-6 sm:py-24">
       <ShaderBackdrop />
-      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
         <LanguageSwitcher />
       </div>
       <div className="relative w-full max-w-md">
-        <Frame className="shadow-card w-full" spacing="lg">
+        <Frame className="w-full shadow-card" spacing="lg">
           <FramePanel className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
               <h1 className="text-title-2-medium tracking-tight text-text-primary">

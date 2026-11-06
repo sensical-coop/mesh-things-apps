@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import { useMe } from "@/features/auth/use-me";
 import { meshTermsStanding } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { useAccountTermsStanding } from "@/features/terms/use-account-terms-standing";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
@@ -64,7 +64,7 @@ export function TermsBanner(): ReactElement | null {
   return (
     <div
       role="alert"
-      className="oa-squircle mb-6 flex flex-wrap items-center justify-between gap-3 bg-background-secondary-default px-4 py-3 shadow-card"
+      className="mb-6 flex flex-wrap items-center justify-between gap-3 oa-squircle bg-background-secondary-default px-4 py-3 shadow-card"
     >
       <p className="text-body-regular text-text-primary">{shown.message}</p>
       <RouterButtonLink to={shown.href} size="small">

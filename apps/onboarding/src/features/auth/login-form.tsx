@@ -38,7 +38,7 @@ export function LoginForm(): ReactElement {
               })
             : formatMessage({
                 id: "page.login.form.error.generic",
-                defaultMessage: "We couldn't sign you in right now. Try again in a moment.",
+                defaultMessage: "Sign-in did not complete. Try again in a moment.",
               }),
       );
     }

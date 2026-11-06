@@ -196,7 +196,7 @@ export function CalibrationDialog({
                 return (
                   <li key={row.id} className="flex min-w-0 items-start justify-between gap-3">
                     <div className="flex min-w-0 flex-col gap-0.5">
-                      <p className="min-w-0 break-words text-body-regular text-text-primary">
+                      <p className="min-w-0 text-body-regular wrap-break-word text-text-primary">
                         <span className="font-mono">{row.step_key}</span>
                         <span className="text-text-tertiary"> · </span>
                         {formatMessage(
@@ -210,7 +210,7 @@ export function CalibrationDialog({
                           </span>
                         ) : null}
                       </p>
-                      <p className="min-w-0 break-words font-mono text-caption-1-regular text-text-tertiary">
+                      <p className="min-w-0 font-mono text-caption-1-regular wrap-break-word text-text-tertiary">
                         {Object.entries(valueMap(row.params))
                           .map(([name, value]) => `${name}=${formatParam(value)}`)
                           .join("  ")}

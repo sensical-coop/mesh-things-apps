@@ -58,7 +58,7 @@ import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { sourceRepository } from "@/features/source/repository";
@@ -265,7 +265,7 @@ export function MeshDetailPage(): ReactElement {
             </Link>
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 text-title-2-medium tracking-tight break-words text-text-primary">
+            <h1 className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary">
               {mesh.data
                 ? meshTitle(mesh.data)
                 : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
@@ -415,8 +415,8 @@ export function MeshDetailPage(): ReactElement {
                   // Remounts the map at the new height rather than leaving MapLibre at the old one.
                   key={fleetLarge ? "large" : "small"}
                   className={cx(
-                    "oa-arrive oa-squircle-inset relative overflow-hidden",
-                    fleetLarge ? "h-[70vh] min-h-96" : "h-80",
+                    "relative oa-arrive overflow-hidden oa-squircle-inset",
+                    fleetLarge ? "h-[70svh] min-h-96" : "h-80",
                   )}
                 >
                   <DeviceMapLegend />
@@ -424,7 +424,7 @@ export function MeshDetailPage(): ReactElement {
                     center={[plotted[0]!.lng, plotted[0]!.lat]}
                     zoom={12}
                     unsupported={<MapUnsupported />}
-                    className="h-full w-full"
+                    className="size-full "
                   >
                     <MapControls />
                     <FitToPoints points={plotted} />
@@ -591,7 +591,7 @@ function PskReveal({ value }: { value: string }): ReactElement {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   return (
-    <div className="oa-arrive flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex oa-arrive flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <code className="min-w-0 font-mono text-body-2-regular break-all text-text-primary">
         {open ? value : "••••••••"}
       </code>

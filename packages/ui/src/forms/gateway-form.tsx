@@ -24,6 +24,7 @@ export function GatewayForm({
   onSubmit,
   onCancel,
   cancelLabel,
+  layout = "dialog",
 }: {
   labels: GatewayFormLabels;
   errors?: Record<string, string | undefined>;
@@ -32,6 +33,8 @@ export function GatewayForm({
   onSubmit: (values: GatewayFormValues) => void;
   onCancel?: () => void;
   cancelLabel?: string;
+  /** `dialog`: compact actions aligned right. `page`: one full-width submit, like the other page actions. */
+  layout?: "dialog" | "page";
 }): ReactElement {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,13 +60,13 @@ export function GatewayForm({
         </FormField>
         <NodeIdField id="device-node" name="node_id" error={errors?.node_id} labels={labels.node} />
       </FieldGroup>
-      <div className={actionsClass}>
+      <div className={layout === "page" ? "flex flex-col gap-2" : actionsClass}>
         {onCancel ? (
           <Button type="button" variant="secondary" size="small" onClick={onCancel}>
             {cancelLabel}
           </Button>
         ) : null}
-        <Button type="submit" size="small" disabled={pending}>
+        <Button type="submit" size={layout === "page" ? "medium" : "small"} disabled={pending}>
           {submitLabel}
         </Button>
       </div>

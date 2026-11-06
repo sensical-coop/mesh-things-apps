@@ -51,7 +51,7 @@ export function FormNumber({
     >
       <NumberFieldGroup>
         <NumberFieldInput className="text-left" />
-        <NumberFieldDecrement className="rounded-none!" />
+        <NumberFieldDecrement className="rounded-none" />
         <NumberFieldIncrement />
       </NumberFieldGroup>
     </NumberField>

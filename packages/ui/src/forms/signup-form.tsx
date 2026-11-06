@@ -167,7 +167,7 @@ export function SignupForm({
               />
             </button>
             {termsOpen ? (
-              <div id="signup-terms-panel" className="oa-arrive flex flex-col gap-3">
+              <div id="signup-terms-panel" className="flex oa-arrive flex-col gap-3">
                 {terms ? <p className="text-caption-1-regular text-text-secondary">{terms.description}</p> : null}
                 {termsLoading ? (
                   <div className="flex flex-col gap-2" aria-hidden>

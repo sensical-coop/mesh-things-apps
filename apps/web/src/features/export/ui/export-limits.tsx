@@ -26,7 +26,7 @@ export function ExportLimits(): ReactElement {
   ];
   return (
     <section
-      className="oa-squircle-inset flex gap-3 bg-background-secondary-default p-4"
+      className="flex gap-3 oa-squircle-inset bg-background-secondary-default p-4"
       aria-label={formatMessage({ id: "feature.export.limits.title", defaultMessage: "Download limits" })}
     >
       <RiInformationLine className="mt-0.5 size-4 shrink-0 text-text-secondary" aria-hidden />

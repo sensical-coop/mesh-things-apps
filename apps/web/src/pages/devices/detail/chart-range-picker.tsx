@@ -87,7 +87,7 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
         }
       />
       <PopoverContent
-        className="oa-squircle w-auto gap-0 border border-separator-border bg-background-primary-default p-1 text-text-primary shadow-dropdown"
+        className="w-auto gap-0 oa-squircle border border-separator-border bg-background-primary-default p-1 text-text-primary shadow-dropdown"
         align="end"
         sideOffset={4}
       >
@@ -110,7 +110,7 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
               </RangeRow>
             ))}
           </div>
-          <div className="oa-squircle-inset flex flex-col gap-2 bg-background-secondary-default p-2">
+          <div className="flex flex-col gap-2 oa-squircle-inset bg-background-secondary-default p-2">
             <Calendar
               mode="range"
               selected={draft}

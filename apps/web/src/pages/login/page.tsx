@@ -6,7 +6,7 @@ import { safeReturnPath } from "@/lib/return-path";
 import { routes } from "@/router";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@mtt/ui/session";
+import { isOwnerSession } from "@/features/auth/session";
 import { LoginForm } from "./form";
 
 export function LoginPage(): ReactElement {

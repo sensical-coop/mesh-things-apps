@@ -48,7 +48,7 @@ export function BlueprintPage(): ReactElement {
             </Link>
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
+            <h1 className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary">
               {row?.name ?? formatMessage({ id: "page.blueprint.fallbackTitle", defaultMessage: "Blueprint" })}
             </h1>
             {row ? <BlueprintAccessChip blueprint={row} /> : null}

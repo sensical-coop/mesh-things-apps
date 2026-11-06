@@ -33,7 +33,7 @@ export function KpiPanel({
             <p className="text-caption-1-medium text-text-secondary">{label}</p>
             {badge}
           </div>
-          {hint ? <p className="text-pretty text-caption-1-regular text-text-tertiary">{hint}</p> : null}
+          {hint ? <p className="text-caption-1-regular text-pretty text-text-tertiary">{hint}</p> : null}
         </div>
         {action}
       </div>

@@ -1,5 +1,5 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { secondsUntilResendAllowed } from "@mtt/ui/resend-cooldown";
+import { secondsUntilResendAllowed } from "@/features/auth/resend-cooldown";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
@@ -45,6 +45,7 @@ export function ResendButton({ sentAt }: { sentAt: string | null }): ReactElemen
         type="button"
         size="small"
         variant="secondary"
+        className="tabular-nums"
         disabled={remaining > 0 || resend.isPending}
         onClick={() => resend.mutate({ data: { next: "/start" } })}
       >
@@ -54,7 +55,7 @@ export function ResendButton({ sentAt }: { sentAt: string | null }): ReactElemen
         <p className="text-body-medium text-text-secondary" role="alert">
           {formatMessage({
             id: "page.verifyPending.resend.error",
-            defaultMessage: "We couldn't resend the email. Check back in a moment.",
+            defaultMessage: "The email was not sent. Try again in a moment.",
           })}
         </p>
       ) : null}

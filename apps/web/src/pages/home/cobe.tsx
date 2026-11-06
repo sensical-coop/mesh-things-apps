@@ -37,7 +37,7 @@ export function LandingCobe(): ReactElement {
   }, [dark]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[42%] overflow-hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-x-0 top-[42%] bottom-0 overflow-hidden" aria-hidden>
       <div
         className="absolute aspect-square w-[min(120vw,52rem)]"
         style={{
@@ -47,9 +47,9 @@ export function LandingCobe(): ReactElement {
           transformOrigin: "bottom center",
         }}
       >
-        <Globe className="relative inset-auto size-full max-w-none!" config={config} />
+        <Globe className="relative inset-auto size-full max-w-none" config={config} />
       </div>
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background-full to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-background-full to-transparent" />
     </div>
   );
 }

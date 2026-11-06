@@ -4,7 +4,7 @@ import { type ReactElement, type ReactNode, useCallback } from "react";
 export function StepHeading({ children }: { children: ReactNode }): ReactElement {
   const focus = useCallback((node: HTMLHeadingElement | null) => node?.focus({ preventScroll: true }), []);
   return (
-    <h2 ref={focus} tabIndex={-1} className="text-title-2-medium tracking-tight text-text-primary outline-hidden">
+    <h2 ref={focus} tabIndex={-1} className="text-title-2-medium text-balance text-text-primary outline-hidden">
       {children}
     </h2>
   );

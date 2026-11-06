@@ -14,7 +14,7 @@ export function LandingPage(): ReactElement {
     <div className="flex min-h-svh flex-col bg-background-full">
       <LandingHeader />
       <LandingHero />
-      <main className="mx-auto flex w-full max-w-[76rem] flex-1 flex-col gap-12 px-4 pb-12 pt-12 sm:gap-20 sm:px-6 sm:pb-20 sm:pt-16">
+      <main className="mx-auto flex w-full max-w-304 flex-1 flex-col gap-12 px-4 py-12  sm:gap-20 sm:px-6 sm:pt-16 sm:pb-20">
         <LandingProof />
         <LandingSteps />
         <LandingFeatures />

@@ -19,8 +19,7 @@ import { SourceDialog } from "@/features/source/ui/source-dialog";
 import { RenewSourceTermsDialog } from "@/features/source/ui/renew-source-terms-dialog";
 import { RestartSourceDialog } from "@/features/source/ui/restart-source-dialog";
 import { SourceStatusChip } from "@/features/source/ui/source-status-chip";
-import { termsStanding, type TermsAcceptance } from "@/features/terms/model";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale, termsStanding, type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
@@ -96,7 +95,7 @@ export function SourcesPage(): ReactElement {
       col.accessor((row) => row.qos ?? 1, {
         id: "qos",
         header: formatMessage({ id: "page.sources.list.columns.qos", defaultMessage: "QoS" }),
-        cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
+        cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
       }),
       col.accessor("status", {
         header: formatMessage({ id: "page.sources.list.columns.status", defaultMessage: "Status" }),
@@ -141,7 +140,7 @@ export function SourcesPage(): ReactElement {
         : []),
       col.accessor("meshes", {
         header: formatMessage({ id: "page.sources.list.columns.meshes", defaultMessage: "Meshes" }),
-        cell: (info) => <span className="tabular-nums text-text-secondary">{info.getValue()}</span>,
+        cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
       }),
       col.display({
         id: "actions",

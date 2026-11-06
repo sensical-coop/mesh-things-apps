@@ -42,7 +42,7 @@ export function ForgotPasswordForm(): ReactElement {
 
   if (submittedEmail) {
     return (
-      <Frame className="shadow-card w-full" spacing="lg">
+      <Frame className="w-full shadow-card" spacing="lg">
         <FramePanel className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -65,7 +65,7 @@ export function ForgotPasswordForm(): ReactElement {
   }
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -100,7 +100,7 @@ export function ForgotPasswordForm(): ReactElement {
             defaultMessage="Remembered your password? <link>Sign in</link>."
             values={{
               link: (chunks: ReactNode) => (
-                <Link to={routes.login} className="underline underline-offset-2 text-accent-500">
+                <Link to={routes.login} className="text-accent-500 underline underline-offset-2">
                   {chunks}
                 </Link>
               ),

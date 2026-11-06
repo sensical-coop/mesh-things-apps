@@ -46,7 +46,7 @@ export function OperatorRequestPage(): ReactElement {
             </Link>
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
+            <h1 className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary">
               {row?.owner_name ??
                 formatMessage({ id: "page.operatorRequest.fallbackTitle", defaultMessage: "Operator request" })}
             </h1>

@@ -79,7 +79,7 @@ export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, expor
       {expanded ? (
         <tr id={hoursId}>
           <td colSpan={5} className="px-3.5 pb-3">
-            <ul className="oa-arrive flex flex-wrap gap-1.5" aria-label={dayLabel}>
+            <ul className="flex oa-arrive flex-wrap gap-1.5" aria-label={dayLabel}>
               {day.hours.map((hour) => (
                 <li key={hour.hour}>
                   <ButtonLink

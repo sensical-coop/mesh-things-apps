@@ -4,7 +4,7 @@ import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { secondsUntilResendAllowed } from "@mtt/ui/resend-cooldown";
+import { secondsUntilResendAllowed } from "@/features/auth/resend-cooldown";
 
 export function ResendButton({
   sentAt,

@@ -1,4 +1,5 @@
 import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { RiArrowLeftLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
@@ -13,10 +14,13 @@ export function StartHeader({
   step,
   meshId,
   signedInLabel,
+  onBack,
 }: {
   step: StartStep;
   meshId?: string;
   signedInLabel?: string;
+  /** Absent when no earlier step is reachable with the current account, mesh and gateway. */
+  onBack?: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -37,19 +41,36 @@ export function StartHeader({
         </a>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
-          <ButtonLink href={later} variant="secondary" size="small">
-            {formatMessage({ id: "page.start.finishLater", defaultMessage: "Finish later" })}
-          </ButtonLink>
+          {step === "done" ? null : (
+            <ButtonLink href={later} variant="secondary" size="small">
+              {formatMessage({ id: "page.start.finishLater", defaultMessage: "Finish later" })}
+            </ButtonLink>
+          )}
         </div>
       </div>
       <StartProgress step={step} />
-      {signedInLabel ? (
-        <p className="text-body-small flex flex-wrap items-center gap-x-3 gap-y-1 text-text-secondary">
-          <span className="max-w-full truncate">{signedInLabel}</span>
-          <Button type="button" size="small" variant="secondary" disabled={logout.isPending} onClick={() => logout.mutate()}>
-            {formatMessage({ id: "page.start.signOut", defaultMessage: "Not you? Sign out" })}
-          </Button>
-        </p>
+      {signedInLabel || onBack ? (
+        <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          {onBack ? (
+            <Button type="button" variant="ghost" size="small" leadingIcon={RiArrowLeftLine} className="-ms-2" onClick={onBack}>
+              {formatMessage({ id: "page.start.back", defaultMessage: "Back" })}
+            </Button>
+          ) : null}
+          {signedInLabel ? (
+            <p className="ms-auto flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-body-2-regular text-text-tertiary">
+              <span className="max-w-full truncate text-text-secondary">{signedInLabel}</span>
+              <span aria-hidden>·</span>
+              <button
+                type="button"
+                className="rounded-sm underline underline-offset-2 outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:opacity-50"
+                disabled={logout.isPending}
+                onClick={() => logout.mutate()}
+              >
+                {formatMessage({ id: "page.start.signOut", defaultMessage: "Not you? Sign out" })}
+              </button>
+            </p>
+          ) : null}
+        </div>
       ) : null}
     </header>
   );

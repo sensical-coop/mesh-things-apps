@@ -5,25 +5,7 @@
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource/geist-mono/400.css";
 @import "@fontsource/geist-mono/500.css";
+@import "./iso/iso.css";
+@import "./figures/figures.css";
 
 @source "../../../packages/ui/src";
-
-@theme inline {
-  --font-heading: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
-  --font-sans: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
-  --color-foreground: var(--color-text-primary);
-  --color-background: var(--color-background-primary-default);
-  --color-primary: var(--oa-primary);
-  --color-primary-foreground: var(--color-text-white);
-  --color-muted: var(--color-background-secondary-default);
-  --color-muted-foreground: var(--color-text-secondary);
-  --color-border: var(--color-separator-border);
-  --color-input: var(--color-separator-border);
-  --color-ring: var(--color-border-focus-ring);
-  --color-secondary: var(--oa-secondary);
-  --color-secondary-foreground: var(--ink);
-  --color-destructive: var(--color-text-error-primary);
-  --color-popover: var(--color-background-primary-default);
-  --color-popover-foreground: var(--color-text-primary);
-}

@@ -140,5 +140,5 @@ export function EChartsGraphChart({
     chartRef.current?.setOption({ series: [{ id: SERIES_ID, emphasis: { label: { color: labelColor } } }] });
   }, [labelColor]);
 
-  return <div ref={mountRef} className={cn("h-full w-full", className)} />;
+  return <div ref={mountRef} className={cn("size-full ", className)} />;
 }

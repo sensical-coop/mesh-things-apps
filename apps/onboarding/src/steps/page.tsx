@@ -1,13 +1,14 @@
 import type { DeviceRead, Mesh, OwnerRead } from "@mtt/contracts";
 import { readApiError } from "@mtt/contracts/errors";
 import { MeasuredSteps } from "@mtt/ui/components/measured-steps";
+import { cx } from "@mtt/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, useEffect, useRef } from "react";
 import { useIntl } from "react-intl";
 import { authRepository } from "@/features/auth/repository";
 import { meshRepository } from "@/features/mesh/repository";
 import { useStartSearch, writeStartSearch } from "@/start-search";
-import { resolveStartStep, START_STEPS, type StartFacts, type StartStep } from "@/start-step";
+import { previousStartStep, resolveStartStep, START_STEPS, type StartFacts, type StartStep } from "@/start-step";
 import { AccountStep } from "./account-step";
 import { BasicsStep } from "./basics-step";
 import { CheckEmailStep } from "./check-email-step";
@@ -82,11 +83,23 @@ export function StartPage(): ReactElement {
   const signedInLabel = me.data ? me.data.name.trim() || me.data.email : undefined;
   const nodeCount = devices.filter((device) => !device.is_gateway).length;
 
+  const back = step && facts ? previousStartStep(step, facts) : undefined;
+
   return (
     <main className="min-h-svh bg-background-secondary-default px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
-        <StartHeader step={step ?? "welcome"} meshId={mesh?.id} signedInLabel={session === "none" ? undefined : signedInLabel} />
-        <section className="oa-squircle bg-background-primary-default p-5 shadow-card sm:p-6">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+        <StartHeader
+          step={step ?? "welcome"}
+          meshId={mesh?.id}
+          signedInLabel={session === "none" ? undefined : signedInLabel}
+          onBack={back ? () => go(back) : undefined}
+        />
+        <section
+          className={cx(
+            "iso oa-squircle bg-background-primary-default p-5 shadow-card sm:p-6",
+            step === "account" && "mx-auto w-full max-w-md sm:p-8",
+          )}
+        >
           {!step ? (
             <div aria-busy="true" aria-label={formatMessage({ id: "page.start.loading", defaultMessage: "Checking your account" })}>
               <div className="flex flex-col gap-3" aria-hidden>

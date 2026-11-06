@@ -664,7 +664,7 @@ function DateSelectorPeriodTabs({
               key={tab.value}
               value={tab.value}
               aria-label={tab.label}
-              className="px-1 py-1 font-normal sm:px-2.5"
+              className="p-1  font-normal sm:px-2.5"
             >
               {tab.label}
             </TabsTrigger>
@@ -892,7 +892,7 @@ function DateSelectorPeriodGrid({
     <div className={cn("w-full space-y-6", className)}>
       {years.map((year) => (
         <div key={year}>
-          <div className="text-muted-foreground mb-3 text-sm font-medium">
+          <div className="mb-3 text-sm font-medium text-muted-foreground">
             {year}
           </div>
           <div
@@ -924,7 +924,7 @@ function DateSelectorPeriodGrid({
                       !isSelected &&
                       !isRangeStart &&
                       !isRangeEnd &&
-                      "bg-accent dark:bg-accent/60"
+                      "bg-accent"
                   )}
                   onClick={() => onSelect(year, index)}
                 >
@@ -978,7 +978,7 @@ function DateSelectorYearList({
                 !isSelected &&
                 !isRangeStart &&
                 !isRangeEnd &&
-                "bg-accent dark:bg-accent/60"
+                "bg-accent"
             )}
             onClick={() => onSelect(year)}
           >
@@ -1231,11 +1231,11 @@ export function DateSelector({
                 onClick={clearSelection}
                 className={cn(
                   // Base Styles
-                  "rounded-xs absolute end-2.5 top-1/2 size-4 -translate-y-1/2 cursor-pointer",
+                  "absolute inset-e-2.5 top-1/2 size-4 -translate-y-1/2 cursor-pointer rounded-xs",
                   // Visual States
                   "opacity-70 transition-opacity hover:opacity-100",
                   // Focus States
-                  "ring-offset-background focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                  "ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden"
                 )}
               >
                 <XIcon className="size-4" />

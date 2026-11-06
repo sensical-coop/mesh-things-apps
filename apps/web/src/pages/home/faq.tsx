@@ -43,7 +43,7 @@ export function LandingFaq(): ReactElement {
   return (
     <section id="faq" className="scroll-mt-24">
       <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-center text-title-1-medium tracking-tight text-balance text-text-primary sm:text-display-3-medium">
+        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
           <FormattedMessage
             id="page.home.faq.heading"
             defaultMessage="Frequently asked <secondary>questions</secondary>"

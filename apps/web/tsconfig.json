@@ -8,5 +8,5 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
-  "include": ["src", "test", "vite.config.ts"]
+  "include": ["src", "../../packages/ui/src/css-properties.d.ts", "test", "vite.config.ts"]
 }

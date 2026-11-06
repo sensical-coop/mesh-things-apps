@@ -123,13 +123,13 @@ export function TopologySection({
     />
   );
   const graphView = (
-    <div className={cx("oa-arrive oa-squircle-inset overflow-hidden bg-background-primary-default", large ? "h-[70vh] min-h-96" : "h-96")}>
+    <div className={cx("oa-arrive overflow-hidden oa-squircle-inset bg-background-primary-default", large ? "h-[70svh] min-h-96" : "h-96")}>
       <EChartsGraphChart
         nodes={graphData.nodes}
         edges={graphData.edges}
         color={tokenColor("--oa-primary", "#ff495f")}
-        emphasisColor={tokenColor("--color-cyan-200", "#a5f3fc")}
-        highlightColor={tokenColor("--color-cyan-500", "#06b6d4")}
+        emphasisColor={tokenColor("--color-gateway", "#a5f3fc")}
+        highlightColor={tokenColor("--color-route-selected", "#06b6d4")}
         onNodeClick={(id) => {
           const device = byNode.get(Number(id));
           if (device) void navigate({ to: routes.device, params: { deviceUuid: device.uuid } });
@@ -207,7 +207,7 @@ export function TopologySection({
             large ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 {graph ? graphView : <LinksMap pairs={pairs} positions={positions} devices={devices} route={route} large />}
-                <section className="flex min-h-0 min-w-0 flex-col gap-2 lg:h-[70vh]" aria-label={tracerouteTitle}>
+                <section className="flex min-h-0 min-w-0 flex-col gap-2 lg:h-[70svh]" aria-label={tracerouteTitle}>
                   <h3 className="text-body-medium text-text-primary">{tracerouteTitle}</h3>
                   <div className="min-h-0 flex-1 overflow-y-auto pe-1">{traceroutePanel}</div>
                 </section>
@@ -324,7 +324,7 @@ function RelaysFrame({
       </FrameHeader>
       <FramePanel>
         {relays.length ? (
-          <ul className="oa-arrive flex flex-col" aria-label={title}>
+          <ul className="flex oa-arrive flex-col" aria-label={title}>
             {relays.map((relay) => {
               const candidates = relay.candidates.map((c) => c.node_id);
               const confirmed = confirmedRelays(candidates, relay.gateway_id, links);
@@ -466,7 +466,7 @@ function TracerouteList({
   const { formatMessage, formatNumber } = useIntl();
   const { formatWhen } = useFormatters();
   return (
-    <ul className="oa-arrive flex flex-col gap-1">
+    <ul className="flex oa-arrive flex-col gap-1">
       {traceroutes.map((t) => {
         const hops = Math.max(0, t.towards.length - 2);
         const measured = t.snr_towards.filter((v): v is number => v != null);
@@ -480,7 +480,7 @@ function TracerouteList({
                 "flex w-full flex-col gap-0.5 rounded-lg border-s-2 border-transparent px-3 py-2 text-left outline-hidden",
                 "hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                 // Cyan, like the selected route on the map.
-                selected === t.id && "border-cyan-500 bg-background-secondary-default",
+                selected === t.id && "border-route-selected bg-background-secondary-default",
               )}
             >
               <span className="flex items-baseline justify-between gap-3 text-body-2-regular">

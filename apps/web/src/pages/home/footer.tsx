@@ -10,7 +10,7 @@ const linkClass =
 export function LandingFooter(): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <footer className="mx-auto w-full max-w-[76rem] px-4 pb-12 sm:px-6 sm:pb-20">
+    <footer className="mx-auto w-full max-w-304 px-4 pb-12 sm:px-6 sm:pb-20">
       <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex max-w-sm flex-col gap-3">
           <a
@@ -29,7 +29,7 @@ export function LandingFooter(): ReactElement {
         </div>
         <nav aria-label="Landing" className="flex flex-wrap gap-x-10 gap-y-6">
           <div className="flex flex-col gap-2">
-            <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">
+            <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">
               {formatMessage({ id: "page.home.footer.product", defaultMessage: "Product" })}
             </p>
             <a href="/#why" className={linkClass}>
@@ -55,7 +55,7 @@ export function LandingFooter(): ReactElement {
             </Link>
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">Sensical</p>
+            <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">Sensical</p>
             <a href={SITE} className={linkClass}>
               {formatMessage({ id: "page.home.footer.website", defaultMessage: "Website" })}
             </a>

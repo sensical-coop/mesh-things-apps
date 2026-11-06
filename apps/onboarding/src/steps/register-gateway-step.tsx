@@ -2,7 +2,9 @@ import type { DeviceRead } from "@mtt/contracts";
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { GatewayForm } from "@/features/device/gateway-form";
+import { RegisterFigure } from "@/figures/register/figure";
 import { StepHeading } from "./step-heading";
+import { StepLayout } from "./step-layout";
 
 export function RegisterGatewayStep({
   meshId,
@@ -13,7 +15,7 @@ export function RegisterGatewayStep({
 }): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <div className="flex flex-col gap-5">
+    <StepLayout figure={<RegisterFigure />}>
       <StepHeading>
         {formatMessage({ id: "page.start.register.title", defaultMessage: "Register your gateway" })}
       </StepHeading>
@@ -25,6 +27,6 @@ export function RegisterGatewayStep({
         })}
       </p>
       <GatewayForm meshId={meshId} onRegistered={onRegistered} />
-    </div>
+    </StepLayout>
   );
 }

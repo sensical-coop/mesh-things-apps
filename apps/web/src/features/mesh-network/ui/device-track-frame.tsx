@@ -55,8 +55,8 @@ export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactEleme
           </StatusCopy>
         ) : null}
         {track.length >= 2 && last ? (
-          <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
-            <Map center={last} zoom={12} unsupported={<MapUnsupported />} className="h-full w-full">
+          <div className="relative h-80 oa-arrive overflow-hidden oa-squircle-inset">
+            <Map center={last} zoom={12} unsupported={<MapUnsupported />} className="size-full ">
               <MapControls />
               <FitToPoints points={track.map(([lng, lat]) => ({ lng, lat }))} />
               <MapRoute id="track" coordinates={track} color={tokenColor("--oa-primary", "#ff495f")} width={3} interactive={false} />

@@ -3,25 +3,69 @@
  * Neutrals are --ink mixed at fixed percentages. Never pick a second grey.
  */
 
-:root {
-  --ink: #1b1c1f;
-  --oa-stage: #f6f6f6;
+/* Primitives. Components never use these; the semantic tokens below point at them. */
+@theme {
+  --color-oa-white: #fff;
+  --color-oa-grey-50: #f6f6f6;
+  --color-oa-grey-100: #ededed;
+  --color-oa-grey-150: #e9e9e9;
+  --color-oa-grey-400: #969696;
+  --color-oa-grey-500: #6d6d6d;
+  --color-oa-grey-800: #2e2e2e;
+  --color-oa-grey-850: #212121;
+  --color-oa-grey-900: #191919;
+  --color-oa-grey-950: #1b1c1f;
 
   /* sensical.es CTAs: rgb(255, 73, 95). Mixes use a darker coral, not OA's indigo. */
-  --oa-primary: #ff495f;
-  --oa-primary-deep: #b81f38;
-  --oa-ring: #ff495f;
-  --oa-secondary: #e9e9e9;
-  --oa-muted-foreground: #6d6d6d;
+  --color-oa-coral-400: #ff6b7c;
+  --color-oa-coral-500: #ff495f;
+  --color-oa-coral-700: #b81f38;
+
+  /* OA identity: weight stops at 500. Hierarchy is size, color, spacing. */
+  --font-weight-semibold: 500;
+  --font-weight-bold: 500;
+
+  /* Uppercase eyebrow labels. */
+  --tracking-label: 0.12em;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-sidebar: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-dropdown: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 24px rgb(0 0 0 / 8%);
+  --ease-spring: cubic-bezier(0.22, 1.15, 0.32, 1);
+  --ease-settle: cubic-bezier(0.32, 0.72, 0.4, 1);
+  --ease-nudge: cubic-bezier(0.5, 1, 0.89, 1);
+  --ease-press: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-press: 220ms;
+  --duration-press-release: 420ms;
+
+  /* Opacity-only fades run for everyone; scale and translate only under motion-safe:. */
+  --animate-dialog-in: oa-dialog-in 0.42s var(--ease-spring) both;
+  --animate-dialog-out: oa-dialog-out 0.28s var(--ease-settle) both;
+  --animate-dialog-fade-in: oa-fade-in 0.42s var(--ease-spring) both;
+  --animate-dialog-fade-out: oa-fade-out 0.28s var(--ease-settle) both;
+  --animate-backdrop-in: oa-fade-in 0.15s ease-out both;
+  --animate-backdrop-out: oa-fade-out 0.15s ease-out both;
+  --animate-arrive: oa-arrive 0.3s ease-out;
+  --animate-toast-success: oa-toast-success 0.32s var(--ease-nudge);
+  --animate-toast-error: oa-toast-error 0.28s var(--ease-nudge);
+}
+
+:root {
+  --ink: var(--color-oa-grey-950);
+  --oa-stage: var(--color-oa-grey-50);
+  --oa-primary: var(--color-oa-coral-500);
+  --oa-primary-deep: var(--color-oa-coral-700);
+  --oa-ring: var(--color-oa-coral-500);
+  --oa-secondary: var(--color-oa-grey-150);
+  --oa-muted-foreground: var(--color-oa-grey-500);
   --color-text-primary: var(--ink);
   --color-text-secondary: var(--oa-muted-foreground);
   --color-text-tertiary: color-mix(in oklch, var(--ink) 40%, transparent);
   --color-text-placeholder: color-mix(in oklch, var(--ink) 40%, transparent);
   --color-foreground-icon-primary: var(--ink);
   --color-foreground-icon-secondary: var(--oa-muted-foreground);
-  --color-background-full: #fff;
-  --color-background-primary-default: #fff;
-  --color-background-inner-default: #fff;
+  --color-background-full: var(--color-oa-white);
+  --color-background-primary-default: var(--color-oa-white);
+  --color-background-inner-default: var(--color-oa-white);
   --color-background-primary-hover: color-mix(in oklch, var(--ink) 5%, transparent);
   --color-background-primary-active: color-mix(in oklch, var(--ink) 10%, transparent);
   --color-background-secondary-default: var(--oa-stage);
@@ -51,12 +95,26 @@
   --color-chart-1-active: var(--oa-primary-deep);
   --color-badge-neutral-background: color-mix(in oklch, var(--ink) 5%, transparent);
   --color-segmented-control-background: color-mix(in oklch, var(--ink) 5%, transparent);
-  --color-segmented-control-selected-background: #fff;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 6%);
-  --shadow-dropdown: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 24px rgb(0 0 0 / 8%);
-  --shadow-sidebar: 0 1px 2px rgb(0 0 0 / 6%);
-  --shadow-resting: 0 1px 2px rgb(0 0 0 / 6%);
-  --shadow-floating: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 24px rgb(0 0 0 / 8%);
+  --color-segmented-control-selected-background: var(--color-oa-white);
+
+  /* Form fields and their states, so components carry no dark: overrides. */
+  --color-field: transparent;
+  --color-field-solid: var(--color-background-primary-default);
+  --color-field-hover: var(--color-background-secondary-default);
+  --color-field-disabled: color-mix(in oklch, var(--color-separator-border) 50%, transparent);
+  --color-invalid-border: var(--color-text-error-primary);
+  --color-invalid-ring: color-mix(in oklch, var(--color-text-error-primary) 20%, transparent);
+  --color-destructive-surface: color-mix(in oklch, var(--color-text-error-primary) 10%, transparent);
+  --color-destructive-surface-hover: color-mix(in oklch, var(--color-text-error-primary) 20%, transparent);
+  --color-ghost-hover: var(--color-background-secondary-default);
+  --color-selected-surface: color-mix(in oklch, var(--oa-primary) 5%, transparent);
+  --color-selected-border: color-mix(in oklch, var(--oa-primary) 30%, transparent);
+  --color-panel-edge: rgb(0 0 0 / 5%);
+  --color-overlay: rgb(0 0 0 / 30%);
+
+  /* Gateways and a selected traceroute read cyan on maps and the topology graph. */
+  --color-gateway: var(--color-cyan-200);
+  --color-route-selected: var(--color-cyan-500);
   --gradient-button-primary-default: linear-gradient(
     180deg,
     color-mix(in oklch, var(--oa-primary) 90%, var(--oa-primary-deep)) 0%,
@@ -71,24 +129,24 @@
 }
 
 .dark {
-  --ink: #ededed;
-  --oa-stage: #191919;
-  --oa-primary: #ff6b7c;
-  --oa-primary-deep: #ff495f;
-  --oa-secondary: #2e2e2e;
-  --oa-muted-foreground: #969696;
+  --ink: var(--color-oa-grey-100);
+  --oa-stage: var(--color-oa-grey-900);
+  --oa-primary: var(--color-oa-coral-400);
+  --oa-primary-deep: var(--color-oa-coral-500);
+  --oa-secondary: var(--color-oa-grey-800);
+  --oa-muted-foreground: var(--color-oa-grey-400);
   --color-text-primary: var(--ink);
   --color-text-secondary: var(--oa-muted-foreground);
   --color-text-tertiary: color-mix(in oklch, var(--ink) 42%, transparent);
   --color-foreground-icon-primary: var(--ink);
   --color-foreground-icon-secondary: var(--oa-muted-foreground);
-  --color-background-full: #191919;
-  --color-background-primary-default: #212121;
-  --color-background-inner-default: #212121;
+  --color-background-full: var(--color-oa-grey-900);
+  --color-background-primary-default: var(--color-oa-grey-850);
+  --color-background-inner-default: var(--color-oa-grey-850);
   --color-background-primary-hover: color-mix(in oklch, var(--ink) 5%, transparent);
-  --color-background-secondary-default: #191919;
+  --color-background-secondary-default: var(--color-oa-grey-900);
   --color-background-secondary-hover: color-mix(in oklch, var(--ink) 7%, var(--oa-stage));
-  --color-background-tertiary-default: #2e2e2e;
+  --color-background-tertiary-default: var(--color-oa-grey-800);
   --color-separator-border: color-mix(in oklch, var(--ink) 14%, transparent);
   --color-separator-border-strong: color-mix(in oklch, var(--ink) 16%, transparent);
   --color-border-button-default: color-mix(in oklch, var(--ink) 14%, transparent);
@@ -101,24 +159,59 @@
   --color-button-ghost-background: color-mix(in oklch, var(--oa-primary) 12%, transparent);
   --color-button-ghost-hover: color-mix(in oklch, var(--oa-primary) 18%, transparent);
   --color-button-ghost-active: color-mix(in oklch, var(--oa-primary) 24%, transparent);
-  --color-segmented-control-background: #2e2e2e;
-  --color-segmented-control-selected-background: #212121;
+  --color-segmented-control-background: var(--color-oa-grey-800);
+  --color-segmented-control-selected-background: var(--color-oa-grey-850);
+  --color-field: color-mix(in oklch, var(--color-separator-border) 30%, transparent);
+  --color-field-solid: color-mix(in oklch, var(--color-separator-border) 30%, transparent);
+  --color-field-hover: color-mix(in oklch, var(--color-separator-border) 50%, transparent);
+  --color-field-disabled: color-mix(in oklch, var(--color-separator-border) 80%, transparent);
+  --color-invalid-border: color-mix(in oklch, var(--color-text-error-primary) 50%, transparent);
+  --color-invalid-ring: color-mix(in oklch, var(--color-text-error-primary) 40%, transparent);
+  --color-destructive-surface: color-mix(in oklch, var(--color-text-error-primary) 20%, transparent);
+  --color-destructive-surface-hover: color-mix(in oklch, var(--color-text-error-primary) 30%, transparent);
+  --color-ghost-hover: color-mix(in oklch, var(--color-background-secondary-default) 50%, transparent);
+  --color-selected-surface: color-mix(in oklch, var(--oa-primary) 10%, transparent);
+  --color-selected-border: color-mix(in oklch, var(--oa-primary) 20%, transparent);
+  --color-panel-edge: rgb(255 255 255 / 5%);
 }
 
+/* The one place shadcn, ReUI and EvilCharts names map to BoardUI tokens. */
 @theme inline {
   --color-ink: var(--ink);
   --color-oa-stage: var(--oa-stage);
   --color-oa-primary: var(--oa-primary);
   --color-oa-ring: var(--oa-ring);
+  --color-foreground: var(--color-text-primary);
+  --color-background: var(--color-background-primary-default);
   --color-primary: var(--oa-primary);
-  --color-primary-foreground: #fff;
+  --color-primary-foreground: var(--color-text-white);
   --color-secondary: var(--oa-secondary);
   --color-secondary-foreground: var(--ink);
-  --color-ring: var(--oa-ring);
-  --color-card: #fff;
-  --color-muted-foreground: var(--oa-muted-foreground);
-  --shadow-resting: var(--shadow-resting);
-  --shadow-floating: var(--shadow-floating);
+  --color-muted: var(--color-background-secondary-default);
+  --color-muted-foreground: var(--color-text-secondary);
+  --color-accent: var(--color-dropdown-item-hover-background);
+  --color-accent-foreground: var(--color-text-primary);
+  --color-popover: var(--color-background-primary-default);
+  --color-popover-foreground: var(--color-text-primary);
+  --color-border: var(--color-separator-border);
+  --color-input: var(--color-separator-border);
+  --color-ring: var(--color-border-focus-ring);
+  --color-destructive: var(--color-text-error-primary);
+  --color-field: var(--color-field);
+  --color-field-solid: var(--color-field-solid);
+  --color-field-hover: var(--color-field-hover);
+  --color-field-disabled: var(--color-field-disabled);
+  --color-invalid-border: var(--color-invalid-border);
+  --color-invalid-ring: var(--color-invalid-ring);
+  --color-destructive-surface: var(--color-destructive-surface);
+  --color-destructive-surface-hover: var(--color-destructive-surface-hover);
+  --color-ghost-hover: var(--color-ghost-hover);
+  --color-selected-surface: var(--color-selected-surface);
+  --color-selected-border: var(--color-selected-border);
+  --color-panel-edge: var(--color-panel-edge);
+  --color-overlay: var(--color-overlay);
+  --color-gateway: var(--color-gateway);
+  --color-route-selected: var(--color-route-selected);
   --radius-sm: calc(0.625rem * 0.6);
   --radius-md: calc(0.625rem * 0.8);
   --radius-lg: 0.625rem;
@@ -128,50 +221,39 @@
   --radius-4xl: calc(0.625rem * 2.6);
 }
 
-@layer base {
-  html {
-    overflow-x: clip;
-  }
-
-  body {
-    background: #fff;
-    color: var(--color-text-primary);
-  }
-
-  .dark body {
-    background: var(--oa-stage);
-  }
-
-  /* OA identity: weight stops at 500. Hierarchy is size, color, spacing. */
-  :where([class*="-semibold"], [class*="-bold"], .font-semibold, .font-bold) {
-    font-weight: 500;
-  }
-}
-
 /* App plates: continuous curvature without clipping box-shadow. */
-.oa-squircle {
+@utility oa-squircle {
   border-radius: 20px;
   corner-shape: squircle;
-}
 
-.oa-squircle-inset {
-  border-radius: 16px;
-  corner-shape: squircle;
-}
-
-@media (width >= 40rem) {
-  .oa-squircle {
+  @variant sm {
     border-radius: 24px;
   }
+}
 
-  .oa-squircle-inset {
+@utility oa-squircle-inset {
+  border-radius: 16px;
+  corner-shape: squircle;
+
+  @variant sm {
     border-radius: 20px;
   }
 }
 
-@keyframes oa-skeleton {
-  to {
-    background-position: -200% 0;
+/* A blur-to-sharp fade, no movement, so it runs under reduced motion too. */
+@utility oa-arrive {
+  animation: var(--animate-arrive);
+}
+
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-sonner-toast][data-type="success"] {
+      animation: var(--animate-toast-success);
+    }
+
+    [data-sonner-toast][data-type="error"] {
+      animation: var(--animate-toast-error);
+    }
   }
 }
 
@@ -185,27 +267,6 @@
     opacity: 1;
     filter: blur(0);
   }
-}
-
-.oa-arrive {
-  animation: oa-arrive 0.3s ease-out;
-  filter: blur(0);
-}
-
-.oa-skeleton-bar {
-  border-radius: 4px;
-  background-image: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--ink) 15%, transparent) 0%,
-    color-mix(in oklch, var(--ink) 8%, transparent) 50%,
-    color-mix(in oklch, var(--ink) 15%, transparent) 100%
-  );
-  background-size: 200% 100%;
-  animation: oa-skeleton 2s linear infinite;
-}
-
-.oa-skeleton-bar:nth-child(even) {
-  animation-delay: -1s;
 }
 
 @keyframes oa-dialog-in {
@@ -224,65 +285,16 @@
   }
 }
 
-@keyframes oa-dialog-backdrop-in {
+@keyframes oa-fade-in {
   from {
     opacity: 0;
   }
 }
 
-@keyframes oa-dialog-backdrop-out {
+@keyframes oa-fade-out {
   to {
     opacity: 0;
   }
-}
-
-@keyframes oa-dialog-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes oa-dialog-fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .oa-arrive {
-    animation-name: none;
-  }
-
-  .oa-skeleton-bar {
-    animation-name: none;
-  }
-
-  /* Opacity stays. Scale and translate live only on oa-dialog-in / oa-dialog-out. */
-  [data-slot="dialog-content"][data-open] {
-    animation-name: oa-dialog-fade-in;
-  }
-
-  [data-slot="dialog-content"][data-closed] {
-    animation-name: oa-dialog-fade-out;
-  }
-}
-
-/* Tailwind compiled these from BoardUI @theme; point them at the live OA shadows. */
-.shadow-card,
-.shadow-sidebar {
-  --tw-shadow: var(--shadow-resting);
-}
-
-.shadow-dropdown {
-  --tw-shadow: var(--shadow-floating);
-}
-
-[data-sonner-toast][data-type="success"] {
-  animation: oa-toast-success 0.32s cubic-bezier(0.5, 1, 0.89, 1);
-}
-
-[data-sonner-toast][data-type="error"] {
-  animation: oa-toast-error 0.28s cubic-bezier(0.5, 1, 0.89, 1);
 }
 
 @keyframes oa-toast-success {
@@ -298,11 +310,4 @@
   50% { translate: 3px 0; }
   75% { translate: -3px 0; }
   100% { translate: 0 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-sonner-toast][data-type="success"],
-  [data-sonner-toast][data-type="error"] {
-    animation-name: none;
-  }
 }

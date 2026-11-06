@@ -77,7 +77,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
         ) : null}
         {manifest ? (
           <>
-            <div className="oa-arrive grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Archive summary">
+            <div className="grid oa-arrive gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Archive summary">
               <Kpi
                 icon={RiArchiveStackLine}
                 label={formatMessage({ id: "feature.archive.files.kpi.files", defaultMessage: "Files" })}
@@ -106,7 +106,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
             {days.length ? (
               <div className="flex flex-col gap-3">
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[40rem] text-left text-body-2-regular">
+                  <table className="w-full min-w-160 text-left text-body-2-regular">
                     <thead>
                       <tr>
                         <th className={headClass}>

@@ -26,8 +26,9 @@ export function TermsChecklist({
     <div className="flex flex-col gap-4">
       <FieldGroup>
         {statements.map((statement) => (
-          <Field key={statement.id} orientation="horizontal">
+          <Field key={statement.id} orientation="horizontal" className="items-start">
             <Checkbox
+              className="mt-0.5"
               id={`${idPrefix}-${statement.id}`}
               checked={accepted.has(statement.id)}
               onCheckedChange={(checked) => onToggle(statement.id, checked === true)}

@@ -13,7 +13,7 @@ export function LandingHero(): ReactElement {
     <section className="relative -mt-16 min-h-dvh overflow-hidden sm:-mt-20">
       <div className="relative z-10 mx-auto max-w-4xl px-4 pt-36 text-center sm:px-6 sm:pt-44">
         <LandingReveal delayMs={80}>
-          <h1 className="text-balance text-display-3-medium tracking-tight text-text-primary sm:text-display-2-medium">
+          <h1 className="text-hero-title tracking-tight text-balance text-text-primary">
             <FormattedMessage
               id="page.home.hero.title"
               defaultMessage="The world's first <accent>storage and data solution for Meshtastic sensors</accent>"
@@ -22,7 +22,7 @@ export function LandingHero(): ReactElement {
           </h1>
         </LandingReveal>
         <LandingReveal delayMs={160}>
-          <p className="mx-auto mt-5 max-w-2xl text-pretty text-title-3-regular text-text-secondary sm:text-title-1-regular">
+          <p className="mx-auto mt-5 max-w-2xl text-hero-lead text-pretty text-text-secondary">
             <FormattedMessage
               id="page.home.hero.subtitle"
               defaultMessage="Collect sensor data with <highlight>Meshtastic based sensor networks.</highlight> Deploy locally or on the cloud."

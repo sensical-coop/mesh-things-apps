@@ -47,7 +47,7 @@ function formatResetError(error: unknown, formatMessage: FormatMessage): { messa
 function InvalidLinkPanel(): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -74,7 +74,7 @@ function InvalidLinkPanel(): ReactElement {
 function SuccessPanel(): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -136,7 +136,7 @@ export function ResetPasswordForm({ token }: { token: string | null }): ReactEle
   if (!token || expired) return <InvalidLinkPanel />;
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">

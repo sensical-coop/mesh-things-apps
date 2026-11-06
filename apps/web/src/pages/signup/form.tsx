@@ -7,7 +7,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { routes } from "@/router";
 import { readApiError } from "@mtt/contracts/errors";
 import { authRepository } from "@/features/auth/repository";
-import { termsLocale } from "@mtt/ui/terms";
+import { termsLocale } from "@/features/terms/model";
 import { accountTermsQuery } from "@/features/terms/repository";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 

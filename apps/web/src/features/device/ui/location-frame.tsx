@@ -152,12 +152,12 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
           </div>
         ) : null}
         {saved || editing ? (
-          <div className="oa-arrive oa-squircle-inset min-h-80 flex-1 overflow-hidden">
+          <div className="min-h-80 flex-1 oa-arrive overflow-hidden oa-squircle-inset">
             <Map
               center={saved ? [saved.lng, saved.lat] : WORLD_VIEW.center}
               zoom={saved ? 14 : WORLD_VIEW.zoom}
               unsupported={<MapUnsupported />}
-              className="h-full min-h-80 w-full"
+              className="size-full min-h-80 "
             >
               <MapControls showLocate={editing} onLocate={(coords) => pick({ lng: coords.longitude, lat: coords.latitude })} />
               {editing ? <PickOnClick onPick={pick} /> : <FollowPoint point={saved} />}

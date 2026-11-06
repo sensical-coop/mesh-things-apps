@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isStartStep, resolveStartStep, type StartFacts, type StartStep } from "../src/start-step.ts";
+import { isStartStep, previousStartStep, resolveStartStep, type StartFacts, type StartStep } from "../src/start-step.ts";
 
 const facts = (patch: Partial<StartFacts>): StartFacts => ({
   session: "verified",
@@ -64,4 +64,15 @@ test("seen gateway stays on connect, next-steps, or done", () => {
   assert.equal(resolveStartStep("connect", row), "connect");
   assert.equal(resolveStartStep("next-steps", row), "next-steps");
   assert.equal(resolveStartStep("done", row), "done");
+});
+
+test("previousStartStep skips steps the facts would move past", () => {
+  assert.equal(previousStartStep("account", facts({ session: "none" })), "welcome");
+  assert.equal(previousStartStep("welcome", facts({ session: "none" })), undefined);
+  assert.equal(previousStartStep("mesh", facts({ mesh: "none" })), "basics");
+  assert.equal(previousStartStep("basics", facts({ mesh: "none" })), undefined);
+  assert.equal(previousStartStep("register", facts({ gateway: "none" })), undefined);
+  assert.equal(previousStartStep("connect", facts({ gateway: "unseen" })), undefined);
+  assert.equal(previousStartStep("next-steps", facts({ gateway: "unseen" })), "connect");
+  assert.equal(previousStartStep("done", facts({ gateway: "unseen" })), "next-steps");
 });

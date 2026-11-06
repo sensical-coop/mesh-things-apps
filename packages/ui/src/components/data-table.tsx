@@ -90,9 +90,9 @@ export function DataTable<T>({
   const { pageIndex, pageSize } = table.getState().pagination;
 
   return (
-    <div className="oa-arrive flex min-h-0 flex-col">
+    <div className="flex min-h-0 oa-arrive flex-col">
       <div ref={scrollRef} className="overflow-x-auto" style={fadeMask(edges)}>
-        <table className="w-full min-w-[36rem] caption-bottom text-left text-body-2-regular">
+        <table className="w-full min-w-xl caption-bottom text-left text-body-2-regular">
           <thead>
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>

@@ -4,7 +4,9 @@ import { type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ResendButton } from "@/features/auth/resend-button";
 import { authRepository } from "@/features/auth/repository";
+import { CheckEmailFigure } from "@/figures/check-email/figure";
 import { StepHeading } from "./step-heading";
+import { StepLayout } from "./step-layout";
 
 export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: string | null }): ReactElement {
   const { formatMessage } = useIntl();
@@ -22,7 +24,7 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <StepLayout figure={<CheckEmailFigure />}>
       <StepHeading>
         {formatMessage({ id: "page.start.checkEmail.title", defaultMessage: "Check your email" })}
       </StepHeading>
@@ -35,7 +37,7 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
       </p>
       <ResendButton sentAt={sentAt} />
       <Button type="button" size="medium" variant="secondary" disabled={me.isRefetching} onClick={() => void checkNow()}>
-        {formatMessage({ id: "page.start.checkEmail.confirmed", defaultMessage: "I've confirmed my email" })}
+        {formatMessage({ id: "page.start.checkEmail.confirmed", defaultMessage: "Check again" })}
       </Button>
       {notYet ? (
         <p className="text-body-medium text-text-secondary" role="status">
@@ -45,6 +47,6 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
           })}
         </p>
       ) : null}
-    </div>
+    </StepLayout>
   );
 }

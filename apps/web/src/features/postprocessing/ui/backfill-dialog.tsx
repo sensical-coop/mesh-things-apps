@@ -134,7 +134,7 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
                     <Chip variant="caption" color={STATUS_COLOR[row.status]} className="rounded-full">
                       {statusLabel[row.status]}
                     </Chip>
-                    <span className="min-w-0 break-words">
+                    <span className="min-w-0 wrap-break-word">
                       {formatWhen(row.start)} → {row.stop ? formatWhen(row.stop) : "—"}
                     </span>
                   </div>

@@ -1,0 +1,21 @@
+/* The radios and their hops are drawn in the theme accent, as in the welcome figure. */
+.mesh-figure {
+  --anatomy-lit: var(--color-accent-500);
+}
+
+.mesh-figure .iso-plate {
+  padding: 16px;
+}
+
+/* Wide screens: the plate fills its column, so it ends with the step's fields. */
+@media (width >= 64rem) {
+  .mesh-figure,
+  .mesh-figure .iso-plate {
+    height: 100%;
+  }
+
+  .mesh-figure .iso-plate {
+    display: flex;
+    align-items: center;
+  }
+}

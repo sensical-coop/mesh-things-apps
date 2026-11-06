@@ -15,12 +15,13 @@ export function StartProgress({ step }: { step: StartStep }): ReactElement {
   const { formatMessage } = useIntl();
   const labels: Record<string, string> = {
     account: formatMessage({ id: "page.start.progress.account", defaultMessage: "Account" }),
-    basics: formatMessage({ id: "page.start.progress.basics", defaultMessage: "Basics" }),
+    basics: formatMessage({ id: "page.start.progress.basics", defaultMessage: "Concepts" }),
     mesh: formatMessage({ id: "page.start.progress.mesh", defaultMessage: "Mesh" }),
     gateway: formatMessage({ id: "page.start.progress.gateway", defaultMessage: "Gateway" }),
     next: formatMessage({ id: "page.start.progress.next", defaultMessage: "Next steps" }),
   };
-  const current = PARTS.findIndex((part) => part.steps.includes(step));
+  // "done" is past the last part: every segment reads as finished.
+  const current = step === "done" ? PARTS.length : PARTS.findIndex((part) => part.steps.includes(step));
 
   return (
     <ol className="flex min-w-0 flex-1 items-center gap-1.5" aria-label={formatMessage({ id: "page.start.progress.label", defaultMessage: "Setup progress" })}>
@@ -37,7 +38,7 @@ export function StartProgress({ step }: { step: StartStep }): ReactElement {
             />
             <span
               className={cx(
-                "text-body-small truncate",
+                "truncate text-body-2-regular",
                 state === "current" ? "text-text-primary" : "text-text-tertiary",
               )}
               aria-current={state === "current" ? "step" : undefined}
