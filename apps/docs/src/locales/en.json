@@ -4,7 +4,7 @@
   "page.docs.ui.openSearch": "Open search",
   "page.docs.ui.closeSearch": "Close search",
   "page.docs.ui.noResults": "No results found",
-  "page.docs.ui.searchFailed": "The search could not be completed",
+  "page.docs.ui.searchFailed": "Search didn't finish. Try again.",
   "page.docs.ui.onThisPage": "On this page",
   "page.docs.ui.tableOfContents": "Table of contents",
   "page.docs.ui.noHeadings": "No headings",

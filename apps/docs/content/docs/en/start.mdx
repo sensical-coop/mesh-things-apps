@@ -3,14 +3,14 @@ title: Set up your first mesh
 description: The guided setup at /start, from an account to a gateway that is sending.
 ---
 
-`/start` walks a new owner from an account to a mesh, a gateway, and the console. It takes about 10 minutes. You need the Meshtastic app and a radio with Wi-Fi or Ethernet.
+`/start` takes a new owner from an account to a mesh, a gateway, and the console. It takes about 10 minutes. You need the Meshtastic app and a radio with Wi-Fi or Ethernet.
 
-The address keeps the mesh and the step (`/start?mesh=<id>&step=<key>`). Reloading resumes from what the server already has. It does not store progress anywhere else.
+The address keeps the mesh and the step (`/start?mesh=<id>&step=<key>`). Reload the page and setup continues from the account, mesh, and gateway the server already has. Progress is not stored anywhere else.
 
 ## What you enter
 
-The mesh uses the channel name and key from the Meshtastic app. The gateway is registered by its node ID, in hex or decimal. On the connect step, enable MQTT, turn uplink on for that channel, and leave encryption on. The broker host, port, and gateway login come from your Mesh Things administrator. They are not part of the web app.
+Use the channel name and key from the Meshtastic app for the mesh. Register the gateway by its node ID, in hex or decimal. On the connect step, in the Meshtastic app, turn MQTT and uplink on for that channel, leave encryption on, and leave the root topic at its default. When this instance has a gateway broker, the page shows the host, port, TLS setting, username, and password from your account. If it does not, ask your Mesh Things administrator. You do not type those values into `/start`.
 
 ## If the gateway goes quiet
 
-The last step can email you when the gateway stops sending. The message goes to the account after several missed intervals. It does not name a fixed wait, because the alarm only runs where the instance has a detector for it.
+The last step can email this account when the gateway stops sending. The message goes out after several missed intervals. It does not send after a single gap.

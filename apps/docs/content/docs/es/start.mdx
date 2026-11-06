@@ -3,14 +3,14 @@ title: Configura tu primera malla
 description: La configuración guiada de /start, desde una cuenta hasta una pasarela que envía.
 ---
 
-`/start` lleva a un propietario nuevo desde una cuenta hasta una malla, una pasarela y la consola. Lleva unos 10 minutos. Hace falta la app de Meshtastic y una radio con Wi-Fi o Ethernet.
+`/start` guía a un propietario nuevo desde la cuenta hasta la malla, la pasarela y la consola. Unos 10 minutos. Necesitas la app de Meshtastic y una radio con Wi-Fi o Ethernet.
 
-La dirección guarda la malla y el paso (`/start?mesh=<id>&step=<key>`). Al recargar, se reanuda con lo que el servidor ya tiene. No guarda el progreso en ningún otro sitio.
+La dirección guarda la malla y el paso (`/start?mesh=<id>&step=<key>`). Al recargar, la configuración sigue con la cuenta, la malla y la pasarela que el servidor ya tiene. El progreso no se guarda en ningún otro sitio.
 
 ## Qué se indica
 
-La malla usa el nombre de canal y la clave de la app de Meshtastic. La pasarela se registra con su identificador de nodo, en hexadecimal o decimal. En el paso de conexión, activa MQTT, activa el enlace ascendente de ese canal y deja el cifrado activado. El host del broker, el puerto y el usuario de la pasarela los da quien administra Mesh Things. No forman parte de la aplicación web.
+La malla usa el nombre de canal y la clave de la app de Meshtastic. La pasarela se registra con su identificador de nodo, en hexadecimal o decimal. En el paso de conexión, en la app de Meshtastic, activa MQTT y el enlace ascendente de ese canal, deja el cifrado activado y deja el topic raíz en su valor por defecto. Si la instancia tiene un broker de pasarela, la página muestra el host, el puerto, TLS, el usuario y la contraseña de tu cuenta. Si no, pídeselos a quien administra Mesh Things. Esos datos no se escriben en `/start`.
 
 ## Si la pasarela deja de enviar
 
-El último paso puede avisarte por correo cuando la pasarela deja de enviar. El mensaje llega a la cuenta tras varios intervalos perdidos. No indica una espera fija, porque la alarma solo se ejecuta donde la instancia tiene un detector para ella.
+El último paso puede enviar un correo a esta cuenta cuando la pasarela deja de enviar. El mensaje sale tras varios intervalos perdidos. No se envía por un solo hueco.
