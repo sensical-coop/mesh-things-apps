@@ -3,7 +3,7 @@ import { LandingCta } from "./cta";
 import { LandingExtras } from "./extras";
 import { LandingFaq } from "./faq";
 import { LandingFeatures } from "./features";
-import { LandingFooter } from "./footer";
+import { LandingFooter } from "@/components/landing-footer";
 import { LandingHeader } from "./header";
 import { LandingHero } from "./hero";
 import { LandingProof } from "./proof";

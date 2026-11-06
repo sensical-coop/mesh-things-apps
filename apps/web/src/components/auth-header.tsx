@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactElement } from "react";
-import { BrandMark } from "@/components/brand";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { routes } from "@/router";
 
 /**

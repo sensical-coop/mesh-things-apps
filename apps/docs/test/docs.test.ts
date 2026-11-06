@@ -33,7 +33,10 @@ test("Fumadocs serves the same documentation pages in English and Spanish", asyn
       pages,
     );
     const overview = docsSource.getPage(["overview"], "es");
-    assert.equal(overview?.data.title, "Visión general");
+    const overviewTitle = /^title:\s*(.+)\s*$/m.exec(
+      readFileSync(new URL("../content/docs/es/overview.mdx", import.meta.url), "utf8"),
+    )?.[1];
+    assert.equal(overview?.data.title, overviewTitle);
     assert.equal(docsSource.getPage(["missing-page"]), undefined);
   } finally {
     await server.close();

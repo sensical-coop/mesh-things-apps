@@ -5,7 +5,6 @@ import {
   getReadingsDevicesRetrieveQueryOptions,
   getReadingsDevicesTrafficRetrieveQueryOptions,
   getReadingsMeshesStatsRetrieveQueryOptions,
-  getTelemetryVariantsMeasurementsListQueryOptions,
 } from "@mtt/contracts/api";
 
 export const readingsRepository = {
@@ -15,5 +14,4 @@ export const readingsRepository = {
   meshStats: getReadingsMeshesStatsRetrieveQueryOptions,
   deviceTraffic: getReadingsDevicesTrafficRetrieveQueryOptions,
   catalog: getMeasurementsListQueryOptions,
-  variantMeasurements: getTelemetryVariantsMeasurementsListQueryOptions,
 };

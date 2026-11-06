@@ -6,6 +6,7 @@ import {
   useLegacyTable,
 } from "@tanstack/react-table/legacy";
 import { type CSSProperties, type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
+import { useIntl } from "react-intl";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpSLine } from "@remixicon/react";
 import { cx } from "@mtt/ui/utils/cx";
@@ -18,9 +19,6 @@ export type DataTableProps<T> = {
   columns: DataTableColumn<T>[];
   empty?: ReactNode;
   getRowId?: (row: T) => string;
-  previousPageLabel?: string;
-  nextPageLabel?: string;
-  pageRangeOfLabel?: string;
 };
 
 const FADE = "3rem";
@@ -62,15 +60,11 @@ function fadeMask({ start, end }: { start: boolean; end: boolean }): CSSProperti
   return { maskImage: mask, WebkitMaskImage: mask };
 }
 
-export function DataTable<T>({
-  data,
-  columns,
-  empty,
-  getRowId,
-  previousPageLabel = "Previous page",
-  nextPageLabel = "Next page",
-  pageRangeOfLabel = "of",
-}: DataTableProps<T>): ReactElement {
+export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<T>): ReactElement {
+  const { formatMessage } = useIntl();
+  const previousPageLabel = formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" });
+  const nextPageLabel = formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" });
+  const pageRangeOfLabel = formatMessage({ id: "common.dataTable.of", defaultMessage: "of" });
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([]);
   const table = useLegacyTable({
     data: data as never[],

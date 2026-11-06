@@ -213,9 +213,6 @@ export function DataDeletionsPage(): ReactElement {
               data={deletions.data}
               columns={columns}
               getRowId={(row) => row.id}
-              previousPageLabel={formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" })}
-              nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-              pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
               empty={
                 status === "pending"
                   ? formatMessage({ id: "page.dataDeletions.empty.pending", defaultMessage: "Nothing scheduled." })

@@ -1,5 +1,5 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { secondsUntilResendAllowed } from "@/features/auth/resend-cooldown";
+import { secondsUntilResendAllowed } from "@mtt/contracts/resend-cooldown";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";

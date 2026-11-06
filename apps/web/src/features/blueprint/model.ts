@@ -6,12 +6,7 @@ import type {
   PostprocessingBlueprint,
   PostprocessingStep,
 } from "@mtt/contracts";
-
-// The registry's naming rules for slots, step keys and derived fields (api/registry/postprocessing.py).
-export const NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
-export const PREFIX_PATTERN = /^[a-z0-9_]*$/;
-const SLOT_REF = "slot:";
-const STEP_REF = "step:";
+import { NAME_PATTERN, slotRef, stepRef, validateBlueprintStep, validateBlueprintVersion } from "@mtt/contracts/blueprint";
 
 export function canEditBlueprint(
   blueprint: Pick<PostprocessingBlueprint, "owner_id">,
@@ -40,24 +35,6 @@ export function stringMap(value: unknown): Record<string, string> {
 export function valueMap(value: unknown): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
   return { ...value };
-}
-
-export type StepRef = { kind: "slot"; slot: string } | { kind: "step"; key: string; output: string };
-
-/** `slot:<slot>` or `step:<key>.<output>`; null for anything else. */
-export function parseRef(ref: string): StepRef | null {
-  if (ref.startsWith(SLOT_REF)) return { kind: "slot", slot: ref.slice(SLOT_REF.length) };
-  if (!ref.startsWith(STEP_REF)) return null;
-  const [key, output] = ref.slice(STEP_REF.length).split(".");
-  return key && output ? { kind: "step", key, output } : null;
-}
-
-export function slotRef(slot: string): string {
-  return `${SLOT_REF}${slot}`;
-}
-
-export function stepRef(key: string, output: string): string {
-  return `${STEP_REF}${key}.${output}`;
 }
 
 export function configParams(algorithm: Pick<Algorithm, "params"> | undefined): AlgorithmParam[] {
@@ -194,46 +171,70 @@ export type DraftProblem =
   | { kind: "paramRequired"; key: string; param: string }
   | { kind: "noOutput"; key: string }
   | { kind: "fieldName"; key: string; field: string }
-  | { kind: "fieldTwice"; field: string };
+  | { kind: "fieldTwice"; field: string }
+  | { kind: "pointwise"; key: string; name: string; mode: string };
+
+function algorithmOf(algorithms: readonly Algorithm[], name: string): Algorithm | undefined {
+  return algorithms.find((candidate) => candidate.name === name);
+}
 
 /** What the registry would refuse, found before sending. The API stays the judge. */
 export function draftProblems(draft: BlueprintDraft, algorithms: readonly Algorithm[]): DraftProblem[] {
+  const body = versionBody(draft);
+  const steps = body.steps.map((step) => ({
+    key: step.key,
+    order: step.order,
+    function_name: step.function_name,
+    inputs: stringMap(step.inputs),
+    params: valueMap(step.params),
+    outputs: stringMap(step.outputs),
+  }));
+  const messages = validateBlueprintVersion(body.inputs, steps, (name) => algorithmOf(algorithms, name));
   const found: DraftProblem[] = [];
-  if (!draft.steps.length) found.push({ kind: "noSteps" });
-  const slots = draft.slots.map((slot) => slot.slot.trim());
-  for (const [i, slot] of slots.entries()) {
-    if (!NAME_PATTERN.test(slot)) found.push({ kind: "slotName", slot });
-    else if (slots.indexOf(slot) !== i) found.push({ kind: "slotTwice", slot });
-  }
-  const used = new Set<string>();
-  const keys: string[] = [];
-  const fields: string[] = [];
-  for (const [index, step] of draft.steps.entries()) {
-    const key = step.key.trim();
-    if (!NAME_PATTERN.test(key)) found.push({ kind: "stepKey", key });
-    else if (keys.includes(key)) found.push({ kind: "stepKeyTwice", key });
-    keys.push(key);
-    const algorithm = algorithms.find((candidate) => candidate.name === step.functionName);
-    const choices = refChoices(draft, index).map((choice) => choice.value);
-    for (const input of algorithm?.inputs ?? []) {
-      const ref = step.inputs[input] ?? "";
-      if (!choices.includes(ref)) found.push({ kind: "inputUnset", key, input });
-      const parsed = parseRef(ref);
-      if (parsed?.kind === "slot") used.add(parsed.slot);
+  for (const message of messages) {
+    const slotName = message.match(/^Input slot '([^']+)' must be lowercase/);
+    if (slotName?.[1]) found.push({ kind: "slotName", slot: slotName[1] });
+    const stepKey = message.match(/^Step key '([^']+)' must be lowercase/);
+    if (stepKey?.[1]) found.push({ kind: "stepKey", key: stepKey[1] });
+    const stepKeyTwice = message.match(/^Step key '([^']+)' is used twice/);
+    if (stepKeyTwice?.[1] && NAME_PATTERN.test(stepKeyTwice[1])) found.push({ kind: "stepKeyTwice", key: stepKeyTwice[1] });
+    const pointwise = message.match(/^Step '([^']+)': '([^']+)' is ([^,]+), only pointwise/);
+    if (pointwise?.[1] && pointwise[2] && pointwise[3]) {
+      found.push({ kind: "pointwise", key: pointwise[1], name: pointwise[2], mode: pointwise[3] });
     }
-    for (const param of configParams(algorithm)) {
-      if (param.required && !step.params[param.name]?.trim()) found.push({ kind: "paramRequired", key, param: param.name });
+    const input = message.match(/^Step '([^']+)' input '([^']+)' must be/);
+    if (input?.[1] && input[2]) found.push({ kind: "inputUnset", key: input[1], input: input[2] });
+    const fieldName = message.match(/^Step '([^']+)' output field '([^']+)' must be/);
+    if (fieldName?.[1] && fieldName[2]) found.push({ kind: "fieldName", key: fieldName[1], field: fieldName[2] });
+    const fieldTwice = message.match(/^Output field '([^']+)' is produced twice/);
+    if (fieldTwice?.[1]) found.push({ kind: "fieldTwice", field: fieldTwice[1] });
+    const unused = message.match(/^Input slot\(s\) (.+) are not used/);
+    if (unused?.[1]) {
+      for (const slot of unused[1].split(", ")) {
+        if (NAME_PATTERN.test(slot)) found.push({ kind: "slotUnused", slot });
+      }
     }
-    const outputs = Object.values(step.outputs).map((field) => field.trim()).filter(Boolean);
-    if (!outputs.length) found.push({ kind: "noOutput", key });
-    for (const field of outputs) {
-      if (!NAME_PATTERN.test(field)) found.push({ kind: "fieldName", key, field });
-      else if (fields.includes(field)) found.push({ kind: "fieldTwice", field });
-      fields.push(field);
+    if (message === "A blueprint version needs at least one step") found.push({ kind: "noSteps" });
+    if (message === "Input slot names must be unique") {
+      const slots = draft.slots.map((slot) => slot.slot.trim());
+      for (const [index, slot] of slots.entries()) {
+        if (NAME_PATTERN.test(slot) && slots.indexOf(slot) !== index) found.push({ kind: "slotTwice", slot });
+      }
     }
   }
-  for (const slot of slots) {
-    if (NAME_PATTERN.test(slot) && !used.has(slot)) found.push({ kind: "slotUnused", slot });
+  for (const step of steps) {
+    const spec = algorithmOf(algorithms, step.function_name);
+    for (const message of validateBlueprintStep(step, spec)) {
+      const missingInputs = message.match(/requires input\(s\) (.+)$/);
+      if (missingInputs?.[1]) {
+        for (const input of missingInputs[1].split(", ")) found.push({ kind: "inputUnset", key: step.key, input });
+      }
+      const missingParams = message.match(/requires param\(s\) (.+)$/);
+      if (missingParams?.[1]) {
+        for (const param of missingParams[1].split(", ")) found.push({ kind: "paramRequired", key: step.key, param });
+      }
+      if (message.endsWith("step must bind at least one output")) found.push({ kind: "noOutput", key: step.key });
+    }
   }
   return found;
 }

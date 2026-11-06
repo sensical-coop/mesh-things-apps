@@ -4,7 +4,7 @@ import { cx } from "@mtt/ui/utils";
 import { RiMoonLine, RiSunLine } from "@remixicon/react";
 import type { ComponentProps } from "react";
 import { useIntl } from "react-intl";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { useTheme } from "@/hooks/use-theme";
 
 export type DocumentationActionsProps = ComponentProps<"div">;

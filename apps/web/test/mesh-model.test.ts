@@ -64,10 +64,3 @@ test("meshStatus covers every state the Status column shows", async () => {
   // Someone else's mesh: the API hides its state.
   assert.equal(meshStatus({ source_id: undefined }, ctx).kind, "hidden");
 });
-
-test("the Status column sorts the most urgent first", async () => {
-  const { MESH_STATUS_RANK } = await import("../src/features/mesh/model.ts");
-  const order = Object.entries(MESH_STATUS_RANK).sort((a, b) => a[1] - b[1]).map(([k]) => k);
-  assert.deepEqual(order.slice(0, 2), ["scheduledForDeletion", "sourcePaused"]);
-  assert.deepEqual(order.slice(-2), ["active", "hidden"]);
-});

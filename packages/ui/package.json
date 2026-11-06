@@ -18,15 +18,11 @@
   "exports": {
     "./utils": "./src/utils.ts",
     "./utils/*": "./src/utils/*.ts",
-    "./lib/utils": "./src/utils.ts",
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./theme": "./src/theme.ts",
     "./oa/springs": "./src/oa/springs.ts",
     "./boardui.css": "./src/boardui/globals.css",
-    "./styles/globals.css": "./src/boardui/globals.css",
-    "./theme.css": "./src/boardui/theme.css",
-    "./typography.css": "./src/boardui/typography.css",
     "./reui/*": "./src/components/reui/*.tsx",
     "./components/base/buttons/button": "./src/components/base/buttons/button.tsx",
     "./components/base/badges/chip": "./src/components/base/badges/chip.tsx",
@@ -40,7 +36,6 @@
     "./forms/node-id": "./src/forms/node-id.ts",
     "./forms/text-links": "./src/forms/text-links.ts",
     "./forms/*": "./src/forms/*.tsx",
-    "./*": "./src/*.tsx",
     "./maplibre.css": "./src/vendor/maplibre.css",
     "./locale": "./src/locale.ts"
   },
@@ -64,8 +59,10 @@
     "nuqs": "^2.10.1",
     "react-aria-components": "^1.21.1",
     "react-day-picker": "^10.0.1",
+    "react-intl": "^12.1.1",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@mtt/tsconfig": "workspace:^",

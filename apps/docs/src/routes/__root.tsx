@@ -2,11 +2,9 @@ import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-r
 import { IntlProvider } from "react-intl";
 import appCss from "@/styles.css?url";
 import { useLocale } from "@mtt/ui/hooks/use-locale";
-import { DEFAULT_LOCALE } from "@mtt/ui/locale";
+import { DEFAULT_LOCALE, localeInitScript } from "@mtt/ui/locale";
+import { themeInitScript } from "@mtt/ui/theme";
 import { MESSAGES } from "@/lib/messages";
-
-const themeScript = `(function(){try{var stored=localStorage.getItem("boardui:theme");var dark=stored?stored==="dark":false;document.documentElement.classList.toggle("dark",dark);}catch(e){document.documentElement.classList.remove("dark");}})();`;
-const localeScript = `(function(){try{var stored=localStorage.getItem("mtt:locale");var supported=["en","es"];var lang=stored&&supported.indexOf(stored)>-1?stored:null;if(!lang){var langs=navigator.languages||[navigator.language];for(var i=0;i<langs.length;i++){var prefix=(langs[i]||"").split("-")[0];if(supported.indexOf(prefix)>-1){lang=prefix;break;}}}document.documentElement.lang=lang||"en";}catch(e){document.documentElement.lang="en";}})();`;
 
 export const Route = createRootRoute({
   head: () => ({
@@ -28,8 +26,8 @@ function RootComponent() {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <script dangerouslySetInnerHTML={{ __html: localeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
         <HeadContent />
       </head>
       <body>

@@ -2,15 +2,14 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import type { Mesh } from "@mtt/contracts";
 import { MeshCreateRequest } from "@mtt/contracts";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
+import { MeshForm as UiMeshForm, PUBLIC_DEFAULT_PSK, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
 import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
-import { allStatementsAccepted, termsLocale } from "@/features/terms/model";
+import { allStatementsAccepted, termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { type ReactElement, type ReactNode, useId, useState } from "react";
 import { useIntl } from "react-intl";
 import { meshRepository } from "@/features/mesh/repository";
 import { termsRepository } from "@/features/terms/repository";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 
 /** `children` places the fields and the footer (terms, submit, error), which may sit apart in the layout. */
 export function MeshForm({
@@ -26,7 +25,6 @@ export function MeshForm({
   const terms = useQuery({
     ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: !termsOff,
-    retry: (failures: number, error: unknown) => readApiError(error).status !== 404 && failures < 3,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
@@ -91,10 +89,13 @@ export function MeshForm({
             id: "page.meshes.list.createDialog.pskHint",
             defaultMessage: "The channel's pre-shared key, in Base64.",
           }),
-          publicPsk: formatMessage({
-            id: "page.meshes.list.createDialog.publicPsk",
-            defaultMessage: "AQ== is the public default key. Anyone can read this channel.",
-          }),
+          publicPsk: formatMessage(
+            {
+              id: "page.meshes.list.createDialog.publicPsk",
+              defaultMessage: "{psk} is the public default key. Anyone can read this channel.",
+            },
+            { psk: PUBLIC_DEFAULT_PSK },
+          ),
         }}
         errors={errors}
         pending={create.isPending}

@@ -117,9 +117,6 @@ export function BlueprintsPage(): ReactElement {
               data={blueprints.data}
               columns={columns}
               getRowId={(row) => row.id}
-              previousPageLabel={formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" })}
-              nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-              pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
               empty={formatMessage({
                 id: "page.blueprints.list.none",
                 defaultMessage: "No blueprints yet. Create one to compute new channels from your devices' readings.",

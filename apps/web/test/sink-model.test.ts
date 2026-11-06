@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { brokerHostPort } from "@mtt/contracts/source";
 import {
-  brokerHostPort,
   consumerCommand,
   orderStreams,
   devicesByMesh,

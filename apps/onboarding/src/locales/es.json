@@ -8,7 +8,7 @@
   "page.meshes.list.createDialog.channelIdHint": "El nombre del canal en la app de Meshtastic.",
   "page.meshes.list.createDialog.psk": "PSK",
   "page.meshes.list.createDialog.pskHint": "La clave precompartida del canal, en base64.",
-  "page.meshes.list.createDialog.publicPsk": "AQ== es la clave pública por defecto. Cualquiera puede leer este canal.",
+  "page.meshes.list.createDialog.publicPsk": "{psk} es la clave pública por defecto. Cualquiera puede leer este canal.",
   "page.meshes.list.createDialog.error": "No se pudo crear la malla. Revisa los campos e inténtalo de nuevo.",
   "page.meshes.list.createDialog.cancel": "Cancelar",
   "page.meshes.list.createDialog.creating": "Creando malla",

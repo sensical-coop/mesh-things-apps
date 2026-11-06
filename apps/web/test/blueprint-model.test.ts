@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Algorithm } from "@mtt/contracts";
+import { parseRef } from "@mtt/contracts/blueprint";
 import {
   canAttachBlueprint,
   canEditBlueprint,
@@ -9,7 +10,6 @@ import {
   emptyDraft,
   errorMessages,
   paramValues,
-  parseRef,
   refChoices,
   stepForAlgorithm,
   versionBody,

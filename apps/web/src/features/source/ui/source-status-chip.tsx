@@ -3,7 +3,6 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 
 export type SourceStatusChipProps = {
-  /** The bridge's status as the API reports it: connected, disconnected, paused, or unknown. */
   status: string;
 };
 

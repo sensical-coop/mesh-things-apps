@@ -1,4 +1,5 @@
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { cx } from "@mtt/ui/utils";
 import { RiGithubLine, RiLinkedinLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
@@ -6,7 +7,7 @@ import { type ReactElement, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { routes } from "@/router";
 import { API_URL } from "@/lib/api-url";
-import { BrandMark, SITE, pageWidth } from "@/components/brand";
+import { SITE, pageWidth } from "@/components/brand";
 
 const socials = [
   { href: "https://github.com/sensical-coop/", label: "GitHub", icon: RiGithubLine },

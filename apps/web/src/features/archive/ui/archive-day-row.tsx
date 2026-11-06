@@ -4,8 +4,9 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
 import { API_URL } from "@/lib/api-url";
-import { formatBytes, partitionDownloadUrl, partitionLabel, type ArchiveDay } from "@/features/archive/model";
+import { partitionDownloadUrl, partitionLabel, type ArchiveDay } from "@/features/archive/model";
 import { cn } from "@mtt/ui/utils";
+import { formatBytes } from "@/lib/format";
 
 export type ArchiveDayRowProps = {
   meshId: string;

@@ -4,10 +4,10 @@ import { RiCalendarScheduleLine, RiDownloadLine, RiRefreshLine } from "@remixico
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
-import { formatBytes } from "@/features/archive/model";
 import { isActive, progressOf } from "@/features/export/model";
 import { ExportStatusChip } from "@/features/export/ui/export-status-chip";
 import { cn } from "@mtt/ui/utils";
+import { formatBytes } from "@/lib/format";
 
 export type ExportsTableProps = {
   rows: readonly Export[];

@@ -1,6 +1,7 @@
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formatBytes, type ArchiveSummary } from "@/features/archive/model";
+import { type ArchiveSummary } from "@/features/archive/model";
+import { formatBytes } from "@/lib/format";
 
 export type ArchiveMeshSummaryProps = {
   devices: number;

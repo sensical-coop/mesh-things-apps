@@ -9,7 +9,6 @@ import {
   canUseArchive,
   duckdbCommand,
   duckdbExportCommand,
-  formatBytes,
   groupByDay,
   partitionDownloadUrl,
   summarizeArchive,
@@ -62,12 +61,6 @@ test("partitionDownloadUrl points at the readings route", () => {
     partitionDownloadUrl("https://api.example.org/", "m1", { dt: "2026-09-02", hour: 4 }),
     "https://api.example.org/readings/archive/meshes/m1/partitions/2026-09-02/4",
   );
-});
-
-test("formatBytes picks a unit", () => {
-  assert.equal(formatBytes(512, "en"), "512 B");
-  assert.equal(formatBytes(1536, "en"), "1.5 KB");
-  assert.equal(formatBytes(25 * 1024 * 1024, "en"), "25 MB");
 });
 
 test("duckdbCommand fills in credentials, path-style and no TLS on a plain HTTP endpoint", () => {

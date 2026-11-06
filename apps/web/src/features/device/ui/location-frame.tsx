@@ -1,10 +1,10 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { Map, MapControls, MapMarker, MarkerContent, useMap } from "@mtt/ui/components/ui/map";
+import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiMapPinLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
@@ -16,48 +16,13 @@ import { DeviceDot } from "@/features/device/ui/device-dot";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceLocationSourceBadge } from "@/features/device/ui/location-source-badge";
 import { MapUnsupported } from "@/components/map-unsupported";
+import { FollowPoint } from "./follow-point";
+import { PickOnClick } from "./pick-on-click";
 
 type LngLat = { lng: number; lat: number };
 
 // Where the picker opens for a device that has never reported a position.
 const WORLD_VIEW = { center: [0, 20] as [number, number], zoom: 1.5 };
-
-// The map's `center` only seeds the first render; follow the saved position
-// when it moves afterwards (settings dialog, or a save from the picker).
-function FollowPoint({ point }: { point: LngLat | null }): null {
-  const { map } = useMap();
-  const lng = point?.lng;
-  const lat = point?.lat;
-  const first = useRef(true);
-  useEffect(() => {
-    if (!map || lng === undefined || lat === undefined) return;
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 14), duration: reduce ? 0 : 600 });
-  }, [map, lng, lat]);
-  return null;
-}
-
-function PickOnClick({ onPick }: { onPick: (point: LngLat) => void }): null {
-  const { map } = useMap();
-  const onPickRef = useRef(onPick);
-  onPickRef.current = onPick;
-  useEffect(() => {
-    if (!map) return;
-    const canvas = map.getCanvas();
-    const handleClick = (event: { lngLat: LngLat }) => onPickRef.current(event.lngLat);
-    map.on("click", handleClick);
-    canvas.style.cursor = "crosshair";
-    return () => {
-      map.off("click", handleClick);
-      canvas.style.cursor = "";
-    };
-  }, [map]);
-  return null;
-}
 
 export type DeviceLocationFrameProps = {
   device: DeviceRead | undefined;

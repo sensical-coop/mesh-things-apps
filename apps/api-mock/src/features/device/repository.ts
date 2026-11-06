@@ -1,5 +1,6 @@
-import { Device, matchesDeviceFilter, type DeviceCreate, type DeviceListFilter } from "@mtt/domain/device/Device";
-import type { IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
+import { Device, type DeviceCreate } from "@mtt/domain/device/Device";
+import type { DevicePatch, IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
+import { type DeviceListQuery, matchesDeviceQuery } from "./filter";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 
 /** POST gateways stay unseen until this elapses. 0 never marks them seen. Seed data does not use insert(). */
@@ -13,8 +14,8 @@ function gatewaySeenAfterMs(): number {
 export class MemoryDevices implements IDeviceRepository {
   readonly items = new Map<string, Device>();
 
-  async list(filters?: DeviceListFilter): Promise<Device[]> {
-    return [...this.items.values()].filter((d) => matchesDeviceFilter(d, filters));
+  async list(filters?: DeviceListQuery): Promise<Device[]> {
+    return [...this.items.values()].filter((d) => matchesDeviceQuery(d, filters));
   }
 
   async get(uuid: string): Promise<Device | null> {
@@ -94,16 +95,7 @@ export class MemoryDevices implements IDeviceRepository {
     return device;
   }
 
-  async update(
-    uuid: string,
-    patch: Partial<DeviceCreate> & {
-      isAllowed?: boolean;
-      absenceDetectionEnabled?: boolean;
-      readingIntervalSeconds?: number | null;
-      publishIntervalSeconds?: number | null;
-      locationOverridden?: boolean;
-    },
-  ): Promise<Device | null> {
+  async update(uuid: string, patch: DevicePatch): Promise<Device | null> {
     const device = this.items.get(uuid);
     if (!device) return null;
     if (patch.label !== undefined) device.label = patch.label ?? null;

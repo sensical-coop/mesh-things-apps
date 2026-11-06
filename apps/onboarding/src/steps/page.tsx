@@ -34,18 +34,16 @@ function sessionOf(me: { isPending: boolean; isError: boolean; error: unknown; d
 export function StartPage(): ReactElement {
   const { formatMessage } = useIntl();
   const search = useStartSearch();
-  const me = useQuery({ ...authRepository.me(), retry: false });
+  const me = useQuery(authRepository.me());
   const session = sessionOf(me);
   const meshId = search.mesh;
   const meshQuery = useQuery({
     ...meshRepository.retrieve(meshId ?? ""),
     enabled: session === "verified" && Boolean(meshId),
-    retry: false,
   });
   const devicesQuery = useQuery({
     ...meshRepository.devices(meshId ?? ""),
     enabled: session === "verified" && meshQuery.isSuccess,
-    retry: false,
     refetchInterval: search.step === "connect" ? 5000 : false,
     refetchIntervalInBackground: false,
   });

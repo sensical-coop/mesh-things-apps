@@ -1,4 +1,5 @@
 import type { DeviceMeasurement, MeasurementTypeRead, TelemetryVariantRead } from "@mtt/contracts";
+import { groupByTelemetryVariant } from "../device/variant-groups.ts";
 import { isChartableMeasurement } from "../../lib/measurement.ts";
 
 /** The parts of a device measurement the alarms list reads. */
@@ -17,22 +18,20 @@ export function alarmVariantGroups(
   variants: readonly Pick<TelemetryVariantRead, "id" | "name" | "payload_kind">[],
 ): AlarmVariantGroup[] {
   const variantById = new Map(variants.map((variant) => [variant.id, variant]));
-  const groups = new Map<string, AlarmVariantGroup>();
-  for (const row of measurements) {
-    if (!isChartableMeasurement(row.measurement_type)) continue;
-    let group = groups.get(row.telemetry_variant_id);
-    if (!group) {
-      const variant = variantById.get(row.telemetry_variant_id);
-      group = { key: row.telemetry_variant_id, title: variant?.name ?? variant?.payload_kind, channels: [] };
-      groups.set(row.telemetry_variant_id, group);
-    }
-    const label = row.measurement_type.display_name ?? row.measurement_type.channel;
-    group.channels.push({
-      key: row.id,
-      channel: row.measurement_type.channel,
-      label,
-      detectors: row.effective_detectors,
-    });
-  }
-  return [...groups.values()];
+  return groupByTelemetryVariant(
+    measurements.filter((row) => isChartableMeasurement(row.measurement_type)),
+    (row) => row.telemetry_variant_id,
+  ).map((group) => {
+    const variant = variantById.get(group.key);
+    return {
+      key: group.key,
+      title: variant?.name ?? variant?.payload_kind,
+      channels: group.items.map((row) => ({
+        key: row.id,
+        channel: row.measurement_type.channel,
+        label: row.measurement_type.display_name ?? row.measurement_type.channel,
+        detectors: row.effective_detectors,
+      })),
+    };
+  });
 }

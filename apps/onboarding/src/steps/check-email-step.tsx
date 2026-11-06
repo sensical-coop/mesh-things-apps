@@ -13,7 +13,6 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
   const [notYet, setNotYet] = useState(false);
   const me = useQuery({
     ...authRepository.me(),
-    retry: false,
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   });

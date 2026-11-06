@@ -15,16 +15,13 @@ import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/erro
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { NO_SOURCE, meshTitle } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
-import { termsLocale, termsStanding } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
+import { termsStanding } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
-
-/** Select value for "no source": the instance's own broker. */
-const DEFAULT_BROKER = "default";
 
 export function EditMeshDialog({
   mesh,
@@ -59,7 +56,7 @@ export function EditMeshDialog({
   const sourceItems = [
     {
       label: formatMessage({ id: "feature.mesh.editDialog.defaultBroker", defaultMessage: "Default broker" }),
-      value: DEFAULT_BROKER,
+      value: NO_SOURCE,
     },
     ...(sources.data ?? []).map((source) => ({ label: sourceTitle(source), value: source.id })),
     // Keep a current source the list doesn't include, so resending it stays valid.
@@ -94,6 +91,8 @@ export function EditMeshDialog({
     ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: enforced === true && canPickSource && currentSource !== null,
   });
+  // Pause is not part of "current": a paused mesh moving back to the default broker
+  // keeps its acceptance when the version still matches. meshTermsStanding would call that lapsed.
   const termsCurrent = ["ok", "expiring"].includes(
     termsStanding({
       acceptedVersion: mesh.terms_accepted_version ?? null,
@@ -131,8 +130,8 @@ export function EditMeshDialog({
     const discover = form.get("discover_gateways") === "on";
     if (discover !== (mesh.discover_gateways ?? false)) body.discover_gateways = discover;
     if (canPickSource) {
-      const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
-      const sourceId = picked === DEFAULT_BROKER ? null : picked;
+      const picked = String(form.get("source_id") ?? NO_SOURCE);
+      const sourceId = picked === NO_SOURCE ? null : picked;
       // Only a change moves the gateways, so an unchanged source isn't resent.
       if (sourceId !== currentSource) body.source_id = sourceId;
     }
@@ -255,7 +254,7 @@ export function EditMeshDialog({
                   id="mesh-edit-source"
                   name="source_id"
                   items={sourceItems}
-                  defaultValue={currentSource ?? DEFAULT_BROKER}
+                  defaultValue={currentSource ?? NO_SOURCE}
                 />
               )}
             </FormField>

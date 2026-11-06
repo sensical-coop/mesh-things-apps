@@ -9,5 +9,5 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
-  "include": ["src", "orval.config.ts"]
+  "include": ["src", "tests", "orval.config.ts"]
 }

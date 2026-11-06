@@ -28,15 +28,13 @@ export type CsvRequestFormProps = {
   requested: RequestExportState;
 };
 
-const NIL_MESH = "00000000-0000-4000-8000-000000000000";
-
 /** A new CSV download: which mesh, all of its devices or some, and which days. */
 export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormProps): ReactElement {
   const { formatMessage } = useIntl();
   const [meshId, setMeshId] = useState(initial.meshId);
   const [nodeIds, setNodeIds] = useState<number[] | null>(initial.nodeIds);
   const [range, setRange] = useState(initial.range);
-  const devices = useQuery({ ...meshRepository.devices(meshId || NIL_MESH), enabled: Boolean(meshId) });
+  const devices = useQuery(meshRepository.devices(meshId || undefined));
   const problem = rangeProblem(range.start, range.stop);
   const noneChosen = nodeIds !== null && nodeIds.length === 0;
 

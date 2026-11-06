@@ -34,7 +34,6 @@ export function OperatorRolePanel(): ReactElement | null {
   const mine = useQuery({
     ...operatorRequestRepository.mine(),
     enabled: canRequest,
-    retry: false,
     refetchInterval: (query) => (query.state.data?.status === "pending" ? 30_000 : false),
   });
   const approved = mine.data?.status === "approved";

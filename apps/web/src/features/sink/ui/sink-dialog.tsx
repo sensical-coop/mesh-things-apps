@@ -20,7 +20,7 @@ import { meshRepository } from "@/features/mesh/repository";
 import { devicesByMesh, orderStreams, SINK_STREAMS, singleDeviceIds, sinkStreamsError, sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 import type { TermsAcceptance } from "@/features/terms/model";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { useTermsEnforced } from "@mtt/contracts/terms";
 
 export type SinkDialogProps = {
   open: boolean;

@@ -1,9 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { RETURN_PATHS, safeReturnPath } from "../src/lib/return-path.ts";
+import { safeReturnPath } from "../src/lib/return-path.ts";
 
 test("allows the exact /start path", () => {
-  assert.deepEqual(RETURN_PATHS, ["/start"]);
   assert.equal(safeReturnPath("/start"), "/start");
 });
 

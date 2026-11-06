@@ -3,7 +3,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiAddLine, RiDeleteBinLine, RiKey2Line } from "@remixicon/react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { Navigate } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
@@ -12,19 +12,19 @@ import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { useMe } from "@/features/auth/use-me";
-import { sinkTitle } from "@/features/sink/model";
+import { sinkTermsStanding, sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 import { DeleteSinkDialog } from "@/features/sink/ui/delete-sink-dialog";
-import { RenewSinkTermsDialog } from "@/features/sink/ui/renew-sink-terms-dialog";
+import { RenewTermsDialog } from "@/features/terms/ui/renew-terms-dialog";
 import { RotateSinkCredentialsDialog } from "@/features/sink/ui/rotate-sink-credentials-dialog";
 import { SinkCredentialsDialog } from "@/features/sink/ui/sink-credentials-dialog";
 import { SinkDialog } from "@/features/sink/ui/sink-dialog";
 import { SinkStatusChip } from "@/features/sink/ui/sink-status-chip";
-import { termsLocale, termsStanding, type TermsAcceptance } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
+import { type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { useFormatters } from "@/hooks/use-formatters";
 import { readApiError } from "@mtt/contracts/errors";
 import { pageHeadingClass } from "@/lib/page-heading";
@@ -35,6 +35,7 @@ const col = legacyCreateColumnHelper<SinkRead>();
 export function SinksPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();
+  const queryClient = useQueryClient();
   const { me, meId, isOperator } = useMe();
   // A self-hosted instance asks for no terms: no terms step, column or renewals.
   const enforced = useTermsEnforced();
@@ -56,6 +57,15 @@ export function SinksPage(): ReactElement {
   const [sinkToRotate, setSinkToRotate] = useState<SinkRead | null>(null);
   const [sinkToRenew, setSinkToRenew] = useState<SinkRead | null>(null);
   const [sinkToDelete, setSinkToDelete] = useState<SinkRead | null>(null);
+  const renew = useMutation({
+    ...termsRepository.renewSink(),
+    onSuccess: async (renewed) => {
+      await queryClient.invalidateQueries({ queryKey: sinkRepository.listKey() });
+      setSaved(renewed);
+      renew.reset();
+      setSinkToRenew(null);
+    },
+  });
 
   const streamLabel = useMemo(
     () => ({
@@ -117,13 +127,7 @@ export function SinksPage(): ReactElement {
               header: formatMessage({ id: "page.sinks.list.columns.terms", defaultMessage: "Terms" }),
               cell: (info) => {
                 const row = info.row.original;
-                const standing = termsStanding({
-                  acceptedVersion: row.terms_accepted_version,
-                  expiresAt: row.terms_expires_at,
-                  pausedAt: row.paused_at,
-                  currentVersion: currentTerms.data?.version,
-                  now: new Date(),
-                });
+                const standing = sinkTermsStanding(row, currentTerms.data?.version, new Date());
                 return (
                   <span className="flex items-center gap-2">
                     <span className="text-text-secondary">
@@ -236,9 +240,6 @@ export function SinksPage(): ReactElement {
                 data={sinks.data}
                 columns={columns}
                 getRowId={(row) => row.id}
-                previousPageLabel={formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" })}
-                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                 empty={formatMessage({
                   id: "page.sinks.list.empty",
                   defaultMessage: "No sinks yet. Create one to publish readings for another service.",
@@ -290,7 +291,28 @@ export function SinksPage(): ReactElement {
           setCredentials({ value: rotated, rotated: true });
         }}
       />
-      <RenewSinkTermsDialog sink={sinkToRenew} onClose={() => setSinkToRenew(null)} onRenewed={setSaved} />
+      <RenewTermsDialog
+        open={sinkToRenew !== null}
+        kind="sink"
+        acceptLabel={
+          sinkToRenew
+            ? formatMessage({ id: "feature.sink.renew.accept", defaultMessage: "Renew {sink}" }, { sink: sinkTitle(sinkToRenew) })
+            : undefined
+        }
+        pending={renew.isPending}
+        error={renew.error}
+        onClose={() => {
+          renew.reset();
+          setSinkToRenew(null);
+        }}
+        onAccepted={(acceptance) =>
+          sinkToRenew &&
+          renew.mutate({
+            sinkId: sinkToRenew.id,
+            data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
+          })
+        }
+      />
       <DeleteSinkDialog
         key={sinkToDelete?.id ?? "none"}
         sink={sinkToDelete}

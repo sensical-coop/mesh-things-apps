@@ -1,7 +1,8 @@
 import type { BlueprintVersion } from "@mtt/contracts";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formatParam, parseRef, stringMap, valueMap } from "@/features/blueprint/model";
+import { parseRef } from "@mtt/contracts/blueprint";
+import { formatParam, stringMap, valueMap } from "@/features/blueprint/model";
 
 export type VersionSummaryProps = {
   version: Pick<BlueprintVersion, "inputs" | "steps">;

@@ -1,10 +1,26 @@
 import type { SinkCredentials, SinkRead, StreamsEnum } from "@mtt/contracts";
+import { brokerHostPort } from "@mtt/contracts/source";
+import { termsStanding, type TermsStanding } from "../terms/model.ts";
 
 /** What a sink can send, in the order the API stores it. */
 export const SINK_STREAMS: readonly StreamsEnum[] = ["decoded", "derived", "alarms"];
 
 export function sinkTitle(sink: Pick<SinkRead, "id" | "label">): string {
   return sink.label?.trim() || `Sink ${sink.id.slice(0, 8)}`;
+}
+
+export function sinkTermsStanding(
+  sink: Pick<SinkRead, "terms_accepted_version" | "terms_expires_at" | "paused_at">,
+  currentVersion: string | undefined,
+  now: Date,
+): TermsStanding {
+  return termsStanding({
+    acceptedVersion: sink.terms_accepted_version,
+    expiresAt: sink.terms_expires_at,
+    pausedAt: sink.paused_at,
+    currentVersion,
+    now,
+  });
 }
 
 /** Streams as the API stores them: known ones only, in canonical order, without repeats. */
@@ -41,12 +57,6 @@ export function singleDeviceIds(
   });
 }
 
-/** `host:port` split for a client's flags; a bare host keeps MQTT over TLS's usual 8883. */
-export function brokerHostPort(broker: string): { host: string; port: string } {
-  const at = broker.lastIndexOf(":");
-  if (at <= 0 || !/^\d+$/.test(broker.slice(at + 1))) return { host: broker, port: "8883" };
-  return { host: broker.slice(0, at), port: broker.slice(at + 1) };
-}
 
 /** Single quotes for a POSIX shell, so a password with `$` or `!` survives pasting. */
 function shellQuote(value: string): string {

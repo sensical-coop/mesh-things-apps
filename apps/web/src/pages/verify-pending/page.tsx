@@ -1,14 +1,14 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FramePanel } from "@mtt/ui/reui/frame";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
+import { activeSessionRedirect, useSessionProbe } from "@/features/auth/guest-gate";
 import { routes } from "@/router";
 import { ResendButton } from "@/features/auth/ui/resend-button";
 
@@ -16,7 +16,7 @@ export function VerifyPendingPage(): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const me = useQuery({ ...authRepository.me(), retry: false });
+  const me = useSessionProbe();
   const logout = useMutation({
     ...authRepository.logout(),
     onSuccess: async () => {
@@ -27,7 +27,8 @@ export function VerifyPendingPage(): ReactElement {
 
   if (me.isPending) return <div className="min-h-svh bg-background-full" />;
   if (me.error) return <Navigate to={routes.signup} />;
-  if (isOwnerSession(me)) return <Navigate to={routes.meshes} />;
+  const redirect = activeSessionRedirect(me);
+  if (redirect) return redirect;
   if (!me.data) return <div className="min-h-svh bg-background-full" />;
 
   const owner = me.data;

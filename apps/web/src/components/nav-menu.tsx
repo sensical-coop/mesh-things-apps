@@ -31,10 +31,6 @@ export type NavMenuProps = {
   activeClass: string;
 };
 
-/**
- * A header entry that groups pages: a dropdown on desktop, a heading with its links on
- * mobile. Highlighted while on any of its pages; counts sum on the trigger.
- */
 export function NavMenu({
   title,
   items,

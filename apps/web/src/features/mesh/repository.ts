@@ -11,16 +11,19 @@ import {
   getMeshesTraceroutesListQueryOptions,
   getMeshesUpdateMutationOptions,
 } from "@mtt/contracts/api";
+import { whenId } from "@/lib/query-when-id";
 
 export const meshRepository = {
   list: getMeshesListQueryOptions,
   listKey: getMeshesListQueryKey,
-  retrieve: getMeshesRetrieveQueryOptions,
+  retrieve: (meshId: string | null | undefined) =>
+    whenId(meshId, ["meshes", "none"], (id) => getMeshesRetrieveQueryOptions(id)),
   retrieveKey: getMeshesRetrieveQueryKey,
   create: getMeshesCreateMutationOptions,
   update: getMeshesUpdateMutationOptions,
   destroy: getMeshesDestroyMutationOptions,
-  devices: getMeshesDevicesListQueryOptions,
+  devices: (meshId: string | null | undefined) =>
+    whenId(meshId, ["meshes", "devices", "none"], (id) => getMeshesDevicesListQueryOptions(id)),
   devicesKey: getMeshesDevicesListQueryKey,
   links: getMeshesLinksListQueryOptions,
   traceroutes: getMeshesTraceroutesListQueryOptions,

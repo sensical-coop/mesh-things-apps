@@ -149,9 +149,6 @@ export function OperatorRequestsPage(): ReactElement {
               data={requests.data}
               columns={columns}
               getRowId={(row) => row.id}
-              previousPageLabel={formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" })}
-              nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-              pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
               empty={
                 status === "pending"
                   ? formatMessage({ id: "page.operatorRequests.empty.pending", defaultMessage: "No requests waiting." })

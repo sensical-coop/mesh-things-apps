@@ -8,7 +8,6 @@ import { Modal } from "@/components/modal";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { useFormatters } from "@/hooks/use-formatters";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { formatBytes } from "@/features/archive/model";
 import { deviceTitle } from "@/features/device/model";
 import { isActive, lastDays, pollInterval, progressOf, rangeProblem, requestOf } from "@/features/export/model";
 import { exportRepository } from "@/features/export/repository";
@@ -17,6 +16,7 @@ import { ExportLimits } from "@/features/export/ui/export-limits";
 import { ExportRangeFields, type ExportRange } from "@/features/export/ui/export-range-fields";
 import { ExportStatusChip } from "@/features/export/ui/export-status-chip";
 import { routes } from "@/router";
+import { formatBytes } from "@/lib/format";
 
 export type DeviceCsvDialogProps = {
   device: DeviceRead;

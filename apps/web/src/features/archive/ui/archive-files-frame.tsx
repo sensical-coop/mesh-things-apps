@@ -7,10 +7,11 @@ import { useIntl } from "react-intl";
 import { Kpi } from "@/components/kpi/kpi";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formatBytes, groupByDay, summarizeArchive } from "@/features/archive/model";
+import { groupByDay, summarizeArchive } from "@/features/archive/model";
 import type { RequestExportState } from "@/features/export/use-request-export";
 import { ArchiveDayRow } from "@/features/archive/ui/archive-day-row";
 import { cn } from "@mtt/ui/utils";
+import { formatBytes } from "@/lib/format";
 
 export type ArchiveFilesFrameProps = {
   meshId: string;

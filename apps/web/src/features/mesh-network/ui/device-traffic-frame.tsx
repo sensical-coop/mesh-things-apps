@@ -7,7 +7,8 @@ import { SeriesChart } from "@/components/series/series-chart";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { readingsRepository } from "@/features/readings/repository";
-import { portnumLabel, windowMs } from "../model";
+import { parseWindowMs } from "@/lib/duration";
+import { portnumLabel } from "../model";
 import { RankedBars } from "./ranked-bars";
 
 /** What a device transmitted over the last week, by kind of packet. */
@@ -66,7 +67,7 @@ export function DeviceTrafficFrame({ device }: { device: DeviceRead }): ReactEle
             />
             <SeriesChart
               points={traffic.data.points}
-              windowMs={windowMs(traffic.data.window)}
+              windowMs={parseWindowMs(traffic.data.window)}
               label={formatMessage(
                 { id: "page.devices.detail.traffic.chart", defaultMessage: "Packets per {window}" },
                 { window: traffic.data.window },

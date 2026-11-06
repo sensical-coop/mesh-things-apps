@@ -1,6 +1,9 @@
 import type { Mesh, OwnerProfile } from "@mtt/contracts";
 import { termsStanding, type TermsStanding } from "../terms/model.ts";
 
+/** Select and filter value for a mesh on the instance broker (no source). */
+export const NO_SOURCE = "default";
+
 export function meshTitle(mesh: Pick<Mesh, "channel_id" | "label">): string {
   return mesh.label?.trim() || mesh.channel_id;
 }

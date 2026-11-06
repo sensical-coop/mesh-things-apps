@@ -24,7 +24,7 @@ export type DeviceRoleLabels = Record<(typeof KNOWN_DEVICE_ROLES)[number], strin
   node: string;
 };
 
-export const EN_DEVICE_ROLE_LABELS: DeviceRoleLabels = {
+const EN_DEVICE_ROLE_LABELS: DeviceRoleLabels = {
   client: "Client",
   client_mute: "Client mute",
   client_hidden: "Client hidden",

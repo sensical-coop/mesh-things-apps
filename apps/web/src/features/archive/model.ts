@@ -70,19 +70,6 @@ export function partitionDownloadUrl(apiUrl: string, meshId: string, partition: 
   return `${apiUrl.replace(/\/+$/, "")}/readings/archive/meshes/${meshId}/partitions/${partition.dt}/${partition.hour}`;
 }
 
-const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
-
-export function formatBytes(bytes: number, locale?: string): string {
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < BYTE_UNITS.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  const digits = unit === 0 || value >= 10 ? 0 : 1;
-  return `${value.toLocaleString(locale, { maximumFractionDigits: digits })} ${BYTE_UNITS[unit]}`;
-}
-
 function sqlString(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
 }

@@ -1,35 +1,19 @@
-import { readApiError } from "@mtt/contracts/errors";
 import { setApiBaseUrl } from "@mtt/contracts/runtime";
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createQueryClient } from "@mtt/contracts/query-client";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProviders } from "@/app-providers";
+import { AppProviders } from "@mtt/ui/components/app-providers";
 import { authRepository } from "@/features/auth/repository";
 import { API_URL } from "@/lib/api-url";
+import { MESSAGES } from "@/lib/messages";
 import { StartPage } from "@/steps/page";
 import "@/styles.css";
 
 setApiBaseUrl(API_URL);
 void authRepository.csrf().catch(() => {});
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: (failureCount, error) => {
-        const { status } = readApiError(error);
-        return status !== 429 && status !== 404 && failureCount < 3;
-      },
-    },
-  },
-  queryCache: new QueryCache({
-    onError: (error, query) => console.error(`Query failed: ${query.queryKey.join("/")}`, error),
-  }),
-  mutationCache: new MutationCache({
-    onError: (error, _variables, _context, mutation) =>
-      console.error(`Mutation failed: ${mutation.options.mutationKey?.join("/") ?? "unnamed"}`, error),
-  }),
-});
+const queryClient = createQueryClient();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("missing #root");
@@ -37,7 +21,7 @@ if (!root) throw new Error("missing #root");
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AppProviders>
+      <AppProviders messages={MESSAGES}>
         <StartPage />
       </AppProviders>
     </QueryClientProvider>

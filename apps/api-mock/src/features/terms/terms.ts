@@ -1,7 +1,7 @@
 /**
  * The terms owners accept, as the API serves them: the account terms at signup, the mesh
  * terms per mesh on the default broker, the source terms per source and the sink terms per
- * sink (copied, not served yet: the mock has no sinks). A copy of
+ * sink. A copy of
  * meshtastic-things `registry/terms.py`, word for word, and kept in step with it. The
  * console shows what these routes return and keeps no copy of its own.
  */
@@ -39,18 +39,12 @@ type Copy = {
   description: string;
   statements: { id: string; text: string }[];
   footnote: string;
+  /** Absent on account terms, which store no readings. */
+  retention_limited?: string;
+  retention_unlimited?: string;
 };
 
-/** Data terms also state how long data is kept; the account terms store none. */
-type DataCopy = Copy & {
-  retention_limited: string;
-  retention_unlimited: string;
-};
-
-const COPY: { account: Record<TermsLocale, Copy> } & Record<
-  "mesh" | "source" | "sink",
-  Record<TermsLocale, DataCopy>
-> = {
+const COPY: Record<TermsKind, Record<TermsLocale, Copy>> = {
   account: {
     en: {
       title: "Before you create your account",
@@ -292,16 +286,11 @@ export function termsJson(kind: TermsKind, locale: TermsLocale) {
     statements: base.statements.map((s) => ({ ...s, text: s.text.replace("{dpa_url}", DPA_URL) })),
     footnote: base.footnote,
   };
-  if (kind === "account") return served;
-  const text = COPY[kind][locale];
-  const retention = DATA_RETENTION_DAYS
-    ? text.retention_limited
-        .replace("{days}", String(DATA_RETENTION_DAYS))
-        .replace("{grace}", String(DATA_DELETION_GRACE_DAYS))
-    : text.retention_unlimited.replace(
-        "{grace}",
-        String(DATA_DELETION_GRACE_DAYS),
-      );
+  const retentionText = DATA_RETENTION_DAYS ? base.retention_limited : base.retention_unlimited;
+  if (!retentionText) return served;
+  const retention = retentionText
+    .replace("{days}", String(DATA_RETENTION_DAYS))
+    .replace("{grace}", String(DATA_DELETION_GRACE_DAYS));
   return { ...served, footnote: `${served.footnote} ${retention}` };
 }
 
@@ -323,6 +312,60 @@ export type TermsAcceptance = {
   acceptedAt: string;
   expiresAt: string | null;
 };
+
+/** The API's check on `terms_version`: only the current version counts. */
+export function termsVersionError(kind: TermsKind, version: string | undefined): Record<string, string[]> {
+  // Terms off: `terms_version` is optional and ignored, even a stale one.
+  if (!TERMS_ENFORCED) return {};
+  if (version === TERMS_VERSIONS[kind]) return {};
+  return {
+    terms_version: [
+      version === undefined
+        ? "This field is required."
+        : "These terms are out of date. Load the current terms and accept them again.",
+    ],
+  };
+}
+
+export type AcceptTermsResult = { error: Record<string, string[]> } | { expiresAt: string | null };
+
+export function recordAcceptance(
+  rows: TermsAcceptance[],
+  kind: TermsKind,
+  ownerId: string,
+  locale: TermsLocale,
+  sourceId: string | null = null,
+): string | null {
+  // Terms off: nothing is recorded, and nothing lapses.
+  if (!TERMS_ENFORCED) return null;
+  const now = new Date();
+  const expiresAt = acceptanceExpiry(now);
+  rows.push({
+    kind,
+    ownerId,
+    sourceId,
+    termsVersion: TERMS_VERSIONS[kind],
+    locale,
+    acceptedAt: now.toISOString(),
+    expiresAt,
+  });
+  return expiresAt;
+}
+
+/** Checks `terms_version` and, when `commit`, records the acceptance. */
+export function acceptTerms(
+  rows: TermsAcceptance[],
+  kind: TermsKind,
+  version: string | undefined,
+  ownerId: string,
+  locale: TermsLocale,
+  sourceId: string | null = null,
+  commit = true,
+): AcceptTermsResult {
+  const error = termsVersionError(kind, version);
+  if (Object.keys(error).length) return { error };
+  return { expiresAt: commit ? recordAcceptance(rows, kind, ownerId, locale, sourceId) : null };
+}
 
 /** A mesh's or a source's standing with its terms, as the API reports it. */
 export type TermsStanding = {

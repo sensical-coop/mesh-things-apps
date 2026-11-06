@@ -9,7 +9,7 @@ export default {
     "**/.output/**",
     "**/.agents/**",
     "**/.cursor/**",
-    /* Vendored isometric kit; its stylesheet mirrors the one embedded in iso-kit.ts. */
+    /* Vendored isometric kit CSS. */
     "apps/onboarding/src/iso/iso.css",
   ],
   rules: {

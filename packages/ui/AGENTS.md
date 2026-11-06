@@ -41,7 +41,7 @@ This project uses BoardUI (React + Tailwind CSS v4, source-owned components unde
 ## Enforced by lint (`pnpm lint`, `pnpm lint:css`)
 
 - Classes: sorted and canonical; no unknown classes (custom ones are `@utility` in CSS); no raw palette, `-[#hex]`, `!` important, `transition-all`, `outline-none`, `vh`/`-screen` (use `svh`), weight above 500, or arbitrary `animate|ease|duration|delay-[…]` (add a token to `oa.css` `@theme`).
-- CSS: no IDs, at most two compound selectors (wrap third-party markup in `:where()`), no `!important`, no `vh`, hex only in `oa.css`/`theme.css`. Responsive tokens are redefined under `@variant sm` in the token layer; JS reads breakpoints from `hooks/use-mobile.ts`.
+- CSS: no IDs, at most two compound selectors (wrap third-party markup in `:where()`), no `!important`, no `vh`, hex only in `oa.css`/`theme.css`. Responsive tokens are redefined under `@variant sm` in the token layer.
 - Custom properties in `style={{ "--x": … }}` type-check without casts (`src/css-properties.d.ts`).
 
 When unsure about a token, a component's API, or working example code, ask the BoardUI MCP server: `get_theme`, `get_component`, `get_usage_examples`.

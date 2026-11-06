@@ -5,22 +5,21 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
+import { SmartFilterToolbar, useSmartFilters } from "@/components/smart-filters";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsString, useQueryState } from "nuqs";
 import { type ReactElement, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { deviceRepository } from "@/features/device/repository";
-import { deviceTitle } from "@/features/device/model";
-import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
+import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
+import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { useMe } from "@/features/auth/use-me";
 import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
-import { matchesListQuery } from "@/lib/list-filter";
+import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { MeshAlarmsList } from "./mesh-alarms-list";
 import { MeshPicker } from "@/features/mesh/ui/mesh-picker";
@@ -43,66 +42,15 @@ export function AlarmsPage(): ReactElement {
     [meshes.data, me],
   );
   const current = editableMeshes.find((mesh) => mesh.id === selected) ?? editableMeshes[0];
-  const devices = useQuery({
-    ...meshRepository.devices(current?.id ?? "00000000-0000-4000-8000-000000000000"),
-    enabled: current != null,
-  });
-  // One catalog request names every variant, instead of one per device.
-  const variants = useQuery({ ...deviceRepository.variantCatalog(), enabled: me != null, retry: false });
-
-  const variantOptions = useTelemetryVariantOptions();
-  const specs = useMemo<FilterSpec[]>(
-    () => [
-      {
-        key: "label",
-        urlKey: "label",
-        label: formatMessage({ id: "page.alarms.list.filters.label", defaultMessage: "Label" }),
-        type: "text",
-      },
-      {
-        key: "is_gateway",
-        urlKey: "is_gateway",
-        label: formatMessage({ id: "page.alarms.list.filters.role", defaultMessage: "Role" }),
-        type: "select",
-        options: [
-          {
-            value: "true",
-            label: formatMessage({ id: "page.alarms.list.filters.roleGateway", defaultMessage: "Gateway" }),
-          },
-          {
-            value: "false",
-            label: formatMessage({ id: "page.alarms.list.filters.roleNode", defaultMessage: "Node" }),
-          },
-        ],
-      },
-      ...(variantOptions.length
-        ? [
-            {
-              key: "telemetry_variant",
-              urlKey: "telemetry",
-              label: formatMessage({ id: "page.alarms.list.filters.telemetry", defaultMessage: "Telemetry" }),
-              type: "multiselect" as const,
-              options: variantOptions,
-            },
-          ]
-        : []),
-    ],
+  const devices = useQuery(meshRepository.devices(current?.id));
+  const { options: variantOptions, variants } = useTelemetryVariants();
+  const specs = useMemo(
+    () => deviceFilterSpecs({ formatMessage, variantOptions }),
     [variantOptions, formatMessage],
   );
   const filters = useSmartFilters({ specs });
   const shownDevices = (devices.data ?? []).filter((device) =>
-    matchesListQuery((field) => {
-      switch (field) {
-        case "label":
-          return deviceTitle(device);
-        case "is_gateway":
-          return String(device.is_gateway);
-        case "telemetry_variant":
-          return device.telemetry_variant_ids;
-        default:
-          return undefined;
-      }
-    }, filters.queryString),
+    matchesListQuery((field) => deviceFilterValue(device, field), filters.queryString),
   );
 
   const meshesLoading = meshes.isPending || !me;
@@ -176,7 +124,7 @@ export function AlarmsPage(): ReactElement {
                 <MeshAlarmsList
                   key={`${current.id}?${filters.queryString}`}
                   devices={shownDevices}
-                  variants={variants.data ?? []}
+                  variants={variants}
                 />
               ) : null}
             </>

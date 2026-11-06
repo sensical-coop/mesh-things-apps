@@ -9,7 +9,8 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { allStatementsAccepted, type TermsAcceptance, type TermsKind, termsLocale } from "@/features/terms/model";
+import { allStatementsAccepted, termsLocale } from "@mtt/contracts/terms";
+import { type TermsAcceptance, type TermsKind } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { routes } from "@/router";
 
@@ -51,11 +52,9 @@ export function TermsDialog({
     source: termsRepository.source(localeParam),
     sink: termsRepository.sink(localeParam),
   }[kind];
-  // A 404 means terms are off on this instance: an answer, not worth retrying.
   const terms = useQuery({
     ...options,
     enabled: open,
-    retry: (failures: number, error: unknown) => readApiError(error).status !== 404 && failures < 3,
   });
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
   const statementIds = (terms.data?.statements ?? []).map((statement) => statement.id);

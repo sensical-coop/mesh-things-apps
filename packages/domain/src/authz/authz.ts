@@ -32,24 +32,24 @@ export function roleFlag(role: Role): "member" | "operator" {
   return role === "operator" ? "operator" : "member";
 }
 
+function activeOwner(actor: Actor, ownerId: string): boolean {
+  return actor.isActive && (actor.role === "superuser" || ownerId === actor.id);
+}
+
+function canReadShared(actor: Actor, row: { ownerId: string | null; isPublic: boolean }): boolean {
+  return actor.isActive && (actor.role === "superuser" || actor.role === "staff" || row.ownerId === actor.id || row.isPublic);
+}
+
 export function canReadMesh(actor: Actor, mesh: Viewable): boolean {
-  if (!actor.isActive) return false;
-  return (
-    actor.role === "superuser" ||
-    actor.role === "staff" ||
-    mesh.ownerId === actor.id ||
-    mesh.isPublic
-  );
+  return canReadShared(actor, mesh);
 }
 
 export function canSeePsk(actor: Actor, mesh: Owned): boolean {
-  if (!actor.isActive) return false;
-  return actor.role === "superuser" || mesh.ownerId === actor.id;
+  return activeOwner(actor, mesh.ownerId);
 }
 
 export function canWriteMesh(actor: Actor, mesh: Owned): boolean {
-  if (!actor.isActive) return false;
-  return actor.role === "superuser" || mesh.ownerId === actor.id;
+  return activeOwner(actor, mesh.ownerId);
 }
 
 export function canWriteCatalog(actor: Actor): boolean {
@@ -66,24 +66,12 @@ export function visibleMeshes<T extends Viewable>(actor: Actor, rows: T[]): T[] 
   return rows.filter((row) => canReadMesh(actor, row));
 }
 
-export function visibleOwned<T extends Owned>(actor: Actor, rows: T[]): T[] {
-  if (!actor.isActive) return [];
-  if (actor.role === "superuser" || actor.role === "staff") return rows;
-  return rows.filter((row) => row.ownerId === actor.id);
-}
-
 /** A blueprint as far as access is concerned: its owner (null once deleted while in use) and the public flag. */
 export type Shareable = { ownerId: string | null; isPublic: boolean };
 
 /** Own and public blueprints, or every one for staff and superusers. */
 export function canReadBlueprint(actor: Actor, blueprint: Shareable): boolean {
-  if (!actor.isActive) return false;
-  return (
-    actor.role === "superuser" ||
-    actor.role === "staff" ||
-    blueprint.ownerId === actor.id ||
-    blueprint.isPublic
-  );
+  return canReadShared(actor, blueprint);
 }
 
 export function visibleBlueprints<T extends Shareable>(actor: Actor, rows: T[]): T[] {
@@ -119,8 +107,7 @@ export function archivesFor(meshOwner: Pick<Actor, "role">): boolean {
 
 /** A device's archive setting, like its admin keys, is for the mesh's owner and superusers. */
 export function canSeeArchiveSetting(actor: Actor, mesh: Owned): boolean {
-  if (!actor.isActive) return false;
-  return actor.role === "superuser" || mesh.ownerId === actor.id;
+  return activeOwner(actor, mesh.ownerId);
 }
 
 /** The archive itself: superusers, or the mesh's owner while an operator. */
@@ -136,14 +123,16 @@ export function visibleSources<T extends Created>(actor: Actor, rows: T[]): T[] 
   return rows.filter((row) => row.createdById === actor.id);
 }
 
-/** Sinks publish on shared infrastructure too, and are scoped like sources. */
+/** Sinks publish on shared infrastructure too: operators and superusers only. */
 export function canManageSinks(actor: Actor): boolean {
-  return canManageSources(actor);
+  return actor.isActive && (actor.role === "operator" || actor.role === "superuser");
 }
 
 /** Every sink for a superuser, their own for an operator, none for anyone else. */
 export function visibleSinks<T extends Created>(actor: Actor, rows: T[]): T[] {
-  return visibleSources(actor, rows);
+  if (!canManageSinks(actor)) return [];
+  if (actor.role === "superuser") return rows;
+  return rows.filter((row) => row.createdById === actor.id);
 }
 
 /** Only a plain owner asks for the operator role; operators and superusers already have it. */
@@ -158,7 +147,7 @@ export function canDecideOperatorRequests(actor: Actor): boolean {
 
 /** A mesh's `source_id`: its owner and superusers (read-only for them) see it. */
 export function canSeeMeshSource(actor: Actor, mesh: Owned): boolean {
-  return actor.isActive && (actor.role === "superuser" || mesh.ownerId === actor.id);
+  return activeOwner(actor, mesh.ownerId);
 }
 
 /** The schedule of stored-readings deletions: superusers only. */

@@ -36,11 +36,9 @@ function loginErrorMessage(status: number | undefined, formatMessage: FormatMess
 export function LoginForm({
   accountDeleted = false,
   next,
-  onSignedIn,
 }: {
   accountDeleted?: boolean;
   next?: string;
-  onSignedIn?: (owner: { is_active: boolean }) => void | Promise<void>;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -51,10 +49,6 @@ export function LoginForm({
     // An unverified owner is signed in too, and only has the verify-pending page.
     onSuccess: async (owner) => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
-      if (onSignedIn) {
-        await onSignedIn(owner);
-        return;
-      }
       if (!owner.is_active) {
         await navigate({ to: routes.verifyPending });
         return;

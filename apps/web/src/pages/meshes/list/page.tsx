@@ -11,33 +11,30 @@ import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type ReactElement, useMemo, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
-import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
+import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@/components/smart-filters";
 import { sourceTitle } from "@/features/source/model";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { matchesListQuery } from "@/lib/list-filter";
+import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { routes } from "@/router";
 import { pageHeadingClass } from "@/lib/page-heading";
-import { Modal } from "@/components/modal";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
-import { StatusCopy } from "@/components/status-copy";
-import { MeshForm } from "@/features/mesh/ui/mesh-form";
 import { meshRepository } from "@/features/mesh/repository";
-import { MESH_STATUS_RANK, canEditMesh, meshStatus, meshTitle } from "@/features/mesh/model";
+import { MESH_STATUS_RANK, NO_SOURCE, canEditMesh, meshStatus, meshTitle, type MeshStatus } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
-import { type TermsAcceptance, termsLocale } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
-import { MeshOriginDialog } from "@/features/mesh/ui/mesh-origin-dialog";
+import { CreateMeshDialog, type CreateMeshStart } from "./create-mesh-dialog";
+import { MeshOriginDialog } from "./mesh-origin-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { sourceRepository } from "@/features/source/repository";
@@ -47,8 +44,25 @@ import { MeshArchiveButton } from "@/features/archive/ui/mesh-archive-button";
 
 type MeshRow = Mesh & { devices: number; deviceRows: DeviceRead[] };
 
-/** Select value for "no source": the instance's own broker. */
-const DEFAULT_BROKER = "default";
+type ShownMeshStatus = Exclude<MeshStatus["kind"], "hidden">;
+
+/** Filter menu order: usable states first, then the ones that have stopped. A missing kind does not typecheck. */
+const STATUS_FILTER_ORDER = statusFilterOrder([
+  "active",
+  "renewSoon",
+  "termsChanged",
+  "termsNotAccepted",
+  "scheduledForDeletion",
+  "sourcePaused",
+  "sourceDisconnected",
+  "sourceUnknown",
+]);
+
+function statusFilterOrder<const T extends readonly ShownMeshStatus[]>(
+  kinds: Exclude<ShownMeshStatus, T[number]> extends never ? T : never,
+): T {
+  return kinds;
+}
 
 const col = legacyCreateColumnHelper<MeshRow>();
 
@@ -133,7 +147,7 @@ export function MeshesPage(): ReactElement {
               type: "select" as const,
               options: [
                 {
-                  value: DEFAULT_BROKER,
+                  value: NO_SOURCE,
                   label: formatMessage({ id: "feature.mesh.sourceLabel.default", defaultMessage: "Default broker" }),
                 },
                 ...sourceRows.map((source) => ({ value: source.id, label: sourceTitle(source) })),
@@ -146,34 +160,7 @@ export function MeshesPage(): ReactElement {
         urlKey: "status",
         label: formatMessage({ id: "page.meshes.list.filters.status", defaultMessage: "Status" }),
         type: "select",
-        options: [
-          { value: "active", label: formatMessage({ id: "feature.mesh.status.active", defaultMessage: "Active" }) },
-          { value: "renewSoon", label: formatMessage({ id: "feature.mesh.status.renewSoon", defaultMessage: "Renew soon" }) },
-          {
-            value: "termsChanged",
-            label: formatMessage({ id: "feature.mesh.status.termsChanged", defaultMessage: "Terms changed" }),
-          },
-          {
-            value: "termsNotAccepted",
-            label: formatMessage({ id: "feature.mesh.status.termsNotAccepted", defaultMessage: "Terms not accepted" }),
-          },
-          {
-            value: "scheduledForDeletion",
-            label: formatMessage({ id: "feature.mesh.status.scheduledForDeletion", defaultMessage: "Scheduled for deletion" }),
-          },
-          {
-            value: "sourcePaused",
-            label: formatMessage({ id: "feature.mesh.status.sourcePaused", defaultMessage: "Source paused" }),
-          },
-          {
-            value: "sourceDisconnected",
-            label: formatMessage({ id: "feature.mesh.status.sourceDisconnected", defaultMessage: "Source disconnected" }),
-          },
-          {
-            value: "sourceUnknown",
-            label: formatMessage({ id: "feature.mesh.status.sourceUnknown", defaultMessage: "Source status unknown" }),
-          },
-        ],
+        options: STATUS_FILTER_ORDER.map((kind) => ({ value: kind, label: meshStatusLabel(kind, formatMessage) })),
       },
       {
         key: "access",
@@ -231,7 +218,7 @@ export function MeshesPage(): ReactElement {
         case "channel_id":
           return row.channel_id;
         case "source":
-          return row.source_id ?? DEFAULT_BROKER;
+          return row.source_id ?? NO_SOURCE;
         case "status":
           return statusOf(row).kind;
         case "access":
@@ -401,12 +388,6 @@ export function MeshesPage(): ReactElement {
                 data={shownRows}
                 columns={columns}
                 getRowId={(row) => row.id}
-                previousPageLabel={formatMessage({
-                  id: "common.dataTable.previousPage",
-                  defaultMessage: "Previous page",
-                })}
-                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                 empty={
                   filters.active
                     ? formatMessage({
@@ -455,42 +436,18 @@ export function MeshesPage(): ReactElement {
   );
 }
 
-/** How "Create mesh" was started: the traffic's origin, and the mesh terms if it's the default broker. */
-type CreateMeshStart = { sourceId: string | null; termsAcceptance: TermsAcceptance | null };
+type FormatMessage = (descriptor: { id: string; defaultMessage: string }) => string;
 
-function CreateMeshDialog({
-  start,
-  onClose,
-}: {
-  /** Open while set. */
-  start: CreateMeshStart | null;
-  onClose: () => void;
-}): ReactElement {
-  const open = start !== null;
-  const { formatMessage } = useIntl();
-  const navigate = useNavigate();
-  return (
-    <Modal
-      open={open}
-      title={formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}
-      description={formatMessage({
-        id: "page.meshes.list.createDialog.description",
-        defaultMessage: "Gateways join with this channel id and pre-shared key.",
-      })}
-      onClose={onClose}
-    >
-      {open && start ? (
-        <MeshForm
-          key={`${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}`}
-          sourceId={start.sourceId}
-          termsAcceptance={start.termsAcceptance}
-          onCancel={onClose}
-          onCreated={async (mesh) => {
-            onClose();
-            await navigate({ to: routes.mesh, params: { meshId: mesh.id } });
-          }}
-        />
-      ) : null}
-    </Modal>
-  );
+function meshStatusLabel(kind: ShownMeshStatus, formatMessage: FormatMessage): string {
+  const labels: Record<ShownMeshStatus, { id: string; defaultMessage: string }> = {
+    active: { id: "feature.mesh.status.active", defaultMessage: "Active" },
+    renewSoon: { id: "feature.mesh.status.renewSoon", defaultMessage: "Renew soon" },
+    termsChanged: { id: "feature.mesh.status.termsChanged", defaultMessage: "Terms changed" },
+    termsNotAccepted: { id: "feature.mesh.status.termsNotAccepted", defaultMessage: "Terms not accepted" },
+    scheduledForDeletion: { id: "feature.mesh.status.scheduledForDeletion", defaultMessage: "Scheduled for deletion" },
+    sourcePaused: { id: "feature.mesh.status.sourcePaused", defaultMessage: "Source paused" },
+    sourceDisconnected: { id: "feature.mesh.status.sourceDisconnected", defaultMessage: "Source disconnected" },
+    sourceUnknown: { id: "feature.mesh.status.sourceUnknown", defaultMessage: "Source status unknown" },
+  };
+  return formatMessage(labels[kind]);
 }

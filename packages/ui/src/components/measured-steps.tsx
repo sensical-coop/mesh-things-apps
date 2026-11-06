@@ -3,10 +3,6 @@ import { type ReactNode, useCallback, useState } from "react";
 import { LAYOUT } from "../oa/springs";
 import { cn } from "../utils";
 
-/**
- * One panel; the step is what travels. Height springs to the incoming step's
- * border box. Direction is passed in (forward 1, back -1). Reduced motion fades.
- */
 export function MeasuredSteps({
   stepKey,
   direction,

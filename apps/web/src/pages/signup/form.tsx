@@ -5,42 +5,26 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { routes } from "@/router";
-import { readApiError } from "@mtt/contracts/errors";
+import { classifySignupFailure, readApiError } from "@mtt/contracts/errors";
 import { authRepository } from "@/features/auth/repository";
-import { termsLocale } from "@/features/terms/model";
-import { accountTermsQuery } from "@/features/terms/repository";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { accountTermsQuery, termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 
 type FormatMessage = ReturnType<typeof useIntl>["formatMessage"];
 
-const THROTTLE_SECONDS_PATTERN = /available in (\d+) seconds/i;
 const linkClass = "text-accent-500 underline underline-offset-2";
 
-/** Django validation errors come back as `{ field: ["message", ...] }`; these are the fields this form can produce. */
-function fieldErrorMessages(body: Record<string, unknown>): string[] {
-  const messages: string[] = [];
-  for (const field of ["password", "email", "name", "terms_version"]) {
-    const value = body[field];
-    if (Array.isArray(value)) messages.push(...value.filter((entry): entry is string => typeof entry === "string"));
-  }
-  return messages;
-}
-
 function formatSignupError(error: unknown, formatMessage: FormatMessage): string {
-  const body = typeof error === "object" && error !== null ? (error as Record<string, unknown>) : {};
-  const status = typeof body.status === "number" ? body.status : undefined;
-  const detail = typeof body.detail === "string" ? body.detail : undefined;
+  const failure = classifySignupFailure(error);
 
-  if (status === 429) {
-    const seconds = Number(THROTTLE_SECONDS_PATTERN.exec(detail ?? "")?.[1]);
-    if (Number.isFinite(seconds) && seconds > 0) {
+  if (failure.kind === "throttled") {
+    if (failure.retryAfter) {
       return formatMessage(
         {
           id: "page.signup.form.error.throttled",
           defaultMessage:
             "{minutes, plural, one {Too many attempts. Try again in # minute.} other {Too many attempts. Try again in # minutes.}}",
         },
-        { minutes: Math.ceil(seconds / 60) },
+        { minutes: Math.ceil(failure.retryAfter / 60) },
       );
     }
     return formatMessage({
@@ -49,15 +33,14 @@ function formatSignupError(error: unknown, formatMessage: FormatMessage): string
     });
   }
 
-  const fieldMessages = fieldErrorMessages(body);
-  if (fieldMessages.length > 0) return fieldMessages.join(" ");
-
-  if (status === 409 || (detail && /already exists/i.test(detail))) {
+  if (failure.kind === "duplicateEmail") {
     return formatMessage({
       id: "page.signup.form.error.duplicateEmail",
       defaultMessage: "That email is already registered. Try signing in instead.",
     });
   }
+
+  if (failure.kind === "field") return failure.message;
 
   return formatMessage({
     id: "page.signup.form.error.generic",
@@ -65,13 +48,7 @@ function formatSignupError(error: unknown, formatMessage: FormatMessage): string
   });
 }
 
-export function SignupForm({
-  next,
-  onSignedUp,
-}: {
-  next?: string;
-  onSignedUp?: () => void | Promise<void>;
-} = {}): ReactElement {
+export function SignupForm({ next }: { next?: string } = {}): ReactElement {
   const { formatMessage, locale } = useIntl();
   // Signing up accepts the account terms; the API serves their text and version. A
   // self-hosted instance asks for none (the route answers 404): no terms block at all.
@@ -87,10 +64,6 @@ export function SignupForm({
     // response is for scripts and is not kept.
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
-      if (onSignedUp) {
-        await onSignedUp();
-        return;
-      }
       await navigate({ to: routes.verifyPending });
     },
   });

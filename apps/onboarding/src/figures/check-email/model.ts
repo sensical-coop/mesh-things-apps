@@ -1,4 +1,4 @@
-import { RESEND_COOLDOWN_SECONDS } from "@/features/auth/resend-cooldown";
+import { RESEND_COOLDOWN_SECONDS } from "@mtt/contracts/resend-cooldown";
 
 /** The step refetches the account on this interval and continues when the link was opened. */
 export const POLL_SECONDS = 5;

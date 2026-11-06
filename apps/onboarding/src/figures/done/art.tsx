@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Dots, Line, Solid } from "@/iso/react/draw";
+import { Line, Solid } from "@/iso/react/draw";
 import { AirWaves } from "../parts/air-waves-art";
 import { LoraRadio } from "../parts/lora-radio-art";
 import {

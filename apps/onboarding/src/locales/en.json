@@ -8,7 +8,7 @@
   "page.meshes.list.createDialog.channelIdHint": "The channel name in the Meshtastic app.",
   "page.meshes.list.createDialog.psk": "PSK",
   "page.meshes.list.createDialog.pskHint": "The channel's pre-shared key, in Base64.",
-  "page.meshes.list.createDialog.publicPsk": "AQ== is the public default key. Anyone can read this channel.",
+  "page.meshes.list.createDialog.publicPsk": "{psk} is the public default key. Anyone can read this channel.",
   "page.meshes.list.createDialog.error": "The mesh was not created. Check the fields and try again.",
   "page.meshes.list.createDialog.cancel": "Cancel",
   "page.meshes.list.createDialog.creating": "Creating mesh",

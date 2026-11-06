@@ -6,13 +6,12 @@ import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { pageHeadingClass } from "@/lib/page-heading";
-import { readApiError } from "@mtt/contracts/errors";
 import { useMe } from "@/features/auth/use-me";
 import { canUseArchive, summarizeArchive } from "@/features/archive/model";
-import { archiveRepository } from "@/features/archive/repository";
+import { archiveRepository, isArchiveUnavailable } from "@/features/archive/repository";
 import { useArchiveCredentials } from "@/features/archive/use-archive-credentials";
 import { ArchiveConnectFrame } from "@/features/archive/ui/archive-connect-frame";
-import { ArchiveExportsFrame } from "@/features/archive/ui/archive-exports-frame";
+import { ArchiveExportsFrame } from "@/features/export/ui/archive-exports-frame";
 import { ArchiveFilesFrame } from "@/features/archive/ui/archive-files-frame";
 import { ArchiveMeshSummary } from "@/features/archive/ui/archive-mesh-summary";
 import { ExportLimits } from "@/features/export/ui/export-limits";
@@ -52,13 +51,8 @@ export function ArchivePage(): ReactElement {
     archivable.find((mesh) => (archivedByMesh.get(mesh.id)?.archived ?? 0) > 0) ??
     archivable[0];
   // Only the chosen mesh's file list: one request, however many meshes there are.
-  const currentManifest = useQuery({
-    ...archiveRepository.manifest(current?.id ?? "00000000-0000-4000-8000-000000000000"),
-    enabled: current != null,
-    // A 404 on one's own mesh means the instance runs no archive; asking again won't help.
-    retry: false,
-  });
-  const noArchive = readApiError(currentManifest.error).status === 404;
+  const currentManifest = useQuery(archiveRepository.manifest(current?.id));
+  const noArchive = isArchiveUnavailable(currentManifest.error);
   const access = useArchiveCredentials(current?.id);
   const requested = useRequestExport();
 

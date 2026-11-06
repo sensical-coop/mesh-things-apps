@@ -1,5 +1,5 @@
-import { BrandMark } from "@/components/brand";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { routes } from "@/router";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { toggleTheme } from "@mtt/ui/theme";

@@ -1,3 +1,4 @@
+/// <reference path="./css-properties.d.ts" />
 import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
@@ -36,7 +37,3 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const cx = twMerge;
-
-export function sortCx<T>(classes: T): T {
-  return classes;
-}

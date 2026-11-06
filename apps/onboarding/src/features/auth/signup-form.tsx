@@ -1,14 +1,10 @@
-import { readApiError } from "@mtt/contracts/errors";
+import { classifySignupFailure, readApiError } from "@mtt/contracts/errors";
 import { SignupForm as UiSignupForm } from "@mtt/ui/forms/signup-form";
-import { termsLocale } from "@/features/terms/model";
+import { accountTermsQuery, termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { authRepository } from "@/features/auth/repository";
-import { accountTermsQuery } from "@/features/terms/repository";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
-
-const THROTTLE_SECONDS_PATTERN = /available in (\d+) seconds/i;
 
 export function SignupForm(): ReactElement {
   const { formatMessage, locale } = useIntl();
@@ -47,45 +43,42 @@ export function SignupForm(): ReactElement {
         },
       });
     } catch (caught) {
-      const body = typeof caught === "object" && caught !== null ? (caught as Record<string, unknown>) : {};
-      const status = readApiError(caught).status;
-      const detail = typeof body.detail === "string" ? body.detail : undefined;
-      if (status === 429) {
-        const seconds = Number(THROTTLE_SECONDS_PATTERN.exec(detail ?? "")?.[1]);
+      const failure = readApiError(caught);
+      const classified = classifySignupFailure(caught);
+      if (classified.kind === "throttled") {
         setError(
-          Number.isFinite(seconds) && seconds > 0
+          classified.retryAfter
             ? formatMessage(
                 {
                   id: "page.signup.form.error.throttled",
                   defaultMessage:
                     "{minutes, plural, one {Too many attempts. Try again in # minute.} other {Too many attempts. Try again in # minutes.}}",
                 },
-                { minutes: Math.ceil(seconds / 60) },
+                { minutes: Math.ceil(classified.retryAfter / 60) },
               )
             : formatMessage({
                 id: "page.signup.form.error.throttledGeneric",
                 defaultMessage: "Too many attempts. Try again later.",
               }),
         );
-      } else if (status === 409 || (detail && /already exists/i.test(detail))) {
+      } else if (classified.kind === "duplicateEmail") {
         setError(
           formatMessage({
             id: "page.signup.form.error.duplicateEmail",
             defaultMessage: "That email is already registered. Try signing in instead.",
           }),
         );
+      } else if (classified.kind === "field") {
+        setError(classified.message);
       } else {
-        const fields = readApiError(caught).fields;
-        const fieldText = ["password", "email", "name", "terms_version"].map((key) => fields[key]).filter(Boolean).join(" ");
         setError(
-          fieldText ||
-            formatMessage({
-              id: "page.signup.form.error.generic",
-              defaultMessage: "The account was not created. Check the details and try again.",
-            }),
+          formatMessage({
+            id: "page.signup.form.error.generic",
+            defaultMessage: "The account was not created. Check the details and try again.",
+          }),
         );
       }
-      if (readApiError(caught).fields.terms_version) {
+      if (failure.fields.terms_version) {
         setTermsResetKey((key) => key + 1);
         void terms.refetch();
       }

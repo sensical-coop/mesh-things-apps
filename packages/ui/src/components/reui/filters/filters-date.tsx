@@ -86,11 +86,6 @@ const WEEKDAYS = [
   "saturday",
 ]
 
-/**
- * Typed formats, most specific first. `date-selector.tsx` overlaps on a few
- * of these, but its parser is a callback inside the component returning a
- * `DateSelectorValue`, so there is nothing importable.
- */
 const EXPLICIT_FORMATS = [
   "yyyy-MM-dd",
   "MM/dd/yyyy",

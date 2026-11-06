@@ -16,7 +16,7 @@ apps/api-mock --> packages/domain + packages/contracts
 
 | Package / app | Qué es | Qué no es |
 |---|---|---|
-| `packages/contracts` | Output de Orval: funciones fetch, `get*QueryOptions` / `get*MutationOptions`, y un **Zod** + tipo por componente (`Mesh`, `MeshCreateRequest`, …). | Código a mano salvo `orval.config.ts` y el fetcher `src/api-runtime.ts`. Se regenera con `pnpm openapi:sync`. |
+| `packages/contracts` | Output de Orval (fetch, query options, Zod) **y** hechos HTTP escritos a mano que comparten web, onboarding y api-mock: filtros de lista, cooldown de reenvío, términos, reglas de source y de blueprint. | Lógica de UI ni el modelo de dominio. `src/generated/` no se edita; se regenera con `pnpm openapi:sync`. |
 | `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `authz`). Entidades, invariantes, puertos de repo. Como `@taller/domain`. | Tipos generados. No fetch. No React. |
 | `apps/api-mock` | Servidor HTTP que implementa las rutas de fase 1. Datos en memoria. Sesión Better Auth + cookie. Parsea bodies con Zod de contracts; mapea domain → JSON del OpenAPI. | Backend real. Persistencia. |
 | `apps/web` | Vite + React + TanStack. Chrome de consola (`layout`/`header`/`footer`), `router/`, `pages/`, `features/`, `components/` de app, `lib/`. Tests en `test/`. | Primitivas shadcn/BoardUI/ReUI/EvilCharts. Reglas de malla/device. |
@@ -30,10 +30,11 @@ apps/api-mock --> packages/domain + packages/contracts
 
 ```
 web        -->  ui, contracts
+onboarding -->  ui, contracts
 api-mock   -->  contracts, domain
 domain     -->  (nada de apps ni contracts)
 ui         -->  (React, tokens; no domain)
-contracts  -->  (solo runtime generado: fetch client, zod)
+contracts  -->  (runtime generado + hechos HTTP a mano; no domain, no UI salvo el hook `useTermsEnforced` en `terms.ts`)
 ```
 
 Domain no importa `@meshtastic-things/contracts`. Los DTO del YAML y el modelo de dominio son dos capas: el mock traduce.
@@ -44,7 +45,7 @@ La web **no** importa `packages/domain`. Consume JSON ya validado (SDK con `vali
 
 ## Features (web + api-mock)
 
-Cada entidad de negocio vive en `features/<name>/` en el lado que la necesita. Las rutas viven en `apps/web/src/pages/` y solo orquestan features (repos, `model`, `ui/`). El HTTP generado no se llama desde las páginas: sale del `repository` de la feature.
+Cada entidad de negocio vive en `features/<name>/` en el lado que la necesita. Las rutas viven en `apps/web/src/pages/` y solo orquestan features (repos, `model`, `ui/`). El HTTP generado no se llama desde las páginas: sale del `repository` de la feature. Reglas que el API exige y que varios clientes repiten (filtros, cooldown, términos de cuenta, source, blueprint) viven en `@mtt/contracts`, no copiadas en cada app.
 
 | Feature | Web | api-mock |
 |---|---|---|
@@ -54,6 +55,9 @@ Cada entidad de negocio vive en `features/<name>/` en el lado que la necesita. L
 | `readings` | solo `repository.ts` (lo consume device) | `repository.ts` |
 | `blueprint` | `repository` + `model` + `ui/` (editor de versiones) | `repository.ts` + `validate.ts` (sin puerto de domain) |
 | `postprocessing` | `repository` + `model` + `ui/` (panel del device) | `repository.ts` (filas, `problems`) |
+| `archive` | `repository` (un 404 del manifiesto es “no hay archivo”) + `ui/` | — |
+| `export` | `repository` + `ui/` (CSV y el zip del archivo) | — |
+| `alarm` | `repository` + `model` | — |
 | `algorithm` | — (vía `blueprint/repository`) | `catalog.ts`, copia de `GET /algorithms` |
 | `measurement` | — | `repository.ts` |
 
@@ -65,10 +69,13 @@ Alias Vite `@` → `apps/web/src`. Import de primitivas: `@mtt/ui/…`, nunca co
 apps/web/
   components.json          # CLI shadcn: ui → @mtt/ui/components/ui (escribe en packages/ui)
   src/
-    main.tsx               # QueryClient + TooltipProvider + <Layout router={router} />
+    main.tsx               # createQueryClient (@mtt/contracts) + AppProviders (@mtt/ui) + <Layout router={router} />
     styles.css             # Tailwind; @source de @mtt/ui
     layout.tsx             # Layout (RouterProvider) + Shell (consola)
     header.tsx
+    nav-links.tsx            # enlaces de consola que usa el header
+    management-menu.tsx      # menú de superusuario y sus conteos (lo monta nav-links)
+    terms-banner.tsx         # aviso de términos pendientes de las mallas (lo monta Shell)
     footer.tsx
     router/
       router.ts            # paths + href()
@@ -79,12 +86,14 @@ apps/web/
       kpi/                 # kpi, kpi-panel + helpers kpi-icon.ts, kpi-shell.ts
       series/              # series-plot, series-chart
       brand.tsx            # logo + pageWidth
+      smart-filters.tsx    # filtros de producto; solo los usa web
       flag.tsx
       modal.tsx
       skeleton-rows.tsx
       status-copy.tsx
     lib/                   # sin JSX
       format.ts
+      filter-url.ts        # query string; el wire sale de @mtt/contracts/list-filter
       page-heading.ts
       dialog-actions.ts
     features/<name>/
@@ -118,11 +127,11 @@ Arranque (para no ciclar `layout` ↔ `app-router`):
 | KPI / series | `src/components/kpi/`, `src/components/series/` | Un componente por `.tsx`. Helpers sin UI en `.ts` junto al KPI. |
 | Forms de app | `src/components/form/` | Wrappers de producto. Inputs shadcn en `@mtt/ui`. |
 | Format | `src/lib/format.ts` | Fechas, duraciones, números. |
-| Shader login | `src/pages/login/shader-backdrop.tsx` | Cinta WebGL detrás de la tarjeta. **No** es `DialogOverlay` (`@mtt/ui/components/ui/dialog`). |
+| Shader login | `src/components/auth-shader-backdrop.tsx` | Cinta WebGL detrás de la tarjeta. **No** es `DialogOverlay` (`@mtt/ui/components/ui/dialog`). |
 | Feature HTTP | `src/features/<name>/repository.ts` | Único sitio de esa feature que importa `@mtt/contracts/api`. |
 | Presentación | `src/features/<name>/model.ts` | Títulos, silent, role label. Sin fetch. |
-| UI de feature | `src/features/<name>/ui/` | Solo si se reutiliza en varias rutas (badges de device). Piezas de una sola página van junto a `page.tsx`. |
-| Página | `src/pages/<ruta>/` | Mismo nivel que `features/`. `home/`, `login/`, `meshes/`, `devices/`, `blueprints/`. `route.ts` + `page.tsx`. Extra de detalle (p. ej. `chart-range.ts`) vive en esa carpeta. La landing no es una feature. La alta guiada es `apps/onboarding`, no una ruta de web. |
+| UI de feature | `src/features/<name>/ui/` | Solo si se reutiliza en varias rutas (badges de device). Piezas de una sola página van junto a `page.tsx`. Crear malla (`mesh-form.tsx`, `mesh-origin-dialog.tsx`, `create-mesh-dialog.tsx`) vive en `pages/meshes/list/`. Lo que monta diálogos de varias features (el menú de acciones de un canal: alarmas + archivo) vive en la página que lo compone. El menú de superusuario y su conteo viven en `src/management-menu.tsx`, junto al chrome. |
+| Página | `src/pages/<ruta>/` | Mismo nivel que `features/`. `home/`, `login/`, `meshes/`, `devices/`, `blueprints/`. `route.ts` + `page.tsx`. Extra de esa ruta vive en la carpeta (`chart-range.ts`). El detalle de device parte la página en `device-dashboard-tab.tsx`, `device-status-tab.tsx` y `telemetry-variant-section.tsx`. La landing no es una feature. La alta guiada es `apps/onboarding`, no una ruta de web. |
 | Tests | `apps/web/test/` | `format`, `router`, `device-model`, `chart-range`. Importan `../src/…`. |
 
 **Un componente por fichero.** Un `.tsx` de app exporta **un** componente React. Tipos y helpers de ese componente pueden ir al mismo fichero; un segundo componente va a otro archivo. Helpers sin JSX → `src/lib/` (o un `.ts` colocalizado si solo lo usa esa carpeta).
@@ -133,7 +142,7 @@ Excepción: `layout.tsx` exporta `Layout` y `Shell` (eran `app.tsx` + `shell.tsx
 
 `features/<name>/repository.ts` implementa el puerto de domain (`MemoryMeshes` → `IMeshRepository`, etc.). `store.ts` solo siembra IDs y llama a esas clases. Blueprints y postprocesados no tienen puerto de domain: `BlueprintRow` / `PostprocessingRow` viven en sus features; la validación replica `postprocessing.py` y `common/algorithms` del backend.
 
-Controllers (`app.ts`) siguen mapeando HTTP → repo → JSON OpenAPI.
+`app.ts` solo compone el servidor: CORS, sesión y el registro de rutas. Cada feature vive en `src/routes/<feature>.ts` (sesión → body parseado en `http.ts` → repositorio → `serialize.ts`). `runtime.ts` agrupa las operaciones de store que comparten varias rutas.
 
 ---
 
@@ -145,6 +154,7 @@ El OpenAPI de la API es el contrato. Zod **no se escribe a mano** para shapes Op
 |---|---|
 | `docs/openapi.json` | Copia del schema que sirve la API en `https://api.sensical.es/schema`. No editar: `pnpm openapi:sync` lo trae y regenera el cliente. |
 | `packages/contracts/src/generated/` | Output Orval: `api.ts` (fetch + React Query) y `model.zod.ts` (Zod + tipos). No editar. |
+| `packages/contracts/src/{api-errors,api-runtime,list-filter,resend-cooldown,terms,source,blueprint}.ts` | Hechos HTTP escritos a mano, al lado del gen. Exports: `@mtt/contracts/errors`, `/runtime`, `/list-filter`, `/resend-cooldown`, `/terms`, `/source`, `/blueprint`. |
 | `@mtt/contracts` | Schemas y tipos con el mismo nombre (`Mesh`, `MeshCreateRequest`, `DeviceRead`, …) |
 | `@mtt/contracts/api` | Funciones (`meshesUpdate(meshId, body)`), `get*QueryOptions`, `get*QueryKey`, `get*MutationOptions`. Solo desde `repository.ts` |
 | `@mtt/contracts/runtime` | `apiFetch` (mutator de Orval: base URL, cookie, CSRF, error DRF con `status`, `parse` del response) y `setApiBaseUrl` |
@@ -253,16 +263,15 @@ packages/ui/src/
   oa/springs.ts
   theme.ts
   utils.ts                 # cn / cx  →  @mtt/ui/utils
-  utils/                   # cx, dismiss-on-outside-press
-  hooks/                   # use-mobile
-  lib/                     # filter-url → query string
+  utils/                   # cx
+  hooks/                   # use-mobile, use-locale
   components/
     base/                  # BoardUI (npx boardui add)
     ui/                    # shadcn (button, dialog, map, …)
-    reui/                  # frame, filters, cascader, date-selector, number-field
+    reui/                  # frame, filters, cascader, number-field
     evilcharts/            # charts/ + ui/
     data-table.tsx
-    smart-filters.tsx
+    language-switcher.tsx  # un selector; web, onboarding y docs lo importan de aquí
 ```
 
 `package.json` de `@mtt/ui` exporta por segmento (`./components/ui/*`, `./components/reui/*`, …) y aliases `#components/*` para que el CLI de shadcn resuelva imports internos **dentro** del paquete.
@@ -276,10 +285,10 @@ Importar por el export del paquete, no por `@/` de web:
 | Frame ReUI | `@mtt/ui/reui/frame` (archivo: `components/reui/frame.tsx`) |
 | Filtros / cascader / number-field | `@mtt/ui/components/reui/…` |
 | Charts | `@mtt/ui/components/evilcharts/charts/…` |
-| Data table / smart filters | `@mtt/ui/components/data-table`, `@mtt/ui/components/smart-filters` |
+| Data table | `@mtt/ui/components/data-table`. Smart filters: `@/components/smart-filters` (solo web) |
 | `cn` / `cx` | `@mtt/ui/utils` o `@mtt/ui/utils/cx` |
 | Tema | `@mtt/ui/theme` |
-| Query string de filtros | `@mtt/ui/lib/filter-url` |
+| Query string de filtros | `@/lib/filter-url` (solo web; el wire sale de `@mtt/contracts/list-filter`) |
 
 Instalar (las primitivas **siempre** caen en `packages/ui`):
 
@@ -361,6 +370,6 @@ pnpm dev
 
 Arranca Vite (`5173`) y el mock (`8787`). `VITE_API_URL` por defecto `http://localhost:8787`. Sincronizar el contrato: `pnpm openapi:sync`.
 
-`GET /meshes` sigue el schema OpenAPI `Mesh` (incluye `psk_b64`). La UI no lo pinta; `Mesh.toListItem()` es la forma de dominio sin PSK.
+`GET /meshes` sigue el schema OpenAPI `Mesh` (incluye `psk_b64`). La UI no lo pinta.
 
 Historias: [ui-stories.md](./ui-stories.md). API: [meshtastic-things-frontend-briefing.md](./meshtastic-things-frontend-briefing.md). Look: [oa-design.md](./oa-design.md).

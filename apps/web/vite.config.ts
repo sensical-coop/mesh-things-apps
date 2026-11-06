@@ -2,6 +2,8 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { request } from "node:http";
+import { localeInitScript } from "@mtt/ui/locale";
+import { themeInitScript } from "@mtt/ui/theme";
 import { defineConfig, type Plugin } from "vite";
 
 // Production serves /docs and /start from their apps through Caddy. In dev the same paths
@@ -64,5 +66,10 @@ export default defineConfig({
     nitro(),
     react(),
     tailwindcss(),
+    {
+      name: "init-scripts",
+      transformIndexHtml: () =>
+        [themeInitScript, localeInitScript].map((children) => ({ tag: "script", children, injectTo: "head" as const })),
+    },
   ],
 });

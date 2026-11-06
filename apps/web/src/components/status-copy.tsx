@@ -1,5 +1,5 @@
 import { type ReactElement, type ReactNode } from "react";
-import { cn } from "@mtt/ui/lib/utils";
+import { cn } from "@mtt/ui/utils";
 
 export function StatusCopy({
   children,

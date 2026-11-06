@@ -2,7 +2,7 @@ import type { Actor } from "@mtt/domain/authz/authz";
 import { Device } from "@mtt/domain/device/Device";
 import { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
-import { newId, nowIso } from "@mtt/domain/shared/ids";
+import { nowIso } from "@mtt/domain/shared/ids";
 import type { BlueprintRow, BlueprintVersionRow } from "./features/blueprint/repository";
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 import { MemoryDevices } from "./features/device/repository";
@@ -177,6 +177,8 @@ export const MEASUREMENT_DETECTORS = ["completeness", "flat_value", "range"];
 // purely per-device (see Store.deviceMeasurementRanges below) — there is no
 // catalog default to fall back to.
 export type TelemetryVariantMeasurementLink = {
+  variantId: string;
+  measurementTypeId: string;
   defaultEnabledDetectors: string[];
 };
 
@@ -211,7 +213,7 @@ export type Store = {
   deviceTelemetryVariants: Map<string, string[]>;
   // Per-device-measurement override: null = inherit the catalog default below.
   detectorOverrides: Map<string, string[] | null>;
-  // Catalog-wide default per telemetry-variant/measurement link (VARIANT_LINK_ID).
+  /** Catalog link rows: variant, measurement type, and the default detectors. */
   telemetryVariantMeasurements: Map<string, TelemetryVariantMeasurementLink>;
   // Per-device-measurement range for the "range" detector — purely per-device,
   // no catalog fallback. Keyed by the same id as detectorOverrides.
@@ -619,7 +621,10 @@ export function createStore(owners: StoreOwners = {}): Store {
     ]),
     detectorOverrides: new Map<string, string[] | null>(),
     telemetryVariantMeasurements: new Map<string, TelemetryVariantMeasurementLink>([
-      [VARIANT_LINK_ID, { defaultEnabledDetectors: ["range"] }],
+      [
+        VARIANT_LINK_ID,
+        { variantId: VARIANT_ENV_ID, measurementTypeId: MEAS_TEMP_ID, defaultEnabledDetectors: ["range"] },
+      ],
     ]),
     deviceMeasurementRanges: new Map<string, DeviceMeasurementRange>([
       [DEVICE_MEAS_ID, { validMin: -40, validMax: 85 }],

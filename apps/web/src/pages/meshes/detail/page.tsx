@@ -8,24 +8,16 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import {
-  RiAddLine,
-  RiCollapseDiagonalLine,
-  RiDeleteBinLine,
-  RiExpandDiagonalLine,
-  RiEyeLine,
-  RiEyeOffLine,
-  RiFileCopyLine,
-} from "@remixicon/react";
+import { RiAddLine, RiCollapseDiagonalLine, RiDeleteBinLine, RiExpandDiagonalLine } from "@remixicon/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useMemo, useState } from "react";
 import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
-import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
 import { DataTable } from "@mtt/ui/components/data-table";
-import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
+import { SmartFilterToolbar, useSmartFilters } from "@/components/smart-filters";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
@@ -34,19 +26,18 @@ import { FitToPoints } from "@/features/device/ui/map-fit";
 import { DeviceMapLegend } from "@/features/device/ui/map-legend";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
-import { deviceRepository } from "@/features/device/repository";
+import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
 import { deviceLastSeen, devicePosition, deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
-import { GatewayForm } from "@/features/device/ui/gateway-form";
 import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
 import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
 import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { matchesListQuery } from "@/lib/list-filter";
+import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
 import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
+import { expandedMapClass } from "@/lib/expanded-map";
 import { pageHeadingClass } from "@/lib/page-heading";
-import { Modal } from "@/components/modal";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
@@ -58,9 +49,10 @@ import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
-import { termsLocale } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { termsRepository } from "@/features/terms/repository";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { PskReveal } from "./psk-reveal";
+import { RegisterDeviceDialog } from "./register-device-dialog";
 import { sourceRepository } from "@/features/source/repository";
 import { MapUnsupported } from "@/components/map-unsupported";
 import { RouterButtonLink } from "@/components/router-button-link";
@@ -72,7 +64,6 @@ import { MeshTrafficTab } from "@/features/mesh-network/ui/traffic-tab";
 const col = legacyCreateColumnHelper<DeviceRead>();
 
 const MESH_TABS = ["overview", "traffic", "topology"] as const;
-const FLEET_MAP_SIZES = ["large"] as const;
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
@@ -82,7 +73,7 @@ export function MeshDetailPage(): ReactElement {
   const { meshId } = useParams({ from: routes.mesh });
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(MESH_TABS).withDefault("overview"));
   // Its own key, so the Topology tab's larger view does not enlarge this one too.
-  const [fleetSize, setFleetSize] = useQueryState("fleet", parseAsStringLiteral(FLEET_MAP_SIZES));
+  const [fleetSize, setFleetSize] = useQueryState("fleet", parseAsString);
   const fleetLarge = fleetSize === "large";
   const mesh = useQuery(meshRepository.retrieve(meshId));
   if (isNotFoundError(mesh.error)) throw notFound();
@@ -127,76 +118,13 @@ export function MeshDetailPage(): ReactElement {
   const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   const variantOptions = useTelemetryVariantOptions();
   // Same keys as the devices list, so a filtered URL reads the same on both pages.
-  const specs = useMemo<FilterSpec[]>(
-    () => [
-      {
-        key: "label",
-        urlKey: "label",
-        label: formatMessage({ id: "page.devices.list.filters.label", defaultMessage: "Label" }),
-        type: "text",
-      },
-      {
-        key: "is_gateway",
-        urlKey: "is_gateway",
-        label: formatMessage({ id: "page.devices.list.filters.role", defaultMessage: "Role" }),
-        type: "select",
-        options: [
-          {
-            value: "true",
-            label: formatMessage({ id: "page.devices.list.filters.roleGateway", defaultMessage: "Gateway" }),
-          },
-          {
-            value: "false",
-            label: formatMessage({ id: "page.devices.list.filters.roleNode", defaultMessage: "Node" }),
-          },
-        ],
-      },
-      {
-        key: "is_allowed",
-        urlKey: "is_allowed",
-        label: formatMessage({ id: "page.devices.list.filters.allowed", defaultMessage: "Allowed" }),
-        type: "select",
-        options: [
-          {
-            value: "true",
-            label: formatMessage({ id: "page.devices.list.filters.allowedTrue", defaultMessage: "Allowed" }),
-          },
-          {
-            value: "false",
-            label: formatMessage({ id: "page.devices.list.filters.allowedFalse", defaultMessage: "Blocked" }),
-          },
-        ],
-      },
-      ...(variantOptions.length
-        ? [
-            {
-              key: "telemetry_variant",
-              urlKey: "telemetry",
-              label: formatMessage({ id: "page.devices.list.filters.telemetry", defaultMessage: "Telemetry" }),
-              type: "multiselect" as const,
-              options: variantOptions,
-            },
-          ]
-        : []),
-    ],
+  const specs = useMemo(
+    () => deviceFilterSpecs({ formatMessage, variantOptions, allowed: true }),
     [variantOptions, formatMessage],
   );
   const filters = useSmartFilters({ specs });
   const shownDevices = (devices.data ?? []).filter((device) =>
-    matchesListQuery((field) => {
-      switch (field) {
-        case "label":
-          return deviceTitle(device);
-        case "is_gateway":
-          return String(device.is_gateway);
-        case "is_allowed":
-          return String(device.is_allowed);
-        case "telemetry_variant":
-          return device.telemetry_variant_ids;
-        default:
-          return undefined;
-      }
-    }, filters.queryString),
+    matchesListQuery((field) => deviceFilterValue(device, field), filters.queryString),
   );
 
   const columns = useMemo(
@@ -416,7 +344,7 @@ export function MeshDetailPage(): ReactElement {
                   key={fleetLarge ? "large" : "small"}
                   className={cx(
                     "relative oa-arrive overflow-hidden oa-squircle-inset",
-                    fleetLarge ? "h-[70svh] min-h-96" : "h-80",
+                    fleetLarge ? expandedMapClass : "h-80",
                   )}
                 >
                   <DeviceMapLegend />
@@ -501,12 +429,6 @@ export function MeshDetailPage(): ReactElement {
                   data={shownDevices}
                   columns={columns}
                   getRowId={(row) => row.uuid}
-                  previousPageLabel={formatMessage({
-                    id: "common.dataTable.previousPage",
-                    defaultMessage: "Previous page",
-                  })}
-                  nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-                  pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                   empty={formatMessage({
                     id: "page.meshes.detail.devices.noMatch",
                     defaultMessage: "No devices on this mesh match these filters.",
@@ -558,69 +480,5 @@ export function MeshDetailPage(): ReactElement {
         />
       ) : null}
     </>
-  );
-}
-
-function RegisterDeviceDialog({
-  meshId,
-  open,
-  onClose,
-}: {
-  meshId: string;
-  open: boolean;
-  onClose: () => void;
-}): ReactElement {
-  const { formatMessage } = useIntl();
-  return (
-    <Modal
-      open={open}
-      title={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.title", defaultMessage: "Register gateway" })}
-      description={formatMessage({
-        id: "page.meshes.detail.registerGatewayDialog.description",
-        defaultMessage: "A registered gateway authorizes its traffic to be decoded.",
-      })}
-      onClose={onClose}
-    >
-      {open ? <GatewayForm meshId={meshId} onCancel={onClose} onRegistered={async () => onClose()} /> : null}
-    </Modal>
-  );
-}
-
-function PskReveal({ value }: { value: string }): ReactElement {
-  const { formatMessage } = useIntl();
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="flex oa-arrive flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <code className="min-w-0 font-mono text-body-2-regular break-all text-text-primary">
-        {open ? value : "••••••••"}
-      </code>
-      <div className="flex shrink-0 gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          size="small"
-          leadingIcon={open ? RiEyeOffLine : RiEyeLine}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open
-            ? formatMessage({ id: "page.meshes.detail.psk.hide", defaultMessage: "Hide" })
-            : formatMessage({ id: "page.meshes.detail.psk.show", defaultMessage: "Show" })}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="small"
-          leadingIcon={RiFileCopyLine}
-          onClick={() => {
-            void navigator.clipboard.writeText(value).then(() => setCopied(true));
-          }}
-        >
-          {copied
-            ? formatMessage({ id: "page.meshes.detail.psk.copied", defaultMessage: "Copied" })
-            : formatMessage({ id: "page.meshes.detail.psk.copy", defaultMessage: "Copy" })}
-        </Button>
-      </div>
-    </div>
   );
 }

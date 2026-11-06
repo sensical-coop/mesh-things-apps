@@ -5,7 +5,7 @@ import type {
   ReactNode,
   Ref,
 } from "react";
-import { cx, sortCx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils/cx";
 
 /**
  * Figma source: Board UI → Buttons (node 3656:13819).
@@ -73,7 +73,7 @@ export interface ButtonLinkProps
   ref?: Ref<HTMLAnchorElement>;
 }
 
-const styles = sortCx({
+const styles = {
   base: [
     "inline-flex items-center justify-center gap-0.5 whitespace-nowrap overflow-hidden",
     "font-sans select-none cursor-pointer",
@@ -139,7 +139,7 @@ const styles = sortCx({
       "aria-disabled:bg-button-ghost-disabled aria-disabled:text-button-ghost-disabled-foreground aria-disabled:shadow-none",
     ].join(" "),
   },
-});
+};
 
 export function Button({
   variant = "primary",

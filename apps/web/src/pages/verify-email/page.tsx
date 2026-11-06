@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { parseAsString, useQueryState } from "nuqs";
 import { type ReactElement, useEffect } from "react";
 import { useIntl } from "react-intl";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
@@ -24,7 +24,6 @@ export function VerifyEmailPage(): ReactElement {
   });
   const me = useQuery({
     ...authRepository.me(),
-    retry: false,
     enabled: verify.isSuccess && Boolean(dest),
   });
   const signedIn = Boolean(dest) && isOwnerSession(me);

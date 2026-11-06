@@ -20,7 +20,7 @@ function matchNavigatorLocale(): Locale | null {
   return null;
 }
 
-export function readStoredLocale(): Locale | null {
+function readStoredLocale(): Locale | null {
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (isSupportedLocale(stored)) return stored;

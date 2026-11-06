@@ -1,6 +1,6 @@
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { LandingFooter } from "@/pages/home/footer";
+import { LandingFooter } from "@/components/landing-footer";
 import { SiteHeader } from "@/components/site-header";
 
 type Message = { id: string; defaultMessage: string };

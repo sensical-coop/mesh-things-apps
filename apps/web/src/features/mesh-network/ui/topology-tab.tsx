@@ -3,10 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { readingsRepository } from "@/features/readings/repository";
+import { MESH_REFRESH_MS } from "../model";
 import { StatsRangeBar, useStatsRange } from "./stats-range-bar";
 import { TopologySection } from "./topology-section";
-
-const REFRESH_MS = 60_000;
 
 /** Who hears whom on a mesh: the links map or graph, traceroutes and relays. */
 export function MeshTopologyTab({ meshId, devices }: { meshId: string; devices: DeviceRead[] }): ReactElement {
@@ -15,7 +14,7 @@ export function MeshTopologyTab({ meshId, devices }: { meshId: string; devices: 
   // The same query as the Traffic tab, so switching tabs reuses its cached figures for the relays.
   const stats = useQuery({
     ...readingsRepository.meshStats(meshId, { range }),
-    refetchInterval: REFRESH_MS,
+    refetchInterval: MESH_REFRESH_MS,
   });
   return (
     <div className="flex flex-col gap-6">

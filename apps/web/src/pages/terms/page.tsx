@@ -2,7 +2,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Link } from "@tanstack/react-router";
 import { routes } from "@/router";
-import { LandingFooter } from "@/pages/home/footer";
+import { LandingFooter } from "@/components/landing-footer";
 import { SiteHeader } from "@/components/site-header";
 
 const termsOfUse = [

@@ -14,9 +14,10 @@ import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { issueErrors, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { sourceTitle, validateSourceFields } from "@/features/source/model";
+import { validateSource } from "@mtt/contracts/source";
+import { sourceTitle } from "@/features/source/model";
 import type { TermsAcceptance } from "@/features/terms/model";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { useTermsEnforced } from "@mtt/contracts/terms";
 import { sourceRepository } from "@/features/source/repository";
 
 export type SourceDialogProps = {
@@ -159,7 +160,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
       topic: String(form.get("topic") ?? "").trim(),
       qos: Number(form.get("qos") ?? 1),
     };
-    const checks = validateSourceFields(body);
+    const checks = validateSource(body);
     setFormError(null);
     if (editing) {
       const parsed = SourceUpdateRequest.safeParse(body);

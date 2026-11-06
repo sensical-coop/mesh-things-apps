@@ -3,7 +3,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiAddLine, RiDeleteBinLine, RiRestartLine } from "@remixicon/react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { Navigate } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
@@ -13,19 +13,19 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
-import { sourceTitle } from "@/features/source/model";
+import { sourceTermsStanding, sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { SourceDialog } from "@/features/source/ui/source-dialog";
-import { RenewSourceTermsDialog } from "@/features/source/ui/renew-source-terms-dialog";
+import { RenewTermsDialog } from "@/features/terms/ui/renew-terms-dialog";
 import { RestartSourceDialog } from "@/features/source/ui/restart-source-dialog";
 import { SourceStatusChip } from "@/features/source/ui/source-status-chip";
-import { termsLocale, termsStanding, type TermsAcceptance } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
+import { type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { useFormatters } from "@/hooks/use-formatters";
-import { DeleteSourceDialog } from "@/features/source/ui/delete-source-dialog";
+import { DeleteSourceDialog } from "./delete-source-dialog";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { routes } from "@/router";
 
@@ -36,6 +36,7 @@ const col = legacyCreateColumnHelper<SourceRow>();
 export function SourcesPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();
+  const queryClient = useQueryClient();
   const { me, meId, isOperator } = useMe();
   // A self-hosted instance asks for no terms: no terms step, column or renewals.
   // Flows treat "unknown" as enforced; the version lookup waits for a definite yes.
@@ -57,6 +58,15 @@ export function SourcesPage(): ReactElement {
   const [sourceToEdit, setSourceToEdit] = useState<SourceRow | null>(null);
   const [sourceToDelete, setSourceToDelete] = useState<SourceRow | null>(null);
   const [sourceToRestart, setSourceToRestart] = useState<SourceRow | null>(null);
+  const renew = useMutation({
+    ...termsRepository.renewSource(),
+    onSuccess: async (renewed) => {
+      await queryClient.invalidateQueries({ queryKey: sourceRepository.listKey() });
+      setSaved({ source: renewed, action: "updated" });
+      renew.reset();
+      setSourceToRenew(null);
+    },
+  });
 
   const rows = useMemo<SourceRow[]>(() => {
     const counts = new Map<string, number>();
@@ -108,13 +118,7 @@ export function SourcesPage(): ReactElement {
             header: formatMessage({ id: "page.sources.list.columns.terms", defaultMessage: "Terms" }),
             cell: (info) => {
               const row = info.row.original;
-              const standing = termsStanding({
-                acceptedVersion: row.terms_accepted_version,
-                expiresAt: row.terms_expires_at,
-                pausedAt: row.paused_at,
-                currentVersion: currentTerms.data?.version,
-                now: new Date(),
-              });
+              const standing = sourceTermsStanding(row, currentTerms.data?.version, new Date());
               return (
                 <span className="flex items-center gap-2">
                   <span className="text-text-secondary">
@@ -244,12 +248,6 @@ export function SourcesPage(): ReactElement {
                 data={rows}
                 columns={columns}
                 getRowId={(row) => row.id}
-                previousPageLabel={formatMessage({
-                  id: "common.dataTable.previousPage",
-                  defaultMessage: "Previous page",
-                })}
-                nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-                pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                 empty={formatMessage({
                   id: "page.sources.list.empty",
                   defaultMessage: "No sources yet. Add one to bridge a topic from another broker.",
@@ -286,10 +284,30 @@ export function SourcesPage(): ReactElement {
           onSaved={(source) => setSaved({ source, action: "updated" })}
         />
       ) : null}
-      <RenewSourceTermsDialog
-        source={sourceToRenew}
-        onClose={() => setSourceToRenew(null)}
-        onRenewed={(source) => setSaved({ source, action: "updated" })}
+      <RenewTermsDialog
+        open={sourceToRenew !== null}
+        kind="source"
+        acceptLabel={
+          sourceToRenew
+            ? formatMessage(
+                { id: "feature.source.renew.accept", defaultMessage: "Renew {source}" },
+                { source: sourceTitle(sourceToRenew) },
+              )
+            : undefined
+        }
+        pending={renew.isPending}
+        error={renew.error}
+        onClose={() => {
+          renew.reset();
+          setSourceToRenew(null);
+        }}
+        onAccepted={(acceptance) =>
+          sourceToRenew &&
+          renew.mutate({
+            sourceId: sourceToRenew.id,
+            data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
+          })
+        }
       />
       <RestartSourceDialog
         source={sourceToRestart}

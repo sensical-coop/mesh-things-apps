@@ -67,5 +67,13 @@ export function draftProblemMessage(problem: DraftProblem, formatMessage: IntlSh
         { id: "feature.blueprint.problem.fieldTwice", defaultMessage: "Output “{field}” is written by two steps." },
         { field: problem.field },
       );
+    case "pointwise":
+      return formatMessage(
+        {
+          id: "feature.blueprint.problem.pointwise",
+          defaultMessage: "Step “{key}”: “{name}” is {mode}. Only pointwise algorithms can run.",
+        },
+        { key: problem.key, name: problem.name, mode: problem.mode },
+      );
   }
 }

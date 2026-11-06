@@ -3,7 +3,7 @@ import { IsoFigure } from "@/iso/react/draw";
 import { asksForStillness, follow, useInView, useLoop, useReadout } from "@/iso/react/live";
 import { FIGURE_HEIGHT, FIGURE_WIDTH } from "../view";
 import { KNOB_R, PILL, ROW_Y, SCREEN_AT, TOGGLE_OFF, TOGGLE_ON } from "./geometry";
-import { REST_GATE, SWITCHES, gateSeen, readoutOf, switchesOn, tourGate, valueText, withSwitch, type Gate, type ReadoutWords, type SwitchName } from "./model";
+import { REST_GATE, SWITCHES, gateSeen, readoutOf, switchesOn, tourGate, valueText, withSwitch, type Gate, type ReadoutWords } from "./model";
 import { knobShift, packetShift } from "./pose";
 
 export interface ConnectCopy extends ReadoutWords {

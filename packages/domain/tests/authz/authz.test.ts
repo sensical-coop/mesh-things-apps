@@ -15,7 +15,6 @@ import {
   flagsForRole,
   roleFlag,
   visibleMeshes,
-  visibleOwned,
   visibleSources,
   type Actor,
 } from "../../src/authz/authz";
@@ -66,11 +65,6 @@ describe("authz", () => {
     expect(canWriteCatalog(admin)).toBe(true);
     expect(canReadOwnerEmail(admin, ada)).toBe(true);
     expect(canReadOwnerEmail(ada, admin)).toBe(false);
-  });
-
-  it("filters owned rows for a plain owner", () => {
-    const ada = actor("owner");
-    expect(visibleOwned(ada, [hill, river])).toEqual([hill]);
   });
 
   it("lets an owner read public meshes, without the PSK or writes", () => {
