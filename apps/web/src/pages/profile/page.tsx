@@ -119,16 +119,7 @@ export function ProfilePage(): ReactElement {
                   </StatusCopy>
                 ) : null}
                 <div className={dialogActionsClass}>
-                  <SaveButton
-                    pending={update.isPending}
-                    saved={update.isSuccess}
-                    savedKey={update.submittedAt}
-                    labels={{
-                      save: formatMessage({ id: "common.saveButton.save", defaultMessage: "Save changes" }),
-                      saving: formatMessage({ id: "common.saveButton.saving", defaultMessage: "Saving" }),
-                      saved: formatMessage({ id: "common.saveButton.saved", defaultMessage: "Saved" }),
-                    }}
-                  />
+                  <SaveButton pending={update.isPending} saved={update.isSuccess} savedKey={update.submittedAt} />
                 </div>
               </form>
             )}

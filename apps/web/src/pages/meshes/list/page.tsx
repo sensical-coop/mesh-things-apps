@@ -1,12 +1,5 @@
 import type { DeviceRead, Mesh } from "@mtt/contracts";
 import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
-import {
-  Frame,
-  FrameDescription,
-  FrameHeader,
-  FramePanel,
-  FrameTitle,
-} from "@mtt/ui/reui/frame";
 import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
@@ -15,16 +8,13 @@ import { Link } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@/components/smart-filters";
-import { sourceTitle } from "@/features/source/model";
+import { sourceStatus, sourceTitle } from "@/features/source/model";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { deviceRepository } from "@/features/device/repository";
-import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
-import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { routes } from "@/router";
-import { pageHeadingClass } from "@/lib/page-heading";
+import { ListScaffold } from "@/components/list-scaffold";
 import { SettingsButton } from "@/components/settings-button";
-import { SkeletonRows } from "@/components/skeleton-rows";
 import { meshRepository } from "@/features/mesh/repository";
 import { MESH_STATUS_RANK, NO_SOURCE, canEditMesh, meshStatus, meshTitle, type MeshStatus } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
@@ -68,8 +58,6 @@ const col = legacyCreateColumnHelper<MeshRow>();
 
 export function MeshesPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
-  const filterLabels = useTranslatedFilterLabels();
-  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   // Every visible mesh loads at once and the filters run on the rows, so they can cover
   // what the table derives (status, device count) as well as what the API returns.
   const meshes = useQuery(meshRepository.list());
@@ -113,7 +101,7 @@ export function MeshesPage(): ReactElement {
   // Only operators have sources; for everyone else every mesh is on the default broker.
   const showSource = isOperator || rows.some((row) => row.source_id != null);
   // Display only: terms count once confirmed, so a lite instance never flashes terms states.
-  const sourceStatusById = new Map((sources.data ?? []).map((source) => [source.id, source.status]));
+  const sourceStatusById = new Map((sources.data ?? []).map((source) => [source.id, sourceStatus(source.status)]));
   const statusOf = (row: MeshRow) =>
     meshStatus(row, {
       termsEnforced: enforced === true,
@@ -340,70 +328,71 @@ export function MeshesPage(): ReactElement {
     [formatMessage, me, meId, ownerName, showOwner, showSource, sources.data, meshTerms.data?.version, enforced],
   );
 
+  const showSetup = rows.length === 0 && !meshes.isPending && !filters.active;
   return (
     <>
-      <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
-          {formatMessage({ id: "page.meshes.list.title", defaultMessage: "Meshes" })}
-        </h1>
-        {rows.length === 0 && !meshes.isPending && !filters.active ? (
-          <ButtonLink href="/start" size="small">
-            {formatMessage({ id: "page.meshes.list.setupFirst", defaultMessage: "Set up your first mesh" })}
-          </ButtonLink>
-        ) : null}
-        <Button type="button" size="small" variant={rows.length === 0 && !filters.active ? "secondary" : "primary"} leadingIcon={RiAddLine} onClick={startCreate}>
-          {formatMessage({ id: "page.meshes.list.createMesh", defaultMessage: "Create mesh" })}
-        </Button>
-      </div>
-      <div className="flex flex-col gap-6">
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>
-              {formatMessage({ id: "page.meshes.list.panel.title", defaultMessage: "Your meshes" })}
-            </FrameTitle>
-            <FrameDescription>
-              {meshes.isPending
-                ? formatMessage({
-                    id: "page.meshes.list.panel.loading",
-                    defaultMessage: "Loading meshes. This usually takes a few seconds.",
-                  })
-                : meshes.error
-                  ? formatMessage({
-                      id: "page.meshes.list.panel.error",
-                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
-                    })
-                  : formatMessage({
-                      id: "page.meshes.list.panel.description",
-                      defaultMessage: "Open a mesh to see its nodes and gateways.",
-                    })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            <div className="mb-4">
-              <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
-            </div>
-            {meshes.isPending ? <SkeletonRows /> : null}
-            {meshes.error ? null : meshes.isPending ? null : (
-              <DataTable
-                data={shownRows}
-                columns={columns}
-                getRowId={(row) => row.id}
-                empty={
-                  filters.active
-                    ? formatMessage({
-                        id: "page.meshes.list.empty.filtered",
-                        defaultMessage: "No meshes match these filters.",
-                      })
-                    : formatMessage({
-                        id: "page.meshes.list.empty.default",
-                        defaultMessage: "No meshes yet. Create a mesh so gateways have a channel and key to join.",
-                      })
-                }
-              />
-            )}
-          </FramePanel>
-        </Frame>
-      </div>
+      <ListScaffold
+        title={formatMessage({ id: "page.meshes.list.title", defaultMessage: "Meshes" })}
+        actions={
+          <>
+            {showSetup ? (
+              <ButtonLink href="/start" size="small">
+                {formatMessage({ id: "page.meshes.list.setupFirst", defaultMessage: "Set up your first mesh" })}
+              </ButtonLink>
+            ) : null}
+            <Button
+              type="button"
+              size="small"
+              variant={showSetup ? "secondary" : "primary"}
+              leadingIcon={RiAddLine}
+              onClick={startCreate}
+            >
+              {formatMessage({ id: "page.meshes.list.createMesh", defaultMessage: "Create mesh" })}
+            </Button>
+          </>
+        }
+        panelTitle={formatMessage({ id: "page.meshes.list.panel.title", defaultMessage: "Your meshes" })}
+        panelDescription={
+          meshes.isPending
+            ? formatMessage({
+                id: "page.meshes.list.panel.loading",
+                defaultMessage: "Loading meshes. This usually takes a few seconds.",
+              })
+            : meshes.error
+              ? formatMessage({
+                  id: "page.meshes.list.panel.error",
+                  defaultMessage: "Meshes didn't load. Check your connection or try again.",
+                })
+              : formatMessage({
+                  id: "page.meshes.list.panel.description",
+                  defaultMessage: "Open a mesh to see its nodes and gateways.",
+                })
+        }
+        toolbar={
+          <div className="mb-4">
+            <SmartFilterToolbar filters={filters} />
+          </div>
+        }
+        pending={meshes.isPending}
+        failed={Boolean(meshes.error)}
+      >
+        <DataTable
+          data={shownRows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          empty={
+            filters.active
+              ? formatMessage({
+                  id: "page.meshes.list.empty.filtered",
+                  defaultMessage: "No meshes match these filters.",
+                })
+              : formatMessage({
+                  id: "page.meshes.list.empty.default",
+                  defaultMessage: "No meshes yet. Create a mesh so gateways have a channel and key to join.",
+                })
+          }
+        />
+      </ListScaffold>
       <MeshOriginDialog
         open={originOpen}
         sources={sources.data ?? []}

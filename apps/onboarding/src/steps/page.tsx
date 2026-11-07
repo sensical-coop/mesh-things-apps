@@ -1,4 +1,5 @@
 import type { DeviceRead, Mesh, OwnerRead } from "@mtt/contracts";
+import { isVerifiedOwner } from "@mtt/contracts/authz";
 import { readApiError } from "@mtt/contracts/errors";
 import { MeasuredSteps } from "@mtt/ui/components/measured-steps";
 import { cx } from "@mtt/ui/utils";
@@ -28,7 +29,7 @@ function sessionOf(me: { isPending: boolean; isError: boolean; error: unknown; d
     if (status === 401 || status === 403) return "none";
     return "pending";
   }
-  return me.data?.is_active ? "verified" : "unverified";
+  return isVerifiedOwner(me.data) ? "verified" : "unverified";
 }
 
 export function StartPage(): ReactElement {

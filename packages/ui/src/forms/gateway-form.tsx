@@ -2,8 +2,9 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { type FormEvent, type ReactElement } from "react";
+import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
-import { NodeIdField, type NodeIdFieldLabels } from "@mtt/ui/forms/node-id-field";
+import { NodeIdField } from "@mtt/ui/forms/node-id-field";
 import { parseNodeId } from "@mtt/ui/forms/node-id";
 
 const actionsClass =
@@ -11,31 +12,37 @@ const actionsClass =
 
 export type GatewayFormValues = { node_id: number; label: string };
 
-export type GatewayFormLabels = {
-  label: string;
-  node: NodeIdFieldLabels;
-};
-
 export function GatewayForm({
-  labels,
   errors,
   pending,
-  submitLabel,
+  failed = false,
+  alertDetail,
   onSubmit,
   onCancel,
   cancelLabel,
   layout = "dialog",
 }: {
-  labels: GatewayFormLabels;
   errors?: Record<string, string | undefined>;
   pending: boolean;
-  submitLabel: string;
+  failed?: boolean;
+  alertDetail?: string;
   onSubmit: (values: GatewayFormValues) => void;
   onCancel?: () => void;
   cancelLabel?: string;
   /** `dialog`: compact actions aligned right. `page`: one full-width submit, like the other page actions. */
   layout?: "dialog" | "page";
 }): ReactElement {
+  const { formatMessage } = useIntl();
+  const submitLabel = pending
+    ? formatMessage({
+        id: "page.meshes.detail.registerGatewayDialog.registering",
+        defaultMessage: "Registering gateway",
+      })
+    : formatMessage({
+        id: "page.meshes.detail.registerGatewayDialog.submit",
+        defaultMessage: "Register gateway",
+      });
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
@@ -49,7 +56,11 @@ export function GatewayForm({
   return (
     <form className="flex flex-col gap-5" onSubmit={submit}>
       <FieldGroup>
-        <FormField id="device-label" label={labels.label} error={errors?.label}>
+        <FormField
+          id="device-label"
+          label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" })}
+          error={errors?.label}
+        >
           <Input
             id="device-label"
             name="label"
@@ -58,7 +69,7 @@ export function GatewayForm({
             aria-describedby={errors?.label ? "device-label-error" : undefined}
           />
         </FormField>
-        <NodeIdField id="device-node" name="node_id" error={errors?.node_id} labels={labels.node} />
+        <NodeIdField id="device-node" name="node_id" error={errors?.node_id} />
       </FieldGroup>
       <div className={layout === "page" ? "flex flex-col gap-2" : actionsClass}>
         {onCancel ? (
@@ -70,6 +81,15 @@ export function GatewayForm({
           {submitLabel}
         </Button>
       </div>
+      {failed ? (
+        <p className="text-body-medium text-text-secondary" role="alert">
+          {formatMessage({
+            id: "page.meshes.detail.registerGatewayDialog.error",
+            defaultMessage: "The gateway was not registered. Check the node ID and try again.",
+          })}
+          {alertDetail ? ` ${alertDetail}` : ""}
+        </p>
+      ) : null}
     </form>
   );
 }

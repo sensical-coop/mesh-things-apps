@@ -7,7 +7,8 @@ import { type FormEvent, type ReactElement, type ReactNode, useState } from "rea
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { EXPORT_MAX_DAYS, pollInterval, rangeProblem, requestOf, shiftDay } from "@/features/export/model";
+import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
+import { pollInterval, rangeProblem, requestOf, shiftDay } from "@/features/export/model";
 import { exportRepository } from "@/features/export/repository";
 import type { RequestExportState } from "@/features/export/use-request-export";
 import { ExportHistoryHeading } from "@/features/export/ui/export-history-heading";
@@ -18,7 +19,6 @@ export type ArchiveExportsFrameProps = {
   meshId: string;
   manifest: ArchiveManifest | undefined;
   requested: RequestExportState;
-  /** The mesh picker, which heads the frame like the CSV form's. */
   picker: ReactNode;
 };
 

@@ -1,3 +1,4 @@
+import { canDecideOperatorRequests, canSeeDataDeletions, viewerOf } from "@mtt/contracts/authz";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
@@ -10,14 +11,15 @@ import { routes } from "@/router";
 
 /** Operator requests to decide, and deletions past their date. Zero for everyone else. */
 function useSuperuserCounts(): { pendingRequests: number; overdueDeletions: number } {
-  const { isSuperuser } = useMe();
+  const { me } = useMe();
+  const viewer = me ? viewerOf(me) : undefined;
   const requests = useQuery({
     ...operatorRequestRepository.list({ status: "pending" }),
-    enabled: isSuperuser,
+    enabled: viewer != null && canDecideOperatorRequests(viewer),
   });
   const deletions = useQuery({
     ...dataDeletionRepository.list({ status: "pending" }),
-    enabled: isSuperuser,
+    enabled: viewer != null && canSeeDataDeletions(viewer),
   });
   const now = new Date();
   return {

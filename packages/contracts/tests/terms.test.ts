@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allStatementsAccepted, termsEnforcedFrom, termsLocale } from "../src/terms";
+import { allStatementsAccepted, signupCreateBody, signupTermsStale, termsEnforcedFrom, termsLocale } from "../src/terms";
 
 describe("terms", () => {
   it("requires every statement the API sent, not just some", () => {
@@ -15,6 +15,35 @@ describe("terms", () => {
     expect(termsLocale("es-ES")).toBe("es");
     expect(termsLocale("en-GB")).toBe("en");
     expect(termsLocale("ca")).toBe("en");
+  });
+
+  it("builds a signup body only after enforced terms are accepted", () => {
+    const values = { name: "Ada", email: "ada@example.com", password: "secret", accepted: ["keep"] };
+    const current = { version: "3", locale: "es-ES", statements: [{ id: "keep" }] };
+    expect(signupCreateBody(values, { off: false, current: undefined })).toBeNull();
+    expect(signupCreateBody(values, { off: false, current: { ...current, statements: [{ id: "keep" }, { id: "share" }] } })).toBeNull();
+    expect(signupCreateBody(values, { off: false, current })).toEqual({
+      name: "Ada",
+      email: "ada@example.com",
+      password: "secret",
+      terms_version: "3",
+      terms_locale: "es",
+    });
+    expect(signupCreateBody(values, { off: true, current: undefined }, "/start")).toEqual({
+      name: "Ada",
+      email: "ada@example.com",
+      password: "secret",
+      next: "/start",
+    });
+    expect(signupCreateBody({ ...values, accepted: [] }, { off: false, current: { ...current, statements: [] } })).toEqual({
+      name: "Ada",
+      email: "ada@example.com",
+      password: "secret",
+      terms_version: "3",
+      terms_locale: "es",
+    });
+    expect(signupTermsStale({ terms_version: ["out of date"] })).toBe(true);
+    expect(signupTermsStale({ email: ["taken"] })).toBe(false);
   });
 
   it("turns terms off only on a 404; anything unknown counts as on", () => {

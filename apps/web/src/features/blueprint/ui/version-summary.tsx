@@ -2,13 +2,12 @@ import type { BlueprintVersion } from "@mtt/contracts";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { parseRef } from "@mtt/contracts/blueprint";
-import { formatParam, stringMap, valueMap } from "@/features/blueprint/model";
+import { formatParam, stringMap, valueMap } from "@/lib/algorithm-params";
 
 export type VersionSummaryProps = {
   version: Pick<BlueprintVersion, "inputs" | "steps">;
 };
 
-/** What a version reads, and each step in order with what it reads and writes. */
 export function VersionSummary({ version }: VersionSummaryProps): ReactElement {
   const { formatMessage } = useIntl();
   const steps = [...version.steps].sort((a, b) => a.order - b.order);

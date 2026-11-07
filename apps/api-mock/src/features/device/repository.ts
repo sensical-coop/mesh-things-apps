@@ -1,7 +1,14 @@
 import { Device, type DeviceCreate } from "@mtt/domain/device/Device";
-import type { DevicePatch, IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
 import { type DeviceListQuery, matchesDeviceQuery } from "./filter";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
+
+export type DevicePatch = Partial<DeviceCreate> & {
+  isAllowed?: boolean;
+  absenceDetectionEnabled?: boolean;
+  readingIntervalSeconds?: number | null;
+  publishIntervalSeconds?: number | null;
+  locationOverridden?: boolean;
+};
 
 /** POST gateways stay unseen until this elapses. 0 never marks them seen. Seed data does not use insert(). */
 function gatewaySeenAfterMs(): number {
@@ -11,7 +18,7 @@ function gatewaySeenAfterMs(): number {
   return Number.isFinite(ms) && ms > 0 ? ms : 0;
 }
 
-export class MemoryDevices implements IDeviceRepository {
+export class MemoryDevices {
   readonly items = new Map<string, Device>();
 
   async list(filters?: DeviceListQuery): Promise<Device[]> {

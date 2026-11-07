@@ -1,7 +1,7 @@
 import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
 import { OperatorRequestCreate, OperatorRequestDecision } from "@mtt/contracts";
-import { canDecideOperatorRequests, canRequestOperator } from "@mtt/domain/authz/authz";
+import { canDecideOperatorRequests, canRequestOperator } from "@mtt/contracts/authz";
 import { Hono } from "hono";
 import {
   createOperatorRequest,

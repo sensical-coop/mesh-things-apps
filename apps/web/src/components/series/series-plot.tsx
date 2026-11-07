@@ -28,7 +28,6 @@ export function SeriesPlot({
   points: Point[];
   seriesLabel: string;
   windowMs?: number | null;
-  /** A channel a blueprint derives: drawn in the purple of the "Computed" chip. */
   computed?: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();

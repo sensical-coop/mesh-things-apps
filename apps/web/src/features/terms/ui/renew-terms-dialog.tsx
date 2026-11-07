@@ -9,16 +9,11 @@ type RenewKind = Extract<TermsKind, "mesh" | "source" | "sink">;
 const RENEW_COPY: Record<
   RenewKind,
   {
-    outdated: { id: string; defaultMessage: string };
     resumeFailed: { id: string; defaultMessage: string };
     generic: { id: string; defaultMessage: string };
   }
 > = {
   mesh: {
-    outdated: {
-      id: "feature.terms.renew.outdated",
-      defaultMessage: "The terms changed while you were reading. Close and open them again.",
-    },
     resumeFailed: {
       id: "feature.mesh.renew.resumeFailed",
       defaultMessage: "The mesh's gateways could not be resumed, so the terms were not renewed. Try again.",
@@ -26,10 +21,6 @@ const RENEW_COPY: Record<
     generic: { id: "feature.mesh.renew.error", defaultMessage: "The terms were not renewed. Try again." },
   },
   source: {
-    outdated: {
-      id: "feature.source.renew.outdated",
-      defaultMessage: "The terms changed while you were reading. Close and open them again.",
-    },
     resumeFailed: {
       id: "feature.source.renew.bridgeFailed",
       defaultMessage: "The bridge could not be restarted, so the terms were not renewed. Try again.",
@@ -37,10 +28,6 @@ const RENEW_COPY: Record<
     generic: { id: "feature.source.renew.error", defaultMessage: "The terms were not renewed. Try again." },
   },
   sink: {
-    outdated: {
-      id: "feature.sink.renew.outdated",
-      defaultMessage: "The terms changed while you were reading. Close and open them again.",
-    },
     resumeFailed: {
       id: "feature.sink.renew.brokerFailed",
       defaultMessage: "The broker could not resume the sink, so the terms were not renewed. Try again.",
@@ -59,7 +46,6 @@ export type RenewTermsDialogProps = {
   onAccepted: (acceptance: TermsAcceptance) => void;
 };
 
-/** Accept the current terms again. The caller runs the mutation and invalidates. */
 export function RenewTermsDialog({
   open,
   kind,
@@ -84,7 +70,10 @@ export function RenewTermsDialog({
       error={
         failure
           ? failure.fields.terms_version
-            ? formatMessage(copy.outdated)
+            ? formatMessage({
+                id: "feature.terms.renew.outdated",
+                defaultMessage: "The terms changed while you were reading. Close and open them again.",
+              })
             : failure.status === 502
               ? formatMessage(copy.resumeFailed)
               : (formLevelMessage(error) ?? formatMessage(copy.generic))

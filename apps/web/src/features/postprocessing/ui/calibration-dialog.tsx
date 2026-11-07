@@ -10,11 +10,11 @@ import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { calibrationParams, errorMessages, formatParam, parseParam, valueMap } from "@/features/blueprint/model";
+import { errorMessages, readApiError } from "@mtt/contracts/errors";
+import { calibrationParams, formatParam, parseParam, valueMap } from "@/lib/algorithm-params";
 import { calibratedSteps, calibrationInForce, localInputToIso } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { useFormatters } from "@/hooks/use-formatters";
-import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type CalibrationDialogProps = {

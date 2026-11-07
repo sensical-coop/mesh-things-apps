@@ -7,11 +7,11 @@ import {
   TelemetryVariantMeasurementUpdate,
 } from "@mtt/contracts";
 import { deviceChannels, findDeviceMeasurement } from "../features/device/channels";
-import { matchesDeviceQuery } from "../features/device/filter";
+import { deviceListFilterFields, matchesDeviceQuery } from "../features/device/filter";
 import {
   archivesFor,
   canWriteMesh,
-} from "@mtt/domain/authz/authz";
+} from "@mtt/contracts/authz";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 import { Hono } from "hono";
 import {
@@ -48,7 +48,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const devices = (await devicesFor(db, actor)).filter(
       (device) =>
         matchesDeviceQuery(device, {
-          extra: queryFilters(c, ["mesh_id", "is_gateway", "is_allowed", "has_postprocessing", "label"]),
+          extra: queryFilters(c, deviceListFilterFields),
         }) && reportsVariants(device, variants.filter),
     );
     return c.json(await devicesJson(actor, devices));
@@ -202,7 +202,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
   );
 
   app.get("/measurements", async (c) => {
-    const rows = await db.measurements.list();
+    const rows = db.measurements;
     return c.json(rows.map(measurementJson));
   });
 
@@ -211,7 +211,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const variantId = c.req.param("telemetry_variant_id");
     const links = [...db.telemetryVariantMeasurements.entries()].filter(([, link]) => link.variantId === variantId);
     if (!links.length) return c.json([]);
-    const types = await db.measurements.list();
+    const types = db.measurements;
     const rows = [];
     for (const [linkId, link] of links) {
       const type = types.find((t) => t.id === link.measurementTypeId);
@@ -223,7 +223,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
   app.get("/telemetry-variants/:telemetry_variant_id/measurements/:link_id", async (c) => {
     const found = variantLink(db, c.req.param("telemetry_variant_id"), c.req.param("link_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
-    const type = (await db.measurements.list()).find((t) => t.id === found.link.measurementTypeId);
+    const type = (db.measurements).find((t) => t.id === found.link.measurementTypeId);
     if (!type) return c.json({ detail: "Not found" }, 404);
     return c.json(telemetryVariantMeasurementJson(db, type, found.linkId));
   });
@@ -235,7 +235,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
     }
     const found = variantLink(db, c.req.param("telemetry_variant_id"), c.req.param("link_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
-    const type = (await db.measurements.list()).find((t) => t.id === found.link.measurementTypeId);
+    const type = (db.measurements).find((t) => t.id === found.link.measurementTypeId);
     if (!type) return c.json({ detail: "Not found" }, 404);
     const parsed = await parseBody(c, TelemetryVariantMeasurementUpdate);
     if ("error" in parsed) return c.json(parsed.error, 400);

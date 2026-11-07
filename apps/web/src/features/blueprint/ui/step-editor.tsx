@@ -6,13 +6,8 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
-import {
-  calibrationParams,
-  configParams,
-  refChoices,
-  type BlueprintDraft,
-  type StepDraft,
-} from "@/features/blueprint/model";
+import { calibrationParams, configParams } from "@/lib/algorithm-params";
+import { refChoices, type BlueprintDraft, type StepDraft } from "@/features/blueprint/model";
 
 export type StepEditorProps = {
   draft: BlueprintDraft;
@@ -23,7 +18,6 @@ export type StepEditorProps = {
   onRemove: () => void;
 };
 
-/** One step: its key, what feeds each algorithm input, its configuration, and the derived fields it writes. */
 export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemove }: StepEditorProps): ReactElement {
   const { formatMessage } = useIntl();
   const step = draft.steps[index];

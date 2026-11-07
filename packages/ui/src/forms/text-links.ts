@@ -1,4 +1,3 @@
-/** A run of plain text, or a URL to render as a link. */
 export type TextSegment = { text: string; href?: string };
 
 const URL_PATTERN = /https?:\/\/[^\s()<>]+/g;

@@ -86,7 +86,6 @@ export const WATCH_NODES = [
   loraRadio({ x: -72, y: 2, z: BASE_H, scale: 0.44, facing: "x" }, P),
   loraRadio({ x: -78, y: -38, z: BASE_H, scale: 0.42, facing: "x" }, P),
 ];
-/** Skirted plinth, about 1.3× the gateway case, so the stand shows around the radio. */
 const GATE_PLINTH_H = 12;
 const GATE_SPEC = { x: 6, y: -6, z: BASE_H + GATE_PLINTH_H, scale: 0.56, facing: "x" as const };
 export const WATCH_GATE = loraRadio(GATE_SPEC, P);
@@ -97,7 +96,6 @@ export const GATE_PLINTH = slabOf(
   GATE_PLINTH_H,
   P,
 );
-/** Pole on the near corner, in front of the skirt, same height as the plinth. */
 export const GATE_SHAFT = cylinder(gateFoot.x + gateFoot.w + 2, gateFoot.y + gateFoot.d + 2, 2.4, BASE_H, GATE_PLINTH_H + 2, P, 12);
 export const GATE_CAP = cylinder(gateFoot.x + gateFoot.w * 0.72, gateFoot.y + gateFoot.d * 0.72, 3.2, BASE_H + GATE_PLINTH_H - 1.6, 1.6, P, 10);
 export const WIFI = wifiArcs(WATCH_GATE.usbAt, iso([62, FACE_Y, FACE_Z], P), [7, 12, 17]);

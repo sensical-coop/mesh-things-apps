@@ -1,6 +1,6 @@
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
 import type { MeshStatus } from "@/features/mesh/model";
 import { useFormatters } from "@/hooks/use-formatters";
 
@@ -84,9 +84,5 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
   } as const;
   const { color, label, title } = shown[status.kind];
-  return (
-    <Chip variant="caption" color={color} className="rounded-full whitespace-nowrap" title={title}>
-      {label}
-    </Chip>
-  );
+  return <StatusChip tone={color} label={label} title={title} className="whitespace-nowrap" />;
 }

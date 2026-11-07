@@ -16,7 +16,6 @@ export function useStatsRange() {
   return useQueryState("range", parseAsStringLiteral(MESH_STATS_RANGES).withDefault("24h"));
 }
 
-/** A tab's one-line scope, with the range picker on its right. */
 export function StatsRangeBar({ description }: { description: string }): ReactElement {
   const { formatMessage } = useIntl();
   const [range, setRange] = useStatsRange();

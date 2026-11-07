@@ -6,7 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { routes } from "@/router";
-import { API_URL } from "@/lib/api-url";
+import { API_URL } from "@mtt/contracts/runtime";
 import { SITE, pageWidth } from "@/components/brand";
 
 const socials = [
@@ -59,16 +59,16 @@ export function Footer(): ReactElement {
           <FooterColumn title={formatMessage({ id: "console.footer.product", defaultMessage: "Product" })}>
             <nav aria-label="Product" className="flex flex-col gap-2">
               <Link to={routes.meshes} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.meshes", defaultMessage: "Meshes" })}
+                {formatMessage({ id: "console.nav.meshes", defaultMessage: "Meshes" })}
               </Link>
               <Link to={routes.devices} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
+                {formatMessage({ id: "console.nav.devices", defaultMessage: "Devices" })}
               </Link>
               <Link to={routes.alarms} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" })}
+                {formatMessage({ id: "console.nav.alarms", defaultMessage: "Alarms" })}
               </Link>
               <Link to={routes.blueprints} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
+                {formatMessage({ id: "console.nav.blueprints", defaultMessage: "Blueprints" })}
               </Link>
             </nav>
           </FooterColumn>

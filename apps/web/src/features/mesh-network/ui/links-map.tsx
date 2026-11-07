@@ -3,7 +3,7 @@ import { Map, MapArc, MapControls, MapMarker, MapRoute, MarkerContent } from "@m
 import { cx } from "@mtt/ui/utils/cx";
 import { type ReactElement, useMemo } from "react";
 import { MapUnsupported } from "@/components/map-unsupported";
-import { expandedMapClass } from "@/lib/expanded-map";
+import { expandedMapClass } from "../expanded-map";
 import { deviceTitle } from "@/features/device/model";
 import { FitToPoints } from "@/features/device/ui/map-fit";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";

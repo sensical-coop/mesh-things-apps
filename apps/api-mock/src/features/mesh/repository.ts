@@ -1,9 +1,16 @@
-import { Mesh } from "@mtt/domain/mesh/Mesh";
-import type { MeshCreate } from "@mtt/domain/mesh/Mesh";
-import type { IMeshRepository, MeshPatch } from "@mtt/domain/mesh/IMeshRepository";
+import { Mesh, type MeshCreate } from "@mtt/domain/mesh/Mesh";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 
-export class MemoryMeshes implements IMeshRepository {
+export type MeshPatch = {
+  channelId?: string;
+  pskB64?: string;
+  label?: string | null;
+  isPublic?: boolean;
+  sourceId?: string | null;
+  discoverGateways?: boolean;
+};
+
+export class MemoryMeshes {
   readonly items = new Map<string, Mesh>();
 
   async list(): Promise<Mesh[]> {

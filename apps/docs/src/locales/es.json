@@ -19,8 +19,6 @@
   "page.docs.ui.copiedCode": "Código copiado",
   "page.docs.ui.copyLink": "Copiar enlace a esta sección",
   "page.docs.ui.copiedLink": "Enlace copiado",
-  "common.languageSwitcher.label": "Cambiar idioma",
-  "common.themeToggle.label": "Cambiar tema de color",
   "notFound.docsPage.title": "Página no encontrada",
   "notFound.docsPage.description": "La documentación no contiene ninguna página en esta dirección.",
   "notFound.docsPage.back": "Volver a la documentación"

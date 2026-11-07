@@ -1,7 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { localeInitScript } from "@mtt/ui/locale";
-import { themeInitScript } from "@mtt/ui/theme";
+import { initScriptsPlugin } from "@mtt/ui/init-scripts";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -21,10 +20,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    {
-      name: "init-scripts",
-      transformIndexHtml: () =>
-        [themeInitScript, localeInitScript].map((children) => ({ tag: "script", children, injectTo: "head" as const })),
-    },
+    initScriptsPlugin(),
   ],
 });

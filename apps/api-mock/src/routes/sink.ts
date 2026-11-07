@@ -8,8 +8,9 @@ import {
 import {
   canManageSinks,
   visibleSinks,
-} from "@mtt/domain/authz/authz";
-import { orderStreams, type Sink } from "@mtt/domain/sink/Sink";
+} from "@mtt/contracts/authz";
+import { orderStreams } from "@mtt/contracts/sink";
+import type { Sink } from "@mtt/domain/sink/Sink";
 import { SINKS_ENABLED } from "../features/sink/repository";
 import {
   TERMS_ENFORCED,

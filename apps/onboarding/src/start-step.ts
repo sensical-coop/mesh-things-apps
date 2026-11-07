@@ -23,7 +23,6 @@ export type StartFacts = {
   gateway: "none" | "unseen" | "seen";
 };
 
-/** Earliest step the facts allow. A requested step behind that clamp moves forward. */
 export function resolveStartStep(requested: StartStep | undefined, facts: StartFacts): StartStep {
   if (facts.session === "none") return requested === "account" ? "account" : "welcome";
   if (facts.session === "unverified") return "check-email";
@@ -35,7 +34,6 @@ export function resolveStartStep(requested: StartStep | undefined, facts: StartF
   return requested === "connect" || requested === "next-steps" || requested === "done" ? requested : "next-steps";
 }
 
-/** Nearest earlier step the facts still allow, so going back never lands on a step that moves forward again. */
 export function previousStartStep(step: StartStep, facts: StartFacts): StartStep | undefined {
   for (let index = START_STEPS.indexOf(step) - 1; index >= 0; index -= 1) {
     const candidate = START_STEPS[index];

@@ -9,7 +9,7 @@ import { useIntl } from "react-intl";
 import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
-import { errorMessages } from "@/features/blueprint/model";
+import { errorMessages } from "@mtt/contracts/errors";
 import { localInputToIso } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { useFormatters } from "@/hooks/use-formatters";

@@ -2,6 +2,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
+import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 
 /** Meshtastic's published default channel key. Traffic on it is readable by anyone. */
@@ -12,31 +13,36 @@ const actionsClass =
 
 export type MeshFormValues = { label: string; channel_id: string; psk_b64: string };
 
-export type MeshFormLabels = {
-  label: string;
-  labelHint: string;
-  channel: string;
-  channelHint: string;
-  psk: string;
-  pskHint: string;
-  publicPsk: string;
-};
+export function useMeshSubmitLabel(pending: boolean): string {
+  const { formatMessage } = useIntl();
+  if (pending) return formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" });
+  return formatMessage({ id: "page.meshes.list.createDialog.submit", defaultMessage: "Create mesh" });
+}
+
+export function MeshFormAlert({ detail }: { detail?: string }): ReactElement {
+  const { formatMessage } = useIntl();
+  return (
+    <p className="text-body-medium text-text-secondary" role="alert">
+      {formatMessage({
+        id: "page.meshes.list.createDialog.error",
+        defaultMessage: "The mesh was not created. Check the fields and try again.",
+      })}
+      {detail ? ` ${detail}` : ""}
+    </p>
+  );
+}
 
 export function MeshForm({
-  labels,
   errors,
   pending,
-  submitLabel,
   onSubmit,
   extraFields,
   onCancel,
   cancelLabel,
   formId,
 }: {
-  labels: MeshFormLabels;
   errors?: Record<string, string | undefined>;
   pending: boolean;
-  submitLabel: string;
   onSubmit: (values: MeshFormValues) => void;
   /** Console-only fields (broker, discovery), rendered after the shared ones. */
   extraFields?: ReactNode;
@@ -45,6 +51,8 @@ export function MeshForm({
   /** Renders no actions: a submit button elsewhere on the page targets the form with `form={formId}`. */
   formId?: string;
 }): ReactElement {
+  const { formatMessage } = useIntl();
+  const submitLabel = useMeshSubmitLabel(pending);
   const [psk, setPsk] = useState("");
   const publicPsk = psk === PUBLIC_DEFAULT_PSK;
   const pskDescribed = [publicPsk ? "mesh-psk-public" : null, errors?.psk_b64 ? "mesh-psk-error" : null]
@@ -66,10 +74,26 @@ export function MeshForm({
   return (
     <form id={formId} className="flex flex-col gap-5" onSubmit={submit}>
       <FieldGroup className="gap-3">
-        <FormField id="mesh-label" label={labels.label} hint={labels.labelHint} error={errors?.label}>
+        <FormField
+          id="mesh-label"
+          label={formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" })}
+          hint={formatMessage({
+            id: "page.meshes.list.createDialog.labelHint",
+            defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
+          })}
+          error={errors?.label}
+        >
           <Input id="mesh-label" name="label" autoComplete="off" aria-invalid={errors?.label ? true : undefined} aria-describedby={errors?.label ? "mesh-label-error" : "mesh-label-hint"} />
         </FormField>
-        <FormField id="mesh-channel" label={labels.channel} hint={labels.channelHint} error={errors?.channel_id}>
+        <FormField
+          id="mesh-channel"
+          label={formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" })}
+          hint={formatMessage({
+            id: "page.meshes.list.createDialog.channelIdHint",
+            defaultMessage: "The Meshtastic channel name.",
+          })}
+          error={errors?.channel_id}
+        >
           <Input
             id="mesh-channel"
             name="channel_id"
@@ -79,7 +103,15 @@ export function MeshForm({
             aria-describedby={errors?.channel_id ? "mesh-channel-error" : "mesh-channel-hint"}
           />
         </FormField>
-        <FormField id="mesh-psk" label={labels.psk} hint={labels.pskHint} error={errors?.psk_b64}>
+        <FormField
+          id="mesh-psk"
+          label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
+          hint={formatMessage({
+            id: "page.meshes.list.createDialog.pskHint",
+            defaultMessage: "The channel's pre-shared key, in Base64.",
+          })}
+          error={errors?.psk_b64}
+        >
           <Input
             id="mesh-psk"
             name="psk_b64"
@@ -93,7 +125,13 @@ export function MeshForm({
         </FormField>
         {publicPsk ? (
           <p id="mesh-psk-public" className="text-caption-1-regular text-accent-500" role="status">
-            {labels.publicPsk}
+            {formatMessage(
+              {
+                id: "page.meshes.list.createDialog.publicPsk",
+                defaultMessage: "{psk} is the public default key. Anyone can read this channel.",
+              },
+              { psk: PUBLIC_DEFAULT_PSK },
+            )}
           </p>
         ) : null}
         {extraFields}

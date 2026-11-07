@@ -5,11 +5,9 @@ import { useIntl } from "react-intl";
 
 export type CodeBlockProps = {
   code: string;
-  /** What the code is, for screen readers and the copy button. */
   label: string;
 };
 
-/** Monospaced, scrollable, with a copy button that says when it copied. */
 export function CodeBlock({ code, label }: CodeBlockProps): ReactElement {
   const { formatMessage } = useIntl();
   const [copied, setCopied] = useState(false);

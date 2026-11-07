@@ -1,12 +1,13 @@
-import type { DataDeletion, OwnerProfile } from "@mtt/contracts";
+import type { DataDeletion } from "@mtt/contracts";
+import { canSeeDataDeletions as maySeeDataDeletions, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
 
 export const DATA_DELETION_STATUSES = ["pending", "done", "cancelled", "all"] as const;
 
 export type DataDeletionStatusFilter = (typeof DATA_DELETION_STATUSES)[number];
 
-/** Mirrors the API: superusers only. */
-export function canSeeDataDeletions(me: Pick<OwnerProfile, "is_superuser"> | undefined): boolean {
-  return me?.is_superuser === true;
+/** Superusers only. Hidden while `me` is still loading. */
+export function canSeeDataDeletions(me: ProfileFlags | undefined): boolean {
+  return me != null && maySeeDataDeletions(viewerOf(me));
 }
 
 /**

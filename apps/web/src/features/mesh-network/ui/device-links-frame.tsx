@@ -12,7 +12,6 @@ import { meshRepository } from "@/features/mesh/repository";
 import { routes } from "@/router";
 import { nodeHex } from "../model";
 
-/** Nodes this device hears and nodes that hear it, over the last week. */
 export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
   const { formatLastSeen } = useFormatters();

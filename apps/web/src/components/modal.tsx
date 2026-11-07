@@ -27,7 +27,6 @@ export function Modal({
   title: string;
   description: string;
   onClose: () => void;
-  /** `wide` for editors that lay fields side by side; `large` for long reference content. */
   size?: ModalSize;
   children: ReactNode;
 }): ReactElement {

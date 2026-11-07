@@ -5,7 +5,7 @@ import { Navigate, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
-import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
+import { AuthPage } from "@/features/auth/ui/auth-page";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
 import { activeSessionRedirect, useSessionProbe } from "@/features/auth/guest-gate";
@@ -34,14 +34,15 @@ export function VerifyPendingPage(): ReactElement {
   const owner = me.data;
 
   return (
-    <main className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-background-secondary-default px-4 py-16 sm:px-6 sm:py-24">
-      <ShaderBackdrop />
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
-        <LanguageSwitcher />
-      </div>
-      <div className="relative w-full max-w-md">
-        <Frame className="w-full shadow-card" spacing="lg">
-          <FramePanel className="flex flex-col gap-6">
+    <AuthPage
+      header={
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          <LanguageSwitcher />
+        </div>
+      }
+    >
+      <Frame className="w-full shadow-card" spacing="lg">
+        <FramePanel className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
               <h1 className="text-title-2-medium tracking-tight text-text-primary">
                 {formatMessage({ id: "page.verifyPending.title", defaultMessage: "Check your email" })}
@@ -67,9 +68,8 @@ export function VerifyPendingPage(): ReactElement {
             >
               {formatMessage({ id: "page.verifyPending.signOut", defaultMessage: "Not you? Sign out" })}
             </Button>
-          </FramePanel>
-        </Frame>
-      </div>
-    </main>
+        </FramePanel>
+      </Frame>
+    </AuthPage>
   );
 }

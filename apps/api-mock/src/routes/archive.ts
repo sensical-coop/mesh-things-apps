@@ -1,9 +1,7 @@
 import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
-import {
-  canReadArchive,
-  type Actor,
-} from "@mtt/domain/authz/authz";
+import { canReadArchive } from "@mtt/contracts/authz";
+import type { Actor } from "../auth";
 import { newId } from "@mtt/domain/shared/ids";
 import { Hono } from "hono";
 import {

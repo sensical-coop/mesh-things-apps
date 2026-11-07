@@ -42,10 +42,11 @@ test("deviceTitle prefers the node name over a role-like label", () => {
   assert.equal(deviceTitle(device), "Hill GW");
 });
 
-test("deviceRoleLabel sentence-cases the mesh role", () => {
-  assert.equal(deviceRoleLabel(device), "Router");
-  assert.equal(deviceRoleLabel({ role: "CLIENT_MUTE", is_gateway: false }), "Client mute");
+test("deviceRoleLabel uses the catalog name, else a sentence, and gateway only when there is no role", () => {
+  assert.equal(deviceRoleLabel({ role: "TAK_TRACKER", is_gateway: false }), "TAK tracker");
+  assert.equal(deviceRoleLabel({ role: "CUSTOM_ROLE", is_gateway: true }), "Custom role");
   assert.equal(deviceRoleLabel({ role: null, is_gateway: true }), "Gateway");
+  assert.equal(deviceRoleLabel({ role: null, is_gateway: false }), "Node");
 });
 
 test("parseCoordinate keeps decimals whatever the separator", () => {

@@ -1,10 +1,10 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
-import { IntlProvider } from "react-intl";
 import appCss from "@/styles.css?url";
+import { AppProviders } from "@mtt/ui/components/app-providers";
 import { useLocale } from "@mtt/ui/hooks/use-locale";
-import { DEFAULT_LOCALE, localeInitScript } from "@mtt/ui/locale";
-import { themeInitScript } from "@mtt/ui/theme";
-import { MESSAGES } from "@/lib/messages";
+import { headInitScripts } from "@mtt/ui/init-scripts";
+import en from "@/locales/en.json";
+import es from "@/locales/es.json";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -26,14 +26,15 @@ function RootComponent() {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
+        {headInitScripts.map((script) => (
+          <script key={script} dangerouslySetInnerHTML={{ __html: script }} />
+        ))}
         <HeadContent />
       </head>
       <body>
-        <IntlProvider key={locale} locale={locale} defaultLocale={DEFAULT_LOCALE} messages={MESSAGES[locale]}>
+        <AppProviders messages={{ en, es }}>
           <Outlet />
-        </IntlProvider>
+        </AppProviders>
         <Scripts />
       </body>
     </html>

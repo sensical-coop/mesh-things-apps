@@ -7,7 +7,6 @@ import { MESH_REFRESH_MS } from "../model";
 import { StatsRangeBar, useStatsRange } from "./stats-range-bar";
 import { TopologySection } from "./topology-section";
 
-/** Who hears whom on a mesh: the links map or graph, traceroutes and relays. */
 export function MeshTopologyTab({ meshId, devices }: { meshId: string; devices: DeviceRead[] }): ReactElement {
   const { formatMessage } = useIntl();
   const [range] = useStatsRange();

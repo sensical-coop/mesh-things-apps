@@ -35,7 +35,7 @@ This project uses BoardUI (React + Tailwind CSS v4, source-owned components unde
 
 - Merge classes with `cx()` from `@mtt/ui/utils/cx` (tailwind-merge aware of BoardUI's composite text styles). No string concatenation, no plain `clsx`.
 - Icons come from `@remixicon/react`, passed as component references (`leadingIcon={RiAddLine}`), not rendered elements.
-- Form components build on `react-aria-components`; extend the installed BoardUI form components rather than raw `<input>`/`<select>`.
+- Form components build on Base UI (`@base-ui/react`); extend the installed BoardUI form components rather than raw `<input>`/`<select>`.
 - Focus states: `outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring`.
 
 ## Enforced by lint (`pnpm lint`, `pnpm lint:css`)

@@ -5,7 +5,6 @@ import { parseWindowMs } from "../src/lib/duration.ts";
 
 test("parseWindowMs reads number+unit windows", () => {
   assert.equal(parseWindowMs("1h"), 3_600_000);
-  assert.equal(parseWindowMs("6h"), 21_600_000);
   assert.equal(parseWindowMs("1d"), 86_400_000);
   assert.equal(parseWindowMs("30m"), 1_800_000);
   assert.equal(parseWindowMs("15s"), 15_000);

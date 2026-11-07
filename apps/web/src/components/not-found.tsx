@@ -7,11 +7,9 @@ import { routes } from "@/router";
 export type NotFoundKind = "page" | "mesh" | "device" | "blueprint" | "operatorRequest";
 
 export type NotFoundProps = {
-  /** What was missing: picks the copy and where the way back leads. */
   kind?: NotFoundKind;
 };
 
-/** The console's 404: an unknown path, a malformed id, or an id the API doesn't know. */
 export function NotFound({ kind = "page" }: NotFoundProps): ReactElement {
   const { formatMessage } = useIntl();
   const copy = {

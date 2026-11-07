@@ -11,7 +11,6 @@ import { parseWindowMs } from "@/lib/duration";
 import { portnumLabel } from "../model";
 import { RankedBars } from "./ranked-bars";
 
-/** What a device transmitted over the last week, by kind of packet. */
 export function DeviceTrafficFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
   const traffic = useQuery(readingsRepository.deviceTraffic(device.uuid, { range: "7d" }));

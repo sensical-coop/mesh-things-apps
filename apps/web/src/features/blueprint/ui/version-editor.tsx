@@ -32,7 +32,6 @@ function renameRefs(steps: StepDraft[], rename: (ref: string) => string): StepDr
   }));
 }
 
-/** The inputs a recipe reads (slots, bound per device) and the ordered steps computing from them. */
 export function VersionEditor({ draft, algorithms, onChange, withNotes = false }: VersionEditorProps): ReactElement {
   const { formatMessage } = useIntl();
   const [adding, setAdding] = useState("");

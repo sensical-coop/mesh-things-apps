@@ -1,16 +1,17 @@
 import type { DevicePostprocessingWriteOutput, PostprocessingBackfillRequestOutput, StepCalibrationRequestOutput } from "@mtt/contracts";
 import { PREFIX_PATTERN } from "@mtt/contracts/blueprint";
-import { canAttachBlueprint, canReadBlueprint, type Actor } from "@mtt/domain/authz/authz";
+import { canAttachBlueprint, canReadBlueprint } from "@mtt/contracts/authz";
+import type { Actor } from "../../auth";
 import type { Device } from "@mtt/domain/device/Device";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 import { plainRecord } from "../blueprint/records";
 import { deviceChannels } from "../device/channels";
+import { ensureMeasurement } from "../measurement/repository";
 import type { Store } from "../../store";
 import { ALGORITHMS, algorithmNamed } from "../algorithm/catalog";
 import { latestVersion, versionNumbered, type BlueprintRow, type BlueprintVersionRow } from "../blueprint/repository";
 import { validateCalibration } from "../blueprint/validate";
 
-/** A derived channel a postprocessing owns on its device. */
 export type DerivedOutputRow = {
   fieldName: string;
   measurementId: string;
@@ -18,7 +19,6 @@ export type DerivedOutputRow = {
   unit: string | null;
 };
 
-/** A blueprint version applied to one device. */
 export type PostprocessingRow = {
   id: string;
   deviceUuid: string;
@@ -68,12 +68,10 @@ export function toleranceFor(row: PostprocessingRow, readingIntervalSeconds: num
   return DEFAULT_TOLERANCE_SECONDS;
 }
 
-/** Derived field names this postprocessing writes, prefix applied. */
 export function outputFieldNames(version: BlueprintVersionRow, prefix: string): string[] {
   return version.steps.flatMap((step) => Object.values(step.outputs).map((field) => `${prefix}${field}`));
 }
 
-/** What keeps a postprocessing from being enabled; empty once it can run. */
 export function problems(
   row: PostprocessingRow,
   version: BlueprintVersionRow,
@@ -186,7 +184,8 @@ async function syncOutputs(db: Store, row: PostprocessingRow, device: Device, ve
     const ref = declared?.startsWith("@") && step ? step.inputs[declared.slice(1)] : undefined;
     const boundId = ref?.startsWith("slot:") ? row.bindings[ref.slice(5)] : undefined;
     const unit = declared?.startsWith("@") ? (channels.find((c) => c.id === boundId)?.type.nativeUnit ?? null) : (declared ?? null);
-    const type = db.measurements.ensure(
+    const type = ensureMeasurement(
+      db.measurements,
       {
         payloadKind: "computed:derived",
         fieldName: field,
@@ -271,7 +270,6 @@ export async function updatePostprocessing(
   if (data.output_prefix !== undefined && !PREFIX_PATTERN.test(data.output_prefix)) {
     return fail(400, { output_prefix: ["Use lowercase letters, digits and underscores"] });
   }
-  // Work on a copy so a refused change leaves the row as it was.
   const next: PostprocessingRow = { ...row, bindings: { ...row.bindings }, outputs: [...row.outputs] };
   let version = resolved.version;
   let rewired = data.input_bindings !== undefined || data.output_prefix !== undefined;

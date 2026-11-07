@@ -7,12 +7,10 @@ import {
   getOwnersMeResendVerificationCreateMutationOptions,
   getOwnersMeRetrieveQueryKey,
   getOwnersMeRetrieveQueryOptions,
-  ownersCsrfCookieRetrieve,
   ownersMeGatewayBrokerRetrieve,
 } from "@mtt/contracts/api";
 
 export const authRepository = {
-  csrf: ownersCsrfCookieRetrieve,
   signup: getOwnersCreateMutationOptions,
   login: getOwnersLoginCreateMutationOptions,
   logout: getOwnersLogoutCreateMutationOptions,

@@ -1,4 +1,4 @@
-import type { Actor } from "@mtt/domain/authz/authz";
+import type { Actor } from "./auth";
 import { Device } from "@mtt/domain/device/Device";
 import { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
@@ -7,7 +7,6 @@ import type { BlueprintRow, BlueprintVersionRow } from "./features/blueprint/rep
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 import { MemoryDevices } from "./features/device/repository";
 import { MemoryMeshes } from "./features/mesh/repository";
-import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
 import { MemorySources } from "./features/source/repository";
 import { MemorySinks } from "./features/sink/repository";
@@ -115,12 +114,12 @@ function deletion(
   };
 }
 
-/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
 /** Always a time, unlike daysFromNow, which follows the retention setting. */
 function hoursAgo(hours: number): string {
   return new Date(Date.now() - hours * 3_600_000).toISOString();
 }
 
+/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
 function daysFromNow(days: number): string | null {
   return DATA_RETENTION_DAYS ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
 }
@@ -199,7 +198,7 @@ export type Store = {
   devices: MemoryDevices;
   archive: MemoryArchive;
   exports: MemoryExports;
-  measurements: MemoryMeasurements;
+  measurements: MeasurementType[];
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
   postprocessings: PostprocessingRow[];
@@ -539,7 +538,7 @@ export function createStore(owners: StoreOwners = {}): Store {
     if (since !== null) archive.start(MESH_BROOK_ID, nodeId, hoursAgo(-since * 24));
     if (until !== null) archive.stop(MESH_BROOK_ID, nodeId, hoursAgo(-until * 24));
   }
-  const measurements = new MemoryMeasurements(meas);
+  const measurements = meas;
   // The operator's sinks: one sending Valley and Brook's buoy with a consumer connected,
   // one paused because its terms lapsed.
   const sinks = new MemorySinks();

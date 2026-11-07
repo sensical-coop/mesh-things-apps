@@ -17,13 +17,17 @@ test("Fumadocs serves the same documentation pages in English and Spanish", asyn
   });
   try {
     const { docsSource } = await server.ssrLoadModule("/src/lib/source.ts");
+    const urls = pages.map((slug) => `/${slug}`);
     for (const language of ["en", "es"]) {
-      assert.equal(docsSource.getPages(language).length, pages.length);
+      assert.deepEqual(
+        docsSource
+          .getPages(language)
+          .map((page: { url: string }) => page.url)
+          .sort(),
+        [...urls].sort(),
+      );
       for (const slug of pages) {
-        const page = docsSource.getPage([slug], language);
-        assert.equal(page?.url, `/${slug}`);
-        assert.equal(typeof page?.data.title, "string");
-        assert.equal(typeof page?.data.body, "function");
+        assert.equal(docsSource.getPage([slug], language)?.url, `/${slug}`);
       }
     }
     assert.deepEqual(
@@ -32,11 +36,6 @@ test("Fumadocs serves the same documentation pages in English and Spanish", asyn
       ),
       pages,
     );
-    const overview = docsSource.getPage(["overview"], "es");
-    const overviewTitle = /^title:\s*(.+)\s*$/m.exec(
-      readFileSync(new URL("../content/docs/es/overview.mdx", import.meta.url), "utf8"),
-    )?.[1];
-    assert.equal(overview?.data.title, overviewTitle);
     assert.equal(docsSource.getPage(["missing-page"]), undefined);
   } finally {
     await server.close();

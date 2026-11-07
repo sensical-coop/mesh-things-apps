@@ -1,37 +1,17 @@
-import { Frame, FramePanel } from "@mtt/ui/reui/frame";
+import { classifyLoginFailure, type LoginFailure } from "@mtt/contracts/errors";
 import { LoginForm as UiLoginForm } from "@mtt/ui/forms/login-form";
+import { Frame, FramePanel } from "@mtt/ui/reui/frame";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { safeReturnPath } from "@/lib/return-path";
-import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { readApiError } from "@mtt/contracts/errors";
+import { isOwnerSession } from "@/features/auth/session";
+import { safeReturnPath } from "@/lib/return-path";
+import { routes } from "@/router";
 
 const MOCK_API_DISABLED = import.meta.env.VITE_DISABLE_MOCK_API === "true";
-
-type FormatMessage = ReturnType<typeof useIntl>["formatMessage"];
-
-function loginErrorMessage(status: number | undefined, formatMessage: FormatMessage): string {
-  if (status === 401) {
-    return formatMessage({
-      id: "page.login.form.error",
-      defaultMessage: "Those credentials were not accepted. Check the email and password and try again.",
-    });
-  }
-  if (status === 429) {
-    return formatMessage({
-      id: "page.login.form.error.throttled",
-      defaultMessage: "Too many sign-in attempts. Wait a minute and try again.",
-    });
-  }
-  return formatMessage({
-    id: "page.login.form.error.generic",
-    defaultMessage: "We couldn't sign you in right now. Try again in a moment.",
-  });
-}
 
 export function LoginForm({
   accountDeleted = false,
@@ -43,13 +23,13 @@ export function LoginForm({
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<LoginFailure | null>(null);
   const login = useMutation({
     ...authRepository.login(),
     // An unverified owner is signed in too, and only has the verify-pending page.
     onSuccess: async (owner) => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
-      if (!owner.is_active) {
+      if (!isOwnerSession({ isSuccess: true, data: owner })) {
         await navigate({ to: routes.verifyPending });
         return;
       }
@@ -60,12 +40,11 @@ export function LoginForm({
   });
 
   async function onSubmit(values: { email: string; password: string }) {
-    setError(null);
+    setFailure(null);
     try {
-      await authRepository.csrf();
       await login.mutateAsync({ data: values });
     } catch (caught) {
-      setError(loginErrorMessage(readApiError(caught).status, formatMessage));
+      setFailure(classifyLoginFailure(caught));
     }
   }
 
@@ -92,17 +71,8 @@ export function LoginForm({
           </StatusCopy>
         ) : null}
         <UiLoginForm
-          labels={{
-            email: formatMessage({ id: "page.login.form.email", defaultMessage: "Email" }),
-            password: formatMessage({ id: "page.login.form.password", defaultMessage: "Password" }),
-            submit: formatMessage({ id: "page.login.form.signIn", defaultMessage: "Sign in" }),
-            pending: formatMessage({ id: "page.login.form.signingIn", defaultMessage: "Signing in" }),
-          }}
-          error={error}
+          failure={failure}
           pending={login.isPending}
-          defaultValues={
-            MOCK_API_DISABLED ? undefined : { email: "owner@sensical.test", password: "mesh-owner-12" }
-          }
           forgotPassword={
             <Link
               to={routes.forgotPassword}

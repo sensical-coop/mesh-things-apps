@@ -19,7 +19,6 @@ export type BlueprintDetailsDialogProps = {
   onClose: () => void;
 };
 
-/** Name, description and visibility: the only things a blueprint changes in place. */
 export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();

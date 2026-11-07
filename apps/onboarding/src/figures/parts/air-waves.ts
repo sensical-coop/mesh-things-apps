@@ -1,9 +1,7 @@
 import { pathOf, type Flat } from "@/iso/iso-kit";
 
 export interface AirPacket {
-  /** Curved hop in viewBox space. */
   d: string;
-  /** Position along the hop. `t` is clamped to 0..1. */
   at: (t: number) => Flat;
 }
 
@@ -25,21 +23,16 @@ export function signalArcs(tip: Flat, bearing: number, radii: readonly number[],
   return radii.map((radius) => arc(tip, radius, bearing - spread, bearing + spread));
 }
 
-/** Two or three LoRa rings opening upward from an antenna tip. */
 export function airRings(tip: Flat, radii: readonly number[] = [8, 14, 20]): string[] {
   return signalArcs(tip, -Math.PI / 2, radii, 1.15);
 }
 
-/** Wi-Fi arcs opening from `from` toward `toward`. */
 export function wifiArcs(from: Flat, toward: Flat, radii: readonly number[] = [7, 12, 17]): string[] {
   const bearing = Math.atan2(toward[1] - from[1], toward[0] - from[0]);
   return signalArcs(from, bearing, radii, 0.62);
 }
 
-/**
- * A packet in the air between two antenna tips. The curve bows toward the top of the viewBox
- * (smaller y), so it does not read as a cable. `lift` is in viewBox units.
- */
+/** The curve bows toward the top of the viewBox (smaller y), so it does not read as a cable. `lift` is in viewBox units. */
 export function airPacket(from: Flat, to: Flat, lift = 24): AirPacket {
   const control: Flat = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2 - lift];
   const at = (t: number): Flat => {
@@ -52,6 +45,15 @@ export function airPacket(from: Flat, to: Flat, lift = 24): AirPacket {
   const points: Flat[] = [];
   for (let index = 0; index <= 16; index += 1) points.push(at(index / 16));
   return { d: pathOf(points), at };
+}
+
+/** Position along a sequence of hops. `progress` 0 is the first hop's start; 1 stays on the last hop. */
+export function pointOnRoute(legs: readonly AirPacket[], progress: number): Flat {
+  const scaled = Math.min(0.9999, Math.max(0, progress)) * legs.length;
+  const index = Math.floor(scaled);
+  const leg = legs[index];
+  if (!leg) throw new Error("route");
+  return leg.at(scaled - index);
 }
 
 function checkAir(): void {

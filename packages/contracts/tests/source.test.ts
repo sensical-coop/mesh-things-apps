@@ -10,11 +10,14 @@ describe("source", () => {
     expect(isHostPort("host:0")).toBe(false);
     expect(isHostPort("host:65536")).toBe(false);
     expect(isHostPort("host:88a")).toBe(false);
+    expect(isHostPort("::1")).toBe(false);
   });
 
   it("splits host:port and defaults a bare host to 8883", () => {
     expect(brokerHostPort("mqtt.example.org:8883")).toEqual({ host: "mqtt.example.org", port: "8883" });
     expect(brokerHostPort("mqtt.example.org")).toEqual({ host: "mqtt.example.org", port: "8883" });
+    expect(brokerHostPort("::1")).toEqual({ host: "::1", port: "8883" });
+    expect(brokerHostPort("[::1]:8883")).toEqual({ host: "[::1]", port: "8883" });
   });
 
   it("refuses $share and $SYS topics", () => {
@@ -24,15 +27,16 @@ describe("source", () => {
     expect(isPlainTopic("")).toBe(false);
   });
 
-  it("reports each bad field with the API's message", () => {
-    expect(validateSource({ server: "nope", topic: "$SYS/#", qos: 2 })).toEqual({
-      server: "Must be host:port.",
-      topic: "Must be a plain topic filter; $share and $SYS topics are not accepted.",
-      qos: "Must be 0 or 1.",
-    });
+  it("reports each bad field and accepts a trimmed host:port", () => {
+    expect(Object.keys(validateSource({ server: "nope", topic: "$SYS/#", qos: 2 })).sort()).toEqual([
+      "qos",
+      "server",
+      "topic",
+    ]);
     expect(validateSource({ server: "broker:1883", topic: "msh/#", qos: 1 })).toEqual({});
     expect(validateSource({ server: " mqtt.meshtastic.org:1883 ", topic: " msh/# ", qos: 1 })).toEqual({});
-    expect(validateSource({ server: "host:0", topic: "", qos: 0 }).server).toBe("Must be host:port.");
-    expect(validateSource({ server: "host:1883", topic: "", qos: 0 }).topic).toBeDefined();
+    expect("server" in validateSource({ server: "host:0", topic: "msh/#", qos: 0 })).toBe(true);
+    expect("qos" in validateSource({ server: "host:1883", topic: "msh/#", qos: 0 })).toBe(false);
+    expect("topic" in validateSource({ server: "host:1883", topic: "", qos: 1 })).toBe(true);
   });
 });

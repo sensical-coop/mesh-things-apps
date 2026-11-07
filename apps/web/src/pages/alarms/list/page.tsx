@@ -1,17 +1,9 @@
-import {
-  Frame,
-  FrameDescription,
-  FrameHeader,
-  FramePanel,
-  FrameTitle,
-} from "@mtt/ui/reui/frame";
+import { ListScaffold } from "@/components/list-scaffold";
 import { SmartFilterToolbar, useSmartFilters } from "@/components/smart-filters";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsString, useQueryState } from "nuqs";
 import { type ReactElement, useMemo } from "react";
 import { useIntl } from "react-intl";
-import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
-import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
 import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
 import { meshRepository } from "@/features/mesh/repository";
@@ -20,7 +12,6 @@ import { useMe } from "@/features/auth/use-me";
 import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { matchesListQuery } from "@mtt/contracts/list-filter";
-import { pageHeadingClass } from "@/lib/page-heading";
 import { MeshAlarmsList } from "./mesh-alarms-list";
 import { MeshPicker } from "@/features/mesh/ui/mesh-picker";
 
@@ -28,8 +19,6 @@ import { MeshPicker } from "@/features/mesh/ui/mesh-picker";
 // up front cost two requests per device and ran a large mesh into the API's rate limit.
 export function AlarmsPage(): ReactElement {
   const { formatMessage } = useIntl();
-  const filterLabels = useTranslatedFilterLabels();
-  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   const { me } = useMe();
   const [selected, setSelected] = useQueryState("mesh", parseAsString);
   const meshes = useQuery(meshRepository.list());
@@ -56,25 +45,15 @@ export function AlarmsPage(): ReactElement {
   const meshesLoading = meshes.isPending || !me;
 
   return (
-    <>
-      <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
-          {formatMessage({ id: "page.alarms.list.title", defaultMessage: "Alarms" })}
-        </h1>
-      </div>
-      <Frame className="shadow-card">
-        <FrameHeader>
-          <FrameTitle>
-            {formatMessage({ id: "page.alarms.list.panel.title", defaultMessage: "Configured alarms" })}
-          </FrameTitle>
-          <FrameDescription>
-            {formatMessage({
-              id: "page.alarms.list.panel.descriptionByMesh",
-              defaultMessage: "Select a mesh to configure the alarms on each channel.",
-            })}
-          </FrameDescription>
-        </FrameHeader>
-        <FramePanel className="flex flex-col gap-6">
+    <ListScaffold
+      title={formatMessage({ id: "page.alarms.list.title", defaultMessage: "Alarms" })}
+      panelTitle={formatMessage({ id: "page.alarms.list.panel.title", defaultMessage: "Configured alarms" })}
+      panelDescription={formatMessage({
+        id: "page.alarms.list.panel.descriptionByMesh",
+        defaultMessage: "Select a mesh to configure the alarms on each channel.",
+      })}
+      panelClassName="flex flex-col gap-6"
+    >
           {meshesLoading ? <SkeletonRows rows={3} /> : null}
           {meshes.isError ? (
             <StatusCopy>
@@ -96,7 +75,7 @@ export function AlarmsPage(): ReactElement {
             <>
               <div className="flex flex-wrap items-center gap-3">
                 <MeshPicker meshes={editableMeshes} value={current.id} onChange={(meshId) => void setSelected(meshId)} />
-                <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
+                <SmartFilterToolbar filters={filters} />
               </div>
               {devices.isPending ? <SkeletonRows rows={3} /> : null}
               {devices.isError ? (
@@ -129,8 +108,6 @@ export function AlarmsPage(): ReactElement {
               ) : null}
             </>
           ) : null}
-        </FramePanel>
-      </Frame>
-    </>
+    </ListScaffold>
   );
 }

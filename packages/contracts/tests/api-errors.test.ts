@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifySignupFailure, formLevelMessage, issueErrors, readApiError } from "../src/api-errors";
+import { classifyLoginFailure, classifySignupFailure, errorMessages, formLevelMessage, issueErrors, readApiError } from "../src/api-errors";
 
 describe("readApiError", () => {
   it("maps DRF field errors to their first message", () => {
@@ -29,6 +29,15 @@ describe("readApiError", () => {
   it("has no wait when the 429 doesn't say one, or the failure isn't a throttle", () => {
     expect(readApiError({ status: 429, detail: "Slow down." }).retryAfter).toBeUndefined();
     expect(readApiError({ status: 400, detail: "Expected available in 5 seconds." }).retryAfter).toBeUndefined();
+  });
+});
+
+describe("classifyLoginFailure", () => {
+  it("keys on 401, 429, and anything else", () => {
+    expect(classifyLoginFailure({ status: 401, detail: "No" })).toEqual({ kind: "unauthorized" });
+    expect(classifyLoginFailure({ status: 429, detail: "Slow down." })).toEqual({ kind: "throttled" });
+    expect(classifyLoginFailure({ status: 500, detail: "Down" })).toEqual({ kind: "generic" });
+    expect(classifyLoginFailure(null)).toEqual({ kind: "generic" });
   });
 });
 
@@ -74,6 +83,14 @@ describe("issueErrors", () => {
         { path: [], message: "whole form" },
       ]),
     ).toEqual({ server: "first", form: "whole form" });
+  });
+});
+
+describe("errorMessages", () => {
+  it("flattens DRF's nested and bare-list bodies, skipping status", () => {
+    expect(errorMessages({ steps: [{}, { function_name: ["bad input"] }], status: 400 })).toEqual(["bad input"]);
+    expect(errorMessages({ non_field_errors: ["cycle"], status: 400 })).toEqual(["cycle"]);
+    expect(errorMessages(["a", { detail: "b" }])).toEqual(["a", "b"]);
   });
 });
 

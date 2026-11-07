@@ -4,10 +4,17 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { cx } from "@mtt/ui/utils/cx";
 import { RiArrowDownSLine } from "@remixicon/react";
 import { type FormEvent, type ReactElement, type ReactNode, useRef, useState } from "react";
+import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { TermsChecklist, type TermsStatement } from "@mtt/ui/forms/terms-checklist";
 
 export type SignupFormValues = { name: string; email: string; password: string; accepted: string[] };
+
+export type SignupFailure =
+  | { kind: "throttled"; retryAfter: number | undefined }
+  | { kind: "duplicateEmail" }
+  | { kind: "field"; message: string }
+  | { kind: "generic" };
 
 export type SignupTerms = {
   title: string;
@@ -16,45 +23,32 @@ export type SignupTerms = {
   footnote?: ReactNode;
 };
 
-export type SignupFormLabels = {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  mismatch: string;
-  termsTitle: string;
-  termsLocked: string;
-  termsProgress: (accepted: number, total: number) => string;
-  submit: string;
-  pending: string;
-};
-
 export function SignupForm({
-  labels,
-  error,
+  failure,
   pending,
   terms,
   termsLoading = false,
-  termsError,
+  termsLoadFailed = false,
   termsResetKey = 0,
   onSubmit,
   footer,
 }: {
-  labels: SignupFormLabels;
-  error?: string | null;
+  failure?: SignupFailure | null;
   pending: boolean;
   /** `null` when this instance asks for no terms. */
   terms: SignupTerms | null;
   termsLoading?: boolean;
-  termsError?: string | null;
+  termsLoadFailed?: boolean;
   /** Bump when the served terms changed so previous ticks are cleared. */
   termsResetKey?: number;
   onSubmit: (values: SignupFormValues) => void;
   footer?: ReactNode;
 }): ReactElement {
+  const { formatMessage } = useIntl();
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
   const [credentials, setCredentials] = useState({ email: "", password: "", confirm: "" });
   const [termsOpen, setTermsOpen] = useState(false);
+  const [termsMissing, setTermsMissing] = useState(false);
   const autoOpened = useRef(false);
   const [seenReset, setSeenReset] = useState(termsResetKey);
   if (seenReset !== termsResetKey) {
@@ -64,10 +58,39 @@ export function SignupForm({
   }
   const credentialsReady = credentials.email.trim() !== "" && credentials.password !== "";
   const passwordMismatch = credentials.confirm !== "" && credentials.confirm !== credentials.password;
-  const showTerms = terms !== null || termsLoading || Boolean(termsError);
+  const showTerms = terms !== null || termsLoading || termsLoadFailed;
   const statements = terms?.statements ?? [];
   const termsAccepted =
     !showTerms || (terms !== null && statements.length > 0 && statements.every((statement) => accepted.has(statement.id)));
+
+  const failureMessage =
+    failure?.kind === "throttled"
+      ? failure.retryAfter
+        ? formatMessage(
+            {
+              id: "page.signup.form.error.throttled",
+              defaultMessage:
+                "{minutes, plural, one {Too many attempts. Try again in # minute.} other {Too many attempts. Try again in # minutes.}}",
+            },
+            { minutes: Math.ceil(failure.retryAfter / 60) },
+          )
+        : formatMessage({
+            id: "page.signup.form.error.throttledGeneric",
+            defaultMessage: "Too many attempts. Try again later.",
+          })
+      : failure?.kind === "duplicateEmail"
+        ? formatMessage({
+            id: "page.signup.form.error.duplicateEmail",
+            defaultMessage: "That email is already registered. Try signing in instead.",
+          })
+        : failure?.kind === "field"
+          ? failure.message
+          : failure?.kind === "generic"
+            ? formatMessage({
+                id: "page.signup.form.error.generic",
+                defaultMessage: "Something went wrong. Check the details and try again.",
+              })
+            : null;
 
   function onCredential(field: "email" | "password" | "confirm", value: string) {
     setCredentials((current) => {
@@ -82,7 +105,12 @@ export function SignupForm({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || passwordMismatch || !termsAccepted) return;
+    if (pending || passwordMismatch) return;
+    if (!termsAccepted) {
+      setTermsMissing(true);
+      return;
+    }
+    setTermsMissing(false);
     const form = new FormData(event.currentTarget);
     onSubmit({
       name: String(form.get("name") ?? ""),
@@ -96,10 +124,10 @@ export function SignupForm({
     <div className="flex flex-col gap-6">
       <form className="flex flex-col gap-5" onSubmit={submit}>
         <FieldGroup>
-          <FormField id="signup-name" label={labels.name}>
+          <FormField id="signup-name" label={formatMessage({ id: "page.signup.form.name", defaultMessage: "Name" })}>
             <Input id="signup-name" name="name" type="text" required autoComplete="name" />
           </FormField>
-          <FormField id="signup-email" label={labels.email}>
+          <FormField id="signup-email" label={formatMessage({ id: "page.signup.form.email", defaultMessage: "Email" })}>
             <Input
               id="signup-email"
               name="email"
@@ -109,7 +137,7 @@ export function SignupForm({
               onChange={(event) => onCredential("email", event.currentTarget.value)}
             />
           </FormField>
-          <FormField id="signup-password" label={labels.password}>
+          <FormField id="signup-password" label={formatMessage({ id: "page.signup.form.password", defaultMessage: "Password" })}>
             <Input
               id="signup-password"
               name="password"
@@ -122,8 +150,12 @@ export function SignupForm({
           </FormField>
           <FormField
             id="signup-confirm-password"
-            label={labels.confirmPassword}
-            error={passwordMismatch ? labels.mismatch : undefined}
+            label={formatMessage({ id: "page.signup.form.confirmPassword", defaultMessage: "Confirm password" })}
+            error={
+              passwordMismatch
+                ? formatMessage({ id: "page.signup.form.error.mismatch", defaultMessage: "Passwords don't match." })
+                : undefined
+            }
           >
             <Input
               id="signup-confirm-password"
@@ -150,12 +182,18 @@ export function SignupForm({
             >
               <span className="flex flex-col gap-0.5">
                 <span className={cx("text-body-medium", credentialsReady || termsOpen ? "text-text-primary" : "text-text-tertiary")}>
-                  {terms?.title ?? labels.termsTitle}
+                  {terms?.title ?? formatMessage({ id: "page.signup.form.termsTitle", defaultMessage: "Terms" })}
                 </span>
                 <span className="text-caption-1-regular text-text-tertiary">
                   {!credentialsReady && !termsOpen
-                    ? labels.termsLocked
-                    : labels.termsProgress(accepted.size, statements.length)}
+                    ? formatMessage({
+                        id: "page.signup.form.termsLocked",
+                        defaultMessage: "Add your email and password to see the terms.",
+                      })
+                    : formatMessage(
+                        { id: "page.signup.form.termsProgress", defaultMessage: "{accepted} of {total} accepted" },
+                        { accepted: accepted.size, total: statements.length },
+                      )}
                 </span>
               </span>
               <RiArrowDownSLine
@@ -176,9 +214,13 @@ export function SignupForm({
                     ))}
                   </div>
                 ) : null}
-                {termsError ? (
+                {termsLoadFailed ? (
                   <p className="text-body-regular text-text-secondary" role="alert">
-                    {termsError}
+                    {formatMessage({
+                      id: "page.signup.form.termsLoadError",
+                      defaultMessage:
+                        "The terms didn't load, and the account can't be created yet. Reload the page to try again.",
+                    })}
                   </p>
                 ) : null}
                 {terms ? (
@@ -201,13 +243,23 @@ export function SignupForm({
             ) : null}
           </div>
         ) : null}
-        {error ? (
+        {termsMissing && !termsAccepted ? (
           <p className="text-body-regular text-text-secondary" role="alert">
-            {error}
+            {formatMessage({
+              id: "page.signup.form.termsRequired",
+              defaultMessage: "Accept each statement to create your account.",
+            })}
+          </p>
+        ) : null}
+        {failureMessage ? (
+          <p className="text-body-regular text-text-secondary" role="alert">
+            {failureMessage}
           </p>
         ) : null}
         <Button type="submit" size="small" disabled={pending || !termsAccepted} className="mt-1">
-          {pending ? labels.pending : labels.submit}
+          {pending
+            ? formatMessage({ id: "page.signup.form.creating", defaultMessage: "Creating account" })
+            : formatMessage({ id: "page.signup.form.submit", defaultMessage: "Create account" })}
         </Button>
       </form>
       {footer}

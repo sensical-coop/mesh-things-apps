@@ -1,18 +1,12 @@
 import type { SourceRead } from "@mtt/contracts";
-import { termsStanding, type TermsStanding } from "../terms/model.ts";
 
-export function sourceTermsStanding(
-  source: Pick<SourceRead, "terms_accepted_version" | "terms_expires_at" | "paused_at">,
-  currentVersion: string | undefined,
-  now: Date,
-): TermsStanding {
-  return termsStanding({
-    acceptedVersion: source.terms_accepted_version,
-    expiresAt: source.terms_expires_at,
-    pausedAt: source.paused_at,
-    currentVersion,
-    now,
-  });
+/** Bridge states the status chip and mesh status both understand. Anything else is unknown. */
+export const SOURCE_STATUSES = ["connected", "disconnected", "paused"] as const;
+
+export type SourceStatus = (typeof SOURCE_STATUSES)[number];
+
+export function sourceStatus(status: string): SourceStatus | undefined {
+  return SOURCE_STATUSES.find((known) => known === status);
 }
 
 export function sourceTitle(source: Pick<SourceRead, "label" | "server" | "topic">): string {

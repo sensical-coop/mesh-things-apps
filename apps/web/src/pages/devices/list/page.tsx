@@ -1,11 +1,4 @@
 import type { DeviceRead } from "@mtt/contracts";
-import {
-  Frame,
-  FrameDescription,
-  FrameHeader,
-  FramePanel,
-  FrameTitle,
-} from "@mtt/ui/reui/frame";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type ReactElement, useMemo, useState } from "react";
@@ -14,21 +7,18 @@ import { useIntl } from "react-intl";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { SmartFilterToolbar, useSmartFilters } from "@/components/smart-filters";
 import { useFormatters } from "@/hooks/use-formatters";
-import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
-import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import { routes } from "@/router";
-import { pageHeadingClass } from "@/lib/page-heading";
-import { listQueryBoolean, matchesListQuery } from "@mtt/contracts/list-filter";
+import { matchesListQuery } from "@mtt/contracts/list-filter";
+import { ListScaffold } from "@/components/list-scaffold";
 import { SettingsButton } from "@/components/settings-button";
-import { SkeletonRows } from "@/components/skeleton-rows";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
-import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
+import { deviceFilterSpecs, deviceFilterValue, deviceListParams } from "@/features/device/device-filter";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceLastSeen, deviceTitle } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
-import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
+import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { canArchiveDevice } from "@/features/archive/model";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
@@ -43,8 +33,6 @@ const col = legacyCreateColumnHelper<DeviceRow>();
 export function DevicesPage(): ReactElement {
   const { formatMessage } = useIntl();
   const { formatLastSeen, formatWhen, toRelative } = useFormatters();
-  const filterLabels = useTranslatedFilterLabels();
-  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
   const [settingsDevice, setSettingsDevice] = useState<DeviceRow | null>(null);
   const { me, isOperator, isSuperuser, meId, ownerName } = useOwnerDirectory();
   const meshes = useQuery(meshRepository.list());
@@ -52,8 +40,7 @@ export function DevicesPage(): ReactElement {
     () => (meshes.data ?? []).map((mesh) => ({ value: mesh.id, label: meshTitle(mesh) })),
     [meshes.data],
   );
-  const variantOptions = useTelemetryVariantOptions();
-  // Archive is a device setting only operators see.
+  const { options: variantOptions } = useTelemetryVariants();
   const specs = useMemo(
     () =>
       deviceFilterSpecs({
@@ -68,14 +55,7 @@ export function DevicesPage(): ReactElement {
     [meshOptions, variantOptions, formatMessage, isOperator],
   );
   const filters = useSmartFilters({ specs });
-  // The API only takes bare values, and rows don't say whether a blueprint is attached,
-  // so that one filter goes to the server; the rest run on the loaded rows, like meshes.
-  const hasPostprocessing = listQueryBoolean(filters.queryString, "has_postprocessing");
-  const devices = useQuery(
-    deviceRepository.list(
-      hasPostprocessing === undefined ? undefined : { has_postprocessing: hasPostprocessing },
-    ),
-  );
+  const devices = useQuery(deviceRepository.list(deviceListParams(filters.serverQueryString)));
   const meshNames = new Map((meshes.data ?? []).map((m) => [m.id, meshTitle(m)]));
   const meshOwners = new Map((meshes.data ?? []).map((m) => [m.id, m.owner_id]));
   const rows = useMemo<DeviceRow[]>(
@@ -183,57 +163,47 @@ export function DevicesPage(): ReactElement {
 
   return (
     <>
-      <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
-          {formatMessage({ id: "page.devices.list.title", defaultMessage: "Devices" })}
-        </h1>
-      </div>
-      <div className="flex flex-col gap-6">
-        <Frame className="shadow-card">
-          <FrameHeader>
-            <FrameTitle>
-              {formatMessage({ id: "page.devices.list.inventory.title", defaultMessage: "Inventory" })}
-            </FrameTitle>
-            <FrameDescription>
-              {devices.isPending
-                ? formatMessage({ id: "page.devices.list.inventory.loading", defaultMessage: "Loading devices." })
-                : devices.error
-                  ? formatMessage({
-                      id: "page.devices.list.inventory.error",
-                      defaultMessage: "Devices didn't load. Check your connection to the API and try again.",
-                    })
-                  : formatMessage({
-                      id: "page.devices.list.inventory.description",
-                      defaultMessage: "Filter, then open a device for readings.",
-                    })}
-            </FrameDescription>
-          </FrameHeader>
-          <FramePanel>
-            <div className="mb-4">
-              <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
-            </div>
-            {devices.isPending ? <SkeletonRows /> : null}
-            {devices.error ? null : devices.isPending ? null : (
-              <DataTable
-                data={shownRows}
-                columns={columns}
-                getRowId={(row) => row.uuid}
-                empty={
-                  filters.active
-                    ? formatMessage({
-                        id: "page.devices.list.empty.filtered",
-                        defaultMessage: "No devices match these filters.",
-                      })
-                    : formatMessage({
-                        id: "page.devices.list.empty.default",
-                        defaultMessage: "No devices yet. Register a device in a Mesh.",
-                      })
-                }
-              />
-            )}
-          </FramePanel>
-        </Frame>
-      </div>
+      <ListScaffold
+        title={formatMessage({ id: "page.devices.list.title", defaultMessage: "Devices" })}
+        panelTitle={formatMessage({ id: "page.devices.list.inventory.title", defaultMessage: "Inventory" })}
+        panelDescription={
+          devices.isPending
+            ? formatMessage({ id: "page.devices.list.inventory.loading", defaultMessage: "Loading devices." })
+            : devices.error
+              ? formatMessage({
+                  id: "page.devices.list.inventory.error",
+                  defaultMessage: "Devices didn't load. Check your connection to the API and try again.",
+                })
+              : formatMessage({
+                  id: "page.devices.list.inventory.description",
+                  defaultMessage: "Filter, then open a device for readings.",
+                })
+        }
+        toolbar={
+          <div className="mb-4">
+            <SmartFilterToolbar filters={filters} />
+          </div>
+        }
+        pending={devices.isPending}
+        failed={Boolean(devices.error)}
+      >
+        <DataTable
+          data={shownRows}
+          columns={columns}
+          getRowId={(row) => row.uuid}
+          empty={
+            filters.active
+              ? formatMessage({
+                  id: "page.devices.list.empty.filtered",
+                  defaultMessage: "No devices match these filters.",
+                })
+              : formatMessage({
+                  id: "page.devices.list.empty.default",
+                  defaultMessage: "No devices yet. Register a device in a Mesh.",
+                })
+          }
+        />
+      </ListScaffold>
       {settingsDevice ? (
         <DeviceSettingsDialog device={settingsDevice} open onClose={() => setSettingsDevice(null)} />
       ) : null}

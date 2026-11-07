@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateBlueprintVersion, type BlueprintAlgorithm, type BlueprintStepCheck } from "../src/blueprint";
+import { validateBlueprintStep, validateBlueprintVersion, type BlueprintAlgorithm, type BlueprintStepCheck } from "../src/blueprint";
 
 const reading = { slot: "reading" };
 
@@ -25,12 +25,37 @@ const pointwise: BlueprintAlgorithm = {
 
 const rolling: BlueprintAlgorithm = { ...pointwise, name: "roll", mode: "rolling" };
 
-describe("validateBlueprintVersion", () => {
-  it("refuses a non-pointwise algorithm and a repeated step key", () => {
-    const errors = validateBlueprintVersion([reading], [step({ function_name: "roll" }), step({ order: 2 })], (name) =>
-      name === "roll" ? rolling : pointwise,
+describe("validateBlueprintStep", () => {
+  it("codes an unknown algorithm, an extra input, and a calibration param", () => {
+    expect(validateBlueprintStep(step({ function_name: "missing" }), undefined)).toEqual([
+      { code: "unknown_algorithm", path: ["steps", "scale", "function_name"], key: "scale", name: "missing" },
+    ]);
+    const problems = validateBlueprintStep(
+      step({ inputs: { value: "slot:reading", extra: "slot:reading" }, params: { gain: 1 } }),
+      { ...pointwise, params: [{ name: "gain", calibration: true, required: true }] },
     );
-    expect(errors).toContain("Step 'scale': 'roll' is rolling, only pointwise algorithms can run");
-    expect(errors).toContain("Step key 'scale' is used twice");
+    expect(problems.map((problem) => problem.code)).toEqual(["extra_inputs", "calibration_params"]);
+    expect(problems[0]).toMatchObject({ inputs: ["extra"], name: "scale", key: "scale" });
+    expect(problems[1]).toMatchObject({ params: ["gain"] });
+  });
+});
+
+describe("validateBlueprintVersion", () => {
+  it("codes a non-pointwise algorithm and a repeated step key", () => {
+    const problems = validateBlueprintVersion(
+      [reading],
+      [step({ function_name: "roll" }), step({ order: 2 })],
+      (name) => (name === "roll" ? rolling : pointwise),
+    );
+    expect(problems).toContainEqual(
+      expect.objectContaining({ code: "not_pointwise", key: "scale", name: "roll", mode: "rolling" }),
+    );
+    expect(problems).toContainEqual(expect.objectContaining({ code: "step_key_twice", key: "scale" }));
+  });
+
+  it("stops at a repeated order", () => {
+    expect(
+      validateBlueprintVersion([reading], [step(), step({ key: "other" })], () => pointwise).map((problem) => problem.code),
+    ).toEqual(["duplicate_order"]);
   });
 });

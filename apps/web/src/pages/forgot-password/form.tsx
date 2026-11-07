@@ -25,7 +25,6 @@ export function ForgotPasswordForm(): ReactElement {
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") ?? "");
     setError(null);
-    await authRepository.csrf();
     try {
       await requestReset.mutateAsync({ data: { email } });
       setSubmittedEmail(email);

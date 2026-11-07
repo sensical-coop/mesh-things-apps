@@ -1,4 +1,4 @@
-export type DeviceProps = {
+type DeviceProps = {
   uuid: string;
   nodeId: number;
   meshId: string;
@@ -125,30 +125,11 @@ export class Device implements DeviceProps {
   }
 }
 
-const DEVICE_FILTER_FIELDS: {
-  wire: string;
-  key?: keyof DeviceListFilter;
-  read: (device: Device) => string | boolean;
-}[] = [
-  { wire: "mesh_id", key: "meshId", read: (device) => device.meshId },
-  { wire: "is_gateway", key: "isGateway", read: (device) => device.isGateway },
-  { wire: "is_allowed", key: "isAllowed", read: (device) => device.isAllowed },
-  { wire: "has_postprocessing", key: "hasPostprocessing", read: (device) => device.hasPostprocessing() },
-  { wire: "label", read: (device) => device.label ?? "" },
-];
-
-export function deviceFilterValue(device: Device, field: string): string | undefined {
-  const found = DEVICE_FILTER_FIELDS.find((row) => row.wire === field);
-  if (!found) return undefined;
-  const value = found.read(device);
-  return typeof value === "string" ? value : String(value);
-}
-
 export function matchesDeviceFilter(device: Device, filters?: DeviceListFilter): boolean {
   if (!filters) return true;
-  return DEVICE_FILTER_FIELDS.every((row) => {
-    if (!row.key) return true;
-    const expected = filters[row.key];
-    return expected === undefined || row.read(device) === expected;
-  });
+  if (filters.meshId !== undefined && device.meshId !== filters.meshId) return false;
+  if (filters.isGateway !== undefined && device.isGateway !== filters.isGateway) return false;
+  if (filters.isAllowed !== undefined && device.isAllowed !== filters.isAllowed) return false;
+  if (filters.hasPostprocessing !== undefined && device.hasPostprocessing() !== filters.hasPostprocessing) return false;
+  return true;
 }

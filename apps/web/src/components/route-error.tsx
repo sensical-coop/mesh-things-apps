@@ -6,10 +6,6 @@ import { useIntl } from "react-intl";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
 
-/**
- * What a route shows when it throws while rendering: the rest of the console
- * keeps working, and the page can be retried without a full reload.
- */
 export function RouteError({ error, reset }: ErrorComponentProps): ReactElement {
   const { formatMessage } = useIntl();
   return (

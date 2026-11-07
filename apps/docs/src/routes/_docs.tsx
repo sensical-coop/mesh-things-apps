@@ -5,7 +5,7 @@ import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { type MouseEvent, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { DocumentationActions } from "@/components/actions";
-import { BrandMark } from "@/components/brand";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { DocumentationHeader } from "@/components/header";
 import { useDocsTranslations } from "@/hooks/use-docs-translations";
 import { useLocale } from "@mtt/ui/hooks/use-locale";

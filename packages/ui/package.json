@@ -12,17 +12,16 @@
     "#components/evilcharts/charts/*": "./src/components/evilcharts/charts/*.tsx",
     "#components/*": "./src/components/*.tsx",
     "#hooks/*": "./src/hooks/*.ts",
-    "#lib/utils": "./src/utils.ts",
-    "#lib/*": "./src/lib/*.ts"
+    "#lib/utils": "./src/utils.ts"
   },
   "exports": {
     "./utils": "./src/utils.ts",
     "./utils/*": "./src/utils/*.ts",
-    "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./theme": "./src/theme.ts",
     "./oa/springs": "./src/oa/springs.ts",
     "./boardui.css": "./src/boardui/globals.css",
+    "./styles/*": "./src/boardui/*",
     "./reui/*": "./src/components/reui/*.tsx",
     "./components/base/buttons/button": "./src/components/base/buttons/button.tsx",
     "./components/base/badges/chip": "./src/components/base/badges/chip.tsx",
@@ -37,7 +36,8 @@
     "./forms/text-links": "./src/forms/text-links.ts",
     "./forms/*": "./src/forms/*.tsx",
     "./maplibre.css": "./src/vendor/maplibre.css",
-    "./locale": "./src/locale.ts"
+    "./locale": "./src/locale.ts",
+    "./init-scripts": "./src/init-scripts.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -45,7 +45,6 @@
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@remixicon/react": "^4.9.0",
-    "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/react-table": "^9.2.4",
     "@tanstack/react-virtual": "^3.14.13",
     "class-variance-authority": "^0.7.1",
@@ -56,8 +55,6 @@
     "lucide-react": "^1.47.0",
     "maplibre-gl": "^6",
     "motion": "^13.4.0",
-    "nuqs": "^2.10.1",
-    "react-aria-components": "^1.21.1",
     "react-day-picker": "^10.0.1",
     "react-intl": "^12.1.1",
     "tailwind-merge": "^3.3.1",

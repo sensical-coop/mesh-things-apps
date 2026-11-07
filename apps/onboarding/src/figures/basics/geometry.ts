@@ -1,6 +1,4 @@
 import {
-  AZIMUTH,
-  ELEVATION,
   corners,
   cylinder,
   iso,
@@ -12,11 +10,11 @@ import {
   type Flat,
   type Plan,
   type Point3,
-  type Projection,
   type SolidPaths,
 } from "@/iso/iso-kit";
-import { airPacket, airRings, wifiArcs } from "../parts/air-waves";
+import { airPacket, airRings, pointOnRoute, wifiArcs } from "../parts/air-waves";
 import { LORA_CASE, antennaPoint, loraRadio, loraRadioBounds } from "../parts/lora-radio";
+import { hugProjection } from "../view";
 import { BENCH, BROKER, DB, GATE_SPEC, NODE_SPECS } from "./model";
 
 const BOUNDS: Point3[] = [
@@ -34,16 +32,11 @@ const BOUNDS: Point3[] = [
   })(),
 ];
 
-/** Room past the bounds for the halo and the air rings. */
-const MARGIN = 10;
-const flat = BOUNDS.map((point) => iso(point, { origin: [0, 0], scale: 1, azimuth: AZIMUTH, elevation: ELEVATION }));
-const minX = Math.min(...flat.map(([x]) => x));
-const minY = Math.min(...flat.map(([, y]) => y));
-
 /** Same scale as the other figures, but the viewBox hugs the bench, so the full-width plate draws it larger. */
-export const P: Projection = { origin: [MARGIN - minX, MARGIN - minY], scale: 1, azimuth: AZIMUTH, elevation: ELEVATION };
-export const WIDTH = Math.ceil(Math.max(...flat.map(([x]) => x)) - minX + MARGIN * 2);
-export const HEIGHT = Math.ceil(Math.max(...flat.map(([, y]) => y)) - minY + MARGIN * 2);
+const hugged = hugProjection(BOUNDS, 10);
+export const P = hugged.projection;
+export const WIDTH = hugged.width;
+export const HEIGHT = hugged.height;
 
 const TOP = BENCH.h;
 const box = (plan: Plan, z: number, h: number): SolidPaths => slabOf(plan, z, h, P, 2, 0);
@@ -127,7 +120,6 @@ export const SORT = {
 export const PORT_AT: Flat = iso([port.x + port.w / 2, port.y + port.d, brZ + 18], P);
 export const SORT_LABEL = topMatrix([BROKER.x + 8, BROKER.y + 10], brZ + BROKER.h, P, "x");
 
-/** The usual database mark: stacked discs with a small gap between them. */
 export const STORE = {
   discs: [0, 1, 2].map((index) => tube(DB.cx, DB.cy, DB.r, TOP + index * (DB.disc + DB.gap), DB.disc)),
 };
@@ -135,7 +127,6 @@ export const STORE = {
 const dbTop: Flat = iso([DB.cx, DB.cy, TOP + 3 * DB.disc + 2 * DB.gap], P);
 const brokerTop: Flat = iso([BROKER.x + BROKER.w / 2, BROKER.y + BROKER.d / 2, brZ + BROKER.h], P);
 
-/** Broker to database: where the decrypted reading is stored. */
 export const INGEST = airPacket(brokerTop, dbTop, 14);
 
 const nodeTip = (index: number): Flat => {
@@ -147,11 +138,9 @@ const nodeTip = (index: number): Flat => {
 const source = nodeTip(0);
 const gateTip = GATE.radio.antennaTip;
 
-/** Gentle arcs, low enough that the three whips still read as a triangle: the base joins the two nodes, the sides meet at the gateway. */
 const LIFT = 8;
 export const MESH_LINKS = [airPacket(source, nodeTip(1), LIFT).d, airPacket(nodeTip(1), gateTip, LIFT).d];
 
-/** The rear node's reading arcs along the triangle's side to the gateway at the apex. */
 export const PACKET = airPacket(source, gateTip, LIFT);
 
 export const NODE_RINGS = RADIOS.flatMap((radio) => airRings(radio.antennaTip, [5, 9, 13]));
@@ -165,7 +154,6 @@ const wifiStop: Flat = [
 export const WIFI = wifiArcs(wifiFrom, PORT_AT, [7, 12, 17]);
 export const UPLINK = airPacket(wifiFrom, wifiStop, 18);
 
-/** Every leg the reading travels, in order: LoRa hop, down the gateway, Wi-Fi, into the broker, into the database. */
 const ROUTE = [
   PACKET,
   airPacket(gateTip, wifiFrom, 0),
@@ -177,11 +165,8 @@ const ROUTE = [
 
 export const ROUTE_START: Flat = PACKET.at(0);
 
-/** Point along the whole route. Progress 0 is the rear node's whip, 1 the top of the database. */
 export function routeAt(progress: number): Flat {
-  const scaled = Math.min(0.9999, Math.max(0, progress)) * ROUTE.length;
-  const leg = ROUTE[Math.floor(scaled)] ?? INGEST;
-  return leg.at(scaled - Math.floor(scaled));
+  return pointOnRoute(ROUTE, progress);
 }
 
 export function packetTransform(progress: number): string {

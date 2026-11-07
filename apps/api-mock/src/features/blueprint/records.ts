@@ -1,4 +1,3 @@
-/** `{ key: string }` maps from a step body, or null when a value is not a string. */
 export function stringRecord(value: unknown): Record<string, string> | null {
   if (value === undefined || value === null) return {};
   if (typeof value !== "object" || Array.isArray(value)) return null;

@@ -16,7 +16,6 @@ export type RotateSinkCredentialsDialogProps = {
   onRotated: (credentials: SinkCredentials) => void;
 };
 
-/** A lost or leaked password: issue a new one, which also disconnects current consumers. */
 export function RotateSinkCredentialsDialog({ sink, onClose, onRotated }: RotateSinkCredentialsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();

@@ -28,7 +28,6 @@ export type CsvRequestFormProps = {
   requested: RequestExportState;
 };
 
-/** A new CSV download: which mesh, all of its devices or some, and which days. */
 export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormProps): ReactElement {
   const { formatMessage } = useIntl();
   const [meshId, setMeshId] = useState(initial.meshId);

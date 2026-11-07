@@ -13,12 +13,10 @@ import {
   getOwnersRequestPasswordResetCreateMutationOptions,
   getOwnersResetPasswordCreateMutationOptions,
   getOwnersVerifyEmailRetrieveQueryOptions,
-  ownersCsrfCookieRetrieve,
   ownersVerifyEmailRetrieve,
 } from "@mtt/contracts/api";
 
 export const authRepository = {
-  csrf: ownersCsrfCookieRetrieve,
   signup: getOwnersCreateMutationOptions,
   login: getOwnersLoginCreateMutationOptions,
   logout: getOwnersLogoutCreateMutationOptions,

@@ -13,7 +13,6 @@ import {
   getDevicesPostprocessingsUpdateMutationOptions,
 } from "@mtt/contracts/api";
 
-/** Blueprints attached to one device: wiring, calibration history and backfills. */
 export const postprocessingRepository = {
   list: getDevicesPostprocessingsListQueryOptions,
   listKey: getDevicesPostprocessingsListQueryKey,

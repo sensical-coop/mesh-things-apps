@@ -5,10 +5,10 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { errorMessages } from "@/features/blueprint/model";
+import { blueprintRepository } from "@/features/blueprint/repository";
+import { errorMessages } from "@mtt/contracts/errors";
 import { deviceRepository } from "@/features/device/repository";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { blueprintRepository } from "@/features/blueprint/repository";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type DetachPostprocessingDialogProps = {

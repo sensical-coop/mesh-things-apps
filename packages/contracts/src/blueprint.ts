@@ -39,38 +39,72 @@ export type BlueprintStepCheck = {
   outputs: Record<string, string>;
 };
 
-/** The mock's message when a step's algorithm is not pointwise. Null when it may run. */
-export function pointwiseModeError(key: string, spec: Pick<BlueprintAlgorithm, "name" | "mode"> | undefined): string | null {
-  if (!spec || spec.mode === "pointwise") return null;
-  return `Step '${key}': '${spec.name}' is ${spec.mode}, only pointwise algorithms can run`;
+/** A validator finding: `code` plus the data a client needs to word it, at `path`. */
+export type BlueprintProblem = {
+  code:
+    | "unknown_algorithm"
+    | "missing_inputs"
+    | "extra_inputs"
+    | "missing_params"
+    | "calibration_params"
+    | "unknown_params"
+    | "missing_output"
+    | "extra_outputs"
+    | "no_steps"
+    | "duplicate_order"
+    | "slot_name"
+    | "duplicate_slots"
+    | "step_key"
+    | "step_key_twice"
+    | "not_pointwise"
+    | "bad_ref"
+    | "field_name"
+    | "field_twice"
+    | "unused_slots";
+  path: readonly (string | number)[];
+  key?: string;
+  name?: string;
+  mode?: string;
+  slot?: string;
+  input?: string;
+  output?: string;
+  field?: string;
+  ref?: string;
+  inputs?: readonly string[];
+  params?: readonly string[];
+  outputs?: readonly string[];
+  slots?: readonly string[];
+};
+
+function problem(code: BlueprintProblem["code"], path: readonly (string | number)[], data: Omit<BlueprintProblem, "code" | "path"> = {}): BlueprintProblem {
+  return { code, path, ...data };
 }
 
 /** A step against its algorithm's declaration. Calibration params belong to each device, not the recipe. */
-export function validateBlueprintStep(step: BlueprintStepCheck, spec: BlueprintAlgorithm | undefined): string[] {
+export function validateBlueprintStep(step: BlueprintStepCheck, spec: BlueprintAlgorithm | undefined): BlueprintProblem[] {
   const name = step.function_name;
-  if (!spec) return [`Unknown algorithm '${name}'.`];
-  const errors: string[] = [];
+  const path = ["steps", step.key, "function_name"] as const;
+  if (!spec) return [problem("unknown_algorithm", path, { key: step.key, name })];
+  const errors: BlueprintProblem[] = [];
   const given = Object.keys(step.inputs);
   const missing = spec.inputs.filter((input) => !given.includes(input));
-  if (missing.length) errors.push(`'${name}' requires input(s) ${missing.join(", ")}`);
+  if (missing.length) errors.push(problem("missing_inputs", ["steps", step.key, "inputs"], { key: step.key, name, inputs: missing }));
   const extra = given.filter((input) => !spec.inputs.includes(input));
-  if (extra.length) errors.push(`'${name}' does not accept input(s) ${extra.join(", ")}`);
+  if (extra.length) errors.push(problem("extra_inputs", ["steps", step.key, "inputs"], { key: step.key, name, inputs: extra }));
 
   const params = Object.keys(step.params);
   const config = spec.params.filter((param) => !param.calibration);
-  const missingParams = config.filter((param) => param.required && !params.includes(param.name));
-  if (missingParams.length) errors.push(`'${name}' requires param(s) ${missingParams.map((p) => p.name).join(", ")}`);
-  const misplaced = spec.params.filter((param) => param.calibration && params.includes(param.name));
-  if (misplaced.length) {
-    errors.push(`'${name}' param(s) ${misplaced.map((p) => p.name).join(", ")} are calibration parameters, set per device`);
-  }
-  const unknown = params.filter((param) => !spec.params.some((p) => p.name === param));
-  if (unknown.length) errors.push(`'${name}' does not accept param(s) ${unknown.join(", ")}`);
+  const missingParams = config.filter((param) => param.required && !params.includes(param.name)).map((param) => param.name);
+  if (missingParams.length) errors.push(problem("missing_params", ["steps", step.key, "params"], { key: step.key, name, params: missingParams }));
+  const misplaced = spec.params.filter((param) => param.calibration && params.includes(param.name)).map((param) => param.name);
+  if (misplaced.length) errors.push(problem("calibration_params", ["steps", step.key, "params"], { key: step.key, name, params: misplaced }));
+  const unknown = params.filter((param) => !spec.params.some((entry) => entry.name === param));
+  if (unknown.length) errors.push(problem("unknown_params", ["steps", step.key, "params"], { key: step.key, name, params: unknown }));
 
   const outputs = Object.keys(step.outputs);
-  if (!outputs.length) errors.push(`'${name}' step must bind at least one output`);
+  if (!outputs.length) errors.push(problem("missing_output", ["steps", step.key, "outputs"], { key: step.key, name }));
   const extraOutputs = outputs.filter((output) => !spec.outputs.includes(output));
-  if (extraOutputs.length) errors.push(`'${name}' has no output(s) ${extraOutputs.join(", ")}`);
+  if (extraOutputs.length) errors.push(problem("extra_outputs", ["steps", step.key, "outputs"], { key: step.key, name, outputs: extraOutputs }));
   return errors;
 }
 
@@ -79,16 +113,17 @@ export function validateBlueprintVersion(
   inputs: readonly { slot: string }[],
   steps: readonly BlueprintStepCheck[],
   algorithm: (name: string) => BlueprintAlgorithm | undefined,
-): string[] {
-  if (!steps.length) return ["A blueprint version needs at least one step"];
+): BlueprintProblem[] {
+  if (!steps.length) return [problem("no_steps", ["steps"])];
   const orders = steps.map((step) => step.order);
-  if (new Set(orders).size !== orders.length) return ["Step `order` values must be unique within a version"];
-  const errors: string[] = [];
+  if (new Set(orders).size !== orders.length) return [problem("duplicate_order", ["steps"])];
+  const errors: BlueprintProblem[] = [];
   const slots = inputs.map((entry) => entry.slot);
   for (const slot of slots) {
-    if (!NAME_PATTERN.test(slot)) errors.push(`Input slot '${slot}' must be lowercase letters, digits and underscores`);
+    if (!NAME_PATTERN.test(slot)) errors.push(problem("slot_name", ["inputs", slot], { slot }));
   }
-  if (new Set(slots).size !== slots.length) errors.push("Input slot names must be unique");
+  const duplicateSlots = slots.filter((slot, index) => slots.indexOf(slot) !== index);
+  if (duplicateSlots.length) errors.push(problem("duplicate_slots", ["inputs"], { slots: duplicateSlots }));
 
   const keys = new Set<string>();
   const produced = new Set<string>();
@@ -96,24 +131,25 @@ export function validateBlueprintVersion(
   const usedSlots = new Set<string>();
   for (const step of [...steps].sort((a, b) => a.order - b.order)) {
     const key = step.key;
-    if (!NAME_PATTERN.test(key)) errors.push(`Step key '${key}' must be lowercase letters, digits and underscores`);
-    if (keys.has(key)) errors.push(`Step key '${key}' is used twice`);
+    if (!NAME_PATTERN.test(key)) errors.push(problem("step_key", ["steps", key, "key"], { key }));
+    if (keys.has(key)) errors.push(problem("step_key_twice", ["steps", key, "key"], { key }));
     const spec = algorithm(step.function_name);
-    const mode = pointwiseModeError(key, spec);
-    if (mode) errors.push(mode);
+    if (spec && spec.mode !== "pointwise") {
+      errors.push(problem("not_pointwise", ["steps", key, "function_name"], { key, name: spec.name, mode: spec.mode }));
+    }
     for (const [arg, ref] of Object.entries(step.inputs)) {
       const parsed = parseRef(ref);
       if (parsed?.kind === "slot" && slots.includes(parsed.slot)) {
         usedSlots.add(parsed.slot);
       } else if (!(parsed?.kind === "step" && produced.has(ref.slice(STEP_REF.length)))) {
-        errors.push(`Step '${key}' input '${arg}' must be "slot:<declared slot>" or "step:<earlier step key>.<output>", got '${ref}'`);
+        errors.push(problem("bad_ref", ["steps", key, "inputs", arg], { key, input: arg, ref }));
       }
     }
     for (const [output, field] of Object.entries(step.outputs)) {
       if (!NAME_PATTERN.test(field)) {
-        errors.push(`Step '${key}' output field '${field}' must be lowercase letters, digits and underscores`);
+        errors.push(problem("field_name", ["steps", key, "outputs", output], { key, output, field }));
       } else if (fields.has(field)) {
-        errors.push(`Output field '${field}' is produced twice`);
+        errors.push(problem("field_twice", ["steps", key, "outputs", output], { key, output, field }));
       }
       fields.add(field);
       produced.add(`${key}.${output}`);
@@ -121,6 +157,6 @@ export function validateBlueprintVersion(
     keys.add(key);
   }
   const unused = slots.filter((slot) => !usedSlots.has(slot));
-  if (unused.length) errors.push(`Input slot(s) ${unused.join(", ")} are not used by any step`);
+  if (unused.length) errors.push(problem("unused_slots", ["inputs"], { slots: unused }));
   return errors;
 }

@@ -8,7 +8,6 @@ import "./welcome.css";
 /** Seconds per loop: two hops, at the basics bench's pace (1.5 s a hop). */
 const LOOP = 3;
 
-/** Decorative: the basics triangle without the bench, lit in the accent, with the reading hopping to the gateway. */
 export function WelcomeFigure(): ReactElement {
   const stage = useRef<HTMLElement>(null);
   const dot = useRef<SVGGElement>(null);

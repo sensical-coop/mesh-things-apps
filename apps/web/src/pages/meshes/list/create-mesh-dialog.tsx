@@ -14,7 +14,6 @@ export function CreateMeshDialog({
   start,
   onClose,
 }: {
-  /** Open while set. */
   start: CreateMeshStart | null;
   onClose: () => void;
 }): ReactElement {

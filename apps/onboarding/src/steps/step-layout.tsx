@@ -1,12 +1,6 @@
 import type { ReactElement, ReactNode } from "react";
 
-/**
- * A step with its figure on the left and the step content on the right; stacked on narrow screens.
- * Content comes first in the DOM so the heading is read and focused before the figure's controls.
- * `footer` spans both columns on wide screens, so long text such as the terms wraps in fewer lines;
- * on narrow screens it follows the content, before the figure, so the task is not split by it.
- * Both columns stretch to the taller one, so a step can pin its button to the figure's bottom edge (`lg:mt-auto`).
- */
+/** Content is first in the DOM so the heading is focused before the figure's controls. */
 export function StepLayout({
   figure,
   footer,

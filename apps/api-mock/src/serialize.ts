@@ -10,7 +10,8 @@ import type { DataDeletionRow } from "./features/data-deletion/repository";
 import { latestVersion, type BlueprintRow, type BlueprintVersionRow } from "./features/blueprint/repository";
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 
-import { flagsForRole, roleFlag, type Actor } from "@mtt/domain/authz/authz";
+import { flagsForRole, roleFlag } from "@mtt/contracts/authz";
+import type { Actor } from "./auth";
 
 /** `includeSource` is for the mesh's owner and superusers, as in the API. */
 export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includePsk) {

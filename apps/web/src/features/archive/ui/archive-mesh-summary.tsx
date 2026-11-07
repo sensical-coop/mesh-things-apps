@@ -10,7 +10,6 @@ export type ArchiveMeshSummaryProps = {
   summary: ArchiveSummary | null;
 };
 
-/** One line on the chosen mesh: how many of its devices are stored and what's stored so far. */
 export function ArchiveMeshSummary({ devices, archived, summary }: ArchiveMeshSummaryProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const parts = [

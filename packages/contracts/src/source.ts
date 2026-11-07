@@ -1,8 +1,16 @@
 /** Field name to message, the same keys the API answers 400 with. */
 export type SourceErrors = Partial<Record<"server" | "topic" | "qos", string>>;
 
-/** `host` and `port` when `value` is `host:port` with a port in 1–65535. */
+/** MQTT over TLS's usual port, when a broker address gives no port. */
+export const MQTT_TLS_PORT = 8883;
+
+/**
+ * `host` and `port` when `value` is `host:port` with a port in 1–65535.
+ * A bare IPv6 (`::1`) has more than one colon and no brackets, so it is not a port split.
+ */
 function splitHostPort(value: string): { host: string; port: string } | null {
+  const colons = value.split(":").length - 1;
+  if (colons > 1 && !value.startsWith("[")) return null;
   const at = value.lastIndexOf(":");
   if (at <= 0) return null;
   const port = value.slice(at + 1);
@@ -14,9 +22,9 @@ export function isHostPort(value: string): boolean {
   return splitHostPort(value) !== null;
 }
 
-/** `host:port` for a client's flags. A bare host keeps MQTT over TLS's usual 8883. */
+/** `host:port` for a client's flags. A bare host keeps MQTT over TLS's usual port. */
 export function brokerHostPort(broker: string): { host: string; port: string } {
-  return splitHostPort(broker) ?? { host: broker, port: "8883" };
+  return splitHostPort(broker) ?? { host: broker, port: String(MQTT_TLS_PORT) };
 }
 
 /** A plain filter: `$share` and `$SYS` topics are refused. */

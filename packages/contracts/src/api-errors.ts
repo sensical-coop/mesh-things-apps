@@ -1,4 +1,4 @@
-/** What a failed request says, read from the body the client throws (see `attachErrorStatus`). */
+/** What a failed request says, read from the body the client throws (see `toApiError`). */
 export type ApiError = {
   status: number | undefined;
   detail: string | undefined;
@@ -46,6 +46,16 @@ const SIGNUP_FIELDS = ["password", "email", "name", "terms_version"] as const;
 // DRF's unique-email 400 is `{ email: ["… already exists."] }`. Some responses use 409 instead.
 const EMAIL_EXISTS = /exist/i;
 
+export type LoginFailure = { kind: "unauthorized" } | { kind: "throttled" } | { kind: "generic" };
+
+/** Login failure from the status the API answered with: 401, 429, or anything else. */
+export function classifyLoginFailure(error: unknown): LoginFailure {
+  const { status } = readApiError(error);
+  if (status === 401) return { kind: "unauthorized" };
+  if (status === 429) return { kind: "throttled" };
+  return { kind: "generic" };
+}
+
 /** Signup failure, in the order the forms show it: throttle, then a taken email, then field text. */
 export function classifySignupFailure(error: unknown): SignupFailure {
   const { status, retryAfter, fields } = readApiError(error);
@@ -63,4 +73,12 @@ export function classifySignupFailure(error: unknown): SignupFailure {
 export function formLevelMessage(error: unknown): string | undefined {
   const { detail, fields } = readApiError(error);
   return fields.non_field_errors ?? detail;
+}
+
+/** Every message in an error body, however DRF nested it (`{steps: [{function_name: [...]}]}`, or a bare list). */
+export function errorMessages(error: unknown): string[] {
+  if (typeof error === "string") return [error];
+  if (Array.isArray(error)) return error.flatMap(errorMessages);
+  if (typeof error !== "object" || error === null) return [];
+  return Object.entries(error).flatMap(([key, value]) => (key === "status" ? [] : errorMessages(value)));
 }

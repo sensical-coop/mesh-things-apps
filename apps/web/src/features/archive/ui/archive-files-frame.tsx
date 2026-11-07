@@ -26,7 +26,6 @@ const DAYS_SHOWN = 14;
 
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 
-/** What's stored for the mesh, a row per UTC day, newest first; each opens into its hours. */
 export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested }: ArchiveFilesFrameProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const partitions = manifest?.partitions ?? [];

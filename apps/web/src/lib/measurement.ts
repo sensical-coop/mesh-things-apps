@@ -14,7 +14,6 @@ export function isDerivedMeasurement(type: { channel: string }): boolean {
   return type.channel.startsWith("derived.");
 }
 
-/** A channel's short name, as the latest-reading cards show it: `environment_metrics.temperature` → `temperature`. */
 export function channelShortName(channel: string): string {
   return channel.slice(channel.indexOf(".") + 1) || channel;
 }

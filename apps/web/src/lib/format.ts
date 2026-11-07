@@ -43,7 +43,6 @@ export function formatWhen(iso: string | null, locale?: string, labels: FormatLa
 
 const relativeUnits = ["year", "month", "week", "day", "hour", "minute", "second"] as const;
 
-/** Temporal has no toRelative; Instant.until + RelativeTimeFormat is the MDN path. */
 export function toRelative(iso: string, locale?: string): string | null {
   const zoned = toZoned(iso);
   if (!zoned) return null;
@@ -101,7 +100,6 @@ export function formatRatio(
   return value.toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 });
 }
 
-/** Seconds as hours, minutes, seconds. Empty or invalid → em dash. */
 export function formatSecondsAsHms(
   seconds: number | null | undefined,
   locale?: string,

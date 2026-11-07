@@ -20,7 +20,6 @@ export function StartProgress({ step }: { step: StartStep }): ReactElement {
     gateway: formatMessage({ id: "page.start.progress.gateway", defaultMessage: "Gateway" }),
     next: formatMessage({ id: "page.start.progress.next", defaultMessage: "Next steps" }),
   };
-  // "done" is past the last part: every segment reads as finished.
   const current = step === "done" ? PARTS.length : PARTS.findIndex((part) => part.steps.includes(step));
 
   return (

@@ -297,7 +297,7 @@ Modelo (meshtastic-things `docs/architecture.md#postprocessing`): una **plantill
 | GET/POST/DELETE | `/devices/{uuid}/postprocessings/{id}/calibrations` | historial de calibración por `step_key` |
 | GET/POST | `/devices/{uuid}/postprocessings/{id}/backfills` | recalcular histórico (≤ 90 días, 202 `pending`) |
 
-Algunos rechazos llegan como lista DRF sin campo (`["..."]`); `attachErrorStatus` los pasa a `non_field_errors`.
+Algunos rechazos llegan como lista DRF sin campo (`["..."]`); `toApiError` los pasa a `non_field_errors`.
 
 ### Readings
 

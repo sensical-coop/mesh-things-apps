@@ -25,7 +25,6 @@ function previousInterval(row: Export): CsvRequestDraft["range"] {
   return { start: shiftDay(stop, -(length - 1)), stop: stop > utcToday() ? utcToday() : stop };
 }
 
-/** Every user's CSV downloads: request one for a mesh they own, follow it, and ask again later. */
 export function CsvDownloadsFrame(): ReactElement {
   const { formatMessage } = useIntl();
   const { me } = useMe();

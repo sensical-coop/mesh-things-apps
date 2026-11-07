@@ -25,7 +25,6 @@ const smooth = (value: number) => {
 
 const span = (unit: number, from: number, to: number) => smooth((unit - from) / (to - from));
 
-/** Scrub unit 0–1: letter in, flag up, dial 60→0, door, letter out, lamp. */
 export function sceneAt(unit: number): Scene {
   const sweep = span(unit, 0.3, 0.62);
   return {
@@ -50,7 +49,6 @@ export function secondsLeft(scene: Scene): number {
   return Math.max(0, Math.ceil(scene.seconds - 1e-6));
 }
 
-/** Idle tour. Wrapping the clock jumps back to the start instead of rewinding. */
 export function tourUnit(clock: number): number {
   const at = clock % TOUR_SECONDS;
   if (at < 0.7) return 0;

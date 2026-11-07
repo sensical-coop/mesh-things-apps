@@ -1,3 +1,4 @@
+import { isVerifiedOwner } from "@mtt/contracts/authz";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, type ReactNode, useState } from "react";
@@ -19,7 +20,7 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
 
   async function checkNow() {
     const owner = await me.refetch();
-    setNotYet(owner.data?.is_active !== true);
+    setNotYet(!isVerifiedOwner(owner.data));
   }
 
   return (
@@ -34,7 +35,7 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
           values={{ strong: (chunks: ReactNode) => <strong>{chunks}</strong>, email }}
         />
       </p>
-      <ResendButton sentAt={sentAt} />
+      <ResendButton sentAt={sentAt} next="/start" />
       <Button type="button" size="medium" variant="secondary" disabled={me.isRefetching} onClick={() => void checkNow()}>
         {formatMessage({ id: "page.start.checkEmail.confirmed", defaultMessage: "Check again" })}
       </Button>

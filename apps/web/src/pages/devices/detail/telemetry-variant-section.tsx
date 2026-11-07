@@ -10,7 +10,7 @@ import { useFormatters } from "@/hooks/use-formatters";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
 import { channelShortName, isDerivedMeasurement } from "@/lib/measurement";
-import { ComputedFlag } from "@/components/computed-flag";
+import { ComputedFlag } from "./computed-flag";
 import { StatusCopy } from "@/components/status-copy";
 
 

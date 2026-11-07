@@ -30,7 +30,7 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
   const apply = useMutation({
     mutationFn: async (enabled: boolean) => {
       const results = await Promise.allSettled(
-        devicesToSwitch(devices, enabled).map((device) => archiveRepository.setDeviceArchive(device.uuid, enabled)),
+        devicesToSwitch(devices, enabled).map((device) => deviceRepository.setDeviceArchive(device.uuid, enabled)),
       );
       const failed = results.filter((result) => result.status === "rejected").length;
       if (failed > 0) throw new Error(String(failed));

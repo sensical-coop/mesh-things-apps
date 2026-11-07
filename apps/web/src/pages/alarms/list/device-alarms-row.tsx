@@ -7,6 +7,7 @@ import { RouterButtonLink } from "@/components/router-button-link";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { alarmVariantGroups } from "@/features/alarm/model";
+import { COMPUTED_VARIANT_GROUP } from "@/features/device/variant-groups";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
@@ -86,7 +87,9 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
               <h4 className="min-w-0 text-caption-1-medium wrap-break-word text-text-secondary">
-                {group.title ?? formatMessage({ id: "page.alarms.list.otherVariant", defaultMessage: "Other" })}
+                {group.key === COMPUTED_VARIANT_GROUP
+                  ? formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" })
+                  : (group.title ?? formatMessage({ id: "page.alarms.list.otherVariant", defaultMessage: "Other" }))}
               </h4>
               <div className="oa-arrive overflow-x-auto">
                 <table className="w-full min-w-lg table-fixed caption-bottom text-left text-body-2-regular">

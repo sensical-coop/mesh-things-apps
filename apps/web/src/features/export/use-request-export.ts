@@ -1,8 +1,9 @@
 import type { Export, ExportRequest } from "@mtt/contracts";
+import { readApiError } from "@mtt/contracts/errors";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { readApiError } from "@mtt/contracts/errors";
-import { exportRepository } from "@/features/export/repository";
+import { isExportStorageMissing } from "./storage-missing.ts";
+import { exportRepository } from "./repository.ts";
 
 export type RequestExportState = {
   request: (meshId: string, body: ExportRequest) => void;
@@ -16,7 +17,6 @@ export type RequestExportState = {
   reset: () => void;
 };
 
-/** Ask for an export and keep every list of exports in step with it. */
 export function useRequestExport(onCreated?: (row: Export) => void): RequestExportState {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -40,7 +40,7 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
         id: "feature.export.error.busy",
         defaultMessage: "You already have a download being prepared. Request this one once it's ready.",
       });
-    } else if (refusal.status === 404 && refusal.detail === "Not found") {
+    } else if (isExportStorageMissing(mutation.error)) {
       error = formatMessage({
         id: "feature.export.error.unavailable",
         defaultMessage: "This instance doesn't offer downloads. Ask the administrator to set up object storage.",

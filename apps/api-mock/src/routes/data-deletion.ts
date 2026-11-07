@@ -2,7 +2,7 @@ import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
 import {
   canSeeDataDeletions,
-} from "@mtt/domain/authz/authz";
+} from "@mtt/contracts/authz";
 import { Hono } from "hono";
 import {
   dataDeletionJson,

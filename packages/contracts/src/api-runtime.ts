@@ -1,11 +1,7 @@
 import type { ZodType } from "zod";
 
-let baseUrl = "";
-
-/** Where requests go: web sets it from VITE_API_URL before the first request. */
-export function setApiBaseUrl(url: string): void {
-  baseUrl = url;
-}
+/** Where requests go. Vite inlines `VITE_API_URL` at build; local dev falls back to the mock. */
+export const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
 const CSRF_COOKIE_NAME = "csrftoken";
 const CSRF_HEADER_NAME = "X-CSRFToken";
@@ -26,16 +22,42 @@ export function toApiError(body: unknown, status: number | undefined): unknown {
 }
 
 /**
- * The error type Orval gives queries and mutations: TanStack's default, as before. At runtime it is
- * `toApiError`'s object, a network `TypeError` or a `ZodError`; read it with web's `readApiError`.
+ * What `apiFetch` throws: `toApiError`'s object, a network `TypeError`, or a `ZodError`.
+ * Callers read it with `readApiError`.
  */
-export type ErrorType<_Body> = Error;
+export type ErrorType<_Body> =
+  | Error
+  | {
+      status?: number;
+      detail?: string;
+      message?: string;
+      [key: string]: unknown;
+    };
 
 async function readBody(response: Response): Promise<unknown> {
   const text = await response.text();
   if (!text) return undefined;
   if (!response.headers.get("content-type")?.includes("json")) return text;
   return JSON.parse(text);
+}
+
+let csrfCookie: Promise<void> | undefined;
+
+/** One in-flight GET of the CSRF cookie, shared by concurrent unsafe requests. A failure can be retried. */
+function ensureCsrfCookie(): Promise<void> {
+  if (typeof document === "undefined" || readCookie(CSRF_COOKIE_NAME)) return Promise.resolve();
+  csrfCookie ??= fetch(`${API_URL}/owners/csrf-cookie`, { credentials: "include" }).then(
+    (response) => {
+      if (response.ok) return;
+      csrfCookie = undefined;
+      throw toApiError(undefined, response.status);
+    },
+    (error: unknown) => {
+      csrfCookie = undefined;
+      throw error;
+    },
+  );
+  return csrfCookie;
 }
 
 /**
@@ -47,10 +69,11 @@ export async function apiFetch<T>(url: string, options: RequestInit & { schema?:
   const headers = new Headers(init.headers);
   const method = (init.method ?? "GET").toUpperCase();
   if (!SAFE_METHODS.has(method)) {
+    await ensureCsrfCookie();
     const token = readCookie(CSRF_COOKIE_NAME);
     if (token) headers.set(CSRF_HEADER_NAME, token);
   }
-  const response = await fetch(`${baseUrl}${url}`, { ...init, headers, credentials: "include" });
+  const response = await fetch(`${API_URL}${url}`, { ...init, headers, credentials: "include" });
   const body = await readBody(response);
   if (!response.ok) throw toApiError(body, response.status);
   // Orval types each operation's T from the same spec the schema comes from.

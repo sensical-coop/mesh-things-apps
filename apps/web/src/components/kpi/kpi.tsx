@@ -11,7 +11,6 @@ export type KpiProps = {
   className?: string;
   icon?: RemixiconComponentType;
   action?: ReactNode;
-  /** Shown after the label, e.g. a flag for a computed channel. */
   badge?: ReactNode;
 };
 

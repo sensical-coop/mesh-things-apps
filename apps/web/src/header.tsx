@@ -1,9 +1,9 @@
 import { authRepository } from "@/features/auth/repository";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { BrandMark } from "@mtt/ui/components/brand-mark";
+import { ThemeToggle } from "@mtt/ui/components/theme-toggle";
 import { cx } from "@mtt/ui/utils";
-import { toggleTheme } from "@mtt/ui/theme";
-import { RiCloseLine, RiMenuLine, RiMoonLine, RiSunLine, RiUserLine } from "@remixicon/react";
+import { RiCloseLine, RiMenuLine, RiUserLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
@@ -11,13 +11,11 @@ import { useIntl } from "react-intl";
 import { pageWidth } from "@/components/brand";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { RouterButtonLink } from "@/components/router-button-link";
-import { useTheme } from "@/hooks/use-theme";
 import { headerLinkClass, NavLinks } from "@/nav-links";
 import { routes } from "@/router";
 
 export function Header(): ReactElement {
   const { formatMessage } = useIntl();
-  const theme = useTheme();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,17 +62,7 @@ export function Header(): ReactElement {
             aria-label={formatMessage({ id: "console.header.profile", defaultMessage: "Profile" })}
             onClick={() => setMenuOpen(false)}
           />
-          <Button
-            type="button"
-            variant="secondary"
-            size="small"
-            iconOnly
-            leadingIcon={theme === "dark" ? RiSunLine : RiMoonLine}
-            aria-label={formatMessage({ id: "common.themeToggle.label", defaultMessage: "Toggle color theme" })}
-            onClick={() => {
-              toggleTheme();
-            }}
-          />
+          <ThemeToggle />
           <Button
             type="button"
             variant="secondary"

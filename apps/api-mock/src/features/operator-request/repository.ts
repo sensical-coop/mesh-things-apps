@@ -1,4 +1,4 @@
-import type { Actor } from "@mtt/domain/authz/authz";
+import type { Actor } from "../../auth";
 import type { Device } from "@mtt/domain/device/Device";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import { newId, nowIso } from "@mtt/domain/shared/ids";

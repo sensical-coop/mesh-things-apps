@@ -29,11 +29,10 @@ export const valuelessFilterOperators = new Set<string>(
   operatorTable.flatMap(([operator, arity]) => (arity === "none" ? [operator] : [])),
 );
 
-/** Set operators. `is_none_of` is the filter UI's name for `is_not_any_of` and can still sit in the URL. */
-export const multiValueFilterOperators = new Set<string>([
-  ...operatorTable.flatMap(([operator, arity]) => (arity === "many" ? [operator] : [])),
-  "is_none_of",
-]);
+/** Set operators. */
+export const multiValueFilterOperators = new Set<string>(
+  operatorTable.flatMap(([operator, arity]) => (arity === "many" ? [operator] : [])),
+);
 
 export type ListFilter = {
   field: string;
@@ -69,8 +68,6 @@ export function serializeListFilterValue(filter: { operator: string; values: str
 /** UI operator ids that are not the wire name. */
 export function toWireOperator(operator: string): string {
   switch (operator) {
-    case "is_none_of":
-      return "is_not_any_of";
     case "eq":
       return "equals";
     case "gt":

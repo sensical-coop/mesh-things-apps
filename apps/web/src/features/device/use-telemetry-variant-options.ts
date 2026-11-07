@@ -19,8 +19,3 @@ export function useTelemetryVariants(): { options: TelemetryVariantOption[]; var
   );
   return { options, variants: catalog.data ?? [] };
 }
-
-/** The variant catalog as filter options; empty for visitors, who can't read it. */
-export function useTelemetryVariantOptions(): TelemetryVariantOption[] {
-  return useTelemetryVariants().options;
-}

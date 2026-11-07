@@ -1,11 +1,15 @@
 import type { Context } from "hono";
 import type { Device } from "@mtt/domain/device/Device";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
-import { archivesFor, canSeeArchiveSetting, canWriteMesh, visibleSinks, visibleSources, type Actor } from "@mtt/domain/authz/authz";
-import { matchesTelemetryVariantFilter, parseTelemetryVariantFilter, type TelemetryVariantFilter } from "@mtt/domain/device/TelemetryVariantFilter";
+import { archivesFor, canSeeArchiveSetting, canWriteMesh, visibleSinks, visibleSources } from "@mtt/contracts/authz";
+import { parseListFilterValue } from "@mtt/contracts/list-filter";
+import { matchesTelemetryVariantFilter, type TelemetryVariantFilter } from "@mtt/domain/device/TelemetryVariantFilter";
+import type { Actor } from "./auth";
 import type { Sink } from "@mtt/domain/sink/Sink";
 import type { Source } from "@mtt/domain/source/Source";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
+
+const TELEMETRY_VARIANT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 import type { DataDeletionReason } from "./features/data-deletion/repository";
 import {
   acceptTerms as commitTerms,
@@ -64,7 +68,6 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
     }
   }
 
-  /** A device and everything attached to it. */
   async function deleteDevice(uuid: string) {
     detachFromSinks({ deviceUuid: uuid });
     const device = await db.devices.get(uuid);
@@ -88,13 +91,23 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
     );
   }
 
+  /** Bare ids mean `has_any_of`. Anything else must already be one of the three set operators. */
+  function telemetryVariantFilter(raw: string): TelemetryVariantFilter | null {
+    const parsed = parseListFilterValue(raw);
+    if (!parsed) return null;
+    const operator = raw.includes(":") ? parsed.operator : "has_any_of";
+    if (operator !== "has_any_of" && operator !== "has_all_of" && operator !== "has_none_of") return null;
+    if (!parsed.values.length || !parsed.values.every((id) => TELEMETRY_VARIANT_ID.test(id))) return null;
+    return { operator, ids: parsed.values.map((id) => id.toLowerCase()) };
+  }
+
   /** `?telemetry_variant=`: no filter when absent, a 400 body when malformed. */
   function telemetryVariantQuery(
     c: Context,
   ): { filter: TelemetryVariantFilter | null } | { error: Record<string, string[]> } {
     const raw = c.req.query("telemetry_variant");
     if (!raw) return { filter: null };
-    const filter = parseTelemetryVariantFilter(raw);
+    const filter = telemetryVariantFilter(raw);
     if (!filter) {
       return {
         error: {

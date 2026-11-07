@@ -15,7 +15,6 @@ type Schema = {
 
 const REF = "#/components/schemas/";
 
-/** The schema without the properties `drop` rejects; `required` follows, and goes when empty. */
 function withoutProperties(schema: Schema, drop: (property: Schema) => boolean, map = (property: Schema) => property): Schema {
   if (!schema.properties) return { ...schema };
   const properties = Object.fromEntries(
@@ -28,7 +27,7 @@ function withoutProperties(schema: Schema, drop: (property: Schema) => boolean, 
   return required.length ? { ...rest, properties, required } : { ...rest, properties };
 }
 
-/** The schema without `default`, through inline properties and items; `$ref`s are their own components. */
+/** `$ref`s are their own components, so defaults are stripped only from inline schemas. */
 function withoutDefaults(schema: Schema): Schema {
   const { default: _, ...rest } = schema;
   const result = withoutProperties(rest, () => false, withoutDefaults);
@@ -85,7 +84,6 @@ const splitRequestSchemas = defineTransformer((spec) => {
   }
 
   for (const name of originals) {
-    // A component sent unchanged as a body keeps its writeOnly fields.
     if (requests.get(name) === name) continue;
     schemas[name] = withoutDefaults(withoutProperties(schemas[name]!, (property) => property.writeOnly === true));
   }

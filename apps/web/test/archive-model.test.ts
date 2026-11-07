@@ -14,9 +14,9 @@ import {
   summarizeArchive,
 } from "../src/features/archive/model.ts";
 
-const operator = { id: "op", is_superuser: false, role: "operator" as const };
-const member = { id: "ada", is_superuser: false, role: "member" as const };
-const admin = { id: "admin", is_superuser: true, role: "member" as const };
+const operator = { id: "op", is_superuser: false, is_staff: false, role: "operator" as const, is_active: true };
+const member = { id: "ada", is_superuser: false, is_staff: false, role: "member" as const, is_active: true };
+const admin = { id: "admin", is_superuser: true, is_staff: true, role: "member" as const, is_active: true };
 
 const credentials = {
   access_key_id: "KEY",

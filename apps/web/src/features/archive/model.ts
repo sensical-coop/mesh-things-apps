@@ -1,15 +1,14 @@
-import type { ArchiveCredentials, ArchivePartition, DeviceRead, OwnerProfile } from "@mtt/contracts";
+import type { ArchiveCredentials, ArchivePartition, DeviceRead } from "@mtt/contracts";
+import { canReadArchive, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
+import { shellQuote } from "../../lib/shell-quote.ts";
 
 /**
  * Mirrors the API: the archive of a mesh is read by its owner while an operator, and by
  * superusers; devices are archived only there. Unknown while `me` loads.
  */
-export function canUseArchive(
-  me: Pick<OwnerProfile, "id" | "is_superuser" | "role"> | undefined,
-  meshOwnerId: string | undefined,
-): boolean {
+export function canUseArchive(me: ProfileFlags | undefined, meshOwnerId: string | undefined): boolean {
   if (!me || !meshOwnerId) return false;
-  return me.is_superuser === true || (me.role === "operator" && meshOwnerId === me.id);
+  return canReadArchive(viewerOf(me), { ownerId: meshOwnerId });
 }
 
 /**
@@ -18,7 +17,7 @@ export function canUseArchive(
  */
 export function canArchiveDevice(
   device: Pick<DeviceRead, "archive_enabled">,
-  me: Pick<OwnerProfile, "id" | "is_superuser" | "role"> | undefined,
+  me: ProfileFlags | undefined,
   meshOwnerId: string | undefined,
 ): boolean {
   return device.archive_enabled !== undefined && canUseArchive(me, meshOwnerId);
@@ -72,10 +71,6 @@ export function partitionDownloadUrl(apiUrl: string, meshId: string, partition: 
 
 function sqlString(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
-}
-
-function shellString(value: string): string {
-  return `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
 export type ArchiveDay = {
@@ -155,16 +150,16 @@ export function duckdbExportCommand(credentials: ArchiveCredentials | null, pref
 /** Every hourly file as stored, with the same `dt=/hour=` folders; run again, it fetches only what changed. */
 export function awsCliCommand(credentials: ArchiveCredentials | null, prefix: string, folder: string): string {
   const env = [
-    `AWS_ACCESS_KEY_ID=${shellString(credentials?.access_key_id ?? "<access_key_id>")}`,
-    `AWS_SECRET_ACCESS_KEY=${shellString(credentials?.secret_access_key ?? "<secret_access_key>")}`,
-    `AWS_SESSION_TOKEN=${shellString(credentials?.session_token ?? "<session_token>")}`,
-    `AWS_DEFAULT_REGION=${shellString(credentials?.region ?? "<region>")}`,
+    `AWS_ACCESS_KEY_ID=${shellQuote(credentials?.access_key_id ?? "<access_key_id>")}`,
+    `AWS_SECRET_ACCESS_KEY=${shellQuote(credentials?.secret_access_key ?? "<secret_access_key>")}`,
+    `AWS_SESSION_TOKEN=${shellQuote(credentials?.session_token ?? "<session_token>")}`,
+    `AWS_DEFAULT_REGION=${shellQuote(credentials?.region ?? "<region>")}`,
   ];
   const endpoint = credentials === null ? "<endpoint>" : credentials.endpoint;
-  const copy = `aws s3 sync ${shellString(s3Root(credentials, prefix))} ${shellString(folder)}`;
+  const copy = `aws s3 sync ${shellQuote(s3Root(credentials, prefix))} ${shellQuote(folder)}`;
   return [
     `export ${env.join(" \\\n  ")}`,
-    endpoint ? `${copy} \\\n  --endpoint-url ${shellString(endpoint)}` : copy,
+    endpoint ? `${copy} \\\n  --endpoint-url ${shellQuote(endpoint)}` : copy,
   ].join("\n");
 }
 

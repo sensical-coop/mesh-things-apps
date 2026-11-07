@@ -8,7 +8,6 @@ export type RankedBar = {
   display: string;
 };
 
-/** Horizontal bars scaled to the largest row, for ranked counts such as the busiest nodes. */
 export function RankedBars({ rows, label }: { rows: RankedBar[]; label: string }): ReactElement {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (

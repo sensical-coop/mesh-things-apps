@@ -2,7 +2,8 @@ import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
 import { DevicePostprocessingWrite, PostprocessingBackfillRequest, StepCalibrationRequest } from "@mtt/contracts";
 import type { Device } from "@mtt/domain/device/Device";
-import { canWriteMesh, type Actor } from "@mtt/domain/authz/authz";
+import { canWriteMesh } from "@mtt/contracts/authz";
+import type { Actor } from "../auth";
 import { Hono } from "hono";
 import {
   addCalibration,
@@ -26,7 +27,7 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   async function postprocessingBody(row: PostprocessingRow, device: Device) {
     const resolved = versionOf(db, row);
     if (!resolved) throw new Error(`Postprocessing ${row.id} lost its blueprint version`);
-    const types = await db.measurements.list();
+    const types = db.measurements;
     return postprocessingJson(
       row,
       resolved.blueprint,

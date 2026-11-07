@@ -28,7 +28,6 @@ export function WelcomeStep({ onContinue }: { onContinue: () => void }): ReactEl
           <li>{formatMessage({ id: "page.start.welcome.stepGateway", defaultMessage: "Register the gateway and wait until a packet arrives" })}</li>
         </ol>
       </div>
-      {/* Pinned to the figure's bottom edge on wide screens. */}
       <Button type="button" size="medium" onClick={onContinue} className="lg:mt-auto">
         {formatMessage({ id: "page.start.welcome.continue", defaultMessage: "Continue to account" })}
       </Button>

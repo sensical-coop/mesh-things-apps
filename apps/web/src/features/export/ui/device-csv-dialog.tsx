@@ -27,7 +27,6 @@ function isThisDevice(row: Export, device: DeviceRead): boolean {
   return row.format === "csv" && row.node_ids?.length === 1 && row.node_ids[0] === device.node_id;
 }
 
-/** Ask for one device's readings as CSV over some days, and follow that download until it's ready. */
 export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();

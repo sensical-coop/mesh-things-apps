@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.72.0",
-    "browserslist": "^4.29.4",
     "eslint": "^10.13.0",
     "eslint-plugin-better-tailwindcss": "^4.10.0",
     "stylelint": "^17.16.0",
@@ -40,8 +39,5 @@
       "minimatch@<11.0.1": "^11.0.1",
       "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2"
     }
-  },
-  "browserslist": [
-    "baseline widely available"
-  ]
+  }
 }

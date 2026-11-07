@@ -14,7 +14,6 @@ import { readingsRepository } from "@/features/readings/repository";
 import { positionTrack } from "../model";
 import { tokenColor } from "../token-color";
 
-/** Where a device reported itself over the last week, as a track ending at its latest position. */
 export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage } = useIntl();
   const positions = useQuery(

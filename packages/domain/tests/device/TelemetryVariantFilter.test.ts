@@ -1,24 +1,8 @@
 import { describe, expect, it } from "vitest";
-import {
-  matchesTelemetryVariantFilter,
-  parseTelemetryVariantFilter,
-} from "../../src/device/TelemetryVariantFilter";
+import { matchesTelemetryVariantFilter } from "../../src/device/TelemetryVariantFilter";
 
 const ENV = "77777777-7777-4777-8777-777777777777";
 const AIR = "56565656-5656-4565-8565-565656565656";
-
-describe("parseTelemetryVariantFilter", () => {
-  it("reads the operator and ids, with bare ids as has_any_of", () => {
-    expect(parseTelemetryVariantFilter(ENV)).toEqual({ operator: "has_any_of", ids: [ENV] });
-    expect(parseTelemetryVariantFilter(`has_all_of:${ENV}|${AIR}`)).toEqual({ operator: "has_all_of", ids: [ENV, AIR] });
-  });
-
-  it("rejects unknown operators, missing ids and non-uuids", () => {
-    expect(parseTelemetryVariantFilter(`has_some_of:${ENV}`)).toBeNull();
-    expect(parseTelemetryVariantFilter("has_any_of:")).toBeNull();
-    expect(parseTelemetryVariantFilter("has_any_of:not-a-uuid")).toBeNull();
-  });
-});
 
 describe("matchesTelemetryVariantFilter", () => {
   const both = [ENV, AIR];

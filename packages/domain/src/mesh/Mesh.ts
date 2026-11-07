@@ -1,4 +1,4 @@
-export type MeshProps = {
+type MeshProps = {
   id: string;
   channelId: string;
   pskB64: string;
@@ -58,16 +58,5 @@ export class Mesh implements MeshProps {
     this.pausedAt = props.pausedAt ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
-  }
-}
-
-export function meshFilterValue(mesh: Mesh, field: string): string | undefined {
-  switch (field) {
-    case "label":
-      return mesh.label ?? "";
-    case "channel_id":
-      return mesh.channelId;
-    default:
-      return undefined;
   }
 }

@@ -29,14 +29,12 @@ import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
 import { deviceLastSeen, devicePosition, deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
-import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
-import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
-import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
+import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
 import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
 import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
-import { expandedMapClass } from "@/lib/expanded-map";
+import { expandedMapClass } from "@/features/mesh-network/expanded-map";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
@@ -53,6 +51,7 @@ import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { termsRepository } from "@/features/terms/repository";
 import { PskReveal } from "./psk-reveal";
 import { RegisterDeviceDialog } from "./register-device-dialog";
+import { sourceStatus } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { MapUnsupported } from "@/components/map-unsupported";
 import { RouterButtonLink } from "@/components/router-button-link";
@@ -99,7 +98,7 @@ export function MeshDetailPage(): ReactElement {
         termsEnforced,
         currentTermsVersion: meshTerms.data?.version,
         sourceStatus: mesh.data.source_id
-          ? sources.data?.find((source) => source.id === mesh.data.source_id)?.status
+          ? sourceStatus(sources.data?.find((source) => source.id === mesh.data.source_id)?.status ?? "")
           : undefined,
         now: new Date(),
       })
@@ -114,9 +113,7 @@ export function MeshDetailPage(): ReactElement {
     [devices.data],
   );
 
-  const filterLabels = useTranslatedFilterLabels();
-  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
-  const variantOptions = useTelemetryVariantOptions();
+  const { options: variantOptions } = useTelemetryVariants();
   // Same keys as the devices list, so a filtered URL reads the same on both pages.
   const specs = useMemo(
     () => deviceFilterSpecs({ formatMessage, variantOptions, allowed: true }),
@@ -420,7 +417,7 @@ export function MeshDetailPage(): ReactElement {
             <FramePanel>
               {devices.data?.length ? (
                 <div className="mb-4">
-                  <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
+                  <SmartFilterToolbar filters={filters} />
                 </div>
               ) : null}
               {devices.isPending ? <SkeletonRows /> : null}

@@ -29,7 +29,6 @@ export function SeriesChart({
   windowMs?: number | null;
   action?: ReactNode;
   badge?: ReactNode;
-  /** A channel a blueprint derives: drawn in the purple of the "Computed" chip. */
   computed?: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();

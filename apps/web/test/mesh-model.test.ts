@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { canEditMesh, meshTitle } from "../src/features/mesh/model.ts";
 
-const mine = { id: "ada", is_superuser: false };
-const admin = { id: "root", is_superuser: true };
+const mine = { id: "ada", role: "member" as const, is_superuser: false, is_staff: false, is_active: true };
+const admin = { id: "root", role: "member" as const, is_superuser: true, is_staff: true, is_active: true };
 
 test("canEditMesh lets the owner edit their mesh, public or not", () => {
   assert.equal(canEditMesh({ owner_id: "ada" }, mine), true);

@@ -3,9 +3,8 @@ import type { RouteRuntime } from "../runtime";
 import {
   ExportRequest,
 } from "@mtt/contracts";
-import {
-  type Actor,
-} from "@mtt/domain/authz/authz";
+import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
+import type { Actor } from "../auth";
 import { Hono } from "hono";
 import {
   DEVICE_NODE_ID,
@@ -18,7 +17,6 @@ import {
 } from "../features/archive/repository";
 import { storedZip } from "../features/archive/zip";
 import {
-  EXPORT_MAX_DAYS,
   daysBetween,
   daysDone,
   expiresAt,

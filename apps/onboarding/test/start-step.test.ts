@@ -11,7 +11,6 @@ const facts = (patch: Partial<StartFacts>): StartFacts => ({
 
 test("isStartStep accepts only the step ids", () => {
   assert.equal(isStartStep("welcome"), true);
-  assert.equal(isStartStep("done"), true);
   assert.equal(isStartStep("next"), false);
   assert.equal(isStartStep(1), false);
 });

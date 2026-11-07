@@ -1,7 +1,7 @@
 import { Globe } from "@mtt/ui/components/ui/globe";
 import { type ReactElement, useMemo } from "react";
 import { landingGlobeNodes } from "./mesh";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "@mtt/ui/hooks/use-theme";
 
 const coral: [number, number, number] = [255 / 255, 73 / 255, 95 / 255];
 const inkLight: [number, number, number] = [0.96, 0.96, 0.96];

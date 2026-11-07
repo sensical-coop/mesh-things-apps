@@ -7,7 +7,7 @@ import { RiCollapseDiagonalLine, RiExpandDiagonalLine, RiMapLine, RiShareLine } 
 import { useQuery } from "@tanstack/react-query";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useNavigate } from "@tanstack/react-router";
-import { expandedMapClass } from "@/lib/expanded-map";
+import { expandedMapClass } from "../expanded-map";
 import { routes } from "@/router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";

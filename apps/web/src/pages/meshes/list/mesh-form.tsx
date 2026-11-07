@@ -1,14 +1,13 @@
 import { MeshCreateRequest, type Mesh } from "@mtt/contracts";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
 import { useTermsEnforced } from "@mtt/contracts/terms";
-import { MeshForm as UiMeshForm, PUBLIC_DEFAULT_PSK, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
+import { MeshFormAlert, MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
 import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { StatusCopy } from "@/components/status-copy";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { NO_SOURCE } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
@@ -20,15 +19,12 @@ import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 export function MeshForm({
   sourceId = null,
   termsAcceptance = null,
-  submitLabel,
   onCreated,
   onCancel,
 }: {
   /** Broker chosen before the form opened. */
   sourceId?: string | null;
   termsAcceptance?: TermsAcceptance | null;
-  /** Idle submit label. Pending state keeps "Creating mesh". */
-  submitLabel?: string;
   onCreated?: (mesh: Mesh) => void | Promise<void>;
   onCancel?: () => void;
 }): ReactElement {
@@ -88,37 +84,8 @@ export function MeshForm({
   return (
     <>
       <UiMeshForm
-        labels={{
-          label: formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" }),
-          labelHint: formatMessage({
-            id: "page.meshes.list.createDialog.labelHint",
-            defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
-          }),
-          channel: formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel ID" }),
-          channelHint: formatMessage({
-            id: "page.meshes.list.createDialog.channelIdHint",
-            defaultMessage: "The Meshtastic channel name.",
-          }),
-          psk: formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" }),
-          pskHint: formatMessage({
-            id: "page.meshes.list.createDialog.pskHint",
-            defaultMessage: "The channel's pre-shared key, in Base64.",
-          }),
-          publicPsk: formatMessage(
-            {
-              id: "page.meshes.list.createDialog.publicPsk",
-              defaultMessage: "{psk} is the public default key. Anyone can read this channel.",
-            },
-            { psk: PUBLIC_DEFAULT_PSK },
-          ),
-        }}
         errors={errors}
         pending={create.isPending}
-        submitLabel={
-          create.isPending
-            ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
-            : (submitLabel ?? formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" }))
-        }
         onCancel={onCancel}
         cancelLabel={cancelLabel}
         onSubmit={onSubmit}
@@ -163,19 +130,19 @@ export function MeshForm({
               </FormField>
             ) : null}
             {create.error ? (
-              <StatusCopy>
-                {formatMessage({
-                  id: "page.meshes.list.createDialog.error",
-                  defaultMessage: "The mesh was not created. Check the fields and try again.",
-                })}
-                {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
-                {errors.terms_version
-                  ? ` ${formatMessage({
-                      id: "page.meshes.list.createDialog.termsChanged",
-                      defaultMessage: "The mesh terms changed. Close this dialog and accept the current terms.",
-                    })}`
-                  : ""}
-              </StatusCopy>
+              <MeshFormAlert
+                detail={[
+                  formLevelMessage(create.error),
+                  errors.terms_version
+                    ? formatMessage({
+                        id: "page.meshes.list.createDialog.termsChanged",
+                        defaultMessage: "The mesh terms changed. Close this dialog and accept the current terms.",
+                      })
+                    : undefined,
+                ]
+                  .filter((part) => part)
+                  .join(" ")}
+              />
             ) : null}
           </>
         }

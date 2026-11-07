@@ -2,34 +2,48 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { type FormEvent, type ReactElement, type ReactNode } from "react";
+import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 
 export type LoginFormValues = { email: string; password: string };
 
-export type LoginFormLabels = {
-  email: string;
-  password: string;
-  submit: string;
-  pending: string;
-};
+export type LoginFailure = { kind: "unauthorized" | "throttled" | "generic" };
+
+const MOCK_DEFAULTS = { email: "owner@sensical.test", password: "mesh-owner-12" };
 
 export function LoginForm({
-  labels,
-  error,
+  failure,
   pending,
   onSubmit,
-  defaultValues,
   forgotPassword,
   footer,
 }: {
-  labels: LoginFormLabels;
-  error?: string | null;
+  failure?: LoginFailure | null;
   pending: boolean;
   onSubmit: (values: LoginFormValues) => void;
-  defaultValues?: { email?: string; password?: string };
   forgotPassword?: ReactNode;
   footer?: ReactNode;
 }): ReactElement {
+  const { formatMessage } = useIntl();
+  const defaults = import.meta.env.VITE_DISABLE_MOCK_API === "true" ? undefined : MOCK_DEFAULTS;
+  const error =
+    failure?.kind === "unauthorized"
+      ? formatMessage({
+          id: "page.login.form.error",
+          defaultMessage: "Those credentials were not accepted. Check the email and password and try again.",
+        })
+      : failure?.kind === "throttled"
+        ? formatMessage({
+            id: "page.login.form.error.throttled",
+            defaultMessage: "Too many sign-in attempts. Wait a minute and try again.",
+          })
+        : failure?.kind === "generic"
+          ? formatMessage({
+              id: "page.login.form.error.generic",
+              defaultMessage: "We couldn't sign you in right now. Try again in a moment.",
+            })
+          : null;
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
@@ -44,25 +58,25 @@ export function LoginForm({
     <div className="flex flex-col gap-6">
       <form className="flex flex-col gap-5" onSubmit={submit}>
         <FieldGroup>
-          <FormField id="login-email" label={labels.email}>
+          <FormField id="login-email" label={formatMessage({ id: "page.login.form.email", defaultMessage: "Email" })}>
             <Input
               id="login-email"
               name="email"
               type="email"
               required
               autoComplete="username"
-              defaultValue={defaultValues?.email}
+              defaultValue={defaults?.email}
               aria-invalid={error ? true : undefined}
             />
           </FormField>
-          <FormField id="login-password" label={labels.password}>
+          <FormField id="login-password" label={formatMessage({ id: "page.login.form.password", defaultMessage: "Password" })}>
             <Input
               id="login-password"
               name="password"
               type="password"
               required
               autoComplete="current-password"
-              defaultValue={defaultValues?.password}
+              defaultValue={defaults?.password}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? "login-error" : undefined}
             />
@@ -75,7 +89,9 @@ export function LoginForm({
           </p>
         ) : null}
         <Button type="submit" size="small" disabled={pending} className="mt-1">
-          {pending ? labels.pending : labels.submit}
+          {pending
+            ? formatMessage({ id: "page.login.form.signingIn", defaultMessage: "Signing in" })
+            : formatMessage({ id: "page.login.form.signIn", defaultMessage: "Sign in" })}
         </Button>
       </form>
       {footer}

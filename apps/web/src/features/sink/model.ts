@@ -1,37 +1,14 @@
-import type { SinkCredentials, SinkRead, StreamsEnum } from "@mtt/contracts";
+import type { SinkCredentials, SinkRead } from "@mtt/contracts";
 import { brokerHostPort } from "@mtt/contracts/source";
-import { termsStanding, type TermsStanding } from "../terms/model.ts";
-
-/** What a sink can send, in the order the API stores it. */
-export const SINK_STREAMS: readonly StreamsEnum[] = ["decoded", "derived", "alarms"];
+import { shellQuote } from "../../lib/shell-quote.ts";
 
 export function sinkTitle(sink: Pick<SinkRead, "id" | "label">): string {
   return sink.label?.trim() || `Sink ${sink.id.slice(0, 8)}`;
 }
 
-export function sinkTermsStanding(
-  sink: Pick<SinkRead, "terms_accepted_version" | "terms_expires_at" | "paused_at">,
-  currentVersion: string | undefined,
-  now: Date,
-): TermsStanding {
-  return termsStanding({
-    acceptedVersion: sink.terms_accepted_version,
-    expiresAt: sink.terms_expires_at,
-    pausedAt: sink.paused_at,
-    currentVersion,
-    now,
-  });
-}
-
-/** Streams as the API stores them: known ones only, in canonical order, without repeats. */
-export function orderStreams(streams: Iterable<string>): StreamsEnum[] {
-  const wanted = new Set(streams);
-  return SINK_STREAMS.filter((stream) => wanted.has(stream));
-}
-
-/** Mirrors the API: a sink must send at least one stream. */
-export function sinkStreamsError(streams: readonly string[]): string | undefined {
-  return streams.length === 0 ? "Choose at least one stream." : undefined;
+/** Mirrors the API: a sink must send at least one stream. The dialog formats the code. */
+export function sinkStreamsError(streams: readonly string[]): "empty" | undefined {
+  return streams.length === 0 ? "empty" : undefined;
 }
 
 /** Each mesh with its devices, in the meshes' order; devices keep the order they came in. */
@@ -57,11 +34,6 @@ export function singleDeviceIds(
   });
 }
 
-
-/** Single quotes for a POSIX shell, so a password with `$` or `!` survives pasting. */
-function shellQuote(value: string): string {
-  return `'${value.replaceAll("'", `'\\''`)}'`;
-}
 
 /**
  * A mosquitto_sub command that consumes everything the sink sends, over TLS, with the

@@ -3,7 +3,7 @@ import { RiArrowDownSLine, RiArrowRightSLine, RiFolderZipLine } from "@remixicon
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
-import { API_URL } from "@/lib/api-url";
+import { API_URL } from "@mtt/contracts/runtime";
 import { partitionDownloadUrl, partitionLabel, type ArchiveDay } from "@/features/archive/model";
 import { cn } from "@mtt/ui/utils";
 import { formatBytes } from "@/lib/format";
@@ -13,14 +13,12 @@ export type ArchiveDayRowProps = {
   day: ArchiveDay;
   expanded: boolean;
   onToggle: () => void;
-  /** Request this day as a Parquet export. */
   onExport: () => void;
   exporting: boolean;
 };
 
 const cellClass = "h-10 px-3.5 py-0 align-middle";
 
-/** One UTC day of files, exportable as one zip; expanded, one link per stored hour. */
 export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, exporting }: ArchiveDayRowProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();

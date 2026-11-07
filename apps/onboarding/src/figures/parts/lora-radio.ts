@@ -17,7 +17,6 @@ import {
 export const LORA_CASE = { length: 60, width: 30, height: 16 } as const;
 
 export interface LoraRadioSpec {
-  /** Minimum corner of the case footprint. */
   x: number;
   y: number;
   z: number;
@@ -36,13 +35,10 @@ export interface LoraRadioParts {
   led: SolidPaths;
   usb: SolidPaths;
   usbMouth: string;
-  /** Bulkhead on the near short end. */
   boss: SolidPaths;
-  /** Collar at the base of the whip. */
   sma: SolidPaths;
   sleeve: SolidPaths;
   whip: SolidPaths;
-  /** Top of the whip. */
   antennaTip: Flat;
   /** `topMatrix` for the OLED, origin at the window's near corner, along the long axis. */
   screen: string;
@@ -83,7 +79,6 @@ function builtOf(spec: LoraRadioSpec): Built {
   return { scale, facing, length, width, height, w, d, x: spec.x, y: spec.y, z: spec.z, ax, ay, whip };
 }
 
-/** World point at the whip tip. */
 export function antennaPoint(spec: LoraRadioSpec): Point3 {
   const radio = builtOf(spec);
   return [radio.ax, radio.ay, radio.z + radio.height + radio.whip];

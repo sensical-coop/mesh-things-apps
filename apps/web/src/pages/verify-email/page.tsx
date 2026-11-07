@@ -5,7 +5,7 @@ import { parseAsString, useQueryState } from "nuqs";
 import { type ReactElement, useEffect } from "react";
 import { useIntl } from "react-intl";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
-import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
+import { AuthPage } from "@/features/auth/ui/auth-page";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
 import { isOwnerSession } from "@/features/auth/session";
@@ -33,14 +33,15 @@ export function VerifyEmailPage(): ReactElement {
   }, [signedIn, dest]);
 
   return (
-    <main className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-background-secondary-default px-4 py-16 sm:px-6 sm:py-24">
-      <ShaderBackdrop />
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
-        <LanguageSwitcher />
-      </div>
-      <div className="relative w-full max-w-md">
-        <Frame className="w-full shadow-card" spacing="lg">
-          <FramePanel className="flex flex-col gap-6">
+    <AuthPage
+      header={
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          <LanguageSwitcher />
+        </div>
+      }
+    >
+      <Frame className="w-full shadow-card" spacing="lg">
+        <FramePanel className="flex flex-col gap-6">
             <h1 className="text-title-2-medium tracking-tight text-text-primary">
               {formatMessage({ id: "page.verifyEmail.title", defaultMessage: "Email verification" })}
             </h1>
@@ -96,9 +97,8 @@ export function VerifyEmailPage(): ReactElement {
                 </Link>
               </>
             )}
-          </FramePanel>
-        </Frame>
-      </div>
-    </main>
+        </FramePanel>
+      </Frame>
+    </AuthPage>
   );
 }

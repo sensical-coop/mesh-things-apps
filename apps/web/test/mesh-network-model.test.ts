@@ -165,7 +165,13 @@ test("linkGraph lists every node once", async () => {
     graph.nodes.map((n) => n.node),
     [1, 2, 3],
   );
-  assert.equal(graph.edges.length, 2);
+  assert.deepEqual(
+    graph.edges.map((edge) => [edge.a, edge.b]),
+    [
+      [1, 2],
+      [2, 3],
+    ],
+  );
 });
 
 test("linkGraph marks a route's hops and adds those no link covers", async () => {

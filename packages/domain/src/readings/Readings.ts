@@ -10,8 +10,6 @@ export type LatestReading = {
   origin: string;
 };
 
-export type SeriesPoint = { time: string; value: number | null };
-
 export type SeriesQuery = {
   channel?: string;
   payloadKind?: string;
@@ -20,11 +18,3 @@ export type SeriesQuery = {
   window?: string;
   agg?: string;
 };
-
-export interface IReadingsRepository {
-  latest(deviceUuid: string): Promise<LatestReading[]>;
-  series(
-    deviceUuid: string,
-    query: SeriesQuery,
-  ): Promise<{ payloadKind: string; series: { channel: string; points: SeriesPoint[] }[] }>;
-}

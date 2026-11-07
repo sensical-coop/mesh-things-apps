@@ -1,4 +1,6 @@
-import type { Mesh, OwnerProfile } from "@mtt/contracts";
+import type { Mesh } from "@mtt/contracts";
+import { canWriteMesh, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
+import type { SourceStatus } from "../source/model.ts";
 import { termsStanding, type TermsStanding } from "../terms/model.ts";
 
 /** Select and filter value for a mesh on the instance broker (no source). */
@@ -13,12 +15,9 @@ export function meshTitle(mesh: Pick<Mesh, "channel_id" | "label">): string {
  * change it. Public meshes are read-only for everyone else. An
  * unknown caller can't edit, so write affordances stay hidden while `me` loads.
  */
-export function canEditMesh(
-  mesh: Pick<Mesh, "owner_id">,
-  me: Pick<OwnerProfile, "id" | "is_superuser"> | undefined,
-): boolean {
+export function canEditMesh(mesh: Pick<Mesh, "owner_id">, me: ProfileFlags | undefined): boolean {
   if (!me) return false;
-  return me.is_superuser === true || mesh.owner_id === me.id;
+  return canWriteMesh(viewerOf(me), { ownerId: mesh.owner_id });
 }
 
 /**
@@ -69,16 +68,22 @@ export function meshStatus(
     termsEnforced: boolean;
     currentTermsVersion: string | undefined;
     /** The bridge status of the mesh's source, when the caller can see it. */
-    sourceStatus: string | undefined;
+    sourceStatus: SourceStatus | undefined;
     now: Date;
   },
 ): MeshStatus {
   if (mesh.source_id === undefined) return { kind: "hidden" };
   if (mesh.source_id !== null) {
-    if (context.sourceStatus === "paused") return { kind: "sourcePaused" };
-    if (context.sourceStatus === "disconnected") return { kind: "sourceDisconnected" };
-    if (context.sourceStatus === "connected") return { kind: "active" };
-    return { kind: "sourceUnknown" };
+    switch (context.sourceStatus) {
+      case "paused":
+        return { kind: "sourcePaused" };
+      case "disconnected":
+        return { kind: "sourceDisconnected" };
+      case "connected":
+        return { kind: "active" };
+      default:
+        return { kind: "sourceUnknown" };
+    }
   }
   if (!context.termsEnforced) return { kind: "active" };
   const standing = meshTermsStanding(mesh, context.currentTermsVersion, context.now);

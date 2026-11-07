@@ -1,6 +1,6 @@
 # Roles y permisos
 
-Fuente de verdad en código: `packages/domain/src/authz/authz.ts`. El mock HTTP no duplica la matriz: llama a esas funciones. Los flags OpenAPI `is_superuser`, `is_staff` y `role` se derivan del rol, no al revés.
+Fuente de verdad en código: `packages/contracts/src/authz.ts` (`@mtt/contracts/authz`). El mock HTTP y la consola no duplican la matriz: llaman a esas funciones (`viewerOf` en web). Los flags OpenAPI `is_superuser`, `is_staff` y `role` se derivan del rol, no al revés.
 
 Cuatro roles. Un actor inactivo (`isActive: false`) no pasa ninguna comprobación.
 

@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { getTermsRetrieveQueryOptions } from "./generated/api";
 import { readApiError } from "./api-errors";
+import { getTermsRetrieveQueryOptions } from "./generated/api";
+import type { OwnerCreate } from "./generated/model.zod";
 
 export type TermsLocale = "en" | "es";
 
@@ -48,4 +49,38 @@ export function useTermsEnforced(): boolean | undefined {
     loaded: account.data !== undefined,
     errorStatus: account.error ? readApiError(account.error).status : undefined,
   });
+}
+
+export type SignupTerms = {
+  version: string;
+  locale: string;
+  statements: readonly { id: string }[];
+};
+
+/**
+ * Signup body, or `null` when enforced terms are missing or not fully ticked.
+ * `terms_version` / `terms_locale` are sent only when the terms payload loaded.
+ * `next` is sent only when the caller has one.
+ */
+export function signupCreateBody(
+  values: { name: string; email: string; password: string; accepted: readonly string[] },
+  terms: { off: boolean; current: SignupTerms | undefined },
+  next?: string,
+): OwnerCreate | null {
+  const current = terms.current;
+  if (!terms.off && (!current || !current.statements.every((statement) => values.accepted.includes(statement.id)))) {
+    return null;
+  }
+  return {
+    name: values.name,
+    email: values.email,
+    password: values.password,
+    ...(current ? { terms_version: current.version, terms_locale: termsLocale(current.locale) } : {}),
+    ...(next ? { next } : {}),
+  };
+}
+
+/** The API rejected the signup because the accepted terms version is stale. */
+export function signupTermsStale(error: unknown): boolean {
+  return Boolean(readApiError(error).fields.terms_version);
 }

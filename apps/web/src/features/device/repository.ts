@@ -1,4 +1,5 @@
 import {
+  devicesUpdate,
   getDevicesCreateMutationOptions,
   getDevicesListQueryKey,
   getDevicesListQueryOptions,
@@ -21,6 +22,8 @@ export const deviceRepository = {
   retrieveKey: getDevicesRetrieveQueryKey,
   create: getDevicesCreateMutationOptions,
   update: getDevicesUpdateMutationOptions,
+  /** One device's archive setting. A mesh-wide switch calls it per device; the API has no bulk route. */
+  setDeviceArchive: (deviceUuid: string, enabled: boolean) => devicesUpdate(deviceUuid, { archive_enabled: enabled }),
   measurements: getDevicesMeasurementsListQueryOptions,
   measurementsKey: getDevicesMeasurementsListQueryKey,
   measurement: getDevicesMeasurementsRetrieveQueryOptions,

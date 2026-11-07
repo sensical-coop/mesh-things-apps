@@ -13,8 +13,10 @@ test("an inactive owner (email not verified yet) is not a usable session", () =>
 });
 
 test("isOperator is operators and superusers, never while me is missing", () => {
-  assert.equal(isOperator({ is_superuser: false, role: "operator" }), true);
-  assert.equal(isOperator({ is_superuser: true, role: "member" }), true);
-  assert.equal(isOperator({ is_superuser: false, role: "member" }), false);
+  const who = { id: "ada", is_staff: false, is_active: true };
+  assert.equal(isOperator({ ...who, id: "op", is_superuser: false, role: "operator" }), true);
+  assert.equal(isOperator({ ...who, id: "admin", is_superuser: true, is_staff: true, role: "member" }), true);
+  assert.equal(isOperator({ ...who, is_superuser: false, role: "member" }), false);
+  assert.equal(isOperator({ ...who, id: "op", is_superuser: false, role: "operator", is_active: false }), false);
   assert.equal(isOperator(undefined), false);
 });

@@ -25,5 +25,5 @@ export function activeSessionRedirect(me: Probe, href?: string): ReactElement | 
 
 /** Active session to meshes (or `href`); inactive session to verify-pending. */
 export function guestRedirect(me: Probe, href?: string): ReactElement | null {
-  return activeSessionRedirect(me, href) ?? (me.isSuccess && !me.data?.is_active ? <Navigate to={routes.verifyPending} /> : null);
+  return activeSessionRedirect(me, href) ?? (me.isSuccess && !isOwnerSession(me) ? <Navigate to={routes.verifyPending} /> : null);
 }

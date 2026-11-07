@@ -4,16 +4,17 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { RiFilter3Line } from "@remixicon/react";
 import { Filters } from "@mtt/ui/components/reui/filters/filters";
 import { resolveFilterLabels } from "@mtt/ui/components/reui/filters/filters-i18n";
-import type { FilterOperatorLabels } from "@mtt/ui/components/reui/filters/filters-operators";
 import { createFilterQuery, flattenFilterConditions } from "@mtt/ui/components/reui/filters/filters-query";
-import type { FilterField, FilterLabels, FilterQuery } from "@mtt/ui/components/reui/filters/filters-types";
+import type { FilterField, FilterQuery } from "@mtt/ui/components/reui/filters/filters-types";
 import { serializeListFilterValue, toWireOperator, valuelessFilterOperators } from "@mtt/contracts/list-filter";
+import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
+import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
 import {
   filterUrlPatchEquals,
   parseAsFilterValue,
   queryToUrlPatch,
   urlStateToQuery,
-} from "@/lib/filter-url";
+} from "./filter-url";
 
 function isActiveCondition(operator: string, values: unknown[]): boolean {
   if (valuelessFilterOperators.has(operator)) return true;
@@ -32,6 +33,8 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 export type FilterSpec = Omit<FilterField, "id"> & {
   key: string;
   urlKey: string;
+  /** Matched by the API, so it stays out of the query the page runs on loaded rows. */
+  serverOnly?: boolean;
 };
 
 export type SmartFilters = {
@@ -40,13 +43,25 @@ export type SmartFilters = {
   active: boolean;
   onChange: (next: FilterQuery) => void;
   clear: () => void;
+  /** Filters the page runs on loaded rows. Server-only fields are left out. */
   queryString: string;
+  /** Server-only fields, same encoding as `queryString`. */
+  serverQueryString: string;
 };
+
+function conditionsQuery(conditions: { field: string; operator: string; values: unknown[] }[]): string {
+  return conditions
+    .map((c) => {
+      const wire = { operator: toWireOperator(c.operator), values: c.values.map(String) };
+      return `${encodeURIComponent(c.field)}=${encodeURIComponent(serializeListFilterValue(wire))}`;
+    })
+    .join("&");
+}
 
 export function useSmartFilters({ specs }: { specs: FilterSpec[] }): SmartFilters {
   const fields = useMemo<FilterField[]>(
     () =>
-      specs.map(({ urlKey: _urlKey, key, ...field }) => ({
+      specs.map(({ urlKey: _urlKey, serverOnly: _serverOnly, key, ...field }) => ({
         ...field,
         id: key,
         defaultOperator:
@@ -87,18 +102,18 @@ export function useSmartFilters({ specs }: { specs: FilterSpec[] }): SmartFilter
   }, [setUrlState, urlKeys]);
 
   const active = flattenFilterConditions(query).filter((c) => isActiveCondition(c.operator, c.values));
+  const serverKeys = useMemo(() => new Set(specs.filter((spec) => spec.serverOnly).map((spec) => spec.key)), [specs]);
   const queryString = useMemo(
-    () =>
-      active
-        .map((c) => {
-          const wire = { operator: toWireOperator(c.operator), values: c.values.map(String) };
-          return `${encodeURIComponent(c.field)}=${encodeURIComponent(serializeListFilterValue(wire))}`;
-        })
-        .join("&"),
-    [active],
+    () => conditionsQuery(active.filter((condition) => !serverKeys.has(condition.field))),
+    [active, serverKeys],
+  );
+  const serverQueryString = useMemo(
+    () => conditionsQuery(active.filter((condition) => serverKeys.has(condition.field))),
+    [active, serverKeys],
   );
   // ponytail: fixed 400ms — text filters refire per keystroke
   const debouncedQueryString = useDebouncedValue(queryString, 400);
+  const debouncedServerQueryString = useDebouncedValue(serverQueryString, 400);
 
   return {
     fields,
@@ -107,19 +122,13 @@ export function useSmartFilters({ specs }: { specs: FilterSpec[] }): SmartFilter
     onChange,
     clear,
     queryString: debouncedQueryString,
+    serverQueryString: debouncedServerQueryString,
   };
 }
 
-export function SmartFilterToolbar({
-  filters,
-  labels: labelsProp,
-  operatorLabels,
-}: {
-  filters: SmartFilters;
-  labels?: Partial<FilterLabels>;
-  operatorLabels?: FilterOperatorLabels;
-}): ReactNode {
-  const labels = resolveFilterLabels(labelsProp);
+export function SmartFilterToolbar({ filters }: { filters: SmartFilters }): ReactNode {
+  const labels = resolveFilterLabels(useTranslatedFilterLabels());
+  const operatorLabels = useTranslatedFilterOperatorLabels();
   return (
     <div className="flex flex-wrap items-start gap-2">
       <Filters

@@ -23,7 +23,6 @@ export type DataTableProps<T> = {
 
 const FADE = "3rem";
 
-/** Which sides of a horizontally scrolling element have content clipped. */
 function useClippedEdges() {
   const ref = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });

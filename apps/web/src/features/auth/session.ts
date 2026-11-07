@@ -1,11 +1,10 @@
-import type { OwnerProfile } from "@mtt/contracts";
+import { canManageSources, isVerifiedOwner, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
 
 export function isOwnerSession(me: { isSuccess: boolean; data?: { is_active: boolean } }): boolean {
-  return me.isSuccess && me.data?.is_active === true;
+  return me.isSuccess && isVerifiedOwner(me.data);
 }
 
 /** Operator or superuser. Unknown while `me` is missing, so gated UI stays hidden. */
-export function isOperator(me: Pick<OwnerProfile, "is_superuser" | "role"> | undefined): boolean {
-  if (!me) return false;
-  return me.is_superuser === true || me.role === "operator";
+export function isOperator(me: ProfileFlags | undefined): boolean {
+  return me != null && canManageSources(viewerOf(me));
 }

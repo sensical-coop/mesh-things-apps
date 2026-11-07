@@ -10,15 +10,15 @@ import {
   canSeeMeshSource,
   canSeePsk,
   canWriteMesh,
-} from "@mtt/domain/authz/authz";
+} from "@mtt/contracts/authz";
 import {
   TERMS_ENFORCED,
   TERMS_VERSIONS,
   termsJson,
   termsLocale,
 } from "../features/terms/terms";
-import { meshFilterValue } from "@mtt/domain/mesh/Mesh";
 import { nowIso } from "@mtt/domain/shared/ids";
+import { meshFilterValue, meshListFilterFields } from "../features/mesh/filter";
 import { matchesListFilters } from "@mtt/contracts/list-filter";
 import { Hono } from "hono";
 import {
@@ -42,7 +42,7 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     if (sourceId !== undefined && !/^[0-9a-f-]{36}$/i.test(sourceId)) {
       return c.json({ source_id: ["Must be a UUID."] }, 400);
     }
-    const filters = queryFilters(c, ["label", "channel_id"]);
+    const filters = queryFilters(c, meshListFilterFields);
     const meshes = (await visibleMeshes(db, actor)).filter(
       (mesh) =>
         matchesListFilters((field) => meshFilterValue(mesh, field), filters) &&

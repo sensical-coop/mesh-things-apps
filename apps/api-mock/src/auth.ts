@@ -1,8 +1,23 @@
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { hashPassword } from "better-auth/crypto";
-import type { Actor, Role } from "@mtt/domain/authz/authz";
+import type { Role } from "@mtt/contracts/authz";
 import { nowIso } from "@mtt/domain/shared/ids";
+
+/** The mock's owner record. Satisfies `Viewer` (`id`, `role`, `isActive`) with no mapping. */
+export type Actor = {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: string;
+  lastLogin: string | null;
+  alarmEmailCooldownSeconds: number | null;
+  statusAlertsEnabled: boolean;
+  /** Emails about this owner's sources that stay busier than the instance allows. */
+  sourceRateAlertsEnabled: boolean;
+};
 import { createStore, type Store } from "./store";
 import {
   OWNER_ADMIN_EMAIL,

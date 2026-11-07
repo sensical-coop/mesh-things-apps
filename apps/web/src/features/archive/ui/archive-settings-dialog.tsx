@@ -21,7 +21,6 @@ export type ArchiveSettingsDialogProps = {
   onClose: () => void;
 };
 
-/** Whether one device's readings go to the Parquet archive. The API has no other archive setting. */
 export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettingsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();

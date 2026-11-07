@@ -15,13 +15,12 @@ import {
   draftFromVersion,
   draftProblems,
   emptyDraft,
-  errorMessages,
   versionBody,
   type BlueprintDraft,
 } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { VersionEditor } from "@/features/blueprint/ui/version-editor";
-import { readApiError } from "@mtt/contracts/errors";
+import { errorMessages, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type BlueprintDialogProps = {
@@ -31,7 +30,6 @@ export type BlueprintDialogProps = {
   onSaved?: (blueprintId: string) => void;
 };
 
-/** Mount only while open: the draft starts afresh each time. */
 export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();

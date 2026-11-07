@@ -10,8 +10,8 @@ import {
   canReadBlueprint,
   canWriteBlueprint,
   visibleBlueprints,
-  type Actor,
-} from "@mtt/domain/authz/authz";
+} from "@mtt/contracts/authz";
+import type { Actor } from "../auth";
 import { Hono } from "hono";
 import {
   addBlueprintVersion,
@@ -25,7 +25,8 @@ import {
   type BlueprintRow,
 } from "../features/blueprint/repository";
 import { blueprintJson, blueprintVersionJson } from "../serialize";
-import { NO_PERMISSION, parseBody, versionFromBody } from "../http";
+import { versionFromBody } from "../features/blueprint/validate";
+import { NO_PERMISSION, parseBody } from "../http";
 
 export function registerBlueprintRoutes(app: Hono<Env>, rt: RouteRuntime) {
   const { db } = rt;

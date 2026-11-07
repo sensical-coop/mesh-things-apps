@@ -9,10 +9,8 @@ import {
   OwnerUpdate,
   ResendVerification,
 } from "@mtt/contracts";
-import {
-  canReadOwnerEmail,
-  type Actor,
-} from "@mtt/domain/authz/authz";
+import { canReadOwnerEmail } from "@mtt/contracts/authz";
+import type { Actor } from "../auth";
 import { gatewayBrokerFromEnv } from "../features/broker/repository";
 import {
   TERMS_ENFORCED,

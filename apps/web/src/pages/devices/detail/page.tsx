@@ -18,7 +18,7 @@ import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
 import { canArchiveDevice } from "@/features/archive/model";
 import { DeviceCsvButton } from "@/features/export/ui/device-csv-button";
-import { isChartableMeasurement, isDerivedMeasurement } from "@/lib/measurement";
+import { isChartableMeasurement } from "@/lib/measurement";
 import { COMPUTED_VARIANT_GROUP, groupByTelemetryVariant } from "@/features/device/variant-groups";
 import { SettingsButton } from "@/components/settings-button";
 import { deviceRepository } from "@/features/device/repository";
@@ -114,7 +114,7 @@ export function DeviceDetailPage(): ReactElement {
       groupByTelemetryVariant(
         latestKpis,
         (reading) => variantIdByChannel.get(reading.channel) ?? "",
-        isDerivedMeasurement,
+        (reading) => reading.channel,
       ).map((group) => ({ key: group.key || "other", title: groupTitle(group.key), readings: group.items })),
     [latestKpis, variantIdByChannel, groupTitle],
   );
@@ -124,7 +124,7 @@ export function DeviceDetailPage(): ReactElement {
       groupByTelemetryVariant(
         chartChannels,
         (channel) => variantIdByChannel.get(channel) ?? "",
-        (channel) => isDerivedMeasurement({ channel }),
+        (channel) => channel,
       ).map((group) => ({ key: group.key || "other", title: groupTitle(group.key), channels: group.items })),
     [chartChannels, variantIdByChannel, groupTitle],
   );

@@ -11,7 +11,6 @@ export type AcceptAccountTermsDialogProps = {
   onClose: () => void;
 };
 
-/** Accept the current account terms, e.g. after they changed since signing up. */
 export function AcceptAccountTermsDialog({ open, onClose }: AcceptAccountTermsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();

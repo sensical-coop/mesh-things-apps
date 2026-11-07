@@ -31,7 +31,6 @@ export const PLATE: Plan = { x: -130, y: -72, w: 260, d: 148, r: 7 };
 const PLATE_H = 7;
 const FOOT = 5;
 
-/** Dial center, on the near face of the upright case. */
 export const GAUGE_X = -58;
 export const GAUGE_Z = 52;
 export const FACE_Y = 20.4;

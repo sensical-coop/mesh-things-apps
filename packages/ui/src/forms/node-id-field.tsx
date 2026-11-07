@@ -1,38 +1,30 @@
 import { Input } from "@mtt/ui/components/ui/input";
 import { type ReactElement, useState } from "react";
+import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
 import { formatNodeId, type NodeIdFormat, parseNodeId } from "@mtt/ui/forms/node-id";
-
-export type NodeIdFieldLabels = {
-  label: string;
-  hint: string;
-  decimal: string;
-  hex: string;
-  invalidHex: string;
-  invalidDecimal: string;
-  /** `{value}` is the other format. */
-  asDecimal: (value: string) => string;
-  asHex: (value: string) => string;
-};
 
 export function NodeIdField({
   id,
   name,
   error,
-  labels,
 }: {
   id: string;
   /** Submitted as a hidden input, always in decimal. */
   name: string;
   error?: string;
-  labels: NodeIdFieldLabels;
 }): ReactElement {
+  const { formatMessage } = useIntl();
+  const hint = formatMessage({
+    id: "feature.device.nodeIdField.hint",
+    defaultMessage: "The node number as Meshtastic shows it: decimal (2130636288) or hex (!7efeee00).",
+  });
   const [format, setFormat] = useState<NodeIdFormat>("decimal");
   const [raw, setRaw] = useState("");
   const value = parseNodeId(raw, format);
   const typed = raw.trim().replace(/^!/, "") !== "";
-  const describedBy = [labels.hint ? `${id}-hint` : null, error ? `${id}-error` : null].filter(Boolean).join(" ") || undefined;
+  const describedBy = [`${id}-hint`, error ? `${id}-error` : null].filter(Boolean).join(" ") || undefined;
 
   function onFormatChange(next: string) {
     const nextFormat: NodeIdFormat = next === "hex" ? "hex" : "decimal";
@@ -42,15 +34,20 @@ export function NodeIdField({
   }
 
   return (
-    <FormField id={id} label={labels.label} hint={labels.hint} error={error}>
+    <FormField
+      id={id}
+      label={formatMessage({ id: "feature.device.nodeIdField.label", defaultMessage: "Node ID" })}
+      hint={hint}
+      error={error}
+    >
       <div className="flex items-center gap-2">
         <div className="w-32 shrink-0">
           <FormSelect
             id={`${id}-format`}
             name={`${name}_format`}
             items={[
-              { value: "decimal", label: labels.decimal },
-              { value: "hex", label: labels.hex },
+              { value: "decimal", label: formatMessage({ id: "feature.device.nodeIdField.decimal", defaultMessage: "Decimal" }) },
+              { value: "hex", label: formatMessage({ id: "feature.device.nodeIdField.hex", defaultMessage: "Hex (!)" }) },
             ]}
             value={format}
             onValueChange={onFormatChange}
@@ -75,11 +72,23 @@ export function NodeIdField({
         <p className="text-caption-1-regular text-text-tertiary tabular-nums" aria-live="polite">
           {value === null
             ? format === "hex"
-              ? labels.invalidHex
-              : labels.invalidDecimal
+              ? formatMessage({
+                  id: "feature.device.nodeIdField.invalidHex",
+                  defaultMessage: "Enter up to 8 hex digits after the !.",
+                })
+              : formatMessage({
+                  id: "feature.device.nodeIdField.invalidDecimal",
+                  defaultMessage: "Enter a whole number from 0 to 4294967295.",
+                })
             : format === "hex"
-              ? labels.asDecimal(formatNodeId(value, "decimal"))
-              : labels.asHex(formatNodeId(value, "hex"))}
+              ? formatMessage(
+                  { id: "feature.device.nodeIdField.asDecimal", defaultMessage: "Decimal: {value}" },
+                  { value: formatNodeId(value, "decimal") },
+                )
+              : formatMessage(
+                  { id: "feature.device.nodeIdField.asHex", defaultMessage: "Hex: {value}" },
+                  { value: formatNodeId(value, "hex") },
+                )}
         </p>
       ) : null}
     </FormField>

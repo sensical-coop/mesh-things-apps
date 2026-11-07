@@ -15,8 +15,6 @@ export const TERMS_VERSIONS: Record<TermsKind, string> = {
   sink: "sinks-2026-09",
 };
 
-// Mirrors REGISTRY__DATA_RETENTION_DAYS (blank for none), REGISTRY__DATA_DELETION_GRACE_DAYS
-// and REGISTRY__TERMS_RENEWAL_NOTICE_DAYS. Set here so the mock exercises renewals.
 /**
  * Mirrors REGISTRY__TERMS_ENFORCED (on unless "false"). Off, as on a self-hosted lite
  * install: every terms route answers 404, no terms are needed or recorded, and the
@@ -29,7 +27,6 @@ export const DATA_RETENTION_DAYS: number | null =
     ? null
     : Number(process.env.MOCK_DATA_RETENTION_DAYS ?? 365);
 export const DATA_DELETION_GRACE_DAYS = 30;
-export const TERMS_RENEWAL_NOTICE_DAYS = 30;
 
 /** Mirrors `dpa_url()`: the Data Processing Agreement page, under REGISTRY__PUBLIC_FRONTEND_URL. */
 const DPA_URL = `${(process.env.MOCK_PUBLIC_FRONTEND_URL ?? "http://localhost:5173").replace(/\/$/, "")}/dpa`;
@@ -294,7 +291,6 @@ export function termsJson(kind: TermsKind, locale: TermsLocale) {
   return { ...served, footnote: `${served.footnote} ${retention}` };
 }
 
-/** When an acceptance made at `from` lapses, or null with no retention period. */
 export function acceptanceExpiry(from: Date): string | null {
   if (!DATA_RETENTION_DAYS) return null;
   return new Date(
@@ -352,7 +348,6 @@ export function recordAcceptance(
   return expiresAt;
 }
 
-/** Checks `terms_version` and, when `commit`, records the acceptance. */
 export function acceptTerms(
   rows: TermsAcceptance[],
   kind: TermsKind,

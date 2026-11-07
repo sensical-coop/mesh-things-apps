@@ -10,17 +10,15 @@ import { FormNumber } from "@mtt/ui/forms/form-number";
 import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { PREFIX_PATTERN } from "@mtt/contracts/blueprint";
-import { errorMessages, versionOutputFields } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
+import { PREFIX_PATTERN } from "@mtt/contracts/blueprint";
 import { deviceRepository } from "@/features/device/repository";
-import { bindableChannels, channelLabel } from "@/features/postprocessing/model";
+import { channelLabel, versionOutputFields } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { readApiError } from "@mtt/contracts/errors";
+import { errorMessages, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 const AUTO = "__auto__";
-/** Fields this form shows errors under. */
 const FIELDS = ["blueprint_id", "blueprint_version", "output_prefix", "tolerance_seconds"];
 const UNBOUND = "__none__";
 
@@ -34,7 +32,6 @@ export type PostprocessingDialogProps = {
   onClose: () => void;
 };
 
-/** Mount only while open. Which blueprint and version, how its inputs bind to this device's channels, and how outputs are named. */
 export function PostprocessingDialog({
   deviceUuid,
   measurements,
@@ -56,7 +53,7 @@ export function PostprocessingDialog({
   });
   const newest = [...(versions.data ?? [])].sort((a, b) => b.number - a.number);
   const version = newest.find((row) => row.number === versionNumber) ?? newest[0];
-  const channels = bindableChannels(measurements, postprocessing?.id);
+  const channels = measurements.filter((row) => !postprocessing || row.produced_by !== postprocessing.id);
 
   async function saved() {
     await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });

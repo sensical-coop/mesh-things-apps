@@ -25,7 +25,7 @@ export function FormNumber({
 }: {
   id: string;
   name: string;
-  /** Active UI locale (`en`, `es`, …). Grouping stays off either way. */
+  /** Grouping stays off either way. */
   locale: string;
   defaultValue?: number;
   min?: number;

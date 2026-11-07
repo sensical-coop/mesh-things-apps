@@ -4,7 +4,6 @@ import { GatewayForm as UiGatewayForm, type GatewayFormValues } from "@mtt/ui/fo
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { StatusCopy } from "@/components/status-copy";
 import { deviceRepository } from "@/features/device/repository";
 import { meshRepository } from "@/features/mesh/repository";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
@@ -12,13 +11,10 @@ import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/erro
 export function GatewayForm({
   meshId,
   onRegistered,
-  submitLabel,
   onCancel,
 }: {
   meshId: string;
   onRegistered?: (device: DeviceRead) => void | Promise<void>;
-  /** Idle submit label. Pending state keeps "Registering gateway". */
-  submitLabel?: string;
   onCancel?: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
@@ -52,57 +48,14 @@ export function GatewayForm({
   return (
     <div className="flex flex-col gap-5">
       <UiGatewayForm
-        labels={{
-          label: formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" }),
-          node: {
-            label: formatMessage({ id: "feature.device.nodeIdField.label", defaultMessage: "Node ID" }),
-            hint: formatMessage({
-              id: "feature.device.nodeIdField.hint",
-              defaultMessage: "The node number as Meshtastic shows it: decimal (2130636288) or hex (!7efeee00).",
-            }),
-            decimal: formatMessage({ id: "feature.device.nodeIdField.decimal", defaultMessage: "Decimal" }),
-            hex: formatMessage({ id: "feature.device.nodeIdField.hex", defaultMessage: "Hex (!)" }),
-            invalidHex: formatMessage({
-              id: "feature.device.nodeIdField.invalidHex",
-              defaultMessage: "Enter up to 8 hex digits after the !.",
-            }),
-            invalidDecimal: formatMessage({
-              id: "feature.device.nodeIdField.invalidDecimal",
-              defaultMessage: "Enter a whole number from 0 to 4294967295.",
-            }),
-            asDecimal: (value) =>
-              formatMessage({ id: "feature.device.nodeIdField.asDecimal", defaultMessage: "Decimal: {value}" }, { value }),
-            asHex: (value) =>
-              formatMessage({ id: "feature.device.nodeIdField.asHex", defaultMessage: "Hex: {value}" }, { value }),
-          },
-        }}
         errors={errors}
         pending={create.isPending}
-        submitLabel={
-          create.isPending
-            ? formatMessage({
-                id: "page.meshes.detail.registerGatewayDialog.registering",
-                defaultMessage: "Registering gateway",
-              })
-            : (submitLabel ??
-              formatMessage({
-                id: "page.meshes.detail.registerGatewayDialog.title",
-                defaultMessage: "Register gateway",
-              }))
-        }
+        failed={create.error != null}
+        alertDetail={formLevelMessage(create.error)}
         onCancel={onCancel}
         cancelLabel={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.cancel", defaultMessage: "Cancel" })}
         onSubmit={onSubmit}
       />
-      {create.error ? (
-        <StatusCopy>
-          {formatMessage({
-            id: "page.meshes.detail.registerGatewayDialog.error",
-            defaultMessage: "Registration failed. Check node ID and try again.",
-          })}
-          {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
-        </StatusCopy>
-      ) : null}
     </div>
   );
 }

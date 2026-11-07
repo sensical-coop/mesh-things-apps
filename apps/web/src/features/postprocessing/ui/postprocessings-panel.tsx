@@ -1,4 +1,6 @@
 import type { DeviceMeasurement, DevicePostprocessing } from "@mtt/contracts";
+import { canAttachBlueprint as mayAttachBlueprint, viewerOf } from "@mtt/contracts/authz";
+import { blueprintRepository } from "@/features/blueprint/repository";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiAddLine } from "@remixicon/react";
@@ -8,8 +10,6 @@ import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { useMe } from "@/features/auth/use-me";
-import { canAttachBlueprint } from "@/features/blueprint/model";
-import { blueprintRepository } from "@/features/blueprint/repository";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { BackfillDialog } from "@/features/postprocessing/ui/backfill-dialog";
 import { CalibrationDialog } from "@/features/postprocessing/ui/calibration-dialog";
@@ -29,7 +29,6 @@ type Open =
   | { kind: "wire" | "calibrate" | "backfill" | "detach"; postprocessing: DevicePostprocessing }
   | null;
 
-/** The blueprints attached to a device. */
 export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, canEdit }: PostprocessingsPanelProps): ReactElement | null {
   const { formatMessage } = useIntl();
   const { me } = useMe();
@@ -38,7 +37,9 @@ export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, ca
   const algorithms = useQuery(blueprintRepository.algorithms());
   const [open, setOpen] = useState<Open>(null);
   const latestById = new Map((blueprints.data ?? []).map((row) => [row.id, row.latest_version.number]));
-  const attachable = (blueprints.data ?? []).filter((row) => canAttachBlueprint(row, meshOwnerId, me));
+  const attachable = (blueprints.data ?? []).filter(
+    (row) => me != null && mayAttachBlueprint(viewerOf(me), { ownerId: row.owner_id, isPublic: row.is_public }, meshOwnerId),
+  );
   const calibrating = open?.kind === "calibrate" ? open.postprocessing : null;
   const calibratingVersion = useQuery({
     ...blueprintRepository.version(calibrating?.blueprint_id ?? "", calibrating?.blueprint_version ?? 0),

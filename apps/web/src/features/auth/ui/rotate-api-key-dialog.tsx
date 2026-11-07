@@ -8,7 +8,6 @@ import { StatusCopy } from "@/components/status-copy";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { authRepository } from "@/features/auth/repository";
 
-/** Issues a new API key and shows it once. The previous key stops working straight away. */
 export function RotateApiKeyDialog({ open, onClose }: { open: boolean; onClose: () => void }): ReactElement {
   const { formatMessage } = useIntl();
   const rotate = useMutation({ ...authRepository.rotateKey() });

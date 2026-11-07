@@ -2,8 +2,8 @@ import { cx } from "@mtt/ui/utils";
 import { Link } from "@tanstack/react-router";
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { AutomationMenu } from "@/components/automation-menu";
-import { DataMenu } from "@/components/data-menu";
+import { AutomationMenu } from "@/automation-menu";
+import { DataMenu } from "@/data-menu";
 import { ManagementMenu } from "@/management-menu";
 import { useMe } from "@/features/auth/use-me";
 import { routes } from "@/router";
@@ -34,7 +34,7 @@ export function NavLinks({
         activeProps={{ className: activeClass }}
         onClick={onNavigate}
       >
-        {formatMessage({ id: "console.footer.meshes", defaultMessage: "Meshes" })}
+        {formatMessage({ id: "console.nav.meshes", defaultMessage: "Meshes" })}
       </Link>
       <Link
         to={routes.devices}
@@ -42,7 +42,7 @@ export function NavLinks({
         activeProps={{ className: activeClass }}
         onClick={onNavigate}
       >
-        {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
+        {formatMessage({ id: "console.nav.devices", defaultMessage: "Devices" })}
       </Link>
       <AutomationMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
       <DataMenu

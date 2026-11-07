@@ -4,7 +4,6 @@ import { LoraRadio } from "../parts/lora-radio-art";
 import { HALOS, HEIGHT, LINKS, RADIOS, RINGS, WIDTH } from "../welcome/geometry";
 import "./mesh.css";
 
-/** Decorative and still: the welcome triangle, every radio lit in the accent. The step text says what to copy. */
 export function MeshFigure(): ReactElement {
   return (
     <figure className="iso-figure mesh-figure" aria-hidden>

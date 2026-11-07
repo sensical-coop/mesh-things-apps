@@ -1,9 +1,8 @@
 import { RiInformationLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { EXPORT_FILE_HOURS, EXPORT_HISTORY_DAYS, EXPORT_MAX_DAYS } from "@/features/export/model";
+import { EXPORT_FILE_HOURS, EXPORT_HISTORY_DAYS, EXPORT_MAX_DAYS } from "@mtt/contracts/export";
 
-/** The limits every download form states up front, so a refusal is never a surprise. */
 export function ExportLimits(): ReactElement {
   const { formatMessage } = useIntl();
   const items = [

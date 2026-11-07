@@ -1,26 +1,15 @@
 import type { Device } from "@mtt/domain/device/Device";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
-import {
-  visibleMeshes as meshesVisibleTo,
-  canReadMesh,
-  canWriteMesh,
-  type Actor,
-} from "@mtt/domain/authz/authz";
+import { visibleMeshes as meshesVisibleTo, canReadMesh, canWriteMesh } from "@mtt/contracts/authz";
+import type { Actor } from "./auth";
 import { validateSource } from "@mtt/contracts/source";
 import type { Source } from "@mtt/domain/source/Source";
 import { parseListFilters } from "@mtt/contracts/list-filter";
-import { NIL_UUID, nowIso } from "@mtt/domain/shared/ids";
+import { NIL_UUID } from "@mtt/domain/shared/ids";
 import { type Context } from "hono";
 import { VARIANT_ENV_ID, type Store } from "./store";
 import type { DeviceChannel } from "./features/device/channels";
-import { plainRecord, stringRecord } from "./features/blueprint/records";
-import {
-  type BlueprintInputRow,
-  type BlueprintStepRow,
-  type BlueprintVersionRow,
-} from "./features/blueprint/repository";
-import { versionErrors } from "./features/blueprint/validate";
 import { brokerHost, measurementJson } from "./serialize";
 
 export type Env = { Variables: { actor: Actor } };
@@ -201,34 +190,5 @@ export function telemetryVariantMeasurementJson(store: Store, type: MeasurementT
     created_at: type.createdAt,
     updated_at: type.updatedAt,
   };
-}
-
-export type VersionBody = {
-  inputs: { slot: string; default_channel?: string | null }[];
-  steps: { key: string; order: number; function_name: string; inputs?: unknown; params?: unknown; outputs?: unknown }[];
-  notes?: string | null;
-};
-
-/** A version body as rows, or the 400 DRF would answer. */
-export function versionFromBody(
-  body: VersionBody,
-  number: number,
-): { version: BlueprintVersionRow } | { errors: Record<string, unknown> } {
-  const inputs: BlueprintInputRow[] = body.inputs.map((entry) =>
-    entry.default_channel ? { slot: entry.slot, default_channel: entry.default_channel } : { slot: entry.slot },
-  );
-  const steps: BlueprintStepRow[] = [];
-  for (const step of body.steps) {
-    const stepInputs = stringRecord(step.inputs);
-    const params = plainRecord(step.params);
-    const outputs = stringRecord(step.outputs);
-    if (!stepInputs || !params || !outputs) {
-      return { errors: { steps: ["Step inputs and outputs map names to strings; params is an object"] } };
-    }
-    steps.push({ key: step.key, order: step.order, function_name: step.function_name, inputs: stepInputs, params, outputs });
-  }
-  const errors = versionErrors(inputs, steps);
-  if (errors) return { errors };
-  return { version: { number, inputs, steps: [...steps].sort((a, b) => a.order - b.order), notes: body.notes ?? null, createdAt: nowIso() } };
 }
 

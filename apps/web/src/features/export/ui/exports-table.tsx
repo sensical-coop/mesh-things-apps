@@ -24,7 +24,6 @@ export type ExportsTableProps = {
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 const cellClass = "px-3.5 py-2.5 align-middle";
 
-/** Downloads, newest first: what each holds, how it's going, and what can be done with it. */
 export function ExportsTable({
   rows,
   meshTitles,

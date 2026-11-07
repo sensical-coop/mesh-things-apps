@@ -2,7 +2,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import type { Mesh } from "@mtt/contracts";
 import { MeshCreateRequest } from "@mtt/contracts";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { MeshForm as UiMeshForm, PUBLIC_DEFAULT_PSK, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
+import { MeshFormAlert, useMeshSubmitLabel, MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
 import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
 import { allStatementsAccepted, termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -11,7 +11,6 @@ import { useIntl } from "react-intl";
 import { meshRepository } from "@/features/mesh/repository";
 import { termsRepository } from "@/features/terms/repository";
 
-/** `children` places the fields and the footer (terms, submit, error), which may sit apart in the layout. */
 export function MeshForm({
   onCreated,
   children,
@@ -38,6 +37,7 @@ export function MeshForm({
   });
   const statements = terms.data?.statements ?? [];
   const termsNotRequired = terms.error ? readApiError(terms.error).status === 404 : false;
+  const submitLabel = useMeshSubmitLabel(create.isPending);
 
   function submitParsed(values: MeshFormValues, acceptance: { version: string; locale: "en" | "es" } | null) {
     const parsed = MeshCreateRequest.safeParse({
@@ -67,39 +67,10 @@ export function MeshForm({
     if (acceptedAll) submitParsed(values, { version: terms.data.version, locale: termsLocale(terms.data.locale) });
   }
 
-  const submitLabel = create.isPending
-    ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
-    : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" });
-
   return children(
       <UiMeshForm
-        labels={{
-          label: formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Name" }),
-          labelHint: formatMessage({
-            id: "page.meshes.list.createDialog.labelHint",
-            defaultMessage: "Optional. The console shows this instead of the channel name.",
-          }),
-          channel: formatMessage({ id: "page.meshes.list.createDialog.channelId", defaultMessage: "Channel name" }),
-          channelHint: formatMessage({
-            id: "page.meshes.list.createDialog.channelIdHint",
-            defaultMessage: "The channel name in the Meshtastic app.",
-          }),
-          psk: formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" }),
-          pskHint: formatMessage({
-            id: "page.meshes.list.createDialog.pskHint",
-            defaultMessage: "The channel's pre-shared key, in Base64.",
-          }),
-          publicPsk: formatMessage(
-            {
-              id: "page.meshes.list.createDialog.publicPsk",
-              defaultMessage: "{psk} is the public default key. Anyone can read this channel.",
-            },
-            { psk: PUBLIC_DEFAULT_PSK },
-          ),
-        }}
         errors={errors}
         pending={create.isPending}
-        submitLabel={submitLabel}
         onSubmit={onSubmit}
         formId={formId}
       />,
@@ -135,15 +106,7 @@ export function MeshForm({
         <Button type="submit" form={formId} size="medium" disabled={create.isPending}>
           {submitLabel}
         </Button>
-      {create.error ? (
-        <p className="text-body-medium text-text-secondary" role="alert">
-          {formatMessage({
-            id: "page.meshes.list.createDialog.error",
-            defaultMessage: "The mesh was not created. Check the fields and try again.",
-          })}
-          {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
-        </p>
-      ) : null}
+      {create.error ? <MeshFormAlert detail={formLevelMessage(create.error)} /> : null}
       </>,
   );
 }

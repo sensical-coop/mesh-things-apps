@@ -15,7 +15,7 @@ import { ChannelActionsMenu } from "./channel-actions-menu";
 import { SeriesChart } from "@/components/series/series-chart";
 import { parseWindowMs } from "@/lib/duration";
 import { channelShortName, isDerivedMeasurement } from "@/lib/measurement";
-import { ComputedFlag } from "@/components/computed-flag";
+import { ComputedFlag } from "./computed-flag";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRange } from "./chart-range";

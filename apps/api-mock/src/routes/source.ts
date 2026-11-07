@@ -8,7 +8,7 @@ import {
 import {
   canManageSources,
   visibleSources,
-} from "@mtt/domain/authz/authz";
+} from "@mtt/contracts/authz";
 import {
   TERMS_ENFORCED,
   TERMS_VERSIONS,
