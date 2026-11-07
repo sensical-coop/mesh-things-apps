@@ -1,6 +1,7 @@
 import { EChartsAreaChart, type ChartConfig } from "@mtt/ui/components/evilcharts/charts/echarts-area-chart";
 import { type ReactElement } from "react";
 import type { Point } from "@mtt/contracts";
+import { useIntl } from "react-intl";
 import { asNumber, formatClock, formatWhen } from "@/lib/format";
 import { StatusCopy } from "@/components/status-copy";
 import { fillTimeGaps } from "@/components/series/fill-gaps";
@@ -27,9 +28,9 @@ export function SeriesPlot({
   points: Point[];
   seriesLabel: string;
   windowMs?: number | null;
-  /** A channel a blueprint derives: drawn in the purple of the "Computed" chip. */
   computed?: boolean;
 }): ReactElement {
+  const { formatMessage } = useIntl();
   // Keep null-valued buckets (missing data within the aggregation window) instead
   // of dropping them, and reinsert buckets the API omitted entirely: the chart's
   // x-axis spaces points by array index, so either one collapses real time gaps
@@ -38,7 +39,14 @@ export function SeriesPlot({
   const data = fillTimeGaps(raw, windowMs ?? null);
   const numericCount = data.reduce((n, row) => n + (row.value === null ? 0 : 1), 0);
   if (numericCount < 2) {
-    return <StatusCopy>Need at least two numeric points to draw this channel.</StatusCopy>;
+    return (
+      <StatusCopy>
+        {formatMessage({
+          id: "common.seriesChart.needPoints",
+          defaultMessage: "Need at least two numeric points to draw this channel.",
+        })}
+      </StatusCopy>
+    );
   }
 
   return (

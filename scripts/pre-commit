@@ -5,13 +5,31 @@ set -eu
 cd "$(git rev-parse --show-toplevel)"
 
 # Lint the staged blob. A partial stage must not be judged by unstaged edits.
-git diff --cached --name-only --diff-filter=ACMR -z | while IFS= read -r -d '' file; do
+# Files with no unstaged edits are linted in one batch per tool (one pnpm start-up);
+# only partially staged files fall back to piping the staged blob.
+css="" js="" partial=""
+for file in $(git diff --cached --name-only --diff-filter=ACMR); do
   case "$file" in
-    *.css)
-      git show ":$file" | pnpm exec stylelint --stdin --stdin-filename "$file"
-      ;;
-    *.tsx|*.jsx)
-      git show ":$file" | pnpm exec eslint --stdin --stdin-filename "$file"
-      ;;
+    *.css|*.tsx|*.jsx) ;;
+    *) continue ;;
+  esac
+  if git diff --quiet -- "$file"; then
+    case "$file" in
+      *.css) css="$css $file" ;;
+      *) js="$js $file" ;;
+    esac
+  else
+    partial="$partial $file"
+  fi
+done
+
+# shellcheck disable=SC2086
+[ -z "$css" ] || pnpm exec stylelint $css
+# shellcheck disable=SC2086
+[ -z "$js" ] || pnpm exec eslint $js
+for file in $partial; do
+  case "$file" in
+    *.css) git show ":$file" | pnpm exec stylelint --stdin --stdin-filename "$file" ;;
+    *) git show ":$file" | pnpm exec eslint --stdin --stdin-filename "$file" ;;
   esac
 done

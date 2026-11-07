@@ -1,20 +1,17 @@
 /**
- * Copies the API's OpenAPI snapshot into docs/openapi.json, the input of openapi-ts.
+ * Copies the API's OpenAPI schema into docs/openapi.json, the input of Orval.
  *
- * The snapshot is generated and committed by the API repo, so the contract is never
- * edited here. `OPENAPI_REF` picks the API branch, tag or commit to copy from.
+ * The schema is served live by the registry role (`GET /schema`), so the contract is never
+ * edited here. `OPENAPI_URL` points at another API, e.g. a local stack at `http://localhost`.
  */
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const REPO = "sensical-coop/mesh-things";
-const DEFAULT_REF = "main";
-const SNAPSHOT_PATH = "server/mesh_things/src/mesh_things/client/openapi.json";
+const DEFAULT_URL = "https://api.sensical.es";
 const OUTPUT = fileURLToPath(new URL("../../../docs/openapi.json", import.meta.url));
 
 async function main() {
-  const ref = process.env.OPENAPI_REF || DEFAULT_REF;
-  const url = `https://raw.githubusercontent.com/${REPO}/${ref}/${SNAPSHOT_PATH}`;
+  const url = new URL("/schema?format=json", process.env.OPENAPI_URL || DEFAULT_URL);
   const response = await fetch(url);
   if (!response.ok) throw new Error(`${response.status} fetching ${url}`);
   const schema: unknown = await response.json();
@@ -22,7 +19,7 @@ async function main() {
     throw new Error(`${url} is not an OpenAPI document`);
   }
   writeFileSync(OUTPUT, `${JSON.stringify(schema, null, 2)}\n`);
-  console.info(`Wrote ${OUTPUT} from ${REPO}@${ref}`);
+  console.info(`Wrote ${OUTPUT} from ${url}`);
 }
 
 main().catch((error: unknown) => {

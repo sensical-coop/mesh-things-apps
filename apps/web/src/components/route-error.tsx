@@ -6,14 +6,10 @@ import { useIntl } from "react-intl";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
 
-/**
- * What a route shows when it throws while rendering: the rest of the console
- * keeps working, and the page can be retried without a full reload.
- */
 export function RouteError({ error, reset }: ErrorComponentProps): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <section className="oa-squircle oa-arrive flex flex-col items-start gap-3 bg-background-secondary-default p-6 shadow-card sm:p-10">
+    <section className="flex oa-arrive flex-col items-start gap-3 oa-squircle bg-background-secondary-default p-6 shadow-card sm:p-10">
       <h1 className="text-title-2-medium tracking-tight text-text-primary">
         {formatMessage({ id: "routeError.title", defaultMessage: "This page couldn't be shown" })}
       </h1>

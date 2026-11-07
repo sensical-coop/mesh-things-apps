@@ -74,7 +74,7 @@ export function LandingExtras(): ReactElement {
   return (
     <section id="more" className="scroll-mt-24">
       <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
+        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
           <FormattedMessage
             id="page.home.extras.heading"
             defaultMessage="Choose your deployment type. <secondary>For your sensors and your platform.</secondary>"
@@ -85,7 +85,7 @@ export function LandingExtras(): ReactElement {
       <LandingReveal className="mt-12 sm:mt-16">
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {extras.map((item) => (
-            <li key={item.id} className="landing-plate oa-squircle shadow-card flex flex-col gap-3 p-6 sm:p-8">
+            <li key={item.id} className="flex flex-col gap-3 oa-squircle landing-plate p-6 shadow-card sm:p-8">
               <h3 className="text-title-3-medium text-text-primary">
                 {formatMessage({ id: item.titleId, defaultMessage: item.titleDefault })}
               </h3>

@@ -1,6 +1,4 @@
-import { matchesListFilters, type ListFilter } from "../shared/list-filter";
-
-export type DeviceProps = {
+type DeviceProps = {
   uuid: string;
   nodeId: number;
   meshId: string;
@@ -47,7 +45,6 @@ export type DeviceListFilter = {
   isGateway?: boolean;
   isAllowed?: boolean;
   hasPostprocessing?: boolean;
-  extra?: ListFilter[];
 };
 
 export class Device implements DeviceProps {
@@ -128,33 +125,11 @@ export class Device implements DeviceProps {
   }
 }
 
-export function deviceFilterValue(device: Device, field: string): string | undefined {
-  switch (field) {
-    case "mesh_id":
-      return device.meshId;
-    case "is_gateway":
-      return String(device.isGateway);
-    case "is_allowed":
-      return String(device.isAllowed);
-    case "has_postprocessing":
-      return String(device.hasPostprocessing());
-    case "label":
-      return device.label ?? "";
-    default:
-      return undefined;
-  }
-}
-
 export function matchesDeviceFilter(device: Device, filters?: DeviceListFilter): boolean {
   if (!filters) return true;
   if (filters.meshId !== undefined && device.meshId !== filters.meshId) return false;
   if (filters.isGateway !== undefined && device.isGateway !== filters.isGateway) return false;
   if (filters.isAllowed !== undefined && device.isAllowed !== filters.isAllowed) return false;
-  if (filters.hasPostprocessing !== undefined && device.hasPostprocessing() !== filters.hasPostprocessing) {
-    return false;
-  }
-  if (filters.extra?.length) {
-    return matchesListFilters((field) => deviceFilterValue(device, field), filters.extra);
-  }
+  if (filters.hasPostprocessing !== undefined && device.hasPostprocessing() !== filters.hasPostprocessing) return false;
   return true;
 }

@@ -1,0 +1,9 @@
+.next-steps {
+  touch-action: pan-y;
+}
+
+.next-steps:focus-visible {
+  outline: 1px solid var(--anatomy-muted, var(--color-text-tertiary));
+  outline-offset: 6px;
+}
+

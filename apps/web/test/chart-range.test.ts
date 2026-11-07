@@ -21,13 +21,13 @@ test("custom day range maps to ISO start/stop", () => {
   assert.equal(mapped.start, start.toISOString());
   assert.equal(mapped.stop, end.toISOString());
   assert.equal(mapped.spanMs, end.getTime() - start.getTime());
-  assert.equal(windowForSpanMs(mapped.spanMs), "6h");
 });
 
 test("windowForSpanMs picks a coarser bucket for longer spans", () => {
-  assert.equal(windowForSpanMs(3_600_000), "1h");
-  assert.equal(windowForSpanMs(7 * 86_400_000), "6h");
-  assert.equal(windowForSpanMs(30 * 86_400_000), "1d");
+  assert.equal(windowForSpanMs(2 * 86_400_000), "1h");
+  assert.equal(windowForSpanMs(2 * 86_400_000 + 1), "6h");
+  assert.equal(windowForSpanMs(14 * 86_400_000), "6h");
+  assert.equal(windowForSpanMs(14 * 86_400_000 + 1), "1d");
 });
 
 test("custom range swaps inverted dates", () => {

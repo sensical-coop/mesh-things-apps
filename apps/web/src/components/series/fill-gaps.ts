@@ -1,16 +1,4 @@
-export type TimedValue = { time: string; value: number | null };
-
-const WINDOW_PATTERN = /^(\d+)(s|m|h|d)$/;
-const UNIT_MS = { s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000 } as const;
-
-export function parseWindowMs(window: string): number | null {
-  const match = WINDOW_PATTERN.exec(window);
-  if (!match) return null;
-  const amount = match[1];
-  const unit = match[2] as keyof typeof UNIT_MS | undefined;
-  if (!amount || !unit) return null;
-  return Number(amount) * UNIT_MS[unit];
-}
+type TimedValue = { time: string; value: number | null };
 
 // Caps how many synthetic points a single gap can insert, so a bad/huge window
 // guess can't blow up the chart's data array.

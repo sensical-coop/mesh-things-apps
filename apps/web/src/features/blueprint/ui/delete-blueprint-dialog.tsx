@@ -6,7 +6,7 @@ import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type DeleteBlueprintDialogProps = {
@@ -68,7 +68,7 @@ export function DeleteBlueprintDialog({ blueprint, onClose, onDeleted }: DeleteB
             variant="danger"
             size="small"
             disabled={destroy.isPending || inUse || !blueprint}
-            onClick={() => blueprint && destroy.mutate({ path: { blueprint_id: blueprint.id } })}
+            onClick={() => blueprint && destroy.mutate({ blueprintId: blueprint.id })}
           >
             {destroy.isPending
               ? formatMessage({ id: "feature.blueprint.deleteDialog.deleting", defaultMessage: "Deleting" })

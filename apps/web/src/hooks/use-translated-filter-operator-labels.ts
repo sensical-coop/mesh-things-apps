@@ -17,7 +17,7 @@ export function useTranslatedFilterOperatorLabels(): FilterOperatorLabels {
       is: formatMessage({ id: "common.filterOperators.is", defaultMessage: "is" }),
       is_not: formatMessage({ id: "common.filterOperators.isNot", defaultMessage: "is not" }),
       is_any_of: formatMessage({ id: "common.filterOperators.isAnyOf", defaultMessage: "is any of" }),
-      is_none_of: formatMessage({ id: "common.filterOperators.isNoneOf", defaultMessage: "is none of" }),
+      is_not_any_of: formatMessage({ id: "common.filterOperators.isNoneOf", defaultMessage: "is none of" }),
       has_any_of: formatMessage({ id: "common.filterOperators.hasAnyOf", defaultMessage: "has any of" }),
       has_all_of: formatMessage({ id: "common.filterOperators.hasAllOf", defaultMessage: "has all of" }),
       has_none_of: formatMessage({ id: "common.filterOperators.hasNoneOf", defaultMessage: "has none of" }),

@@ -28,9 +28,9 @@ export function BlueprintPage(): ReactElement {
   const navigate = useNavigate();
   const { blueprintId } = useParams({ from: routes.blueprint });
   const { me, meId, ownerName } = useOwnerDirectory();
-  const blueprint = useQuery(blueprintRepository.retrieve({ path: { blueprint_id: blueprintId } }));
+  const blueprint = useQuery(blueprintRepository.retrieve(blueprintId));
   if (isNotFoundError(blueprint.error)) throw notFound();
-  const versions = useQuery(blueprintRepository.versions({ path: { blueprint_id: blueprintId } }));
+  const versions = useQuery(blueprintRepository.versions(blueprintId));
   const [editing, setEditing] = useState(false);
   const [addingVersion, setAddingVersion] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -48,7 +48,7 @@ export function BlueprintPage(): ReactElement {
             </Link>
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
+            <h1 className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary">
               {row?.name ?? formatMessage({ id: "page.blueprint.fallbackTitle", defaultMessage: "Blueprint" })}
             </h1>
             {row ? <BlueprintAccessChip blueprint={row} /> : null}

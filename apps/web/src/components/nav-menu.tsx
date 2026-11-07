@@ -13,7 +13,6 @@ import { NavCount } from "@/components/nav-count";
 export type NavMenuItem = {
   to: string;
   label: string;
-  /** One line under the label, in the dropdown and the mobile menu. */
   description?: string;
   count?: number;
   countLabel?: string;
@@ -22,7 +21,6 @@ export type NavMenuItem = {
 export type NavMenuProps = {
   title: string;
   items: readonly NavMenuItem[];
-  /** Screen-reader text for the trigger's total count, e.g. "3 need attention". */
   totalCountLabel?: (total: number) => string;
   /** The mobile menu: a heading and its links, as a dropdown inside a menu is awkward to use. */
   stacked?: boolean;
@@ -31,10 +29,6 @@ export type NavMenuProps = {
   activeClass: string;
 };
 
-/**
- * A header entry that groups pages: a dropdown on desktop, a heading with its links on
- * mobile. Highlighted while on any of its pages; counts sum on the trigger.
- */
 export function NavMenu({
   title,
   items,

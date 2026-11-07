@@ -2,11 +2,9 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 
 export type ExportHistoryHeadingProps = {
-  /** What the list's buttons do on this page. */
   description: string;
 };
 
-/** Heads the past downloads under a download form, set off from the form by a rule. */
 export function ExportHistoryHeading({ description }: ExportHistoryHeadingProps): ReactElement {
   const { formatMessage } = useIntl();
   return (

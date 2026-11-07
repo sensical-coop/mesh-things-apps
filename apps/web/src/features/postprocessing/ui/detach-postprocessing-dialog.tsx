@@ -5,10 +5,10 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { errorMessages } from "@/features/blueprint/model";
+import { blueprintRepository } from "@/features/blueprint/repository";
+import { errorMessages } from "@mtt/contracts/errors";
 import { deviceRepository } from "@/features/device/repository";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { blueprintRepository } from "@/features/blueprint/repository";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type DetachPostprocessingDialogProps = {
@@ -23,9 +23,9 @@ export function DetachPostprocessingDialog({ deviceUuid, postprocessing, onClose
   const detach = useMutation({
     ...postprocessingRepository.detach(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: deviceUuid } }) });
+      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
+      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
+      await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(deviceUuid) });
       await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
       onClose();
     },
@@ -67,7 +67,8 @@ export function DetachPostprocessingDialog({ deviceUuid, postprocessing, onClose
             size="small"
             disabled={detach.isPending || !postprocessing}
             onClick={() =>
-              postprocessing && detach.mutate({ path: { device_uuid: deviceUuid, postprocessing_id: postprocessing.id } })
+              postprocessing &&
+              detach.mutate({ deviceUuid, postprocessingId: postprocessing.id })
             }
           >
             {formatMessage({ id: "feature.postprocessing.detach.confirm", defaultMessage: "Detach" })}

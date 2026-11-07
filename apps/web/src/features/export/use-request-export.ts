@@ -1,8 +1,9 @@
 import type { Export, ExportRequest } from "@mtt/contracts";
+import { readApiError } from "@mtt/contracts/errors";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { readApiError } from "@/lib/api-errors";
-import { exportRepository } from "@/features/export/repository";
+import { isExportStorageMissing } from "./storage-missing.ts";
+import { exportRepository } from "./repository.ts";
 
 export type RequestExportState = {
   request: (meshId: string, body: ExportRequest) => void;
@@ -16,7 +17,6 @@ export type RequestExportState = {
   reset: () => void;
 };
 
-/** Ask for an export and keep every list of exports in step with it. */
 export function useRequestExport(onCreated?: (row: Export) => void): RequestExportState {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -26,12 +26,12 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
       onCreated?.(row);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: exportRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: exportRepository.meshListKey({ path: { mesh_id: row.mesh_id } }) }),
+        queryClient.invalidateQueries({ queryKey: exportRepository.meshListKey(row.mesh_id) }),
       ]);
     },
   });
 
-  const refusal = mutation.error ? readApiError(mutation.error) : undefined;
+  const refusal = mutation.isError ? readApiError(mutation.error) : undefined;
   const busy = refusal?.status === 429;
   let error: string | undefined;
   if (refusal) {
@@ -40,7 +40,7 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
         id: "feature.export.error.busy",
         defaultMessage: "You already have a download being prepared. Request this one once it's ready.",
       });
-    } else if (refusal.status === 404 && refusal.detail === "Not found") {
+    } else if (isExportStorageMissing(mutation.error)) {
       error = formatMessage({
         id: "feature.export.error.unavailable",
         defaultMessage: "This instance doesn't offer downloads. Ask the administrator to set up object storage.",
@@ -54,7 +54,7 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
   }
 
   return {
-    request: (meshId, body) => mutation.mutate({ path: { mesh_id: meshId }, body }),
+    request: (meshId, body) => mutation.mutate({ meshId: meshId, data: body }),
     pending: mutation.isPending,
     created: mutation.data,
     error,

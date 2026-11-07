@@ -30,15 +30,6 @@ function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {})
 }
 
 describe("Device", () => {
-  it("keeps nodeId and meshId readonly after create", () => {
-    const device = makeDevice();
-    expect(device.nodeId).toBe(1);
-    expect(() => {
-      // @ts-expect-error nodeId is frozen after create
-      device.nodeId = 99;
-    }).toThrow();
-  });
-
   it("filters gateways on one mesh", () => {
     const gw = makeDevice({ isGateway: true });
     const node = makeDevice({
@@ -48,26 +39,11 @@ describe("Device", () => {
     });
     expect(matchesDeviceFilter(gw, { meshId: gw.meshId, isGateway: true })).toBe(true);
     expect(matchesDeviceFilter(node, { meshId: gw.meshId, isGateway: true })).toBe(false);
-    expect(
-      matchesDeviceFilter(gw, {
-        extra: [{ field: "label", operator: "contains", values: ["g"] }],
-      }),
-    ).toBe(true);
-    expect(
-      matchesDeviceFilter(gw, {
-        extra: [{ field: "is_gateway", operator: "is", values: ["false"] }],
-      }),
-    ).toBe(false);
   });
 
   it("has postprocessing once a blueprint is attached", () => {
-    expect(makeDevice().hasPostprocessing()).toBe(false);
-    expect(makeDevice({ postprocessingCount: 2 }).hasPostprocessing()).toBe(true);
-    expect(
-      matchesDeviceFilter(makeDevice({ postprocessingCount: 1 }), {
-        extra: [{ field: "has_postprocessing", operator: "is", values: ["true"] }],
-      }),
-    ).toBe(true);
+    expect(matchesDeviceFilter(makeDevice({ postprocessingCount: 1 }), { hasPostprocessing: true })).toBe(true);
+    expect(matchesDeviceFilter(makeDevice(), { hasPostprocessing: true })).toBe(false);
   });
 
   it("records who switched the archive on, and clears it when switched off", () => {

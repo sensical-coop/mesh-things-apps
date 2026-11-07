@@ -5,7 +5,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
@@ -80,7 +80,7 @@ export function RestartSourceDialog({ source, onClose, onRestarted }: RestartSou
             type="button"
             size="small"
             disabled={restart.isPending}
-            onClick={() => source && restart.mutate({ path: { source_id: source.id } })}
+            onClick={() => source && restart.mutate({ sourceId: source.id })}
           >
             {restart.isPending
               ? formatMessage({ id: "feature.source.restartDialog.restarting", defaultMessage: "Restarting" })

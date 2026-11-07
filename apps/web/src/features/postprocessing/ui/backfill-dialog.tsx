@@ -6,10 +6,10 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
-import { errorMessages } from "@/features/blueprint/model";
+import { errorMessages } from "@mtt/contracts/errors";
 import { localInputToIso } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { useFormatters } from "@/hooks/use-formatters";
@@ -29,9 +29,8 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
   const queryClient = useQueryClient();
-  const path = { device_uuid: deviceUuid, postprocessing_id: postprocessing.id };
   const backfills = useQuery({
-    ...postprocessingRepository.backfills({ path }),
+    ...postprocessingRepository.backfills(deviceUuid, postprocessing.id),
     // Keep an eye on the worker while something is queued or running.
     refetchInterval: (query) =>
       query.state.data?.some((row) => row.status === "pending" || row.status === "running") ? 5000 : false,
@@ -41,7 +40,7 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
     ...postprocessingRepository.backfill(),
     onSuccess: async () => {
       setMessages([]);
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.backfillsKey({ path }) });
+      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.backfillsKey(deviceUuid, postprocessing.id) });
     },
     onError: (error) => setMessages(errorMessages(error)),
   });
@@ -58,8 +57,9 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
     const start = localInputToIso(String(form.get("start") ?? ""));
     if (!start) return;
     request.mutate({
-      path,
-      body: {
+      deviceUuid,
+      postprocessingId: postprocessing.id,
+      data: {
         start,
         stop: localInputToIso(String(form.get("stop") ?? "")),
         include_dependants: form.get("include_dependants") === "on",
@@ -134,7 +134,7 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
                     <Chip variant="caption" color={STATUS_COLOR[row.status]} className="rounded-full">
                       {statusLabel[row.status]}
                     </Chip>
-                    <span className="min-w-0 break-words">
+                    <span className="min-w-0 wrap-break-word">
                       {formatWhen(row.start)} → {row.stop ? formatWhen(row.stop) : "—"}
                     </span>
                   </div>

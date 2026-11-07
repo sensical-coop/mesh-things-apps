@@ -1,1 +1,1 @@
-export { cx, cn, sortCx } from "../utils";
+export { cx, cn } from "../utils";

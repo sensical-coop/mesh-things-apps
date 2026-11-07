@@ -12,21 +12,16 @@
     "#components/evilcharts/charts/*": "./src/components/evilcharts/charts/*.tsx",
     "#components/*": "./src/components/*.tsx",
     "#hooks/*": "./src/hooks/*.ts",
-    "#lib/utils": "./src/utils.ts",
-    "#lib/*": "./src/lib/*.ts"
+    "#lib/utils": "./src/utils.ts"
   },
   "exports": {
     "./utils": "./src/utils.ts",
     "./utils/*": "./src/utils/*.ts",
-    "./lib/utils": "./src/utils.ts",
-    "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./theme": "./src/theme.ts",
     "./oa/springs": "./src/oa/springs.ts",
     "./boardui.css": "./src/boardui/globals.css",
-    "./styles/globals.css": "./src/boardui/globals.css",
-    "./theme.css": "./src/boardui/theme.css",
-    "./typography.css": "./src/boardui/typography.css",
+    "./styles/*": "./src/boardui/*",
     "./reui/*": "./src/components/reui/*.tsx",
     "./components/base/buttons/button": "./src/components/base/buttons/button.tsx",
     "./components/base/badges/chip": "./src/components/base/badges/chip.tsx",
@@ -37,8 +32,12 @@
     "./components/evilcharts/ui/*": "./src/components/evilcharts/ui/*.tsx",
     "./components/evilcharts/charts/*": "./src/components/evilcharts/charts/*.tsx",
     "./components/*": "./src/components/*.tsx",
-    "./*": "./src/*.tsx",
-    "./maplibre.css": "./src/vendor/maplibre.css"
+    "./forms/node-id": "./src/forms/node-id.ts",
+    "./forms/text-links": "./src/forms/text-links.ts",
+    "./forms/*": "./src/forms/*.tsx",
+    "./maplibre.css": "./src/vendor/maplibre.css",
+    "./locale": "./src/locale.ts",
+    "./init-scripts": "./src/init-scripts.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -46,7 +45,6 @@
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@remixicon/react": "^4.9.0",
-    "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/react-table": "^9.2.4",
     "@tanstack/react-virtual": "^3.14.13",
     "class-variance-authority": "^0.7.1",
@@ -57,11 +55,11 @@
     "lucide-react": "^1.47.0",
     "maplibre-gl": "^6",
     "motion": "^13.4.0",
-    "nuqs": "^2.10.1",
-    "react-aria-components": "^1.21.1",
     "react-day-picker": "^10.0.1",
+    "react-intl": "^12.1.1",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@mtt/tsconfig": "workspace:^",

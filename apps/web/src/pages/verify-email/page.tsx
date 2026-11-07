@@ -2,32 +2,46 @@ import { Frame, FramePanel } from "@mtt/ui/reui/frame";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { parseAsString, useQueryState } from "nuqs";
-import { type ReactElement } from "react";
+import { type ReactElement, useEffect } from "react";
 import { useIntl } from "react-intl";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { ShaderBackdrop } from "@/components/auth-shader-backdrop";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
+import { AuthPage } from "@/features/auth/ui/auth-page";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
+import { isOwnerSession } from "@/features/auth/session";
+import { safeReturnPath } from "@/lib/return-path";
 import { routes } from "@/router";
 
 export function VerifyEmailPage(): ReactElement {
   const { formatMessage } = useIntl();
   const [token] = useQueryState("token", parseAsString);
+  const [next] = useQueryState("next", parseAsString);
+  const dest = safeReturnPath(next);
   const verify = useQuery({
-    ...authRepository.verifyEmail({ query: { token: token ?? "" } }),
+    ...authRepository.verifyEmail({ token: token ?? "" }),
     enabled: Boolean(token),
     retry: false,
   });
+  const me = useQuery({
+    ...authRepository.me(),
+    enabled: verify.isSuccess && Boolean(dest),
+  });
+  const signedIn = Boolean(dest) && isOwnerSession(me);
+
+  useEffect(() => {
+    if (signedIn && dest) window.location.assign(dest);
+  }, [signedIn, dest]);
 
   return (
-    <main className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-background-secondary-default px-4 py-16 sm:px-6 sm:py-24">
-      <ShaderBackdrop />
-      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
-        <LanguageSwitcher />
-      </div>
-      <div className="relative w-full max-w-md">
-        <Frame className="shadow-card w-full" spacing="lg">
-          <FramePanel className="flex flex-col gap-6">
+    <AuthPage
+      header={
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          <LanguageSwitcher />
+        </div>
+      }
+    >
+      <Frame className="w-full shadow-card" spacing="lg">
+        <FramePanel className="flex flex-col gap-6">
             <h1 className="text-title-2-medium tracking-tight text-text-primary">
               {formatMessage({ id: "page.verifyEmail.title", defaultMessage: "Email verification" })}
             </h1>
@@ -46,12 +60,26 @@ export function VerifyEmailPage(): ReactElement {
                     defaultMessage: "Your email address has been verified. You can now sign in.",
                   })}
                 </StatusCopy>
-                <Link
-                  to={routes.login}
-                  className="text-body-medium text-text-primary underline underline-offset-2"
-                >
-                  {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
-                </Link>
+                {dest && signedIn ? (
+                  <a href={dest} className="text-body-medium text-text-primary underline underline-offset-2">
+                    {formatMessage({ id: "page.verifyEmail.continue", defaultMessage: "Continue" })}
+                  </a>
+                ) : dest ? (
+                  <Link
+                    to={routes.login}
+                    search={{ next: dest }}
+                    className="text-body-medium text-text-primary underline underline-offset-2"
+                  >
+                    {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
+                  </Link>
+                ) : (
+                  <Link
+                    to={routes.login}
+                    className="text-body-medium text-text-primary underline underline-offset-2"
+                  >
+                    {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
+                  </Link>
+                )}
               </>
             ) : (
               <>
@@ -69,9 +97,8 @@ export function VerifyEmailPage(): ReactElement {
                 </Link>
               </>
             )}
-          </FramePanel>
-        </Frame>
-      </div>
-    </main>
+        </FramePanel>
+      </Frame>
+    </AuthPage>
   );
 }

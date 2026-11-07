@@ -1,27 +1,27 @@
 import {
-  operatorRequestsListOptions,
-  operatorRequestsListQueryKey,
-  operatorRequestsRetrieveOptions,
-  operatorRequestsRetrieveQueryKey,
-  operatorRequestsUpdateMutation,
-  ownersMeOperatorRequestCreateMutation,
-  ownersMeOperatorRequestRetrieveQueryKey,
-} from "@mtt/contracts/query";
-import { ownersMeOperatorRequestRetrieve } from "@mtt/contracts";
+  getOperatorRequestsListQueryKey,
+  getOperatorRequestsListQueryOptions,
+  getOperatorRequestsRetrieveQueryKey,
+  getOperatorRequestsRetrieveQueryOptions,
+  getOperatorRequestsUpdateMutationOptions,
+  getOwnersMeOperatorRequestCreateMutationOptions,
+  getOwnersMeOperatorRequestRetrieveQueryKey,
+  ownersMeOperatorRequestRetrieve,
+} from "@mtt/contracts/api";
 import { queryOptions } from "@tanstack/react-query";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 
 export const operatorRequestRepository = {
   /** The caller's latest request, or `null` when they never asked. */
   mine: myOperatorRequestQuery,
-  mineKey: ownersMeOperatorRequestRetrieveQueryKey,
-  create: ownersMeOperatorRequestCreateMutation,
+  mineKey: getOwnersMeOperatorRequestRetrieveQueryKey,
+  create: getOwnersMeOperatorRequestCreateMutationOptions,
   /** Superusers only. */
-  list: operatorRequestsListOptions,
-  listKey: operatorRequestsListQueryKey,
-  retrieve: operatorRequestsRetrieveOptions,
-  retrieveKey: operatorRequestsRetrieveQueryKey,
-  decide: operatorRequestsUpdateMutation,
+  list: getOperatorRequestsListQueryOptions,
+  listKey: getOperatorRequestsListQueryKey,
+  retrieve: getOperatorRequestsRetrieveQueryOptions,
+  retrieveKey: getOperatorRequestsRetrieveQueryKey,
+  decide: getOperatorRequestsUpdateMutationOptions,
 };
 
 /**
@@ -30,11 +30,10 @@ export const operatorRequestRepository = {
  */
 function myOperatorRequestQuery() {
   return queryOptions({
-    queryKey: ownersMeOperatorRequestRetrieveQueryKey(),
+    queryKey: getOwnersMeOperatorRequestRetrieveQueryKey(),
     queryFn: async ({ signal }) => {
       try {
-        const { data } = await ownersMeOperatorRequestRetrieve({ signal, throwOnError: true });
-        return data;
+        return await ownersMeOperatorRequestRetrieve({ signal });
       } catch (error) {
         if (readApiError(error).status === 404) return null;
         throw error;

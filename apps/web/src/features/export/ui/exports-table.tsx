@@ -4,10 +4,10 @@ import { RiCalendarScheduleLine, RiDownloadLine, RiRefreshLine } from "@remixico
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
-import { formatBytes } from "@/features/archive/model";
 import { isActive, progressOf } from "@/features/export/model";
 import { ExportStatusChip } from "@/features/export/ui/export-status-chip";
 import { cn } from "@mtt/ui/utils";
+import { formatBytes } from "@/lib/format";
 
 export type ExportsTableProps = {
   rows: readonly Export[];
@@ -24,7 +24,6 @@ export type ExportsTableProps = {
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 const cellClass = "px-3.5 py-2.5 align-middle";
 
-/** Downloads, newest first: what each holds, how it's going, and what can be done with it. */
 export function ExportsTable({
   rows,
   meshTitles,
@@ -49,7 +48,7 @@ export function ExportsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[44rem] text-left text-body-2-regular">
+      <table className="w-full min-w-176 text-left text-body-2-regular">
         <thead>
           <tr>
             {meshTitles ? (
@@ -76,7 +75,7 @@ export function ExportsTable({
               </td>
               <td className={cn(cellClass, "whitespace-nowrap tabular-nums")}>{daysLabel(row)}</td>
               <td className={cellClass}>
-                <div className="flex min-w-[9rem] flex-col items-start gap-1">
+                <div className="flex min-w-36 flex-col items-start gap-1">
                   <ExportStatusChip status={row.status} />
                   {row.status === "running" ? (
                     <div

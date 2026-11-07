@@ -1,6 +1,6 @@
 import { notFound } from "@tanstack/react-router";
 import { z } from "zod";
-import { readApiError } from "./api-errors.ts";
+import { readApiError } from "@mtt/contracts/errors";
 
 const uuid = z.uuid();
 

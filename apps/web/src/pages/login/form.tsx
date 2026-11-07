@@ -1,74 +1,55 @@
-import { Button } from "@mtt/ui/components/base/buttons/button";
+import { classifyLoginFailure, type LoginFailure } from "@mtt/contracts/errors";
+import { LoginForm as UiLoginForm } from "@mtt/ui/forms/login-form";
 import { Frame, FramePanel } from "@mtt/ui/reui/frame";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormField } from "@/components/form/form-field";
-import { Input } from "@mtt/ui/components/ui/input";
-import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { readApiError } from "@/lib/api-errors";
+import { isOwnerSession } from "@/features/auth/session";
+import { safeReturnPath } from "@/lib/return-path";
+import { routes } from "@/router";
 
 const MOCK_API_DISABLED = import.meta.env.VITE_DISABLE_MOCK_API === "true";
 
-type FormatMessage = ReturnType<typeof useIntl>["formatMessage"];
-
-function loginErrorMessage(status: number | undefined, formatMessage: FormatMessage): string {
-  if (status === 401) {
-    return formatMessage({
-      id: "page.login.form.error",
-      defaultMessage: "Those credentials were not accepted. Check the email and password and try again.",
-    });
-  }
-  if (status === 429) {
-    return formatMessage({
-      id: "page.login.form.error.throttled",
-      defaultMessage: "Too many sign-in attempts. Wait a minute and try again.",
-    });
-  }
-  return formatMessage({
-    id: "page.login.form.error.generic",
-    defaultMessage: "We couldn't sign you in right now. Try again in a moment.",
-  });
-}
-
-export function LoginForm(): ReactElement {
+export function LoginForm({
+  accountDeleted = false,
+  next,
+}: {
+  accountDeleted?: boolean;
+  next?: string;
+}): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { accountDeleted } = useSearch({ from: routes.login });
-  const [error, setError] = useState<string | null>(null);
+  const [failure, setFailure] = useState<LoginFailure | null>(null);
   const login = useMutation({
     ...authRepository.login(),
     // An unverified owner is signed in too, and only has the verify-pending page.
     onSuccess: async (owner) => {
       await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
-      await navigate({ to: owner.is_active ? routes.meshes : routes.verifyPending });
+      if (!isOwnerSession({ isSuccess: true, data: owner })) {
+        await navigate({ to: routes.verifyPending });
+        return;
+      }
+      const dest = safeReturnPath(next) ?? routes.meshes;
+      if (dest === routes.meshes) await navigate({ to: routes.meshes });
+      else window.location.assign(dest);
     },
   });
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setError(null);
+  async function onSubmit(values: { email: string; password: string }) {
+    setFailure(null);
     try {
-      await authRepository.csrf();
-      await login.mutateAsync({
-        body: {
-          email: String(form.get("email") ?? ""),
-          password: String(form.get("password") ?? ""),
-        },
-      });
+      await login.mutateAsync({ data: values });
     } catch (caught) {
-      setError(loginErrorMessage(readApiError(caught).status, formatMessage));
+      setFailure(classifyLoginFailure(caught));
     }
   }
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -89,70 +70,45 @@ export function LoginForm(): ReactElement {
             })}
           </StatusCopy>
         ) : null}
-        <form className="flex flex-col gap-5" onSubmit={(e) => void onSubmit(e)}>
-          <FieldGroup>
-            <FormField
-              id="login-email"
-              label={formatMessage({ id: "page.login.form.email", defaultMessage: "Email" })}
+        <UiLoginForm
+          failure={failure}
+          pending={login.isPending}
+          forgotPassword={
+            <Link
+              to={routes.forgotPassword}
+              className="self-end text-caption-1-regular text-text-secondary underline underline-offset-2"
             >
-              <Input
-                id="login-email"
-                name="email"
-                type="email"
-                required
-                autoComplete="username"
-                defaultValue={MOCK_API_DISABLED ? undefined : "owner@sensical.test"}
-              />
-            </FormField>
-            <FormField
-              id="login-password"
-              label={formatMessage({ id: "page.login.form.password", defaultMessage: "Password" })}
-            >
-              <Input
-                id="login-password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                defaultValue={MOCK_API_DISABLED ? undefined : "mesh-owner-12"}
-              />
-            </FormField>
-          </FieldGroup>
-          <Link
-            to={routes.forgotPassword}
-            className="self-end text-caption-1-regular text-text-secondary underline underline-offset-2"
-          >
-            {formatMessage({ id: "page.login.form.forgotPassword", defaultMessage: "Forgot password?" })}
-          </Link>
-          {error ? <StatusCopy>{error}</StatusCopy> : null}
-          <Button type="submit" size="small" disabled={login.isPending} className="mt-1">
-            {login.isPending
-              ? formatMessage({ id: "page.login.form.signingIn", defaultMessage: "Signing in" })
-              : formatMessage({ id: "page.login.form.signIn", defaultMessage: "Sign in" })}
-          </Button>
-        </form>
-        {MOCK_API_DISABLED ? null : (
-          <p className="text-caption-1-regular text-text-tertiary">
-            {formatMessage({
-              id: "page.login.form.mockAccounts",
-              defaultMessage:
-                "Mock accounts: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (all meshes), staff@sensical.test (read, no PSK). Password mesh-owner-12, except admin mesh-admin-12 and staff mesh-staff-12.",
-            })}
-          </p>
-        )}
-        <p className="text-caption-1-regular text-text-tertiary">
-          <FormattedMessage
-            id="page.login.form.noAccount"
-            defaultMessage="Don't have an account? <link>Sign up</link>."
-            values={{
-              link: (chunks: ReactNode) => (
-                <Link to={routes.signup} className="underline underline-offset-2 text-accent-500">
-                  {chunks}
-                </Link>
-              ),
-            }}
-          />
-        </p>
+              {formatMessage({ id: "page.login.form.forgotPassword", defaultMessage: "Forgot password?" })}
+            </Link>
+          }
+          onSubmit={(values) => void onSubmit(values)}
+          footer={
+            <>
+              {MOCK_API_DISABLED ? null : (
+                <p className="text-caption-1-regular text-text-tertiary">
+                  {formatMessage({
+                    id: "page.login.form.mockAccounts",
+                    defaultMessage:
+                      "Mock accounts: owner@sensical.test (Hill), river@sensical.test (River), admin@sensical.test (all meshes), staff@sensical.test (read, no PSK). Password mesh-owner-12, except admin mesh-admin-12 and staff mesh-staff-12.",
+                  })}
+                </p>
+              )}
+              <p className="text-caption-1-regular text-text-tertiary">
+                <FormattedMessage
+                  id="page.login.form.noAccount"
+                  defaultMessage="Don't have an account? <link>Sign up</link>."
+                  values={{
+                    link: (chunks: ReactNode) => (
+                      <Link to={routes.signup} className="text-accent-500 underline underline-offset-2">
+                        {chunks}
+                      </Link>
+                    ),
+                  }}
+                />
+              </p>
+            </>
+          }
+        />
       </FramePanel>
     </Frame>
   );

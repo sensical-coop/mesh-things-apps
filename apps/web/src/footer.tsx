@@ -1,12 +1,13 @@
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { cx } from "@mtt/ui/utils";
 import { RiGithubLine, RiLinkedinLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { routes } from "@/router";
-import { API_URL } from "@/lib/api-url";
-import { BrandMark, SITE, pageWidth } from "@/components/brand";
+import { API_URL } from "@mtt/contracts/runtime";
+import { SITE, pageWidth } from "@/components/brand";
 
 const socials = [
   { href: "https://github.com/sensical-coop/", label: "GitHub", icon: RiGithubLine },
@@ -23,7 +24,7 @@ const footerLinkClass =
 function FooterColumn({ title, children }: { title: string; children: ReactNode }): ReactElement {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">{title}</p>
+      <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">{title}</p>
       {children}
     </div>
   );
@@ -58,16 +59,16 @@ export function Footer(): ReactElement {
           <FooterColumn title={formatMessage({ id: "console.footer.product", defaultMessage: "Product" })}>
             <nav aria-label="Product" className="flex flex-col gap-2">
               <Link to={routes.meshes} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.meshes", defaultMessage: "Meshes" })}
+                {formatMessage({ id: "console.nav.meshes", defaultMessage: "Meshes" })}
               </Link>
               <Link to={routes.devices} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
+                {formatMessage({ id: "console.nav.devices", defaultMessage: "Devices" })}
               </Link>
               <Link to={routes.alarms} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" })}
+                {formatMessage({ id: "console.nav.alarms", defaultMessage: "Alarms" })}
               </Link>
               <Link to={routes.blueprints} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
+                {formatMessage({ id: "console.nav.blueprints", defaultMessage: "Blueprints" })}
               </Link>
             </nav>
           </FooterColumn>

@@ -8,7 +8,6 @@ import { Modal } from "@/components/modal";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { useFormatters } from "@/hooks/use-formatters";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { formatBytes } from "@/features/archive/model";
 import { deviceTitle } from "@/features/device/model";
 import { isActive, lastDays, pollInterval, progressOf, rangeProblem, requestOf } from "@/features/export/model";
 import { exportRepository } from "@/features/export/repository";
@@ -17,6 +16,7 @@ import { ExportLimits } from "@/features/export/ui/export-limits";
 import { ExportRangeFields, type ExportRange } from "@/features/export/ui/export-range-fields";
 import { ExportStatusChip } from "@/features/export/ui/export-status-chip";
 import { routes } from "@/router";
+import { formatBytes } from "@/lib/format";
 
 export type DeviceCsvDialogProps = {
   device: DeviceRead;
@@ -27,13 +27,12 @@ function isThisDevice(row: Export, device: DeviceRead): boolean {
   return row.format === "csv" && row.node_ids?.length === 1 && row.node_ids[0] === device.node_id;
 }
 
-/** Ask for one device's readings as CSV over some days, and follow that download until it's ready. */
 export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const { formatWhen } = useFormatters();
   const [range, setRange] = useState<ExportRange>(() => lastDays(7));
   const exports = useQuery({
-    ...exportRepository.meshList({ path: { mesh_id: device.mesh_id } }),
+    ...exportRepository.meshList(device.mesh_id),
     refetchInterval: (query) => pollInterval(query.state.data),
   });
   const requested = useRequestExport();
@@ -95,7 +94,7 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
             <h3 className="text-caption-1-medium text-text-secondary">
               {formatMessage({ id: "feature.export.device.latest", defaultMessage: "Latest download of this device" })}
             </h3>
-            <div className="oa-squircle-inset flex flex-col gap-3 bg-background-secondary-default p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 oa-squircle-inset bg-background-secondary-default p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-col gap-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <ExportStatusChip status={latest.status} />

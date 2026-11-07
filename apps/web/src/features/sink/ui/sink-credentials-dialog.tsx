@@ -15,7 +15,6 @@ export type SinkCredentialsDialogProps = {
   onClose: () => void;
 };
 
-/** The one time the consumer's password is shown. Closing loses it; rotating issues a new one. */
 export function SinkCredentialsDialog({ credentials, rotated, onClose }: SinkCredentialsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const details = credentials

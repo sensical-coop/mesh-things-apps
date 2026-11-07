@@ -7,6 +7,7 @@ import { RouterButtonLink } from "@/components/router-button-link";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { alarmVariantGroups } from "@/features/alarm/model";
+import { COMPUTED_VARIANT_GROUP } from "@/features/device/variant-groups";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
@@ -28,7 +29,7 @@ export type DeviceAlarmsRowProps = {
 export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: DeviceAlarmsRowProps): ReactElement {
   const { formatMessage } = useIntl();
   const measurements = useQuery({
-    ...deviceRepository.measurements({ path: { device_uuid: device.uuid } }),
+    ...deviceRepository.measurements(device.uuid),
     enabled: expanded,
   });
   const groups = useMemo(
@@ -53,7 +54,7 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
             ) : (
               <RiArrowRightSLine className="size-4 shrink-0" aria-hidden />
             )}
-            <span className="min-w-0 break-words">{deviceTitle(device)}</span>
+            <span className="min-w-0 wrap-break-word">{deviceTitle(device)}</span>
           </button>
           <DeviceKindBadge isGateway={device.is_gateway} />
         </div>
@@ -85,14 +86,16 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
           ) : null}
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
-              <h4 className="min-w-0 text-caption-1-medium break-words text-text-secondary">
-                {group.title ?? formatMessage({ id: "page.alarms.list.otherVariant", defaultMessage: "Other" })}
+              <h4 className="min-w-0 text-caption-1-medium wrap-break-word text-text-secondary">
+                {group.key === COMPUTED_VARIANT_GROUP
+                  ? formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" })
+                  : (group.title ?? formatMessage({ id: "page.alarms.list.otherVariant", defaultMessage: "Other" }))}
               </h4>
               <div className="oa-arrive overflow-x-auto">
-                <table className="w-full min-w-[32rem] table-fixed caption-bottom text-left text-body-2-regular">
+                <table className="w-full min-w-lg table-fixed caption-bottom text-left text-body-2-regular">
                   <thead>
                     <tr>
-                      <th className="h-8 w-72 px-3.5 text-left align-middle text-caption-1-medium break-words text-text-secondary">
+                      <th className="h-8 w-72 px-3.5 text-left align-middle text-caption-1-medium wrap-break-word text-text-secondary">
                         {formatMessage({ id: "page.alarms.list.columns.measurement", defaultMessage: "Measurement" })}
                       </th>
                       <th className="h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary">
@@ -106,7 +109,7 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
                   <tbody>
                     {group.channels.map((channel) => (
                       <tr key={channel.key} className="text-text-primary hover:bg-background-primary-hover">
-                        <td className="h-8 w-72 px-3.5 py-0 align-middle break-words">{channel.label}</td>
+                        <td className="h-8 w-72 px-3.5 py-0 align-middle wrap-break-word">{channel.label}</td>
                         <td className="h-8 px-3.5 py-0 align-middle whitespace-nowrap text-text-secondary">
                           {channel.detectors.length
                             ? channel.detectors.join(", ")

@@ -14,7 +14,7 @@ export default defineConfig({
   envDir: "../..",
   // Pages reached through the web dev server's /docs still open their reload socket here,
   // since that server only forwards plain HTTP.
-  server: { port: 5175, strictPort: true, hmr: { clientPort: 5175 } },
+  server: { host: "127.0.0.1", port: 5175, strictPort: true, hmr: { clientPort: 5175 } },
   resolve: {
     alias: { "@": `${import.meta.dirname}/src` },
     dedupe: ["react", "react-dom", "@tanstack/react-router"],

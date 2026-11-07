@@ -1,11 +1,12 @@
-import type { Sink, SinkStream, SinkWrite } from "@mtt/domain/sink/Sink";
+import { MQTT_TLS_PORT } from "@mtt/contracts/source";
+import type { Sink, SinkPatch } from "@mtt/domain/sink/Sink";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 
 /** Mirrors REGISTRY__EMQX_API_URL set: off, as on an instance without EMQX, every sink route answers 404. */
 export const SINKS_ENABLED = process.env.MOCK_SINKS !== "false";
 
 /** Mirrors MQTT_SINKS__BROKER: where consumers connect over TLS. */
-export const SINKS_BROKER = process.env.MOCK_SINKS_BROKER ?? "mqtt.localhost:8883";
+export const SINKS_BROKER = process.env.MOCK_SINKS_BROKER ?? `mqtt.localhost:${MQTT_TLS_PORT}`;
 
 /** Mirrors MQTT_CONNECTORS__NAMESPACE, which prefixes the sink's user and topics. */
 const NAMESPACE = "mt-sources";
@@ -37,7 +38,7 @@ export class MemorySinks {
     return this.items.get(id) ?? null;
   }
 
-  async insert(input: SinkWrite & { streams: SinkStream[]; createdById: string }): Promise<Sink> {
+  async insert(input: SinkPatch & { streams: string[]; createdById: string }): Promise<Sink> {
     const now = nowIso();
     const sink: Sink = {
       id: newId(),
@@ -57,7 +58,7 @@ export class MemorySinks {
     return sink;
   }
 
-  async update(id: string, patch: SinkWrite): Promise<Sink | null> {
+  async update(id: string, patch: SinkPatch): Promise<Sink | null> {
     const sink = this.items.get(id);
     if (!sink) return null;
     for (const [key, value] of Object.entries(patch)) {

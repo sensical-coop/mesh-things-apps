@@ -4,15 +4,14 @@
  * 30. The mock has no worker: a job's status follows from the time since it was asked
  * for, so the console's polling sees it queue, run and finish.
  */
+import { EXPORT_FILE_HOURS, EXPORT_HISTORY_DAYS } from "@mtt/contracts/export";
 import { newId } from "@mtt/domain/shared/ids";
 
 export type ExportFormat = "csv" | "parquet";
 export type ExportStatus = "queued" | "running" | "ready" | "failed" | "expired";
 
-/** Mirrors READINGS__EXPORT_MAX_DAYS. */
-export const EXPORT_MAX_DAYS = 366;
-const FILE_TTL_MS = 24 * 3_600_000;
-const HISTORY_MS = 30 * 24 * 3_600_000;
+const FILE_TTL_MS = EXPORT_FILE_HOURS * 3_600_000;
+const HISTORY_MS = EXPORT_HISTORY_DAYS * 24 * 3_600_000;
 const QUEUED_MS = 1_500;
 const DAY_MS = 86_400_000;
 
@@ -69,7 +68,6 @@ export function exportFilename(row: ExportRow): string {
 export class MemoryExports {
   readonly rows: ExportRow[] = [];
 
-  /** The owner's exports of the last 30 days, newest first. */
   listFor(ownerId: string, meshId?: string, now = Date.now()): ExportRow[] {
     return this.rows
       .filter((r) => r.ownerId === ownerId && now - r.createdAt < HISTORY_MS && (!meshId || r.meshId === meshId))
@@ -80,7 +78,6 @@ export class MemoryExports {
     return this.rows.find((r) => r.id === id);
   }
 
-  /** The owner's one export queued or running, if any. */
   active(ownerId: string): ExportRow | undefined {
     return this.rows.find((r) => r.ownerId === ownerId && ["queued", "running"].includes(statusOf(r)));
   }

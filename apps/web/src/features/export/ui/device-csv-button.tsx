@@ -10,7 +10,6 @@ export type DeviceCsvButtonProps = {
   className?: string;
 };
 
-/** On a device's page only: in a table a button per row would crowd it. */
 export function DeviceCsvButton({ device, className }: DeviceCsvButtonProps): ReactElement {
   const { formatMessage } = useIntl();
   const [open, setOpen] = useState(false);

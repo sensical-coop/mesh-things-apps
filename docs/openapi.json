@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Mesh Things API",
-    "version": "0.1.2"
+    "version": "0.1.3"
   },
   "paths": {
     "/algorithms": {
@@ -2530,6 +2530,35 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OwnerDevices"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/owners/me/gateway-broker": {
+      "get": {
+        "operationId": "owners_me_gateway_broker_retrieve",
+        "description": "Return the broker address and the shared gateway login to enter in the Meshtastic app's MQTT settings.\n\nAvailable to verified owners only. Returns 404 when the instance has no gateway broker configured.",
+        "tags": [
+          "owners"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayBroker"
                 }
               }
             },
@@ -6855,6 +6884,34 @@
         ],
         "type": "string",
         "description": "* `csv` - csv\n* `parquet` - parquet"
+      },
+      "GatewayBroker": {
+        "type": "object",
+        "description": "GET /owners/me/gateway-broker",
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "tls": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "host",
+          "password",
+          "port",
+          "tls",
+          "username"
+        ]
       },
       "LatestReading": {
         "type": "object",

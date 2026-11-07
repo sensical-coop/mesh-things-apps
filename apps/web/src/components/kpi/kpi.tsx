@@ -11,7 +11,6 @@ export type KpiProps = {
   className?: string;
   icon?: RemixiconComponentType;
   action?: ReactNode;
-  /** Shown after the label, e.g. a flag for a computed channel. */
   badge?: ReactNode;
 };
 
@@ -26,10 +25,10 @@ export function Kpi({ label, value, hint, className, icon: Icon = kpiIconFor(lab
         </div>
         {action}
       </div>
-      <p className="min-w-0 break-words tabular-nums text-title-2-medium tracking-tight text-text-primary">
+      <p className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary tabular-nums">
         {value}
       </p>
-      {hint ? <p className="text-pretty text-caption-1-regular text-text-tertiary">{hint}</p> : null}
+      {hint ? <p className="text-caption-1-regular text-pretty text-text-tertiary">{hint}</p> : null}
     </div>
   );
 }

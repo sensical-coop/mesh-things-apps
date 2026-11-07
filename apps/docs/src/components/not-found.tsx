@@ -7,7 +7,7 @@ export function DocumentationNotFound(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <DocsPage toc={[]}>
-      <section className="oa-squircle oa-arrive flex flex-col items-start gap-3 bg-background-secondary-default p-6 shadow-card sm:p-10">
+      <section className="flex oa-arrive flex-col items-start gap-3 oa-squircle bg-background-secondary-default p-6 shadow-card sm:p-10">
         <p className="font-mono text-caption-1-regular text-text-tertiary">404</p>
         <h1 className="text-title-2-medium tracking-tight text-text-primary">
           {formatMessage({ id: "notFound.docsPage.title", defaultMessage: "Page not found" })}

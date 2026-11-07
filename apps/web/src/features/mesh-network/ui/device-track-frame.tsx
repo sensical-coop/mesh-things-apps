@@ -14,14 +14,10 @@ import { readingsRepository } from "@/features/readings/repository";
 import { positionTrack } from "../model";
 import { tokenColor } from "../token-color";
 
-/** Where a device reported itself over the last week, as a track ending at its latest position. */
 export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage } = useIntl();
   const positions = useQuery(
-    readingsRepository.series({
-      path: { device_uuid: device.uuid },
-      query: { payload_kind: "device:position", start: "-7d" },
-    }),
+    readingsRepository.series(device.uuid, { payload_kind: "device:position", start: "-7d" }),
   );
   const track = useMemo(() => {
     const series = positions.data?.series ?? [];
@@ -58,8 +54,8 @@ export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactEleme
           </StatusCopy>
         ) : null}
         {track.length >= 2 && last ? (
-          <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
-            <Map center={last} zoom={12} unsupported={<MapUnsupported />} className="h-full w-full">
+          <div className="relative h-80 oa-arrive overflow-hidden oa-squircle-inset">
+            <Map center={last} zoom={12} unsupported={<MapUnsupported />} className="size-full ">
               <MapControls />
               <FitToPoints points={track.map(([lng, lat]) => ({ lng, lat }))} />
               <MapRoute id="track" coordinates={track} color={tokenColor("--oa-primary", "#ff495f")} width={3} interactive={false} />

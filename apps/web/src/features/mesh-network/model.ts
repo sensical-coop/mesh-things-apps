@@ -1,16 +1,12 @@
 import type { DeviceRead, MeshTraffic, Point, RfLink } from "@mtt/contracts";
+import { spanMs } from "../../lib/duration.ts";
 import { devicePosition, isValidLngLat } from "../device/model.ts";
 
 export const MESH_STATS_RANGES = ["1h", "24h", "7d", "30d"] as const;
 export type MeshStatsRange = (typeof MESH_STATS_RANGES)[number];
 
-const UNIT_MS: Record<string, number> = { m: 60_000, h: 3_600_000, d: 86_400_000 };
-
-/** The API's bucket size (`15m`, `6h`) in milliseconds, or null when it doesn't parse. */
-export function windowMs(window: string): number | null {
-  const match = /^(\d+)([mhd])$/.exec(window);
-  return match ? Number(match[1]) * UNIT_MS[match[2]!]! : null;
-}
+/** How often traffic and topology refetch while their tab is showing. */
+export const MESH_REFRESH_MS = 60_000;
 
 /** Receptions per bucket across every payload kind, oldest first. */
 export function totalTraffic(traffic: MeshTraffic[]): Point[] {
@@ -52,10 +48,10 @@ export const LINK_WINDOWS: Record<MeshStatsRange, "24h" | "7d" | "30d"> = {
 };
 
 export const RANGE_MS: Record<MeshStatsRange, number> = {
-  "1h": 3_600_000,
-  "24h": 86_400_000,
-  "7d": 7 * 86_400_000,
-  "30d": 30 * 86_400_000,
+  "1h": spanMs("1h"),
+  "24h": spanMs("24h"),
+  "7d": spanMs("7d"),
+  "30d": spanMs("30d"),
 };
 
 /** Two nodes that hear each other, whichever way and by whatever source. */

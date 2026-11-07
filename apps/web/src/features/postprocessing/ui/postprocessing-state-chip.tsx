@@ -1,29 +1,25 @@
 import type { DevicePostprocessing } from "@mtt/contracts";
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
 
 export type PostprocessingStateChipProps = {
   postprocessing: Pick<DevicePostprocessing, "is_enabled" | "problems">;
 };
 
-/** Running, stopped, or stopped because something is missing. */
 export function PostprocessingStateChip({ postprocessing }: PostprocessingStateChipProps): ReactElement {
   const { formatMessage } = useIntl();
   if (postprocessing.is_enabled) {
     return (
-      <Chip variant="caption" color="lime" className="rounded-full">
-        {formatMessage({ id: "feature.postprocessing.state.running", defaultMessage: "Running" })}
-      </Chip>
+      <StatusChip tone="lime" label={formatMessage({ id: "feature.postprocessing.state.running", defaultMessage: "Running" })} />
     );
   }
   return postprocessing.problems.length ? (
-    <Chip variant="caption" color="yellow" className="rounded-full">
-      {formatMessage({ id: "feature.postprocessing.state.incomplete", defaultMessage: "Needs setup" })}
-    </Chip>
+    <StatusChip
+      tone="yellow"
+      label={formatMessage({ id: "feature.postprocessing.state.incomplete", defaultMessage: "Needs setup" })}
+    />
   ) : (
-    <Chip variant="caption" color="neutral" className="rounded-full">
-      {formatMessage({ id: "feature.postprocessing.state.stopped", defaultMessage: "Stopped" })}
-    </Chip>
+    <StatusChip tone="neutral" label={formatMessage({ id: "feature.postprocessing.state.stopped", defaultMessage: "Stopped" })} />
   );
 }

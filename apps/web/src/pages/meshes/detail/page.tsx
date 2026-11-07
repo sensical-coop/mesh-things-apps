@@ -1,5 +1,4 @@
 import type { DeviceRead } from "@mtt/contracts";
-import { zDevicesCreateData } from "@mtt/contracts/zod";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { cx } from "@mtt/ui/utils/cx";
 import {
@@ -9,28 +8,17 @@ import {
   FramePanel,
   FrameTitle,
 } from "@mtt/ui/reui/frame";
-import {
-  RiAddLine,
-  RiCollapseDiagonalLine,
-  RiDeleteBinLine,
-  RiExpandDiagonalLine,
-  RiEyeLine,
-  RiEyeOffLine,
-  RiFileCopyLine,
-} from "@remixicon/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, useMemo, useState } from "react";
+import { RiAddLine, RiCollapseDiagonalLine, RiDeleteBinLine, RiExpandDiagonalLine } from "@remixicon/react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { type ReactElement, useMemo, useState } from "react";
 import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
-import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mtt/ui/components/ui/tabs";
 import { Map, MapControls, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
-import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { DataTable } from "@mtt/ui/components/data-table";
-import { SmartFilterToolbar, useSmartFilters, type FilterSpec } from "@mtt/ui/components/smart-filters";
+import { SmartFilterToolbar, useSmartFilters } from "@/components/smart-filters";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
-import { FormField } from "@/components/form/form-field";
-import { Input } from "@mtt/ui/components/ui/input";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
@@ -38,24 +26,19 @@ import { FitToPoints } from "@/features/device/ui/map-fit";
 import { DeviceMapLegend } from "@/features/device/ui/map-legend";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
-import { deviceRepository } from "@/features/device/repository";
+import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
 import { deviceLastSeen, devicePosition, deviceTitle } from "@/features/device/model";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
-import { NodeIdField } from "@/features/device/ui/node-id-field";
-import { useTelemetryVariantOptions } from "@/features/device/use-telemetry-variant-options";
-import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
-import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
-import { matchesListQuery } from "@/lib/list-filter";
+import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
+import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { useFormatters } from "@/hooks/use-formatters";
 import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { expandedMapClass } from "@/features/mesh-network/expanded-map";
 import { pageHeadingClass } from "@/lib/page-heading";
-import { Modal } from "@/components/modal";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshStatus, meshTermsStanding, meshTitle } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
@@ -64,9 +47,11 @@ import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
-import { termsLocale } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { termsRepository } from "@/features/terms/repository";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { PskReveal } from "./psk-reveal";
+import { RegisterDeviceDialog } from "./register-device-dialog";
+import { sourceStatus } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { MapUnsupported } from "@/components/map-unsupported";
 import { RouterButtonLink } from "@/components/router-button-link";
@@ -78,7 +63,6 @@ import { MeshTrafficTab } from "@/features/mesh-network/ui/traffic-tab";
 const col = legacyCreateColumnHelper<DeviceRead>();
 
 const MESH_TABS = ["overview", "traffic", "topology"] as const;
-const FLEET_MAP_SIZES = ["large"] as const;
 
 export function MeshDetailPage(): ReactElement {
   const { formatMessage, locale } = useIntl();
@@ -88,11 +72,11 @@ export function MeshDetailPage(): ReactElement {
   const { meshId } = useParams({ from: routes.mesh });
   const [tab, setTab] = useQueryState("tab", parseAsStringLiteral(MESH_TABS).withDefault("overview"));
   // Its own key, so the Topology tab's larger view does not enlarge this one too.
-  const [fleetSize, setFleetSize] = useQueryState("fleet", parseAsStringLiteral(FLEET_MAP_SIZES));
+  const [fleetSize, setFleetSize] = useQueryState("fleet", parseAsString);
   const fleetLarge = fleetSize === "large";
-  const mesh = useQuery(meshRepository.retrieve({ path: { mesh_id: meshId } }));
+  const mesh = useQuery(meshRepository.retrieve(meshId));
   if (isNotFoundError(mesh.error)) throw notFound();
-  const devices = useQuery(meshRepository.devices({ path: { mesh_id: meshId } }));
+  const devices = useQuery(meshRepository.devices(meshId));
   const { me, isOperator, ownerName } = useOwnerDirectory();
   const sources = useQuery({ ...sourceRepository.list(), enabled: isOperator });
   const [open, setOpen] = useState(false);
@@ -104,7 +88,7 @@ export function MeshDetailPage(): ReactElement {
   // A self-hosted instance asks for no terms: no chip, no notice.
   const termsEnforced = useTermsEnforced() === true;
   const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: termsEnforced,
   });
   const termsStanding =
@@ -114,7 +98,7 @@ export function MeshDetailPage(): ReactElement {
         termsEnforced,
         currentTermsVersion: meshTerms.data?.version,
         sourceStatus: mesh.data.source_id
-          ? sources.data?.find((source) => source.id === mesh.data.source_id)?.status
+          ? sourceStatus(sources.data?.find((source) => source.id === mesh.data.source_id)?.status ?? "")
           : undefined,
         now: new Date(),
       })
@@ -129,80 +113,15 @@ export function MeshDetailPage(): ReactElement {
     [devices.data],
   );
 
-  const filterLabels = useTranslatedFilterLabels();
-  const filterOperatorLabels = useTranslatedFilterOperatorLabels();
-  const variantOptions = useTelemetryVariantOptions();
+  const { options: variantOptions } = useTelemetryVariants();
   // Same keys as the devices list, so a filtered URL reads the same on both pages.
-  const specs = useMemo<FilterSpec[]>(
-    () => [
-      {
-        key: "label",
-        urlKey: "label",
-        label: formatMessage({ id: "page.devices.list.filters.label", defaultMessage: "Label" }),
-        type: "text",
-      },
-      {
-        key: "is_gateway",
-        urlKey: "is_gateway",
-        label: formatMessage({ id: "page.devices.list.filters.role", defaultMessage: "Role" }),
-        type: "select",
-        options: [
-          {
-            value: "true",
-            label: formatMessage({ id: "page.devices.list.filters.roleGateway", defaultMessage: "Gateway" }),
-          },
-          {
-            value: "false",
-            label: formatMessage({ id: "page.devices.list.filters.roleNode", defaultMessage: "Node" }),
-          },
-        ],
-      },
-      {
-        key: "is_allowed",
-        urlKey: "is_allowed",
-        label: formatMessage({ id: "page.devices.list.filters.allowed", defaultMessage: "Allowed" }),
-        type: "select",
-        options: [
-          {
-            value: "true",
-            label: formatMessage({ id: "page.devices.list.filters.allowedTrue", defaultMessage: "Allowed" }),
-          },
-          {
-            value: "false",
-            label: formatMessage({ id: "page.devices.list.filters.allowedFalse", defaultMessage: "Blocked" }),
-          },
-        ],
-      },
-      ...(variantOptions.length
-        ? [
-            {
-              key: "telemetry_variant",
-              urlKey: "telemetry",
-              label: formatMessage({ id: "page.devices.list.filters.telemetry", defaultMessage: "Telemetry" }),
-              type: "multiselect" as const,
-              options: variantOptions,
-            },
-          ]
-        : []),
-    ],
+  const specs = useMemo(
+    () => deviceFilterSpecs({ formatMessage, variantOptions, allowed: true }),
     [variantOptions, formatMessage],
   );
   const filters = useSmartFilters({ specs });
   const shownDevices = (devices.data ?? []).filter((device) =>
-    matchesListQuery((field) => {
-      switch (field) {
-        case "label":
-          return deviceTitle(device);
-        case "is_gateway":
-          return String(device.is_gateway);
-        case "is_allowed":
-          return String(device.is_allowed);
-        case "telemetry_variant":
-          return device.telemetry_variant_ids;
-        default:
-          return undefined;
-      }
-    }, filters.queryString),
+    matchesListQuery((field) => deviceFilterValue(device, field), filters.queryString),
   );
 
   const columns = useMemo(
@@ -271,7 +190,7 @@ export function MeshDetailPage(): ReactElement {
             </Link>
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 text-title-2-medium tracking-tight break-words text-text-primary">
+            <h1 className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary">
               {mesh.data
                 ? meshTitle(mesh.data)
                 : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
@@ -421,8 +340,8 @@ export function MeshDetailPage(): ReactElement {
                   // Remounts the map at the new height rather than leaving MapLibre at the old one.
                   key={fleetLarge ? "large" : "small"}
                   className={cx(
-                    "oa-arrive oa-squircle-inset relative overflow-hidden",
-                    fleetLarge ? "h-[70vh] min-h-96" : "h-80",
+                    "relative oa-arrive overflow-hidden oa-squircle-inset",
+                    fleetLarge ? expandedMapClass : "h-80",
                   )}
                 >
                   <DeviceMapLegend />
@@ -430,7 +349,7 @@ export function MeshDetailPage(): ReactElement {
                     center={[plotted[0]!.lng, plotted[0]!.lat]}
                     zoom={12}
                     unsupported={<MapUnsupported />}
-                    className="h-full w-full"
+                    className="size-full "
                   >
                     <MapControls />
                     <FitToPoints points={plotted} />
@@ -498,7 +417,7 @@ export function MeshDetailPage(): ReactElement {
             <FramePanel>
               {devices.data?.length ? (
                 <div className="mb-4">
-                  <SmartFilterToolbar filters={filters} labels={filterLabels} operatorLabels={filterOperatorLabels} />
+                  <SmartFilterToolbar filters={filters} />
                 </div>
               ) : null}
               {devices.isPending ? <SkeletonRows /> : null}
@@ -507,12 +426,6 @@ export function MeshDetailPage(): ReactElement {
                   data={shownDevices}
                   columns={columns}
                   getRowId={(row) => row.uuid}
-                  previousPageLabel={formatMessage({
-                    id: "common.dataTable.previousPage",
-                    defaultMessage: "Previous page",
-                  })}
-                  nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-                  pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
                   empty={formatMessage({
                     id: "page.meshes.detail.devices.noMatch",
                     defaultMessage: "No devices on this mesh match these filters.",
@@ -559,155 +472,10 @@ export function MeshDetailPage(): ReactElement {
           open
           onClose={() => setSettingsDevice(null)}
           onSaved={() =>
-            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: meshId } }) })
+            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(meshId) })
           }
         />
       ) : null}
     </>
-  );
-}
-
-function RegisterDeviceDialog({
-  meshId,
-  open,
-  onClose,
-}: {
-  meshId: string;
-  open: boolean;
-  onClose: () => void;
-}): ReactElement {
-  const { formatMessage } = useIntl();
-  const queryClient = useQueryClient();
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const create = useMutation({
-    ...deviceRepository.create(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
-      await queryClient.invalidateQueries({
-        queryKey: meshRepository.devicesKey({ path: { mesh_id: meshId } }),
-      });
-      onClose();
-    },
-    onError: (error) => setErrors(readApiError(error).fields),
-  });
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const label = String(form.get("label") ?? "").trim();
-    // Empty when the node id doesn't parse; NodeIdField always posts decimal.
-    const nodeId = String(form.get("node_id") ?? "");
-    if (nodeId === "") {
-      setErrors({
-        node_id: formatMessage({
-          id: "page.meshes.detail.registerGatewayDialog.nodeIdInvalid",
-          defaultMessage: "Enter a valid node ID.",
-        }),
-      });
-      return;
-    }
-    const parsed = zDevicesCreateData.safeParse({
-      body: {
-        mesh_id: meshId,
-        node_id: Number(nodeId),
-        is_gateway: true,
-        label: label === "" ? null : label,
-      },
-    });
-    if (!parsed.success) {
-      setErrors(issueErrors(parsed.error.issues));
-      return;
-    }
-    setErrors({});
-    create.mutate({ body: parsed.data.body });
-  }
-
-  return (
-    <Modal
-      open={open}
-      title={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.title", defaultMessage: "Register gateway" })}
-      description={formatMessage({
-        id: "page.meshes.detail.registerGatewayDialog.description",
-        defaultMessage: "A registered gateway authorizes its traffic to be decoded.",
-      })}
-      onClose={onClose}
-    >
-      <form className="flex flex-col gap-5" onSubmit={onSubmit}>
-        <FieldGroup>
-          <FormField
-            id="device-label"
-            label={formatMessage({ id: "page.meshes.detail.registerGatewayDialog.label", defaultMessage: "Label" })}
-            error={errors.label}
-          >
-            <Input id="device-label" name="label" autoComplete="off" />
-          </FormField>
-          <NodeIdField id="device-node" name="node_id" error={errors.node_id} />
-        </FieldGroup>
-        {create.error ? (
-          <StatusCopy>
-            {formatMessage({
-              id: "page.meshes.detail.registerGatewayDialog.error",
-              defaultMessage: "Registration failed. Check node ID and try again.",
-            })}
-            {formLevelMessage(create.error) ? ` ${formLevelMessage(create.error)}` : ""}
-          </StatusCopy>
-        ) : null}
-        <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
-            {formatMessage({ id: "page.meshes.detail.registerGatewayDialog.cancel", defaultMessage: "Cancel" })}
-          </Button>
-          <Button type="submit" size="small" disabled={create.isPending}>
-            {create.isPending
-              ? formatMessage({
-                  id: "page.meshes.detail.registerGatewayDialog.registering",
-                  defaultMessage: "Registering gateway",
-                })
-              : formatMessage({
-                  id: "page.meshes.detail.registerGatewayDialog.title",
-                  defaultMessage: "Register gateway",
-                })}
-          </Button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function PskReveal({ value }: { value: string }): ReactElement {
-  const { formatMessage } = useIntl();
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="oa-arrive flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <code className="min-w-0 font-mono text-body-2-regular break-all text-text-primary">
-        {open ? value : "••••••••"}
-      </code>
-      <div className="flex shrink-0 gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          size="small"
-          leadingIcon={open ? RiEyeOffLine : RiEyeLine}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open
-            ? formatMessage({ id: "page.meshes.detail.psk.hide", defaultMessage: "Hide" })
-            : formatMessage({ id: "page.meshes.detail.psk.show", defaultMessage: "Show" })}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="small"
-          leadingIcon={RiFileCopyLine}
-          onClick={() => {
-            void navigator.clipboard.writeText(value).then(() => setCopied(true));
-          }}
-        >
-          {copied
-            ? formatMessage({ id: "page.meshes.detail.psk.copied", defaultMessage: "Copied" })
-            : formatMessage({ id: "page.meshes.detail.psk.copy", defaultMessage: "Copy" })}
-        </Button>
-      </div>
-    </div>
   );
 }

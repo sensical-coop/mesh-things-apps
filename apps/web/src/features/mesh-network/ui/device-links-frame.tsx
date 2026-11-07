@@ -12,14 +12,13 @@ import { meshRepository } from "@/features/mesh/repository";
 import { routes } from "@/router";
 import { nodeHex } from "../model";
 
-/** Nodes this device hears and nodes that hear it, over the last week. */
 export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
   const { formatLastSeen } = useFormatters();
   const links = useQuery(
-    meshRepository.links({ path: { mesh_id: device.mesh_id }, query: { since: "7d", node_id: String(device.node_id) } }),
+    meshRepository.links(device.mesh_id, { since: "7d", node_id: String(device.node_id) }),
   );
-  const meshDevices = useQuery(meshRepository.devices({ path: { mesh_id: device.mesh_id } }));
+  const meshDevices = useQuery(meshRepository.devices(device.mesh_id));
   const byNode = useMemo(() => new Map((meshDevices.data ?? []).map((d) => [d.node_id, d])), [meshDevices.data]);
 
   const sourceLabel: Record<RfLink["source"], string> = {
@@ -62,7 +61,7 @@ export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactEleme
           </StatusCopy>
         ) : null}
         {links.data?.length ? (
-          <ul className="oa-arrive flex flex-col">
+          <ul className="flex oa-arrive flex-col">
             {links.data.map((link) => (
               <li
                 key={`${link.from_node}-${link.to_node}-${link.source}`}
@@ -70,7 +69,7 @@ export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactEleme
               >
                 <span className="flex items-baseline justify-between gap-3 text-body-2-regular">
                   <span className="min-w-0 truncate text-text-primary">{other(link)}</span>
-                  <span className="shrink-0 tabular-nums text-text-primary">
+                  <span className="shrink-0 text-text-primary tabular-nums">
                     {formatMessage(
                       { id: "page.devices.detail.links.snrValue", defaultMessage: "{snr} dB" },
                       { snr: formatNumber(link.snr_mean, { maximumFractionDigits: 1 }) },

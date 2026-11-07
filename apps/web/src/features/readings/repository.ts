@@ -1,19 +1,17 @@
 import {
-  measurementsListOptions,
-  readingsDevicesLatestRetrieveOptions,
-  readingsDevicesQualityRetrieveOptions,
-  readingsDevicesRetrieveOptions,
-  readingsDevicesTrafficRetrieveOptions,
-  readingsMeshesStatsRetrieveOptions,
-  telemetryVariantsMeasurementsListOptions,
-} from "@mtt/contracts/query";
+  getMeasurementsListQueryOptions,
+  getReadingsDevicesLatestRetrieveQueryOptions,
+  getReadingsDevicesQualityRetrieveQueryOptions,
+  getReadingsDevicesRetrieveQueryOptions,
+  getReadingsDevicesTrafficRetrieveQueryOptions,
+  getReadingsMeshesStatsRetrieveQueryOptions,
+} from "@mtt/contracts/api";
 
 export const readingsRepository = {
-  latest: readingsDevicesLatestRetrieveOptions,
-  quality: readingsDevicesQualityRetrieveOptions,
-  series: readingsDevicesRetrieveOptions,
-  meshStats: readingsMeshesStatsRetrieveOptions,
-  deviceTraffic: readingsDevicesTrafficRetrieveOptions,
-  catalog: measurementsListOptions,
-  variantMeasurements: telemetryVariantsMeasurementsListOptions,
+  latest: getReadingsDevicesLatestRetrieveQueryOptions,
+  quality: getReadingsDevicesQualityRetrieveQueryOptions,
+  series: getReadingsDevicesRetrieveQueryOptions,
+  meshStats: getReadingsMeshesStatsRetrieveQueryOptions,
+  deviceTraffic: getReadingsDevicesTrafficRetrieveQueryOptions,
+  catalog: getMeasurementsListQueryOptions,
 };

@@ -1,7 +1,7 @@
 import type { SinkRead } from "@mtt/contracts";
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
 
 export type SinkStatusChipProps = {
   sink: Pick<SinkRead, "paused_at">;
@@ -11,12 +11,8 @@ export type SinkStatusChipProps = {
 export function SinkStatusChip({ sink }: SinkStatusChipProps): ReactElement {
   const { formatMessage } = useIntl();
   return sink.paused_at ? (
-    <Chip variant="caption" color="yellow" className="rounded-full">
-      {formatMessage({ id: "feature.sink.status.paused", defaultMessage: "Paused" })}
-    </Chip>
+    <StatusChip tone="yellow" label={formatMessage({ id: "feature.sink.status.paused", defaultMessage: "Paused" })} />
   ) : (
-    <Chip variant="caption" color="lime" className="rounded-full">
-      {formatMessage({ id: "feature.sink.status.sending", defaultMessage: "Sending" })}
-    </Chip>
+    <StatusChip tone="lime" label={formatMessage({ id: "feature.sink.status.sending", defaultMessage: "Sending" })} />
   );
 }

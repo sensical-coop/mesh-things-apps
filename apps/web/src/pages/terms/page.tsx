@@ -2,7 +2,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Link } from "@tanstack/react-router";
 import { routes } from "@/router";
-import { LandingFooter } from "@/pages/home/footer";
+import { LandingFooter } from "@/components/landing-footer";
 import { SiteHeader } from "@/components/site-header";
 
 const termsOfUse = [
@@ -225,7 +225,7 @@ export function TermsPage(): ReactElement {
   return (
     <div className="flex min-h-svh flex-col bg-background-full">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-16">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 py-12  sm:px-6 sm:pt-16 sm:pb-20">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-1-medium tracking-tight text-text-primary">
             {formatMessage({ id: "page.terms.title", defaultMessage: "Terms and Conditions" })}
@@ -236,7 +236,7 @@ export function TermsPage(): ReactElement {
         </div>
 
         <nav aria-label={formatMessage({ id: "page.terms.toc.heading", defaultMessage: "Contents" })}>
-          <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">
+          <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">
             {formatMessage({ id: "page.terms.toc.heading", defaultMessage: "Contents" })}
           </p>
           <ol className="mt-3 flex flex-col gap-1">
@@ -244,7 +244,7 @@ export function TermsPage(): ReactElement {
               <a href="#terms-of-use" className="text-body-regular text-accent-500 underline underline-offset-2">
                 {formatMessage({ id: "page.terms.tou.heading", defaultMessage: "Terms of Use" })}
               </a>
-              <ol className="ml-5 mt-1 flex flex-col gap-1">
+              <ol className="mt-1 ml-5 flex flex-col gap-1">
                 {termsOfUse.map((section) => (
                   <li key={section.id}>
                     <a
@@ -261,7 +261,7 @@ export function TermsPage(): ReactElement {
               <a href="#privacy-policy" className="text-body-regular text-accent-500 underline underline-offset-2">
                 {formatMessage({ id: "page.terms.privacy.heading", defaultMessage: "Privacy Policy" })}
               </a>
-              <ol className="ml-5 mt-1 flex flex-col gap-1">
+              <ol className="mt-1 ml-5 flex flex-col gap-1">
                 {privacyPolicy.map((section) => (
                   <li key={section.id}>
                     <a
@@ -287,7 +287,7 @@ export function TermsPage(): ReactElement {
             {formatMessage({ id: "page.terms.tou.heading", defaultMessage: "Terms of Use" })}
           </h2>
           {termsOfUse.map((section) => (
-            <section key={section.id} id={section.id} className="flex flex-col gap-2 scroll-mt-20">
+            <section key={section.id} id={section.id} className="flex scroll-mt-20 flex-col gap-2">
               <h3 className="text-title-3-medium text-text-primary">
                 {formatMessage({ id: section.headingId, defaultMessage: section.headingDefault })}
               </h3>
@@ -300,7 +300,7 @@ export function TermsPage(): ReactElement {
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h2 id="privacy-policy" className="text-title-2-medium tracking-tight text-text-primary scroll-mt-20">
+            <h2 id="privacy-policy" className="scroll-mt-20 text-title-2-medium tracking-tight text-text-primary">
               {formatMessage({ id: "page.terms.privacy.heading", defaultMessage: "Privacy Policy" })}
             </h2>
             <p className="text-body-regular text-text-secondary">
@@ -312,7 +312,7 @@ export function TermsPage(): ReactElement {
             </p>
           </div>
           {privacyPolicy.map((section) => (
-            <section key={section.id} id={section.id} className="flex flex-col gap-2 scroll-mt-20">
+            <section key={section.id} id={section.id} className="flex scroll-mt-20 flex-col gap-2">
               <h3 className="text-title-3-medium text-text-primary">
                 {formatMessage({ id: section.headingId, defaultMessage: section.headingDefault })}
               </h3>
@@ -323,7 +323,7 @@ export function TermsPage(): ReactElement {
           ))}
         </div>
 
-        <section id="data-processing" className="flex flex-col gap-2 scroll-mt-20">
+        <section id="data-processing" className="flex scroll-mt-20 flex-col gap-2">
           <h2 className="text-title-2-medium tracking-tight text-text-primary">
             {formatMessage({ id: "page.terms.dpa.heading", defaultMessage: "Data Processing Agreement" })}
           </h2>

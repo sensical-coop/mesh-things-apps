@@ -1,13 +1,12 @@
-import type { Actor } from "@mtt/domain/authz/authz";
+import type { Actor } from "./auth";
 import { Device } from "@mtt/domain/device/Device";
 import { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
-import { newId, nowIso } from "@mtt/domain/shared/ids";
+import { nowIso } from "@mtt/domain/shared/ids";
 import type { BlueprintRow, BlueprintVersionRow } from "./features/blueprint/repository";
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 import { MemoryDevices } from "./features/device/repository";
 import { MemoryMeshes } from "./features/mesh/repository";
-import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
 import { MemorySources } from "./features/source/repository";
 import { MemorySinks } from "./features/sink/repository";
@@ -115,12 +114,12 @@ function deletion(
   };
 }
 
-/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
 /** Always a time, unlike daysFromNow, which follows the retention setting. */
 function hoursAgo(hours: number): string {
   return new Date(Date.now() - hours * 3_600_000).toISOString();
 }
 
+/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
 function daysFromNow(days: number): string | null {
   return DATA_RETENTION_DAYS ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
 }
@@ -177,6 +176,8 @@ export const MEASUREMENT_DETECTORS = ["completeness", "flat_value", "range"];
 // purely per-device (see Store.deviceMeasurementRanges below) — there is no
 // catalog default to fall back to.
 export type TelemetryVariantMeasurementLink = {
+  variantId: string;
+  measurementTypeId: string;
   defaultEnabledDetectors: string[];
 };
 
@@ -197,7 +198,7 @@ export type Store = {
   devices: MemoryDevices;
   archive: MemoryArchive;
   exports: MemoryExports;
-  measurements: MemoryMeasurements;
+  measurements: MeasurementType[];
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
   postprocessings: PostprocessingRow[];
@@ -211,7 +212,7 @@ export type Store = {
   deviceTelemetryVariants: Map<string, string[]>;
   // Per-device-measurement override: null = inherit the catalog default below.
   detectorOverrides: Map<string, string[] | null>;
-  // Catalog-wide default per telemetry-variant/measurement link (VARIANT_LINK_ID).
+  /** Catalog link rows: variant, measurement type, and the default detectors. */
   telemetryVariantMeasurements: Map<string, TelemetryVariantMeasurementLink>;
   // Per-device-measurement range for the "range" detector — purely per-device,
   // no catalog fallback. Keyed by the same id as detectorOverrides.
@@ -537,7 +538,7 @@ export function createStore(owners: StoreOwners = {}): Store {
     if (since !== null) archive.start(MESH_BROOK_ID, nodeId, hoursAgo(-since * 24));
     if (until !== null) archive.stop(MESH_BROOK_ID, nodeId, hoursAgo(-until * 24));
   }
-  const measurements = new MemoryMeasurements(meas);
+  const measurements = meas;
   // The operator's sinks: one sending Valley and Brook's buoy with a consumer connected,
   // one paused because its terms lapsed.
   const sinks = new MemorySinks();
@@ -619,7 +620,10 @@ export function createStore(owners: StoreOwners = {}): Store {
     ]),
     detectorOverrides: new Map<string, string[] | null>(),
     telemetryVariantMeasurements: new Map<string, TelemetryVariantMeasurementLink>([
-      [VARIANT_LINK_ID, { defaultEnabledDetectors: ["range"] }],
+      [
+        VARIANT_LINK_ID,
+        { variantId: VARIANT_ENV_ID, measurementTypeId: MEAS_TEMP_ID, defaultEnabledDetectors: ["range"] },
+      ],
     ]),
     deviceMeasurementRanges: new Map<string, DeviceMeasurementRange>([
       [DEVICE_MEAS_ID, { validMin: -40, validMax: 85 }],

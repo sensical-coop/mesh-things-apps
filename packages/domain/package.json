@@ -5,7 +5,6 @@
   "type": "module",
   "exports": {
     "./shared/*": "./src/shared/*.ts",
-    "./authz/*": "./src/authz/*.ts",
     "./mesh/*": "./src/mesh/*.ts",
     "./device/*": "./src/device/*.ts",
     "./measurement/*": "./src/measurement/*.ts",

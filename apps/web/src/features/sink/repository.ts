@@ -1,17 +1,17 @@
 import {
-  sinksCreateMutation,
-  sinksCredentialsCreateMutation,
-  sinksDestroyMutation,
-  sinksListOptions,
-  sinksListQueryKey,
-  sinksUpdateMutation,
-} from "@mtt/contracts/query";
+  getSinksCreateMutationOptions,
+  getSinksCredentialsCreateMutationOptions,
+  getSinksDestroyMutationOptions,
+  getSinksListQueryKey,
+  getSinksListQueryOptions,
+  getSinksUpdateMutationOptions,
+} from "@mtt/contracts/api";
 
 export const sinkRepository = {
-  list: sinksListOptions,
-  listKey: sinksListQueryKey,
-  create: sinksCreateMutation,
-  update: sinksUpdateMutation,
-  rotateCredentials: sinksCredentialsCreateMutation,
-  destroy: sinksDestroyMutation,
+  list: getSinksListQueryOptions,
+  listKey: getSinksListQueryKey,
+  create: getSinksCreateMutationOptions,
+  update: getSinksUpdateMutationOptions,
+  rotateCredentials: getSinksCredentialsCreateMutationOptions,
+  destroy: getSinksDestroyMutationOptions,
 };

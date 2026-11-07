@@ -1,15 +1,18 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
+import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
 import { useQuery } from "@tanstack/react-query";
-import { type ReactElement, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { type ReactElement, type ReactNode, useState } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
-import { allStatementsAccepted, termsLocale, type TermsAcceptance, type TermsKind } from "@/features/terms/model";
+import { allStatementsAccepted, termsLocale } from "@mtt/contracts/terms";
+import { type TermsAcceptance, type TermsKind } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
-import { TermsChecklist } from "@/features/terms/ui/terms-checklist";
+import { routes } from "@/router";
 
 export type TermsDialogProps = {
   open: boolean;
@@ -42,18 +45,16 @@ export function TermsDialog({
   error = null,
 }: TermsDialogProps): ReactElement {
   const { formatMessage, locale } = useIntl();
-  const query = { query: { locale: termsLocale(locale) } };
+  const localeParam = { locale: termsLocale(locale) };
   const options = {
-    account: termsRepository.account(query),
-    mesh: termsRepository.mesh(query),
-    source: termsRepository.source(query),
-    sink: termsRepository.sink(query),
+    account: termsRepository.account(localeParam),
+    mesh: termsRepository.mesh(localeParam),
+    source: termsRepository.source(localeParam),
+    sink: termsRepository.sink(localeParam),
   }[kind];
-  // A 404 means terms are off on this instance: an answer, not worth retrying.
   const terms = useQuery({
     ...options,
     enabled: open,
-    retry: (failures: number, error: unknown) => readApiError(error).status !== 404 && failures < 3,
   });
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
   const statementIds = (terms.data?.statements ?? []).map((statement) => statement.id);
@@ -109,7 +110,18 @@ export function TermsDialog({
           </StatusCopy>
         ) : null}
         {terms.data ? (
-          <TermsChecklist terms={terms.data} kind={kind} accepted={accepted} onToggle={toggle} idPrefix={`terms-${kind}`} />
+          <TermsChecklist
+            statements={terms.data.statements}
+            accepted={accepted}
+            onToggle={toggle}
+            idPrefix={`terms-${kind}`}
+            footnote={
+              <>
+                {terms.data.footnote}{" "}
+                <TermsFootnote kind={kind} />
+              </>
+            }
+          />
         ) : null}
         {error ? <StatusCopy>{error}</StatusCopy> : null}
         <div className={dialogActionsClass}>
@@ -127,5 +139,40 @@ export function TermsDialog({
         </div>
       </div>
     </Modal>
+  );
+}
+
+const linkClass = "underline underline-offset-2 text-accent-500";
+
+function TermsFootnote({ kind }: { kind: TermsKind }): ReactElement {
+  const { formatMessage } = useIntl();
+  if (kind === "account") {
+    return (
+      <Link to={routes.terms} target="_blank" className={linkClass}>
+        {formatMessage({ id: "feature.terms.termsLink", defaultMessage: "Read the Mesh Things Terms." })}
+      </Link>
+    );
+  }
+  return (
+    <>
+      {formatMessage(
+        {
+          id: "feature.terms.termsAndDpaLink",
+          defaultMessage: "Read the <terms>Mesh Things Terms</terms> and the <dpa>Data Processing Agreement</dpa>.",
+        },
+        {
+          terms: (chunks: ReactNode) => (
+            <Link to={routes.terms} target="_blank" className={linkClass}>
+              {chunks}
+            </Link>
+          ),
+          dpa: (chunks: ReactNode) => (
+            <Link to={routes.dpa} target="_blank" className={linkClass}>
+              {chunks}
+            </Link>
+          ),
+        },
+      )}
+    </>
   );
 }

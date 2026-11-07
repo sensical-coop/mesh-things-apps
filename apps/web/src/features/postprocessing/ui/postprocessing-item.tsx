@@ -5,8 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { errorMessages } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
+import { errorMessages } from "@mtt/contracts/errors";
 import { calibratedSteps, channelLabel } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { PostprocessingStateChip } from "@/features/postprocessing/ui/postprocessing-state-chip";
@@ -43,16 +43,14 @@ export function PostprocessingItem({
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const version = useQuery(
-    blueprintRepository.version({
-      path: { blueprint_id: postprocessing.blueprint_id, number: postprocessing.blueprint_version },
-    }),
+    blueprintRepository.version(postprocessing.blueprint_id, postprocessing.blueprint_version),
   );
   const [refused, setRefused] = useState<string[]>([]);
   const toggle = useMutation({
     ...postprocessingRepository.update(),
     onSuccess: async () => {
       setRefused([]);
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
+      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
     },
     onError: (error) => setRefused(errorMessages(error)),
   });
@@ -67,7 +65,7 @@ export function PostprocessingItem({
           <Link
             to={routes.blueprint}
             params={{ blueprintId: postprocessing.blueprint_id }}
-            className="min-w-0 rounded-full text-body-medium break-words text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className="min-w-0 rounded-full text-body-medium wrap-break-word text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {postprocessing.blueprint_name}
           </Link>
@@ -82,8 +80,9 @@ export function PostprocessingItem({
             disabled={toggle.isPending}
             onClick={() =>
               toggle.mutate({
-                path: { device_uuid: deviceUuid, postprocessing_id: postprocessing.id },
-                body: { is_enabled: !postprocessing.is_enabled },
+                deviceUuid,
+                postprocessingId: postprocessing.id,
+                data: { is_enabled: !postprocessing.is_enabled },
               })
             }
           >
@@ -102,7 +101,7 @@ export function PostprocessingItem({
             const bound = postprocessing.input_bindings[slot];
             const row = bound ? byId.get(bound) : undefined;
             return (
-              <dd key={slot} className="min-w-0 break-words text-text-primary">
+              <dd key={slot} className="min-w-0 wrap-break-word text-text-primary">
                 <span className="font-mono">{slot}</span>
                 <span className="text-text-tertiary"> ← </span>
                 {row ? (
@@ -121,7 +120,7 @@ export function PostprocessingItem({
             {formatMessage({ id: "feature.postprocessing.item.writes", defaultMessage: "Outputs" })}
           </dt>
           {postprocessing.outputs.map((output) => (
-            <dd key={output.measurement_id} className="min-w-0 font-mono break-words text-text-primary">
+            <dd key={output.measurement_id} className="min-w-0 font-mono wrap-break-word text-text-primary">
               {output.channel}
               {output.unit ? <span className="text-text-tertiary"> ({output.unit})</span> : null}
             </dd>

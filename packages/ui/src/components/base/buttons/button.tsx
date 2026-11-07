@@ -5,7 +5,7 @@ import type {
   ReactNode,
   Ref,
 } from "react";
-import { cx, sortCx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils/cx";
 
 /**
  * Figma source: Board UI → Buttons (node 3656:13819).
@@ -73,7 +73,7 @@ export interface ButtonLinkProps
   ref?: Ref<HTMLAnchorElement>;
 }
 
-const styles = sortCx({
+const styles = {
   base: [
     "inline-flex items-center justify-center gap-0.5 whitespace-nowrap overflow-hidden",
     "font-sans select-none cursor-pointer",
@@ -86,7 +86,7 @@ const styles = sortCx({
   size: {
     medium: "h-9 rounded-2lg p-2 text-body-medium",
     small:  "h-8 rounded-lg px-2 py-1.5 text-body-medium",
-    xs:     "h-6 rounded-sm px-2 text-caption-1-semibold",
+    xs:     "h-6 rounded-sm px-2 text-caption-1-medium",
   },
 
   // Icon-only override:
@@ -139,7 +139,7 @@ const styles = sortCx({
       "aria-disabled:bg-button-ghost-disabled aria-disabled:text-button-ghost-disabled-foreground aria-disabled:shadow-none",
     ].join(" "),
   },
-});
+};
 
 export function Button({
   variant = "primary",

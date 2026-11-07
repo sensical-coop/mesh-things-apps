@@ -4,15 +4,10 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
-import {
-  calibrationParams,
-  configParams,
-  refChoices,
-  type BlueprintDraft,
-  type StepDraft,
-} from "@/features/blueprint/model";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
+import { calibrationParams, configParams } from "@/lib/algorithm-params";
+import { refChoices, type BlueprintDraft, type StepDraft } from "@/features/blueprint/model";
 
 export type StepEditorProps = {
   draft: BlueprintDraft;
@@ -23,7 +18,6 @@ export type StepEditorProps = {
   onRemove: () => void;
 };
 
-/** One step: its key, what feeds each algorithm input, its configuration, and the derived fields it writes. */
 export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemove }: StepEditorProps): ReactElement {
   const { formatMessage } = useIntl();
   const step = draft.steps[index];
@@ -83,7 +77,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
         </div>
       </div>
       {algorithm?.doc ? (
-        <p className="line-clamp-3 whitespace-pre-line text-caption-1-regular text-text-tertiary">{algorithm.doc.trim()}</p>
+        <p className="line-clamp-3 text-caption-1-regular whitespace-pre-line text-text-tertiary">{algorithm.doc.trim()}</p>
       ) : null}
       <FormField
         id={`${id}-key`}

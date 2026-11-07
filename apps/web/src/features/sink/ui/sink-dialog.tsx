@@ -1,5 +1,5 @@
 import type { SinkCredentials, SinkRead, StreamsEnum } from "@mtt/contracts";
-import { zSinksCreateData, zSinksUpdateData } from "@mtt/contracts/zod";
+import { SinkCreate, SinkWrite } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@mtt/ui/components/ui/field";
@@ -7,20 +7,22 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { issueErrors, readApiError } from "@/lib/api-errors";
+import { issueErrors, readApiError } from "@mtt/contracts/errors";
+import { brokerDialogError } from "@/lib/broker-dialog-error";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
-import { devicesByMesh, orderStreams, SINK_STREAMS, singleDeviceIds, sinkStreamsError, sinkTitle } from "@/features/sink/model";
+import { orderStreams, SINK_STREAMS } from "@mtt/contracts/sink";
+import { devicesByMesh, singleDeviceIds, sinkStreamsError, sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 import type { TermsAcceptance } from "@/features/terms/model";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { useTermsEnforced } from "@mtt/contracts/terms";
 
 export type SinkDialogProps = {
   open: boolean;
@@ -61,7 +63,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
   const meshes = useQuery({ ...meshRepository.list(), enabled: open });
   const devices = useQuery({ ...deviceRepository.list(), enabled: open });
   const eligibleMeshes = useMemo(
-    () => (meshes.data ?? []).filter((mesh) => me && (me.is_superuser === true || mesh.owner_id === me.id)),
+    () => (meshes.data ?? []).filter((mesh) => canEditMesh(mesh, me)),
     [meshes.data, me],
   );
   // One list: each mesh, then its devices. Ticking a mesh sends all of them, so they show as included.
@@ -98,52 +100,35 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
   // Nothing changes on any failure: the API drops a new sink, or rolls an edit back,
   // when the broker or the pipeline can't be told.
   function onError(error: unknown) {
-    const { status, detail, fields } = readApiError(error);
-    const { non_field_errors: nonField, terms_version: termsError, ...byField } = fields;
-    setErrors(byField);
-    if (termsError) {
-      setFormError(
-        formatMessage({
-          id: "feature.sink.dialog.termsChanged",
-          defaultMessage: "The sink terms have changed. Close this dialog and accept the current terms to create the sink.",
-        }),
-      );
-    } else if (status === 502) {
-      setFormError(
-        editing
-          ? formatMessage(
-              {
-                id: "feature.sink.dialog.brokerFailedEdit",
-                defaultMessage: "The broker could not be updated, so the sink was left as it was. {detail}",
-              },
-              { detail: detail ?? "" },
-            )
-          : formatMessage(
-              {
-                id: "feature.sink.dialog.brokerFailed",
-                defaultMessage: "The broker could not be set up, so the sink was not created. {detail}",
-              },
-              { detail: detail ?? "" },
-            ),
-      );
-    } else if (status === 403) {
-      setFormError(formatMessage({ id: "feature.sink.dialog.forbidden", defaultMessage: "Only operators can manage sinks." }));
-    } else if (status === 404) {
-      setFormError(
-        formatMessage({
-          id: "feature.sink.dialog.notFound",
-          defaultMessage: "This sink no longer exists. Close this dialog and refresh the list.",
-        }),
-      );
-    } else if (Object.keys(byField).length > 0) {
-      setFormError(null);
-    } else {
-      setFormError(
-        nonField ??
-          detail ??
-          formatMessage({ id: "feature.sink.dialog.error", defaultMessage: "The sink was not saved. Check the fields and try again." }),
-      );
-    }
+    const detail = readApiError(error).detail ?? "";
+    const result = brokerDialogError(error, editing, {
+      termsChanged: formatMessage({
+        id: "feature.sink.dialog.termsChanged",
+        defaultMessage: "The sink terms have changed. Close this dialog and accept the current terms to create the sink.",
+      }),
+      failedEdit: formatMessage(
+        {
+          id: "feature.sink.dialog.brokerFailedEdit",
+          defaultMessage: "The broker could not be updated, so the sink was left as it was. {detail}",
+        },
+        { detail },
+      ),
+      failedCreate: formatMessage(
+        {
+          id: "feature.sink.dialog.brokerFailed",
+          defaultMessage: "The broker could not be set up, so the sink was not created. {detail}",
+        },
+        { detail },
+      ),
+      forbidden: formatMessage({ id: "feature.sink.dialog.forbidden", defaultMessage: "Only operators can manage sinks." }),
+      notFound: formatMessage({
+        id: "feature.sink.dialog.notFound",
+        defaultMessage: "This sink no longer exists. Close this dialog and refresh the list.",
+      }),
+      generic: formatMessage({ id: "feature.sink.dialog.error", defaultMessage: "The sink was not saved. Check the fields and try again." }),
+    });
+    setErrors(result.fields);
+    setFormError(result.formError);
   }
 
   const create = useMutation({
@@ -190,22 +175,25 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
       mesh_ids: [...meshIds],
       device_ids: singleDeviceIds(deviceIds, meshIds, (id) => devices.data?.find((row) => row.uuid === id)?.mesh_id),
     };
-    const streamsError = sinkStreamsError(chosenStreams);
+    const streamsError =
+      sinkStreamsError(chosenStreams) === "empty"
+        ? formatMessage({ id: "feature.sink.dialog.streamsRequired", defaultMessage: "Choose at least one stream." })
+        : undefined;
     setFormError(null);
     if (editing) {
-      const parsed = zSinksUpdateData.safeParse({ path: { sink_id: sink.id }, body });
+      const parsed = SinkWrite.safeParse(body);
       const next = { ...(streamsError ? { streams: streamsError } : {}), ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
       setErrors(next);
-      if (parsed.success && Object.keys(next).length === 0) update.mutate(parsed.data);
+      if (parsed.success && Object.keys(next).length === 0) update.mutate({ sinkId: sink.id, data: parsed.data });
       return;
     }
     const withTerms = termsAcceptance
       ? { ...body, terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
       : body;
-    const parsed = zSinksCreateData.safeParse({ body: withTerms });
+    const parsed = SinkCreate.safeParse(withTerms);
     const next = { ...(streamsError ? { streams: streamsError } : {}), ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
     setErrors(next);
-    if (parsed.success && Object.keys(next).length === 0) create.mutate({ body: parsed.data.body });
+    if (parsed.success && Object.keys(next).length === 0) create.mutate({ data: parsed.data });
   }
 
   return (
