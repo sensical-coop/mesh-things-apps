@@ -16,7 +16,11 @@ export function createQueryClient(): QueryClient {
       },
     },
     queryCache: new QueryCache({
-      onError: (error, query) => console.error(`Query failed: ${query.queryKey.join("/")}`, error),
+      // A 401 is how a signed-out visitor's session check answers, not a failure.
+      onError: (error, query) => {
+        if (readApiError(error).status === 401) return;
+        console.error(`Query failed: ${query.queryKey.join("/")}`, error);
+      },
     }),
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) =>
