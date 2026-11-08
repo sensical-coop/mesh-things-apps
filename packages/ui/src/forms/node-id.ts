@@ -13,6 +13,11 @@ export function parseNodeId(raw: string, format: NodeIdFormat): number | null {
   return value <= MAX_NODE_ID ? value : null;
 }
 
+/** Whether typed text can only be hex: Meshtastic's "!", a "0x" prefix, or a hex letter. */
+export function looksHex(raw: string): boolean {
+  return /^\s*(!|0x)|[a-f]/i.test(raw);
+}
+
 export function formatNodeId(value: number, format: NodeIdFormat): string {
   return format === "hex" ? `!${value.toString(16).padStart(8, "0")}` : String(value);
 }

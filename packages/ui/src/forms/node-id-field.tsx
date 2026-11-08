@@ -3,7 +3,7 @@ import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
-import { formatNodeId, type NodeIdFormat, parseNodeId } from "@mtt/ui/forms/node-id";
+import { formatNodeId, looksHex, type NodeIdFormat, parseNodeId } from "@mtt/ui/forms/node-id";
 
 export function NodeIdField({
   id,
@@ -33,6 +33,12 @@ export function NodeIdField({
     setFormat(nextFormat);
   }
 
+  function onInput(text: string) {
+    // An id copied from the Meshtastic app is hex, whichever format is selected.
+    if (format === "decimal" && looksHex(text)) setFormat("hex");
+    setRaw(text);
+  }
+
   return (
     <FormField
       id={id}
@@ -56,7 +62,7 @@ export function NodeIdField({
         <Input
           id={id}
           value={raw}
-          onChange={(event) => setRaw(event.target.value)}
+          onChange={(event) => onInput(event.target.value)}
           required
           autoComplete="off"
           spellCheck={false}

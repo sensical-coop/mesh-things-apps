@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
-import { formatNodeId, parseNodeId } from "@mtt/ui/forms/node-id";
+import { formatNodeId, looksHex, parseNodeId } from "@mtt/ui/forms/node-id";
 import {
   deviceLastSeen,
   devicePosition,
@@ -118,4 +118,13 @@ test("devicePosition drops missing and out-of-range coordinates", () => {
   assert.equal(devicePosition({ latitude: 413_851_000, longitude: 21_734_000 }), null);
   assert.equal(devicePosition({ latitude: 41.38, longitude: 190 }), null);
   assert.equal(devicePosition({ latitude: Number.NaN, longitude: 2.17 }), null);
+});
+
+test("looksHex spots an id that can only be hex", () => {
+  assert.equal(looksHex("!7efeee00"), true);
+  assert.equal(looksHex("0x7efeee00"), true);
+  assert.equal(looksHex("7efeee00"), true);
+  assert.equal(looksHex(" !1"), true);
+  assert.equal(looksHex("2130636288"), false);
+  assert.equal(looksHex(""), false);
 });
