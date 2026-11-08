@@ -4,7 +4,15 @@
 	redir @bare /start/ 308
 	handle_path /start/* {
 		root * /srv
-		try_files {path} /index.html
-		file_server
+		# A missing asset is a 404, not the page: a tab left open across a deploy then
+		# fails to load an old chunk cleanly instead of parsing HTML as a script.
+		@asset path /assets/*
+		handle @asset {
+			file_server
+		}
+		handle {
+			try_files {path} /index.html
+			file_server
+		}
 	}
 }
