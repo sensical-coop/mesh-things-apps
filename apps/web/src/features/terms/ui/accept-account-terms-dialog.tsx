@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { authRepository } from "@/features/auth/repository";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
@@ -11,7 +11,6 @@ export type AcceptAccountTermsDialogProps = {
   onClose: () => void;
 };
 
-/** Accept the current account terms, e.g. after they changed since signing up. */
 export function AcceptAccountTermsDialog({ open, onClose }: AcceptAccountTermsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -37,7 +36,7 @@ export function AcceptAccountTermsDialog({ open, onClose }: AcceptAccountTermsDi
       onAccepted={(acceptance) =>
         // No terms on this instance: nothing to accept.
         acceptance
-          ? accept.mutate({ body: { terms_version: acceptance.version, terms_locale: acceptance.locale } })
+          ? accept.mutate({ data: { terms_version: acceptance.version, terms_locale: acceptance.locale } })
           : close()
       }
       acceptLabel={formatMessage({ id: "feature.terms.account.accept", defaultMessage: "Accept terms" })}

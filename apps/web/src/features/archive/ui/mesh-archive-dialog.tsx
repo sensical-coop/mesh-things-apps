@@ -30,7 +30,7 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
   const apply = useMutation({
     mutationFn: async (enabled: boolean) => {
       const results = await Promise.allSettled(
-        devicesToSwitch(devices, enabled).map((device) => archiveRepository.setDeviceArchive(device.uuid, enabled)),
+        devicesToSwitch(devices, enabled).map((device) => deviceRepository.setDeviceArchive(device.uuid, enabled)),
       );
       const failed = results.filter((result) => result.status === "rejected").length;
       if (failed > 0) throw new Error(String(failed));
@@ -39,10 +39,10 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: mesh.id } }) }),
-        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey({ path: { mesh_id: mesh.id } }) }),
+        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(mesh.id) }),
+        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey(mesh.id) }),
         ...devices.map((device) =>
-          queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }) }),
+          queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(device.uuid) }),
         ),
       ]),
     onSuccess: onClose,

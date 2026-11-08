@@ -3,10 +3,10 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
@@ -21,7 +21,6 @@ export type ArchiveSettingsDialogProps = {
   onClose: () => void;
 };
 
-/** Whether one device's readings go to the Parquet archive. The API has no other archive setting. */
 export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettingsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
@@ -33,9 +32,9 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }) }),
-        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: device.mesh_id } }) }),
-        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey({ path: { mesh_id: device.mesh_id } }) }),
+        queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(device.uuid) }),
+        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(device.mesh_id) }),
+        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey(device.mesh_id) }),
       ]);
       onClose();
     },
@@ -58,7 +57,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
       return;
     }
     setError(null);
-    update.mutate({ path: { device_uuid: device.uuid }, body: { archive_enabled: enabled } });
+    update.mutate({ deviceUuid: device.uuid, data: { archive_enabled: enabled } });
   }
 
   return (

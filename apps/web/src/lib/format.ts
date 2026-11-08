@@ -43,7 +43,6 @@ export function formatWhen(iso: string | null, locale?: string, labels: FormatLa
 
 const relativeUnits = ["year", "month", "week", "day", "hour", "minute", "second"] as const;
 
-/** Temporal has no toRelative; Instant.until + RelativeTimeFormat is the MDN path. */
 export function toRelative(iso: string, locale?: string): string | null {
   const zoned = toZoned(iso);
   if (!zoned) return null;
@@ -101,7 +100,6 @@ export function formatRatio(
   return value.toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 });
 }
 
-/** Seconds as hours, minutes, seconds. Empty or invalid → em dash. */
 export function formatSecondsAsHms(
   seconds: number | null | undefined,
   locale?: string,
@@ -119,8 +117,15 @@ export function formatSecondsAsHms(
   return parts.join(" ");
 }
 
-export function triBool(value: string | null): boolean | undefined {
-  if (value === "true") return true;
-  if (value === "false") return false;
-  return undefined;
+const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
+
+export function formatBytes(bytes: number, locale?: string): string {
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < BYTE_UNITS.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  const digits = unit === 0 || value >= 10 ? 0 : 1;
+  return `${value.toLocaleString(locale, { maximumFractionDigits: digits })} ${BYTE_UNITS[unit]}`;
 }

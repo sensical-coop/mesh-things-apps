@@ -545,7 +545,7 @@ export function FilterRangeEditor<V, O>({
           onChange={(event) => update(0, event.target.value)}
           onKeyDown={onKeyDown}
         />
-        <span className="text-muted-foreground text-xs">
+        <span className="text-xs text-muted-foreground">
           {labels.rangeSeparator}
         </span>
         <Input
@@ -931,14 +931,14 @@ export function FilterMenu({
             /* Full bleed, over the per-style `--cascader-list-pad` the shell
                publishes: a rule stopping at the row's inset box reads as a gap.
                Centred in the 8px the row gives back above itself, not `top-0`. */
-            className="bg-border absolute inset-x-[calc(var(--cascader-list-pad,4px)*-1)] -top-1 h-px"
+            className="absolute -inset-x-(--cascader-list-pad,4px) -top-1 h-px bg-border"
           />
         ) : null}
 
         {node.icon ? (
           <span
             data-slot="filter-menu-icon"
-            className="text-muted-foreground flex shrink-0 items-center justify-center"
+            className="flex shrink-0 items-center justify-center text-muted-foreground"
           >
             {node.icon}
           </span>
@@ -947,7 +947,7 @@ export function FilterMenu({
         <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
           <span className="w-full truncate text-start">{node.label}</span>
           {node.description ? (
-            <span className="text-muted-foreground w-full truncate text-start text-xs">
+            <span className="w-full truncate text-start text-xs text-muted-foreground">
               {node.description}
             </span>
           ) : null}
@@ -973,9 +973,9 @@ export function FilterMenu({
             data-slot="filter-menu-check"
             /* The gutter every style already reserves, on the cascader's own
                logical inset. `end-*` rather than `right-2`, so RTL mirrors. */
-            className="size-4 pointer-events-none absolute end-[var(--cascader-row-inset,8px)]! flex items-center justify-center rtl:right-auto!"
+            className="pointer-events-none absolute inset-e-(--cascader-row-inset,8px) flex size-4 items-center justify-center rtl:right-auto"
           >
-            <CheckIcon className="text-foreground! **:text-foreground!" />
+            <CheckIcon className="text-foreground **:text-foreground" />
           </span>
         ) : null}
       </>

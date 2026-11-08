@@ -65,7 +65,7 @@ export function DeleteMeshDialog({
             variant="danger"
             size="small"
             disabled={destroy.isPending}
-            onClick={() => mesh && destroy.mutate({ path: { mesh_id: mesh.id } })}
+            onClick={() => mesh && destroy.mutate({ meshId: mesh.id })}
           >
             {destroy.isPending
               ? formatMessage({ id: "feature.mesh.deleteDialog.deleting", defaultMessage: "Deleting" })

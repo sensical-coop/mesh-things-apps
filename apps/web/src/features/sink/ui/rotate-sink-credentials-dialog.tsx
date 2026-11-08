@@ -5,7 +5,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
@@ -16,7 +16,6 @@ export type RotateSinkCredentialsDialogProps = {
   onRotated: (credentials: SinkCredentials) => void;
 };
 
-/** A lost or leaked password: issue a new one, which also disconnects current consumers. */
 export function RotateSinkCredentialsDialog({ sink, onClose, onRotated }: RotateSinkCredentialsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -71,7 +70,7 @@ export function RotateSinkCredentialsDialog({ sink, onClose, onRotated }: Rotate
             type="button"
             size="small"
             disabled={rotate.isPending}
-            onClick={() => sink && rotate.mutate({ path: { sink_id: sink.id } })}
+            onClick={() => sink && rotate.mutate({ sinkId: sink.id })}
           >
             {rotate.isPending
               ? formatMessage({ id: "feature.sink.rotate.issuing", defaultMessage: "Issuing" })

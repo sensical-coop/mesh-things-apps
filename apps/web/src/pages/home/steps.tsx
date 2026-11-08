@@ -23,7 +23,7 @@ export function LandingSteps(): ReactElement {
   return (
     <section id="why" className="scroll-mt-24">
       <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
+        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
           <FormattedMessage
             id="page.home.steps.heading"
             defaultMessage="Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>"
@@ -92,7 +92,7 @@ export function LandingSteps(): ReactElement {
                   })}
                 </FrameDescription>
               </FrameHeader>
-              <FramePanel className="h-44 overflow-hidden p-0 [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]">
+              <FramePanel className="h-44 overflow-hidden mask-[linear-gradient(to_bottom,#000_72%,transparent)] p-0">
                 <LandingPacketFeed />
               </FramePanel>
             </Frame>
@@ -121,7 +121,7 @@ export function LandingSteps(): ReactElement {
                     <div className="h-1.5 min-w-0 flex-1 rounded-full bg-background-tertiary-default">
                       <div className="h-full rounded-full bg-accent-500" style={{ width: channel.fill }} />
                     </div>
-                    <p className="w-8 shrink-0 text-right font-mono text-caption-1-regular tabular-nums text-text-tertiary">
+                    <p className="w-8 shrink-0 text-right font-mono text-caption-1-regular text-text-tertiary tabular-nums">
                       {channel.value}
                     </p>
                   </div>

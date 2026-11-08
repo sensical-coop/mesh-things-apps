@@ -6,12 +6,12 @@ import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 export type BlueprintDetailsDialogProps = {
@@ -19,7 +19,6 @@ export type BlueprintDetailsDialogProps = {
   onClose: () => void;
 };
 
-/** Name, description and visibility: the only things a blueprint changes in place. */
 export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -28,7 +27,7 @@ export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsD
     ...blueprintRepository.update(),
     onSuccess: async (row) => {
       await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
-      await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey({ path: { blueprint_id: row.id } }) });
+      await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey(row.id) });
       onClose();
     },
     onError: (error) => {
@@ -47,8 +46,8 @@ export function BlueprintDetailsDialog({ blueprint, onClose }: BlueprintDetailsD
     const form = new FormData(event.currentTarget);
     setNameError(undefined);
     update.mutate({
-      path: { blueprint_id: blueprint.id },
-      body: {
+      blueprintId: blueprint.id,
+      data: {
         name: String(form.get("name") ?? "").trim(),
         description: String(form.get("description") ?? "").trim() || null,
         is_public: form.get("is_public") === "on",

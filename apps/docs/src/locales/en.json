@@ -4,7 +4,7 @@
   "page.docs.ui.openSearch": "Open search",
   "page.docs.ui.closeSearch": "Close search",
   "page.docs.ui.noResults": "No results found",
-  "page.docs.ui.searchFailed": "The search could not be completed",
+  "page.docs.ui.searchFailed": "Search didn't finish. Try again.",
   "page.docs.ui.onThisPage": "On this page",
   "page.docs.ui.tableOfContents": "Table of contents",
   "page.docs.ui.noHeadings": "No headings",
@@ -19,8 +19,6 @@
   "page.docs.ui.copiedCode": "Code copied",
   "page.docs.ui.copyLink": "Copy link to section",
   "page.docs.ui.copiedLink": "Link copied",
-  "common.languageSwitcher.label": "Change language",
-  "common.themeToggle.label": "Toggle color theme",
   "notFound.docsPage.title": "Page not found",
   "notFound.docsPage.description": "The documentation has no page at this address.",
   "notFound.docsPage.back": "Back to the documentation"

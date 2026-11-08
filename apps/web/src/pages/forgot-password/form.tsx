@@ -5,11 +5,11 @@ import { Link } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { authRepository } from "@/features/auth/repository";
 
 export function ForgotPasswordForm(): ReactElement {
@@ -25,9 +25,8 @@ export function ForgotPasswordForm(): ReactElement {
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") ?? "");
     setError(null);
-    await authRepository.csrf();
     try {
-      await requestReset.mutateAsync({ body: { email } });
+      await requestReset.mutateAsync({ data: { email } });
       setSubmittedEmail(email);
     } catch (failure) {
       setError(
@@ -42,7 +41,7 @@ export function ForgotPasswordForm(): ReactElement {
 
   if (submittedEmail) {
     return (
-      <Frame className="shadow-card w-full" spacing="lg">
+      <Frame className="w-full shadow-card" spacing="lg">
         <FramePanel className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -65,7 +64,7 @@ export function ForgotPasswordForm(): ReactElement {
   }
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -100,7 +99,7 @@ export function ForgotPasswordForm(): ReactElement {
             defaultMessage="Remembered your password? <link>Sign in</link>."
             values={{
               link: (chunks: ReactNode) => (
-                <Link to={routes.login} className="underline underline-offset-2 text-accent-500">
+                <Link to={routes.login} className="text-accent-500 underline underline-offset-2">
                   {chunks}
                 </Link>
               ),

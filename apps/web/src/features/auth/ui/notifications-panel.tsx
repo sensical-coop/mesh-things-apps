@@ -1,18 +1,18 @@
-import { zOwnersMeUpdateData } from "@mtt/contracts/zod";
+import { OwnerUpdate } from "@mtt/contracts";
 import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@mtt/ui/components/ui/field";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
-import { SaveButton } from "@/components/form/save-button";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormNumber } from "@mtt/ui/forms/form-number";
+import { SaveButton } from "@mtt/ui/forms/save-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
 import { useMe } from "@/features/auth/use-me";
-import { readApiError } from "@/lib/api-errors";
+import { readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 
 const SECONDS_PER_HOUR = 3600;
@@ -31,7 +31,7 @@ const sectionTitleClass = "text-body-medium text-text-primary";
  * or a source is unusually busy.
  */
 export function NotificationsPanel(): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
   const { me, isOperator } = useMe();
   const [error, setError] = useState<string | null>(null);
@@ -54,23 +54,21 @@ export function NotificationsPanel(): ReactElement {
     const form = new FormData(event.currentTarget);
     const raw = String(form.get("alarm_cooldown_hours") ?? "").trim();
     const seconds = raw === "" ? null : Math.round(Number(raw) * SECONDS_PER_HOUR);
-    const parsed = zOwnersMeUpdateData.safeParse({
-      body: {
-        alarm_email_cooldown_seconds: seconds,
-        ...(isOperator
-          ? {
-              status_alerts_enabled: form.get("status_alerts_enabled") === "on",
-              source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
-            }
-          : {}),
-      },
+    const parsed = OwnerUpdate.safeParse({
+      alarm_email_cooldown_seconds: seconds,
+      ...(isOperator
+        ? {
+            status_alerts_enabled: form.get("status_alerts_enabled") === "on",
+            source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
+          }
+        : {}),
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? null);
       return;
     }
     setError(null);
-    update.mutate({ body: parsed.data.body });
+    update.mutate({ data: parsed.data });
   }
 
   return (
@@ -104,7 +102,7 @@ export function NotificationsPanel(): ReactElement {
                     defaultMessage: "Minimum time between quality-alarm emails. Leave empty to use the server default.",
                   })}
                 >
-                  <FormNumber
+                  <FormNumber locale={locale}
                     id="profile-alarm-cooldown"
                     name="alarm_cooldown_hours"
                     min={0}

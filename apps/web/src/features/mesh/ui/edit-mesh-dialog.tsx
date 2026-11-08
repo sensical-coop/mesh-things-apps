@@ -1,30 +1,27 @@
 import type { Mesh } from "@mtt/contracts";
-import { zMeshesUpdateData } from "@mtt/contracts/zod";
+import { MeshUpdate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { NO_SOURCE, meshTitle } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
-import { termsLocale, termsStanding } from "@/features/terms/model";
+import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
+import { termsStanding } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
-
-/** Select value for "no source": the instance's own broker. */
-const DEFAULT_BROKER = "default";
 
 export function EditMeshDialog({
   mesh,
@@ -59,7 +56,7 @@ export function EditMeshDialog({
   const sourceItems = [
     {
       label: formatMessage({ id: "feature.mesh.editDialog.defaultBroker", defaultMessage: "Default broker" }),
-      value: DEFAULT_BROKER,
+      value: NO_SOURCE,
     },
     ...(sources.data ?? []).map((source) => ({ label: sourceTitle(source), value: source.id })),
     // Keep a current source the list doesn't include, so resending it stays valid.
@@ -78,7 +75,7 @@ export function EditMeshDialog({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: meshRepository.retrieveKey({ path: { mesh_id: mesh.id } }),
+        queryKey: meshRepository.retrieveKey(mesh.id),
       });
       await onSaved?.();
       onClose();
@@ -91,9 +88,11 @@ export function EditMeshDialog({
   const enforced = useTermsEnforced();
   const termsEnforced = enforced !== false;
   const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
+    ...termsRepository.mesh({ locale: termsLocale(locale) }),
     enabled: enforced === true && canPickSource && currentSource !== null,
   });
+  // Pause is not part of "current": a paused mesh moving back to the default broker
+  // keeps its acceptance when the version still matches. meshTermsStanding would call that lapsed.
   const termsCurrent = ["ok", "expiring"].includes(
     termsStanding({
       acceptedVersion: mesh.terms_accepted_version ?? null,
@@ -103,7 +102,7 @@ export function EditMeshDialog({
       now: new Date(),
     }),
   );
-  const [awaitingTerms, setAwaitingTerms] = useState<Parameters<typeof update.mutate>[0] | null>(null);
+  const [awaitingTerms, setAwaitingTerms] = useState<{ meshId: string; data: MeshUpdate } | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -131,22 +130,22 @@ export function EditMeshDialog({
     const discover = form.get("discover_gateways") === "on";
     if (discover !== (mesh.discover_gateways ?? false)) body.discover_gateways = discover;
     if (canPickSource) {
-      const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
-      const sourceId = picked === DEFAULT_BROKER ? null : picked;
+      const picked = String(form.get("source_id") ?? NO_SOURCE);
+      const sourceId = picked === NO_SOURCE ? null : picked;
       // Only a change moves the gateways, so an unchanged source isn't resent.
       if (sourceId !== currentSource) body.source_id = sourceId;
     }
-    const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    const parsed = MeshUpdate.safeParse(body);
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    if (termsEnforced && currentSource !== null && parsed.data.body?.source_id === null && !termsCurrent) {
-      setAwaitingTerms(parsed.data);
+    if (termsEnforced && currentSource !== null && parsed.data?.source_id === null && !termsCurrent) {
+      setAwaitingTerms({ meshId: mesh.id, data: parsed.data });
       return;
     }
-    update.mutate(parsed.data);
+    update.mutate({ meshId: mesh.id, data: parsed.data });
   }
 
   return (
@@ -255,7 +254,7 @@ export function EditMeshDialog({
                   id="mesh-edit-source"
                   name="source_id"
                   items={sourceItems}
-                  defaultValue={currentSource ?? DEFAULT_BROKER}
+                  defaultValue={currentSource ?? NO_SOURCE}
                 />
               )}
             </FormField>
@@ -299,8 +298,8 @@ export function EditMeshDialog({
           update.mutate(
             acceptance
               ? {
-                  ...awaitingTerms,
-                  body: { ...awaitingTerms.body, terms_version: acceptance.version, terms_locale: acceptance.locale },
+                  meshId: awaitingTerms.meshId,
+                  data: { ...awaitingTerms.data, terms_version: acceptance.version, terms_locale: acceptance.locale },
                 }
               : awaitingTerms,
           );

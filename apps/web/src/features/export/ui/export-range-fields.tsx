@@ -1,8 +1,9 @@
 import { Input } from "@mtt/ui/components/ui/input";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { EXPORT_MAX_DAYS, daysInRange, rangeProblem, utcToday } from "@/features/export/model";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
+import { daysInRange, rangeProblem, utcToday } from "@/features/export/model";
 
 export type ExportRange = { start: string; stop: string };
 
@@ -14,7 +15,6 @@ export type ExportRangeFieldsProps = {
   error?: string;
 };
 
-/** First and last day of a download, UTC, both included, with the day count and the limit. */
 export function ExportRangeFields({ idPrefix, value, onChange, error }: ExportRangeFieldsProps): ReactElement {
   const { formatMessage } = useIntl();
   const problem = rangeProblem(value.start, value.stop);

@@ -1,6 +1,6 @@
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { LandingFooter } from "@/pages/home/footer";
+import { LandingFooter } from "@/components/landing-footer";
 import { SiteHeader } from "@/components/site-header";
 
 type Message = { id: string; defaultMessage: string };
@@ -299,7 +299,7 @@ export function DpaPage(): ReactElement {
   return (
     <div className="flex min-h-svh flex-col bg-background-full">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 pb-12 pt-12 sm:px-6 sm:pb-20 sm:pt-16">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 py-12  sm:px-6 sm:pt-16 sm:pb-20">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-1-medium tracking-tight text-text-primary">
             {formatMessage({ id: "page.dpa.title", defaultMessage: "Data Processing Agreement" })}
@@ -317,7 +317,7 @@ export function DpaPage(): ReactElement {
         </div>
 
         <nav aria-label={formatMessage({ id: "page.dpa.toc.heading", defaultMessage: "Contents" })}>
-          <p className="text-caption-1-medium uppercase tracking-[0.12em] text-text-tertiary">
+          <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">
             {formatMessage({ id: "page.dpa.toc.heading", defaultMessage: "Contents" })}
           </p>
           <ol className="mt-3 flex flex-col gap-1">
@@ -325,7 +325,7 @@ export function DpaPage(): ReactElement {
               <a href="#agreement" className={tocHeadingClass}>
                 {formatMessage({ id: "page.dpa.agreement.heading", defaultMessage: "Agreement" })}
               </a>
-              <ol className="ml-5 mt-1 flex flex-col gap-1">
+              <ol className="mt-1 ml-5 flex flex-col gap-1">
                 {sections.map((section) => (
                   <li key={section.id}>
                     <a href={`#${section.id}`} className={tocLinkClass}>
@@ -339,7 +339,7 @@ export function DpaPage(): ReactElement {
               <a href="#annexes" className={tocHeadingClass}>
                 {formatMessage({ id: "page.dpa.annexes.heading", defaultMessage: "Annexes" })}
               </a>
-              <ol className="ml-5 mt-1 flex flex-col gap-1">
+              <ol className="mt-1 ml-5 flex flex-col gap-1">
                 {annexes.map((annex) => (
                   <li key={annex.id}>
                     <a href={`#${annex.id}`} className={tocLinkClass}>
@@ -358,11 +358,11 @@ export function DpaPage(): ReactElement {
         </nav>
 
         <div className="flex flex-col gap-6">
-          <h2 id="agreement" className="text-title-2-medium tracking-tight text-text-primary scroll-mt-20">
+          <h2 id="agreement" className="scroll-mt-20 text-title-2-medium tracking-tight text-text-primary">
             {formatMessage({ id: "page.dpa.agreement.heading", defaultMessage: "Agreement" })}
           </h2>
           {sections.map((section) => (
-            <section key={section.id} id={section.id} className="flex flex-col gap-2 scroll-mt-20">
+            <section key={section.id} id={section.id} className="flex scroll-mt-20 flex-col gap-2">
               <h3 className="text-title-3-medium text-text-primary">{formatMessage(section.heading)}</h3>
               {section.paragraphs.map((paragraph) => (
                 <p key={paragraph.id} className="text-body-regular text-text-secondary">
@@ -375,7 +375,7 @@ export function DpaPage(): ReactElement {
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h2 id="annexes" className="text-title-2-medium tracking-tight text-text-primary scroll-mt-20">
+            <h2 id="annexes" className="scroll-mt-20 text-title-2-medium tracking-tight text-text-primary">
               {formatMessage({ id: "page.dpa.annexes.heading", defaultMessage: "Annexes" })}
             </h2>
             <p className="text-body-regular text-text-secondary">
@@ -387,7 +387,7 @@ export function DpaPage(): ReactElement {
             </p>
           </div>
           {annexes.map((annex) => (
-            <section key={annex.id} id={annex.id} className="flex flex-col gap-5 scroll-mt-20">
+            <section key={annex.id} id={annex.id} className="flex scroll-mt-20 flex-col gap-5">
               <h3 className="text-title-3-medium text-text-primary">{annex.heading}</h3>
               {annex.groups.map((group) => (
                 <div key={group.id} className="flex flex-col gap-2">
@@ -411,7 +411,7 @@ export function DpaPage(): ReactElement {
             </section>
           ))}
 
-          <section id="annex-3" className="flex flex-col gap-3 scroll-mt-20">
+          <section id="annex-3" className="flex scroll-mt-20 flex-col gap-3">
             <h3 className="text-title-3-medium text-text-primary">{subProcessorsHeading}</h3>
             <p className="text-body-regular text-text-secondary">
               {formatMessage({

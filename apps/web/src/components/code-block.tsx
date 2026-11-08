@@ -5,11 +5,9 @@ import { useIntl } from "react-intl";
 
 export type CodeBlockProps = {
   code: string;
-  /** What the code is, for screen readers and the copy button. */
   label: string;
 };
 
-/** Monospaced, scrollable, with a copy button that says when it copied. */
 export function CodeBlock({ code, label }: CodeBlockProps): ReactElement {
   const { formatMessage } = useIntl();
   const [copied, setCopied] = useState(false);
@@ -21,7 +19,7 @@ export function CodeBlock({ code, label }: CodeBlockProps): ReactElement {
   }, [copied]);
 
   return (
-    <div className="oa-squircle-inset relative bg-background-secondary-default">
+    <div className="relative oa-squircle-inset bg-background-secondary-default">
       <pre
         className="overflow-x-auto p-4 pe-14 font-mono text-caption-1-regular leading-5 text-text-primary"
         aria-label={label}
@@ -35,7 +33,7 @@ export function CodeBlock({ code, label }: CodeBlockProps): ReactElement {
         variant="secondary"
         iconOnly
         leadingIcon={copied ? RiCheckLine : RiFileCopyLine}
-        className="absolute end-3 top-3"
+        className="absolute inset-e-3 top-3"
         aria-label={
           copied
             ? formatMessage({ id: "common.codeBlock.copied", defaultMessage: "Copied" })

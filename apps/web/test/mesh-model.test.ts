@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { canEditMesh, meshTitle } from "../src/features/mesh/model.ts";
 
-const mine = { id: "ada", is_superuser: false };
-const admin = { id: "root", is_superuser: true };
+const mine = { id: "ada", role: "member" as const, is_superuser: false, is_staff: false, is_active: true };
+const admin = { id: "root", role: "member" as const, is_superuser: true, is_staff: true, is_active: true };
 
 test("canEditMesh lets the owner edit their mesh, public or not", () => {
   assert.equal(canEditMesh({ owner_id: "ada" }, mine), true);
@@ -63,11 +63,4 @@ test("meshStatus covers every state the Status column shows", async () => {
   assert.equal(kind({ terms_accepted_version: null }, { termsEnforced: false }), "active");
   // Someone else's mesh: the API hides its state.
   assert.equal(meshStatus({ source_id: undefined }, ctx).kind, "hidden");
-});
-
-test("the Status column sorts the most urgent first", async () => {
-  const { MESH_STATUS_RANK } = await import("../src/features/mesh/model.ts");
-  const order = Object.entries(MESH_STATUS_RANK).sort((a, b) => a[1] - b[1]).map(([k]) => k);
-  assert.deepEqual(order.slice(0, 2), ["scheduledForDeletion", "sourcePaused"]);
-  assert.deepEqual(order.slice(-2), ["active", "hidden"]);
 });

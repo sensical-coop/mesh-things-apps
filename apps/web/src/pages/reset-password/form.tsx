@@ -5,24 +5,26 @@ import { Link } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { routes } from "@/router";
 import { StatusCopy } from "@/components/status-copy";
+import { readApiError } from "@mtt/contracts/errors";
 import { authRepository } from "@/features/auth/repository";
 
 type FormatMessage = ReturnType<typeof useIntl>["formatMessage"];
 
-/** Django validation errors come back as `{ field: ["message", ...] }`. */
-function fieldErrorMessages(body: Record<string, unknown>): string[] {
-  const value = body.new_password;
-  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
+function newPasswordMessages(error: unknown): string[] {
+  if (typeof error !== "object" || error === null || !("new_password" in error)) return [];
+  const value = error.new_password;
+  if (Array.isArray(value)) return value.filter((entry): entry is string => typeof entry === "string");
+  return typeof value === "string" ? [value] : [];
 }
 
 function formatResetError(error: unknown, formatMessage: FormatMessage): { message: string; expired: boolean } {
-  const body = typeof error === "object" && error !== null ? (error as Record<string, unknown>) : {};
+  const failure = readApiError(error);
 
-  if (body.token !== undefined) {
+  if (failure.fields.token !== undefined) {
     return {
       expired: true,
       message: formatMessage({
@@ -32,8 +34,8 @@ function formatResetError(error: unknown, formatMessage: FormatMessage): { messa
     };
   }
 
-  const fieldMessages = fieldErrorMessages(body);
-  if (fieldMessages.length > 0) return { expired: false, message: fieldMessages.join(" ") };
+  const passwordMessages = newPasswordMessages(error);
+  if (passwordMessages.length > 0) return { expired: false, message: passwordMessages.join(" ") };
 
   return {
     expired: false,
@@ -47,7 +49,7 @@ function formatResetError(error: unknown, formatMessage: FormatMessage): { messa
 function InvalidLinkPanel(): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -74,7 +76,7 @@ function InvalidLinkPanel(): ReactElement {
 function SuccessPanel(): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">
@@ -120,7 +122,7 @@ export function ResetPasswordForm({ token }: { token: string | null }): ReactEle
     }
 
     try {
-      await resetPassword.mutateAsync({ body: { token, new_password: newPassword } });
+      await resetPassword.mutateAsync({ data: { token, new_password: newPassword } });
       setSucceeded(true);
     } catch (caught) {
       const formatted = formatResetError(caught, formatMessage);
@@ -136,7 +138,7 @@ export function ResetPasswordForm({ token }: { token: string | null }): ReactEle
   if (!token || expired) return <InvalidLinkPanel />;
 
   return (
-    <Frame className="shadow-card w-full" spacing="lg">
+    <Frame className="w-full shadow-card" spacing="lg">
       <FramePanel className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-title-2-medium tracking-tight text-text-primary">

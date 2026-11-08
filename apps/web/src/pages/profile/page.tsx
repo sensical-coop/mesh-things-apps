@@ -1,4 +1,4 @@
-import { zOwnersMeUpdateData } from "@mtt/contracts/zod";
+import { OwnerUpdate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
@@ -13,15 +13,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { SaveButton } from "@/components/form/save-button";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { SaveButton } from "@mtt/ui/forms/save-button";
 import { pageHeadingClass } from "@/lib/page-heading";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { OperatorRolePanel } from "@/features/operator-request/ui/operator-role-panel";
 import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
+import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
 import { authRepository } from "@/features/auth/repository";
 import { ApiKeyPanel } from "@/features/auth/ui/api-key-panel";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
@@ -47,18 +47,16 @@ export function ProfilePage(): ReactElement {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const parsed = zOwnersMeUpdateData.safeParse({
-      body: {
-        name: String(form.get("name") ?? "").trim(),
-        email: String(form.get("email") ?? "").trim(),
-      },
+    const parsed = OwnerUpdate.safeParse({
+      name: String(form.get("name") ?? "").trim(),
+      email: String(form.get("email") ?? "").trim(),
     });
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    update.mutate({ body: parsed.data.body });
+    update.mutate({ data: parsed.data });
   }
 
   return (

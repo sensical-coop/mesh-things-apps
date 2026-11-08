@@ -1,45 +1,81 @@
-import type { CreateClientConfig } from "./generated/client.gen";
+import type { ZodType } from "zod";
 
-export const DEFAULT_API_URL = "http://localhost:8787";
-
-function apiBaseUrl(): string {
-  if (typeof process !== "undefined" && process.env.VITE_API_URL) {
-    return process.env.VITE_API_URL;
-  }
-  return DEFAULT_API_URL;
-}
-
-export const createClientConfig: CreateClientConfig = (config) => ({
-  ...config,
-  baseUrl: apiBaseUrl(),
-  credentials: "include",
-});
+/** Where requests go. Vite inlines `VITE_API_URL` at build; local dev falls back to the mock. */
+export const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
 const CSRF_COOKIE_NAME = "csrftoken";
 const CSRF_HEADER_NAME = "X-CSRFToken";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS", "TRACE"]);
 
 function readCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1] ?? "") : undefined;
 }
 
-/** Django's CSRF middleware requires this header */
-export function attachCsrfHeader(request: Request): Request {
-  if (SAFE_METHODS.has(request.method)) return request;
-  const token = readCookie(CSRF_COOKIE_NAME);
-  if (!token) return request;
-  request.headers.set(CSRF_HEADER_NAME, token);
-  return request;
+/** What a failed request throws: DRF's body with the HTTP status put on it. */
+export function toApiError(body: unknown, status: number | undefined): unknown {
+  // DRF answers some refusals with a bare list of messages: those belong to no field.
+  if (Array.isArray(body)) return { non_field_errors: body, status };
+  if (typeof body === "object" && body !== null) return { ...body, status };
+  return { detail: typeof body === "string" && body ? body : "Request failed", status };
 }
 
-/** The generated client throws the parsed error body but drops the HTTP status; put it back on. */
-export function attachErrorStatus(error: unknown, response?: Response): unknown {
-  const status = response?.status;
-  // DRF answers some refusals with a bare list of messages: those belong to no field.
-  if (Array.isArray(error)) return { non_field_errors: error, status };
-  if (typeof error === "object" && error !== null) {
-    return status === undefined ? error : { ...error, status };
+/**
+ * What `apiFetch` throws: `toApiError`'s object, a network `TypeError`, or a `ZodError`.
+ * Callers read it with `readApiError`.
+ */
+export type ErrorType<_Body> =
+  | Error
+  | {
+      status?: number;
+      detail?: string;
+      message?: string;
+      [key: string]: unknown;
+    };
+
+async function readBody(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (!text) return undefined;
+  if (!response.headers.get("content-type")?.includes("json")) return text;
+  return JSON.parse(text);
+}
+
+let csrfCookie: Promise<void> | undefined;
+
+/** One in-flight GET of the CSRF cookie, shared by concurrent unsafe requests. A failure can be retried. */
+function ensureCsrfCookie(): Promise<void> {
+  if (typeof document === "undefined" || readCookie(CSRF_COOKIE_NAME)) return Promise.resolve();
+  csrfCookie ??= fetch(`${API_URL}/owners/csrf-cookie`, { credentials: "include" }).then(
+    (response) => {
+      if (response.ok) return;
+      csrfCookie = undefined;
+      throw toApiError(undefined, response.status);
+    },
+    (error: unknown) => {
+      csrfCookie = undefined;
+      throw error;
+    },
+  );
+  return csrfCookie;
+}
+
+/**
+ * Orval's request function for every operation: base URL, session cookie, Django's CSRF
+ * header, the generated Zod parse of the response, and DRF errors thrown with their status.
+ */
+export async function apiFetch<T>(url: string, options: RequestInit & { schema?: ZodType }): Promise<T> {
+  const { schema, ...init } = options;
+  const headers = new Headers(init.headers);
+  const method = (init.method ?? "GET").toUpperCase();
+  if (!SAFE_METHODS.has(method)) {
+    await ensureCsrfCookie();
+    const token = readCookie(CSRF_COOKIE_NAME);
+    if (token) headers.set(CSRF_HEADER_NAME, token);
   }
-  return { detail: typeof error === "string" ? error : "Request failed", status };
+  const response = await fetch(`${API_URL}${url}`, { ...init, headers, credentials: "include" });
+  const body = await readBody(response);
+  if (!response.ok) throw toApiError(body, response.status);
+  // Orval types each operation's T from the same spec the schema comes from.
+  return (schema ? schema.parse(body) : body) as T;
 }

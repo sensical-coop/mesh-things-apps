@@ -1,11 +1,11 @@
 ---
 title: Destinos
-description: Publicación de lecturas seleccionadas para un suscriptor externo.
+description: Publica lecturas seleccionadas para un suscriptor externo.
 ---
 
-Un destino exporta datos, mientras que una fuente los importa. Un operador publica lecturas en el broker MQTT de la instancia, y un consumidor designado por el operador se suscribe con su propio usuario y contraseña. El broker almacena la contraseña como hash, y la API solo la muestra una vez, cuando se establece o se vuelve a emitir.
+Un destino exporta datos. Una fuente los importa. Un operador publica lecturas en el broker MQTT de la instancia. Un consumidor que elige el operador se suscribe con su propio usuario y contraseña. El broker guarda la contraseña como hash. La API la muestra una vez, al establecerla o al emitirla de nuevo.
 
-El operador selecciona los flujos y los dispositivos. El consumidor nunca tiene acceso a la clave de la malla.
+El operador elige los flujos y los dispositivos. El consumidor nunca recibe la clave de la malla.
 
 ```mermaid
 flowchart TD
@@ -17,34 +17,34 @@ flowchart TD
 ```
 
 <Callout type="warn" title="La contraseña se muestra una sola vez">
-Emitir una nueva contraseña desconecta a los consumidores conectados en ese momento. Eliminar el destino revoca sus credenciales. No es posible eliminar un destino mientras tenga mallas o dispositivos asociados.
+Emitir una contraseña nueva desconecta a los consumidores que están conectados. Eliminar el destino revoca sus credenciales. No se puede eliminar un destino mientras tenga mallas o dispositivos asociados.
 </Callout>
 
-Los destinos solo están disponibles en las instancias cuyo broker los admite. En el resto de instancias, todos los endpoints de destinos devuelven 404 y la consola indica que la función no está disponible.
+Los destinos solo existen en las instancias cuyo broker los admite. En las demás, todos los endpoints de destinos devuelven 404 y la consola indica que la función no está disponible.
 
-Solo los operadores y los superusuarios gestionan destinos, y un operador solo puede consultar los destinos que ha creado. La página se encuentra en **Datos → Destinos** (`/console/sinks`).
+Solo los operadores y los superusuarios gestionan destinos. Un operador solo ve los destinos que ha creado. La página es **Datos → Destinos** (`/console/sinks`).
 
 ## Flujos publicados
 
 `streams` es un subconjunto no vacío de `decoded`, `derived` y `alarms`, almacenado en ese orden.
 
-Los datos se publican desde:
+Las lecturas se publican desde:
 
 - una malla completa, incluidos los nodos que se añadan después, o
-- dispositivos seleccionados individualmente
+- dispositivos elegidos uno a uno
 
-Al seleccionar la malla, se desactivan las casillas de los dispositivos, que se marcan como incluidos con la malla. Al quitar la selección de la malla, se restauran los dispositivos seleccionados anteriormente, y son esos dispositivos los que se almacenan. Al editar, cada lista enviada sustituye a la lista actual. Las credenciales no cambian al editar.
+Al elegir la malla se desactivan las casillas de los dispositivos. Esos dispositivos quedan marcados como incluidos con la malla. Al quitar la malla se restauran los dispositivos que estaban seleccionados antes, y son esos los que se guardan. Al editar, cada lista que envías sustituye a la lista actual. Las credenciales no cambian al editar.
 
-El usuario debe tener permiso de edición sobre la malla o el dispositivo, y el propietario de la malla debe ser operador. Un superusuario puede asociar destinos a las mallas de un operador.
+Necesitas permiso de edición sobre la malla o el dispositivo, y el propietario de la malla debe ser operador. Un superusuario puede asociar destinos a las mallas de un operador.
 
 ## Credenciales
 
-La creación de un destino y **Emitir una nueva contraseña** devuelven la contraseña una sola vez, junto con la dirección del broker, el usuario, el filtro de topic y un comando `mosquitto_sub` que mantiene una sesión persistente. Emitir una nueva contraseña desconecta a los consumidores actuales. Eliminar el destino revoca sus credenciales.
+Crear un destino y **Emitir una nueva contraseña** devuelven la contraseña una sola vez, con la dirección del broker, el usuario, el filtro de topic y un comando `mosquitto_sub` que mantiene una sesión persistente. La sesión encola los mensajes mientras ese cliente está desconectado. La cola solo se conserva para un cliente que ya se haya conectado. Se descarta al pasar el límite de desconexión de la instancia (24 horas, salvo que se configure otro) o al superar el límite de cola (10.000 mensajes, salvo que se configure otro). Un cliente que sigue conectado y supera esa cola se desconecta. Emitir una contraseña nueva desconecta a los consumidores actuales. Si el broker no puede guardar la contraseña nueva, la API devuelve 502 y se mantiene la anterior. Eliminar el destino revoca sus credenciales.
 
-No es posible eliminar un destino mientras tenga mallas o dispositivos asociados. En ese caso, la API devuelve 409, y es necesario editar el destino para retirarlos previamente.
+No se puede eliminar un destino mientras tenga mallas o dispositivos asociados. La API devuelve 409. Edita el destino y retíralos antes.
 
 ## Condiciones
 
-Cada creación de un destino acepta las condiciones de destino vigentes. El operador es responsable de los datos que publica el destino y de las partes que reciben las credenciales. Si la aceptación caduca, se informa `paused_at`: no se publica ningún dato y se rechazan las conexiones de los consumidores hasta que el creador renueva las condiciones.
+Cada creación de un destino acepta las condiciones de destino vigentes. El operador responde de los datos que publica el destino y de quién recibe las credenciales. Si la aceptación caduca, se establece `paused_at`: no se publica nada y se rechazan las conexiones de los consumidores, hasta que quien creó el destino renueva las condiciones. La renovación usa las mismas credenciales. Si el broker no puede reanudar el destino, la renovación devuelve 502 y las condiciones quedan como estaban.
 
-La lista muestra si cada destino está publicando o en pausa, el número de mallas y dispositivos que abarca y el número de consumidores conectados en ese momento. Cuando el broker no responde, el número de conexiones se muestra como un guion.
+La lista muestra si cada destino está publicando o en pausa, cuántas mallas y dispositivos abarca y cuántos consumidores hay conectados. Si el broker no responde, el número de conexiones es un guion.

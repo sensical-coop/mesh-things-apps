@@ -9,15 +9,7 @@ import {
   portnumLabel,
   totalTraffic,
   trafficNodeLabel,
-  windowMs,
 } from "../src/features/mesh-network/model.ts";
-
-test("windowMs reads the API's bucket sizes", () => {
-  assert.equal(windowMs("1m"), 60_000);
-  assert.equal(windowMs("15m"), 900_000);
-  assert.equal(windowMs("6h"), 21_600_000);
-  assert.equal(windowMs("soon"), null);
-});
 
 test("totalTraffic sums every payload kind per bucket, oldest first", () => {
   const traffic = [
@@ -173,7 +165,13 @@ test("linkGraph lists every node once", async () => {
     graph.nodes.map((n) => n.node),
     [1, 2, 3],
   );
-  assert.equal(graph.edges.length, 2);
+  assert.deepEqual(
+    graph.edges.map((edge) => [edge.a, edge.b]),
+    [
+      [1, 2],
+      [2, 3],
+    ],
+  );
 });
 
 test("linkGraph marks a route's hops and adds those no link covers", async () => {

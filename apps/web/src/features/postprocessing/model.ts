@@ -1,9 +1,11 @@
 import type { Algorithm, BlueprintVersion, DeviceMeasurement, StepCalibration } from "@mtt/contracts";
-import { calibrationParams } from "@/features/blueprint/model";
+import { calibrationParams, stringMap } from "../../lib/algorithm-params.ts";
 
-/** Channels a slot can be bound to: any of the device's, except what this postprocessing derives itself. */
-export function bindableChannels(measurements: readonly DeviceMeasurement[], postprocessingId?: string): DeviceMeasurement[] {
-  return measurements.filter((row) => !postprocessingId || row.produced_by !== postprocessingId);
+/** The derived fields a version writes, in step order. */
+export function versionOutputFields(version: Pick<BlueprintVersion, "steps">): string[] {
+  return [...version.steps]
+    .sort((a, b) => a.order - b.order)
+    .flatMap((step) => Object.values(stringMap(step.outputs)));
 }
 
 export function channelLabel(row: Pick<DeviceMeasurement, "measurement_type">): string {

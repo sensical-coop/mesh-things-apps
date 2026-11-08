@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "[ -f .env ] && . ./.env; if [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ]; then turbo run dev --filter=web --filter=docs; else turbo run dev --filter=web --filter=docs --filter=api-mock; fi",
+    "dev": "[ -f .env ] && . ./.env; if [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ]; then turbo run dev --filter=web --filter=docs --filter=onboarding; else turbo run dev --filter=web --filter=docs --filter=onboarding --filter=api-mock; fi",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "pnpm lint:css && pnpm lint:classes",
     "test": "turbo run test",
-    "openapi:sync": "pnpm --filter @mtt/contracts openapi:sync && pnpm --filter @mtt/contracts openapi-ts",
-    "openapi-ts": "pnpm --filter @mtt/contracts openapi-ts",
+    "openapi:sync": "pnpm --filter @mtt/contracts openapi:sync && pnpm --filter @mtt/contracts openapi:generate",
+    "openapi:generate": "pnpm --filter @mtt/contracts openapi:generate",
     "shadcn": "pnpm dlx shadcn@latest --cwd apps/web",
     "lint:css": "stylelint \"apps/**/*.css\" \"packages/**/*.css\"",
     "lint:classes": "eslint \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\"",
@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.72.0",
-    "browserslist": "^4.29.4",
     "eslint": "^10.13.0",
     "eslint-plugin-better-tailwindcss": "^4.10.0",
     "stylelint": "^17.16.0",
@@ -40,8 +39,5 @@
       "minimatch@<11.0.1": "^11.0.1",
       "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2"
     }
-  },
-  "browserslist": [
-    "baseline widely available"
-  ]
+  }
 }

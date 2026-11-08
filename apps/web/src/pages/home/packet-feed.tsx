@@ -30,7 +30,7 @@ export function LandingPacketFeed(): ReactElement {
           </span>
           <span
             className={cx(
-              "shrink-0 font-mono text-caption-1-regular tabular-nums text-text-tertiary",
+              "shrink-0 font-mono text-caption-1-regular text-text-tertiary tabular-nums",
               index === 0 && "text-accent-500",
             )}
           >

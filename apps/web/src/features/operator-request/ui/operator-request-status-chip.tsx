@@ -1,23 +1,20 @@
 import type { OperatorRequest } from "@mtt/contracts";
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
 
 export type OperatorRequestStatusChipProps = {
   status: OperatorRequest["status"];
 };
 
+const TONE = { pending: "yellow", approved: "lime", rejected: "neutral" } as const;
+
 export function OperatorRequestStatusChip({ status }: OperatorRequestStatusChipProps): ReactElement {
   const { formatMessage } = useIntl();
-  const labels = {
+  const label = {
     pending: formatMessage({ id: "feature.operatorRequest.status.pending", defaultMessage: "Pending" }),
     approved: formatMessage({ id: "feature.operatorRequest.status.approved", defaultMessage: "Approved" }),
     rejected: formatMessage({ id: "feature.operatorRequest.status.rejected", defaultMessage: "Rejected" }),
-  };
-  const colors = { pending: "yellow", approved: "lime", rejected: "neutral" } as const;
-  return (
-    <Chip variant="caption" color={colors[status]} className="rounded-full">
-      {labels[status]}
-    </Chip>
-  );
+  }[status];
+  return <StatusChip tone={TONE[status]} label={label} />;
 }

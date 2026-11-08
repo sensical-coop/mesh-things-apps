@@ -6,8 +6,8 @@ import { RiDownloadLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { deviceTitle } from "@/features/device/model";
 import { rangeProblem } from "@/features/export/model";
 import type { RequestExportState } from "@/features/export/use-request-export";
@@ -28,15 +28,12 @@ export type CsvRequestFormProps = {
   requested: RequestExportState;
 };
 
-const NIL_MESH = "00000000-0000-4000-8000-000000000000";
-
-/** A new CSV download: which mesh, all of its devices or some, and which days. */
 export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormProps): ReactElement {
   const { formatMessage } = useIntl();
   const [meshId, setMeshId] = useState(initial.meshId);
   const [nodeIds, setNodeIds] = useState<number[] | null>(initial.nodeIds);
   const [range, setRange] = useState(initial.range);
-  const devices = useQuery({ ...meshRepository.devices({ path: { mesh_id: meshId || NIL_MESH } }), enabled: Boolean(meshId) });
+  const devices = useQuery(meshRepository.devices(meshId || undefined));
   const problem = rangeProblem(range.start, range.stop);
   const noneChosen = nodeIds !== null && nodeIds.length === 0;
 
@@ -92,7 +89,7 @@ export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormPro
             </FieldLabel>
           </Field>
           {nodeIds !== null ? (
-            <ul className="oa-squircle-inset flex max-h-56 flex-col gap-2 overflow-y-auto bg-background-secondary-default p-3">
+            <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto oa-squircle-inset bg-background-secondary-default p-3">
               {(devices.data ?? []).map((device) => (
                 <li key={device.uuid}>
                   <Field orientation="horizontal">

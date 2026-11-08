@@ -6,6 +6,7 @@ import {
   useLegacyTable,
 } from "@tanstack/react-table/legacy";
 import { type CSSProperties, type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
+import { useIntl } from "react-intl";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpSLine } from "@remixicon/react";
 import { cx } from "@mtt/ui/utils/cx";
@@ -18,14 +19,10 @@ export type DataTableProps<T> = {
   columns: DataTableColumn<T>[];
   empty?: ReactNode;
   getRowId?: (row: T) => string;
-  previousPageLabel?: string;
-  nextPageLabel?: string;
-  pageRangeOfLabel?: string;
 };
 
 const FADE = "3rem";
 
-/** Which sides of a horizontally scrolling element have content clipped. */
 function useClippedEdges() {
   const ref = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
@@ -62,15 +59,11 @@ function fadeMask({ start, end }: { start: boolean; end: boolean }): CSSProperti
   return { maskImage: mask, WebkitMaskImage: mask };
 }
 
-export function DataTable<T>({
-  data,
-  columns,
-  empty,
-  getRowId,
-  previousPageLabel = "Previous page",
-  nextPageLabel = "Next page",
-  pageRangeOfLabel = "of",
-}: DataTableProps<T>): ReactElement {
+export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<T>): ReactElement {
+  const { formatMessage } = useIntl();
+  const previousPageLabel = formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" });
+  const nextPageLabel = formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" });
+  const pageRangeOfLabel = formatMessage({ id: "common.dataTable.of", defaultMessage: "of" });
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([]);
   const table = useLegacyTable({
     data: data as never[],
@@ -90,9 +83,9 @@ export function DataTable<T>({
   const { pageIndex, pageSize } = table.getState().pagination;
 
   return (
-    <div className="oa-arrive flex min-h-0 flex-col">
+    <div className="flex min-h-0 oa-arrive flex-col">
       <div ref={scrollRef} className="overflow-x-auto" style={fadeMask(edges)}>
-        <table className="w-full min-w-[36rem] caption-bottom text-left text-body-2-regular">
+        <table className="w-full min-w-xl caption-bottom text-left text-body-2-regular">
           <thead>
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>

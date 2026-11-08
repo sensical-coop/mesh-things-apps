@@ -55,7 +55,7 @@ export function DeleteAccountDialog({
             variant="danger"
             size="small"
             disabled={destroy.isPending}
-            onClick={() => destroy.mutate({})}
+            onClick={() => destroy.mutate()}
           >
             {destroy.isPending
               ? formatMessage({ id: "feature.auth.deleteAccountDialog.deleting", defaultMessage: "Deleting" })

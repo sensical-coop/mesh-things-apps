@@ -55,7 +55,7 @@ export function LandingFeatures(): ReactElement {
   return (
     <section id="features" className="scroll-mt-24">
       <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
+        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
           <FormattedMessage
             id="page.home.features.heading"
             defaultMessage="Control your mesh, your devices, and <secondary>the data they send.</secondary>"
@@ -79,7 +79,7 @@ export function LandingFeatures(): ReactElement {
                   })}
                 </FrameDescription>
               </FrameHeader>
-              <FramePanel className="h-44 overflow-hidden p-0 [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]">
+              <FramePanel className="h-44 overflow-hidden mask-[linear-gradient(to_bottom,#000_72%,transparent)] p-0">
                 <LandingPacketFeed />
               </FramePanel>
             </Frame>
@@ -129,7 +129,7 @@ export function LandingFeatures(): ReactElement {
                 </FrameDescription>
               </FrameHeader>
               <FramePanel className="flex h-44 flex-col justify-end gap-3">
-                <p className="font-mono text-title-1-medium tabular-nums tracking-tight text-text-primary">22.4 °C</p>
+                <p className="font-mono text-title-1-medium tracking-tight text-text-primary tabular-nums">22.4 °C</p>
                 <p className="text-caption-1-regular text-text-tertiary">
                   {formatMessage({
                     id: "page.home.features.channels.sample",

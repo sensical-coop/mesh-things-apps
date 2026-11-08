@@ -14,7 +14,7 @@ export function useTranslatedFilterLabels(): Partial<FilterLabels> {
         id: "common.filters.builderEmptyHint",
         defaultMessage: "Add a filter to narrow down what you see.",
       }),
-      addCondition: formatMessage({ id: "common.filters.addFilter", defaultMessage: "Add filter" }),
+      addCondition: formatMessage({ id: "common.filters.addCondition", defaultMessage: "Add condition" }),
       addConditionGroup: formatMessage({ id: "common.filters.addConditionGroup", defaultMessage: "Add group" }),
       addToGroup: formatMessage({
         id: "common.filters.addToGroup",

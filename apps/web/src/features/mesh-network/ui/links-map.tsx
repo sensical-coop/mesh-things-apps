@@ -3,6 +3,7 @@ import { Map, MapArc, MapControls, MapMarker, MapRoute, MarkerContent } from "@m
 import { cx } from "@mtt/ui/utils/cx";
 import { type ReactElement, useMemo } from "react";
 import { MapUnsupported } from "@/components/map-unsupported";
+import { expandedMapClass } from "../expanded-map";
 import { deviceTitle } from "@/features/device/model";
 import { FitToPoints } from "@/features/device/ui/map-fit";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
@@ -28,7 +29,7 @@ export function LinksMap({
 }): ReactElement {
   // Links take the accent; a selected traceroute stands out in cyan over a light casing.
   const accent = tokenColor("--oa-primary", "#ff495f");
-  const routeColor = tokenColor("--color-cyan-500", "#06b6d4");
+  const routeColor = tokenColor("--color-route-selected", "#06b6d4");
   const arcs = useMemo(
     () =>
       pairs.flatMap((pair) => {
@@ -47,12 +48,12 @@ export function LinksMap({
   });
 
   return (
-    <div className={cx("oa-arrive oa-squircle-inset relative overflow-hidden", large ? "h-[70vh] min-h-96" : "h-96")}>
+    <div className={cx("relative oa-arrive overflow-hidden oa-squircle-inset", large ? expandedMapClass : "h-96")}>
       <Map
         center={shown.length ? [shown[0]!.lng, shown[0]!.lat] : [0, 0]}
         zoom={11}
         unsupported={<MapUnsupported />}
-        className="h-full w-full"
+        className="size-full "
       >
         <MapControls />
         <FitToPoints points={shown} />

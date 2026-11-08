@@ -17,13 +17,11 @@ import { cn } from "@mtt/ui/utils";
  */
 const frameVariants = cva(
   [
-    "oa-squircle @container relative flex min-w-0 flex-col gap-(--frame-gap) rounded-(--frame-radius) bg-background-primary-default px-(--frame-px) py-(--frame-py)",
-    "(--radius-xl)] [--frame-radius:var(--radius-xl)]",
-    "(--radius-none)] (--radius-2xl)] (--radius-lg)] (--radius-none)]",
+    "@container relative flex min-w-0 flex-col gap-(--frame-gap) oa-squircle bg-background-primary-default px-(--frame-px) py-(--frame-py)",
+    "[--frame-radius:var(--radius-xl)]",
     "[--frame-gap:--spacing(0.75)] [--frame-panel-footer-gap:--spacing(1)] [--frame-panel-header-gap:0rem] [--frame-px:--spacing(0.75)] [--frame-py:--spacing(0.75)]",
     "[--frame-panel-footer-px-adjust:0px] [--frame-panel-footer-py-adjust:0px] [--frame-panel-header-px-adjust:0px] [--frame-panel-header-py-adjust:0px] [--frame-panel-px-adjust:0px] [--frame-panel-py-adjust:0px]",
-    "[--frame-panel-footer-px:calc(var(--frame-panel-footer-px-base)_+_var(--frame-panel-footer-px-adjust))] [--frame-panel-footer-py:calc(var(--frame-panel-footer-py-base)_+_var(--frame-panel-footer-py-adjust))] [--frame-panel-header-px:calc(var(--frame-panel-header-px-base)_+_var(--frame-panel-header-px-adjust))] [--frame-panel-header-py:calc(var(--frame-panel-header-py-base)_+_var(--frame-panel-header-py-adjust))] [--frame-panel-px:calc(var(--frame-panel-px-base)_+_var(--frame-panel-px-adjust))] [--frame-panel-py:calc(var(--frame-panel-py-base)_+_var(--frame-panel-py-adjust))]",
-    "(1)] (1)] (1.25)] (1.5)] (1.5)] (0.5)] (1)] (1)]",
+    "[--frame-panel-footer-px:calc(var(--frame-panel-footer-px-base)+var(--frame-panel-footer-px-adjust))] [--frame-panel-footer-py:calc(var(--frame-panel-footer-py-base)+var(--frame-panel-footer-py-adjust))] [--frame-panel-header-px:calc(var(--frame-panel-header-px-base)+var(--frame-panel-header-px-adjust))] [--frame-panel-header-py:calc(var(--frame-panel-header-py-base)+var(--frame-panel-header-py-adjust))] [--frame-panel-px:calc(var(--frame-panel-px-base)+var(--frame-panel-px-adjust))] [--frame-panel-py:calc(var(--frame-panel-py-base)+var(--frame-panel-py-adjust))]",
     // Default panel token values — overridden per-variant below
     "[--frame-border-color:var(--color-separator-border)] [--frame-panel-bg:var(--color-background-secondary-default)] [--frame-panel-border-color:var(--color-separator-border)]",
     // Concentric inner radius: the panel corner nests smoothly inside the frame
@@ -33,16 +31,16 @@ const frameVariants = cva(
     // base value assumes the bordered default/inverse frame; `ghost` drops the
     // 1px border term and `dense` pins it back to the frame radius (its panels
     // are pulled flush to the edge).
-    "[--frame-panel-radius:calc(var(--frame-radius)_-_var(--frame-px)_-_1px)]",
+    "[--frame-panel-radius:calc(var(--frame-radius)-var(--frame-px)-1px)]",
   ],
   {
     variants: {
       variant: {
-        default: "border border-[var(--frame-border-color)] bg-clip-padding",
+        default: "border border-(--frame-border-color) bg-clip-padding",
         inverse:
-          "border border-[var(--frame-border-color)] bg-background-full bg-clip-padding [--frame-panel-bg:color-mix(in_oklch,var(--color-background-secondary-default)_40%,transparent)]",
+          "border border-(--frame-border-color) bg-background-full bg-clip-padding [--frame-panel-bg:color-mix(in_oklch,var(--color-background-secondary-default)_40%,transparent)]",
         // No frame border, so the panel is inset by --frame-px padding only.
-        ghost: "[--frame-panel-radius:calc(var(--frame-radius)_-_var(--frame-px))]",
+        ghost: "[--frame-panel-radius:calc(var(--frame-radius)-var(--frame-px))]",
       },
       // Header/footer vertical rhythm is tighter than the panel body's, and
       // the gap widens as the frame grows: the bars read as chrome rather than
@@ -76,7 +74,7 @@ const frameVariants = cva(
         // Positional rules must stay as parent selectors — cannot be expressed via CSS vars.
         // Padding is 0 and panels are pulled flush to the frame edge (-mx-px), so
         // their corners align with the frame radius rather than nesting inside it.
-        true: "gap-0 border-[var(--frame-border-color)] p-0 [--frame-panel-radius:var(--frame-radius)] [&_[data-slot=frame-panel]]:-mx-px [&_[data-slot=frame-panel]]:before:hidden [&_[data-slot=frame-panel]:last-child]:-mb-px [&:not(:has([data-slot=frame-panel-header]))_[data-slot=frame-panel]:is(:first-child)]:-mt-px",
+        true: "gap-0 border-(--frame-border-color) p-0 [--frame-panel-radius:var(--frame-radius)] **:data-[slot=frame-panel]:-mx-px **:data-[slot=frame-panel]:before:hidden [&_[data-slot=frame-panel]:last-child]:-mb-px [&:not(:has([data-slot=frame-panel-header]))_[data-slot=frame-panel]:is(:first-child)]:-mt-px",
         false: "",
       },
     },
@@ -121,11 +119,11 @@ function FramePanel({
         // bg-(--frame-panel-bg) and border-(--frame-panel-border-color) consume the
         // CSS vars set by the Frame parent. Any explicit bg-* or border-* class passed
         // via className overrides these by Tailwind source order - no ! needed.
-        "oa-squircle-inset relative min-w-0 overflow-hidden rounded-(--frame-panel-radius) border border-(--frame-panel-border-color) bg-(--frame-panel-bg) bg-clip-padding shadow-xs",
+        "relative min-w-0 overflow-hidden oa-squircle-inset border border-(--frame-panel-border-color) bg-(--frame-panel-bg) bg-clip-padding shadow-xs",
         // `fit` sizes the panel to its content; otherwise it grows to fill the frame.
         !fit && "grow",
-        "before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--frame-panel-radius)_-_1px)] before:shadow-black/5",
-        "dark:bg-clip-border dark:before:shadow-white/5",
+        "before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--frame-panel-radius)-1px)] before:shadow-panel-edge",
+        "dark:bg-clip-border",
         "px-(--frame-panel-header-px) py-(--frame-panel-py)",
         className
       )}
@@ -167,7 +165,7 @@ function FrameDescription({
 }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("text-body-regular break-words text-text-secondary", className)}
+      className={cn("text-body-regular wrap-break-word text-text-secondary", className)}
       data-slot="frame-panel-description"
       {...props}
     />
