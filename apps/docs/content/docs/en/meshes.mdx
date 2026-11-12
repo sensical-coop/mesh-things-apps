@@ -52,6 +52,14 @@ A device created this way has `discovered_at` set. You can reject it like any ot
 
 Only an operator can turn discovery on for a mesh that uses a default or blank PSK. That key matches every gateway on the channel.
 
+## Protocol
+
+`protocol` is the Meshtastic version the mesh's devices run, `2.7` or `2.8`. Packets are decoded with that version, and readings keep the same units and channel names whatever the version. A new mesh is declared on the default version, `2.8`. `GET /protocols` lists every version with its status: current, supported, deprecated or sunset.
+
+The mesh page shows the version next to the mesh name. It tells you when the version is deprecated or past its sunset, and when some devices on the mesh run a version that does not match. Those devices have `protocol_mismatch` set, and some of their readings are lost or misread until you update their firmware or change the mesh's protocol. A version past its sunset can no longer be chosen, but a mesh already on it keeps decoding.
+
+Changing the protocol applies to packets received afterwards. Readings already stored stay as they are.
+
 ## Public meshes
 
 Turn on `is_public` when other people need to read the fleet and its history. Public readers cannot change the mesh, view the PSK, or view rejected devices.

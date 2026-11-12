@@ -1,3 +1,6 @@
+/** The version a new mesh is declared on, as in the API. */
+export const DEFAULT_PROTOCOL = "2.8";
+
 type MeshProps = {
   id: string;
   channelId: string;
@@ -9,6 +12,8 @@ type MeshProps = {
   sourceId?: string | null;
   /** Registers gateways whose packets decode with the mesh's channel and PSK. */
   discoverGateways?: boolean;
+  /** Meshtastic protocol version its packets are decoded with. */
+  protocol?: string;
   /** Mesh terms on the default broker: version accepted, when they lapse, and since when paused. */
   termsAcceptedVersion?: string | null;
   termsExpiresAt?: string | null;
@@ -25,6 +30,7 @@ export type MeshCreate = {
   isPublic?: boolean;
   sourceId?: string | null;
   discoverGateways?: boolean;
+  protocol?: string;
 };
 
 export class Mesh implements MeshProps {
@@ -36,6 +42,7 @@ export class Mesh implements MeshProps {
   isPublic: boolean;
   sourceId: string | null;
   discoverGateways: boolean;
+  protocol: string;
   termsAcceptedVersion: string | null;
   termsExpiresAt: string | null;
   pausedAt: string | null;
@@ -53,6 +60,7 @@ export class Mesh implements MeshProps {
     this.isPublic = props.isPublic ?? false;
     this.sourceId = props.sourceId ?? null;
     this.discoverGateways = props.discoverGateways ?? false;
+    this.protocol = props.protocol ?? DEFAULT_PROTOCOL;
     this.termsAcceptedVersion = props.termsAcceptedVersion ?? null;
     this.termsExpiresAt = props.termsExpiresAt ?? null;
     this.pausedAt = props.pausedAt ?? null;

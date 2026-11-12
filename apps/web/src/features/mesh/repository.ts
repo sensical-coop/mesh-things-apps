@@ -10,6 +10,7 @@ import {
   getMeshesRetrieveQueryOptions,
   getMeshesTraceroutesListQueryOptions,
   getMeshesUpdateMutationOptions,
+  getProtocolsListQueryOptions,
 } from "@mtt/contracts/api";
 import { whenId } from "@/lib/query-when-id";
 
@@ -27,4 +28,5 @@ export const meshRepository = {
   devicesKey: getMeshesDevicesListQueryKey,
   links: getMeshesLinksListQueryOptions,
   traceroutes: getMeshesTraceroutesListQueryOptions,
+  protocols: getProtocolsListQueryOptions,
 };

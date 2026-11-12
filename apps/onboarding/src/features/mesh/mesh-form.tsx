@@ -5,6 +5,7 @@ import { SITE_PATHS } from "@mtt/contracts/site";
 import { termsLocale, useTermsAcceptance, useTermsAsked } from "@mtt/contracts/terms";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { MeshFormAlert, useMeshSubmitLabel, MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
+import { ProtocolField } from "@mtt/ui/forms/protocol-field";
 import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
 import { TermsLink } from "@mtt/ui/forms/terms-link";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -29,6 +30,8 @@ export function MeshForm({
   });
   const termsState = useTermsAcceptance(terms);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const protocols = useQuery(meshRepository.protocols());
+  const [protocol, setProtocol] = useState<string | null>(null);
   const [termsMissing, setTermsMissing] = useState(false);
   const create = useMutation({
     ...meshRepository.create(),
@@ -47,6 +50,7 @@ export function MeshForm({
     }
     const body = meshCreateBody(values, {
       discover_gateways: false,
+      ...(protocol !== null ? { protocol } : {}),
       terms: termsRequired ? termsState.acceptance : null,
     });
     if ("errors" in body) {
@@ -58,7 +62,22 @@ export function MeshForm({
   }
 
   return children(
-    <UiMeshForm errors={errors} pending={create.isPending} onSubmit={onSubmit} formId={formId} />,
+    <UiMeshForm
+      errors={errors}
+      pending={create.isPending}
+      onSubmit={onSubmit}
+      formId={formId}
+      extraFields={
+        <ProtocolField
+          id="start-mesh-protocol"
+          protocols={protocols.data}
+          current={null}
+          value={protocol}
+          onValueChange={setProtocol}
+          error={errors.protocol}
+        />
+      }
+    />,
     <>
       {terms.data && termsRequired ? (
         <div className="flex flex-col gap-3">

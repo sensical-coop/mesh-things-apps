@@ -64,7 +64,7 @@ Staff can read the catalogue but cannot view PSKs. An operator can view only the
 
 `alarm_email_cooldown_seconds` on `PUT /owners/me` replaces the instance default for how long alarms on a device are held before a summary email is sent. Null uses the instance default. See [Quality and alarms](/quality).
 
-Two further settings are about infrastructure the owner created, not sensor alarms:
+Two further settings are about infrastructure, not sensor alarms:
 
-- `status_alerts_enabled` sends an email when a source or sink the owner created stays disconnected or unused.
+- `status_alerts_enabled` sends an email when a source or sink the owner created stays disconnected or unused, or when a device on a mesh the owner has runs a newer protocol than the mesh declares. Every owner can turn it on.
 - `source_rate_alerts_enabled` sends an email when a source the owner created stays above the message rate the instance allows.
