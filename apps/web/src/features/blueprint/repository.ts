@@ -1,29 +1,38 @@
+import type { QueryClient } from "@tanstack/react-query";
 import {
-  algorithmsListOptions,
-  postprocessingBlueprintsCreateMutation,
-  postprocessingBlueprintsDestroyMutation,
-  postprocessingBlueprintsListOptions,
-  postprocessingBlueprintsListQueryKey,
-  postprocessingBlueprintsRetrieveOptions,
-  postprocessingBlueprintsRetrieveQueryKey,
-  postprocessingBlueprintsUpdateMutation,
-  postprocessingBlueprintsVersionsCreateMutation,
-  postprocessingBlueprintsVersionsListOptions,
-  postprocessingBlueprintsVersionsListQueryKey,
-  postprocessingBlueprintsVersionsRetrieveOptions,
-} from "@mtt/contracts/query";
+  getAlgorithmsListQueryOptions,
+  getPostprocessingBlueprintsCreateMutationOptions,
+  getPostprocessingBlueprintsDestroyMutationOptions,
+  getPostprocessingBlueprintsListQueryKey,
+  getPostprocessingBlueprintsListQueryOptions,
+  getPostprocessingBlueprintsRetrieveQueryKey,
+  getPostprocessingBlueprintsRetrieveQueryOptions,
+  getPostprocessingBlueprintsUpdateMutationOptions,
+  getPostprocessingBlueprintsVersionsCreateMutationOptions,
+  getPostprocessingBlueprintsVersionsListQueryKey,
+  getPostprocessingBlueprintsVersionsListQueryOptions,
+  getPostprocessingBlueprintsVersionsRetrieveQueryOptions,
+} from "@mtt/contracts/api";
 
 export const blueprintRepository = {
-  list: postprocessingBlueprintsListOptions,
-  listKey: postprocessingBlueprintsListQueryKey,
-  retrieve: postprocessingBlueprintsRetrieveOptions,
-  retrieveKey: postprocessingBlueprintsRetrieveQueryKey,
-  create: postprocessingBlueprintsCreateMutation,
-  update: postprocessingBlueprintsUpdateMutation,
-  destroy: postprocessingBlueprintsDestroyMutation,
-  versions: postprocessingBlueprintsVersionsListOptions,
-  versionsKey: postprocessingBlueprintsVersionsListQueryKey,
-  version: postprocessingBlueprintsVersionsRetrieveOptions,
-  createVersion: postprocessingBlueprintsVersionsCreateMutation,
-  algorithms: algorithmsListOptions,
+  list: getPostprocessingBlueprintsListQueryOptions,
+  listKey: getPostprocessingBlueprintsListQueryKey,
+  retrieve: getPostprocessingBlueprintsRetrieveQueryOptions,
+  retrieveKey: getPostprocessingBlueprintsRetrieveQueryKey,
+  create: getPostprocessingBlueprintsCreateMutationOptions,
+  update: getPostprocessingBlueprintsUpdateMutationOptions,
+  destroy: getPostprocessingBlueprintsDestroyMutationOptions,
+  versions: getPostprocessingBlueprintsVersionsListQueryOptions,
+  versionsKey: getPostprocessingBlueprintsVersionsListQueryKey,
+  version: getPostprocessingBlueprintsVersionsRetrieveQueryOptions,
+  createVersion: getPostprocessingBlueprintsVersionsCreateMutationOptions,
+  algorithms: getAlgorithmsListQueryOptions,
 };
+
+/** A blueprint changed: refresh the list, and the blueprint with its versions when `blueprintId` is given (not for a deleted one). */
+export async function invalidateBlueprint(queryClient: QueryClient, blueprintId?: string): Promise<void> {
+  await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+  if (!blueprintId) return;
+  await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey(blueprintId) });
+  await queryClient.invalidateQueries({ queryKey: blueprintRepository.versionsKey(blueprintId) });
+}

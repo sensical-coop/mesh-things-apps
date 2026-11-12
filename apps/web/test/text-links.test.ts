@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { splitLinks } from "../src/lib/text-links.ts";
+import { splitLinks } from "@mtt/ui/forms/text-links";
 
 test("splitLinks leaves text without URLs whole", () => {
   assert.deepEqual(splitLinks("I accept the Terms."), [{ text: "I accept the Terms." }]);

@@ -1,36 +1,31 @@
 import type { Mesh } from "@mtt/contracts";
-import { zMeshesUpdateData } from "@mtt/contracts/zod";
+import { MeshUpdate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
+import { termsFields } from "@mtt/contracts/terms";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { DEFAULT_BROKER, NO_SOURCE, meshTermsCurrent, meshTitle } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
-import { termsLocale, termsStanding } from "@/features/terms/model";
-import { termsRepository } from "@/features/terms/repository";
+import { useMeshTerms } from "@/features/terms/use-mesh-terms";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
-
-/** Select value for "no source": the instance's own broker. */
-const DEFAULT_BROKER = "default";
 
 export function EditMeshDialog({
   mesh,
   open,
   onClose,
-  onSaved,
 }: {
   mesh: Pick<
     Mesh,
@@ -46,9 +41,8 @@ export function EditMeshDialog({
   >;
   open: boolean;
   onClose: () => void;
-  onSaved?: () => void | Promise<void>;
 }): ReactElement {
-  const { formatMessage, locale } = useIntl();
+  const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const { isOperator, meId } = useMe();
   // The API shows and accepts a source only from the mesh's owner, and only
@@ -57,10 +51,7 @@ export function EditMeshDialog({
   const sources = useQuery({ ...sourceRepository.list(), enabled: canPickSource });
   const currentSource = mesh.source_id ?? null;
   const sourceItems = [
-    {
-      label: formatMessage({ id: "feature.mesh.editDialog.defaultBroker", defaultMessage: "Default broker" }),
-      value: DEFAULT_BROKER,
-    },
+    { label: formatMessage(DEFAULT_BROKER), value: NO_SOURCE },
     ...(sources.data ?? []).map((source) => ({ label: sourceTitle(source), value: source.id })),
     // Keep a current source the list doesn't include, so resending it stays valid.
     ...(currentSource && sources.data && !sources.data.some((source) => source.id === currentSource)
@@ -78,32 +69,17 @@ export function EditMeshDialog({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
       await queryClient.invalidateQueries({
-        queryKey: meshRepository.retrieveKey({ path: { mesh_id: mesh.id } }),
+        queryKey: meshRepository.retrieveKey(mesh.id),
       });
-      await onSaved?.();
       onClose();
     },
     onError: (error) => setErrors(readApiError(error).fields),
   });
   const updateStatus = update.error ? readApiError(update.error).status : undefined;
   // Moving onto the default broker needs the mesh terms, unless the mesh holds a current acceptance.
-  // A self-hosted instance asks for no terms; unknown counts as enforced.
-  const enforced = useTermsEnforced();
-  const termsEnforced = enforced !== false;
-  const meshTerms = useQuery({
-    ...termsRepository.mesh({ query: { locale: termsLocale(locale) } }),
-    enabled: enforced === true && canPickSource && currentSource !== null,
-  });
-  const termsCurrent = ["ok", "expiring"].includes(
-    termsStanding({
-      acceptedVersion: mesh.terms_accepted_version ?? null,
-      expiresAt: mesh.terms_expires_at ?? null,
-      pausedAt: null,
-      currentVersion: meshTerms.data?.version,
-      now: new Date(),
-    }),
-  );
-  const [awaitingTerms, setAwaitingTerms] = useState<Parameters<typeof update.mutate>[0] | null>(null);
+  const { enforced: termsEnforced, current: currentTerms } = useMeshTerms();
+  const termsCurrent = meshTermsCurrent(mesh, currentTerms?.version, new Date());
+  const [awaitingTerms, setAwaitingTerms] = useState<{ meshId: string; data: MeshUpdate } | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -131,22 +107,22 @@ export function EditMeshDialog({
     const discover = form.get("discover_gateways") === "on";
     if (discover !== (mesh.discover_gateways ?? false)) body.discover_gateways = discover;
     if (canPickSource) {
-      const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
-      const sourceId = picked === DEFAULT_BROKER ? null : picked;
+      const picked = String(form.get("source_id") ?? NO_SOURCE);
+      const sourceId = picked === NO_SOURCE ? null : picked;
       // Only a change moves the gateways, so an unchanged source isn't resent.
       if (sourceId !== currentSource) body.source_id = sourceId;
     }
-    const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
+    const parsed = MeshUpdate.safeParse(body);
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
     }
     setErrors({});
-    if (termsEnforced && currentSource !== null && parsed.data.body?.source_id === null && !termsCurrent) {
-      setAwaitingTerms(parsed.data);
+    if (termsEnforced && currentSource !== null && parsed.data?.source_id === null && !termsCurrent) {
+      setAwaitingTerms({ meshId: mesh.id, data: parsed.data });
       return;
     }
-    update.mutate(parsed.data);
+    update.mutate({ meshId: mesh.id, data: parsed.data });
   }
 
   return (
@@ -255,7 +231,7 @@ export function EditMeshDialog({
                   id="mesh-edit-source"
                   name="source_id"
                   items={sourceItems}
-                  defaultValue={currentSource ?? DEFAULT_BROKER}
+                  defaultValue={currentSource ?? NO_SOURCE}
                 />
               )}
             </FormField>
@@ -299,8 +275,8 @@ export function EditMeshDialog({
           update.mutate(
             acceptance
               ? {
-                  ...awaitingTerms,
-                  body: { ...awaitingTerms.body, terms_version: acceptance.version, terms_locale: acceptance.locale },
+                  meshId: awaitingTerms.meshId,
+                  data: { ...awaitingTerms.data, ...termsFields(acceptance) },
                 }
               : awaitingTerms,
           );

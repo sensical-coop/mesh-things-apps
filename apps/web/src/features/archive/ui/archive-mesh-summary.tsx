@@ -1,6 +1,7 @@
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formatBytes, type ArchiveSummary } from "@/features/archive/model";
+import { type ArchiveSummary } from "@/features/archive/model";
+import { formatBytes } from "@/lib/format";
 
 export type ArchiveMeshSummaryProps = {
   devices: number;
@@ -9,7 +10,6 @@ export type ArchiveMeshSummaryProps = {
   summary: ArchiveSummary | null;
 };
 
-/** One line on the chosen mesh: how many of its devices are stored and what's stored so far. */
 export function ArchiveMeshSummary({ devices, archived, summary }: ArchiveMeshSummaryProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const parts = [
@@ -32,5 +32,5 @@ export function ArchiveMeshSummary({ devices, archived, summary }: ArchiveMeshSu
       );
     }
   }
-  return <p className="text-body-regular tabular-nums text-text-secondary">{parts.join(" · ")}</p>;
+  return <p className="text-body-regular text-text-secondary tabular-nums">{parts.join(" · ")}</p>;
 }

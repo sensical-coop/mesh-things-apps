@@ -408,7 +408,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     <MapContext.Provider value={contextValue}>
       <div
         ref={containerRef}
-        className={cn("relative h-full w-full", className)}
+        className={cn("relative size-full ", className)}
       >
         {unsupportedBrowser
           ? (unsupported ?? <DefaultUnsupported />)
@@ -611,7 +611,7 @@ function MarkerContent({ children, className }: MarkerContentProps) {
 
 function DefaultMarkerIcon() {
   return (
-    <div className="relative h-4 w-4 rounded-full border-2 border-text-white bg-chart-6-active shadow-lg" />
+    <div className="relative size-4  rounded-full border-2 border-text-white bg-chart-6-active shadow-lg" />
   );
 }
 
@@ -686,7 +686,6 @@ function MarkerPopup({
     <div
       className={cn(
         "relative max-w-62 rounded-md border bg-popover p-3 text-popover-foreground shadow-md",
-        "animate-in fade-in-0 zoom-in-95 duration-200 ease-out",
         className,
       )}
     >
@@ -758,7 +757,6 @@ function MarkerTooltip({
     <div
       className={cn(
         "pointer-events-none rounded-md bg-foreground px-2 py-1 text-xs text-balance text-background shadow-md",
-        "animate-in fade-in-0 zoom-in-95 duration-200 ease-out",
         className,
       )}
     >
@@ -791,7 +789,7 @@ function MarkerLabel({
     <div
       className={cn(
         "absolute left-1/2 -translate-x-1/2 whitespace-nowrap",
-        "text-[10px] font-medium text-foreground",
+        "text-caption-2-medium text-foreground",
         positionClasses[position],
         className,
       )}
@@ -852,7 +850,7 @@ function ControlButton({
       className={cn(
         "flex size-8 items-center justify-center transition-colors",
         "first:rounded-t-md last:rounded-b-md",
-        "hover:bg-accent dark:hover:bg-accent/40",
+        "hover:bg-accent",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden focus-visible:ring-inset",
         "disabled:pointer-events-none disabled:opacity-50",
       )}
@@ -1097,7 +1095,6 @@ function MapPopup({
     <div
       className={cn(
         "relative max-w-62 rounded-md border bg-popover p-3 text-popover-foreground shadow-md",
-        "animate-in fade-in-0 zoom-in-95 duration-200 ease-out",
         className,
       )}
     >

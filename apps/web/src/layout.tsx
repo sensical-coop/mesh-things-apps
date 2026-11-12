@@ -1,11 +1,12 @@
 import { authRepository } from "@/features/auth/repository";
+import { BlankScreen } from "@/features/auth/ui/blank-screen";
 import { isOwnerSession } from "@/features/auth/session";
 import { cx } from "@mtt/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet, RouterProvider } from "@tanstack/react-router";
 import { type ComponentProps, type ReactElement } from "react";
 import { pageWidth } from "@/components/brand";
-import { TermsBanner } from "@/features/terms/ui/terms-banner";
+import { TermsBanner } from "@/terms-banner";
 import { Footer } from "@/footer";
 import { Header } from "@/header";
 import { routes } from "@/router";
@@ -15,10 +16,10 @@ export function Layout({ router }: ComponentProps<typeof RouterProvider>): React
 }
 
 export function Shell(): ReactElement {
-  const me = useQuery({ ...authRepository.me(), retry: false });
+  const me = useQuery(authRepository.me());
 
   if (me.isPending) {
-    return <div className="min-h-svh bg-background-full" />;
+    return <BlankScreen />;
   }
   if (me.error) {
     return <Navigate to={routes.login} />;

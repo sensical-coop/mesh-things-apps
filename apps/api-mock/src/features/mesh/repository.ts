@@ -1,16 +1,20 @@
-import { Mesh, meshFilterValue } from "@mtt/domain/mesh/Mesh";
-import type { MeshCreate } from "@mtt/domain/mesh/Mesh";
-import type { IMeshRepository } from "@mtt/domain/mesh/IMeshRepository";
+import { Mesh, type MeshCreate } from "@mtt/domain/mesh/Mesh";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
-import { matchesListFilters, type ListFilter } from "@mtt/domain/shared/list-filter";
 
-export class MemoryMeshes implements IMeshRepository {
+export type MeshPatch = {
+  channelId?: string;
+  pskB64?: string;
+  label?: string | null;
+  isPublic?: boolean;
+  sourceId?: string | null;
+  discoverGateways?: boolean;
+};
+
+export class MemoryMeshes {
   readonly items = new Map<string, Mesh>();
 
-  async list(filters?: ListFilter[]): Promise<Mesh[]> {
-    const items = [...this.items.values()];
-    if (!filters?.length) return items;
-    return items.filter((mesh) => matchesListFilters((field) => meshFilterValue(mesh, field), filters));
+  async list(): Promise<Mesh[]> {
+    return [...this.items.values()];
   }
 
   async get(id: string): Promise<Mesh | null> {
@@ -35,17 +39,7 @@ export class MemoryMeshes implements IMeshRepository {
     return mesh;
   }
 
-  async update(
-    id: string,
-    patch: {
-      channelId?: string;
-      pskB64?: string;
-      label?: string | null;
-      isPublic?: boolean;
-      sourceId?: string | null;
-      discoverGateways?: boolean;
-    },
-  ): Promise<Mesh | null> {
+  async update(id: string, patch: MeshPatch): Promise<Mesh | null> {
     const mesh = this.items.get(id);
     if (!mesh) return null;
     if (patch.channelId !== undefined) mesh.channelId = patch.channelId;

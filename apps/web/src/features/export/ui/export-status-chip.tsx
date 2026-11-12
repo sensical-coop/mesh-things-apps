@@ -1,13 +1,13 @@
 import type { Export } from "@mtt/contracts";
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
 
 export type ExportStatusChipProps = {
   status: Export["status"];
 };
 
-const COLOR = { queued: "neutral", running: "blue", ready: "lime", failed: "rose", expired: "soft" } as const;
+const TONE = { queued: "neutral", running: "blue", ready: "lime", failed: "rose", expired: "soft" } as const;
 
 export function ExportStatusChip({ status }: ExportStatusChipProps): ReactElement {
   const { formatMessage } = useIntl();
@@ -18,9 +18,5 @@ export function ExportStatusChip({ status }: ExportStatusChipProps): ReactElemen
     failed: formatMessage({ id: "feature.export.status.failed", defaultMessage: "Failed" }),
     expired: formatMessage({ id: "feature.export.status.expired", defaultMessage: "Expired" }),
   }[status];
-  return (
-    <Chip variant="caption" color={COLOR[status]} className="rounded-full">
-      {label}
-    </Chip>
-  );
+  return <StatusChip tone={TONE[status]} label={label} />;
 }

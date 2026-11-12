@@ -1,41 +1,35 @@
 import {
-  meshesTermsAcceptanceCreateMutation,
-  meshesTermsRetrieveOptions,
-  ownersMeTermsAcceptanceCreateMutation,
-  sinksTermsAcceptanceCreateMutation,
-  sinksTermsRetrieveOptions,
-  sourcesTermsAcceptanceCreateMutation,
-  sourcesTermsRetrieveOptions,
-  termsRetrieveOptions,
-} from "@mtt/contracts/query";
-import { readApiError } from "@/lib/api-errors";
-import type { TermsLocale } from "@/features/terms/model";
+  getMeshesTermsRetrieveQueryOptions,
+  getOwnersMeTermsAcceptanceCreateMutationOptions,
+  getSinksTermsRetrieveQueryOptions,
+  getSourcesTermsRetrieveQueryOptions,
+  meshesTermsAcceptanceCreate,
+  sinksTermsAcceptanceCreate,
+  sourcesTermsAcceptanceCreate,
+} from "@mtt/contracts/api";
+import { accountTermsQuery, type termsFields } from "@mtt/contracts/terms";
 
-/** The API owns the terms: their text and version come from these routes. */
-export const termsRepository = {
-  /** Account terms, accepted at signup; readable without an account. They don't lapse. */
-  account: termsRetrieveOptions,
-  /** Mesh terms, accepted per mesh on the default broker. */
-  mesh: meshesTermsRetrieveOptions,
-  /** Source terms, accepted per source; operators only. */
-  source: sourcesTermsRetrieveOptions,
-  /** Sink terms, accepted per sink; operators only. */
-  sink: sinksTermsRetrieveOptions,
-  acceptAccount: ownersMeTermsAcceptanceCreateMutation,
-  renewMesh: meshesTermsAcceptanceCreateMutation,
-  renewSource: sourcesTermsAcceptanceCreateMutation,
-  renewSink: sinksTermsAcceptanceCreateMutation,
+export type Renewal = { id: string; data: ReturnType<typeof termsFields> };
+
+const renew = {
+  mesh: { mutationFn: ({ id, data }: Renewal) => meshesTermsAcceptanceCreate(id, data) },
+  source: { mutationFn: ({ id, data }: Renewal) => sourcesTermsAcceptanceCreate(id, data) },
+  sink: { mutationFn: ({ id, data }: Renewal) => sinksTermsAcceptanceCreate(id, data) },
 };
 
-/**
- * The account terms, which also tell whether this instance asks for terms at all
- * (`GET /terms` answers 404 when it doesn't). One shared, long-lived query; a 404 is
- * an answer, not a failure, so it isn't retried.
- */
-export function accountTermsQuery(locale: TermsLocale) {
-  return {
-    ...termsRetrieveOptions({ query: { locale } }),
-    retry: (failures: number, error: unknown) => readApiError(error).status !== 404 && failures < 3,
-    staleTime: 5 * 60_000,
-  };
-}
+/** The mesh, source or sink a renewal answers with. */
+export type TermsRenewed<K extends keyof typeof renew> = Awaited<ReturnType<(typeof renew)[K]["mutationFn"]>>;
+
+export const termsRepository = {
+  /** Account terms, accepted at signup; readable without an account. They don't lapse. */
+  account: (params: { locale: Parameters<typeof accountTermsQuery>[0] }) => accountTermsQuery(params.locale),
+  /** Mesh terms, accepted per mesh on the default broker. */
+  mesh: getMeshesTermsRetrieveQueryOptions,
+  /** Source terms, accepted per source; operators only. */
+  source: getSourcesTermsRetrieveQueryOptions,
+  /** Sink terms, accepted per sink; operators only. */
+  sink: getSinksTermsRetrieveQueryOptions,
+  acceptAccount: getOwnersMeTermsAcceptanceCreateMutationOptions,
+  /** Accepting the current terms again, by entity id. */
+  renew,
+};

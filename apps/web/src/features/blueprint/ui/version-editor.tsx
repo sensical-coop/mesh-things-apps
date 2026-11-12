@@ -5,17 +5,11 @@ import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
-import {
-  draftId,
-  parseRef,
-  slotRef,
-  stepForAlgorithm,
-  stepRef,
-  type BlueprintDraft,
-  type StepDraft,
-} from "@/features/blueprint/model";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
+import { parseRef, slotRef, stepRef } from "@mtt/contracts/blueprint";
+import { draftId, stepForAlgorithm, type BlueprintDraft, type StepDraft } from "@/features/blueprint/model";
+import { algorithmOf } from "@/lib/algorithm-params";
 import { StepEditor } from "@/features/blueprint/ui/step-editor";
 
 export type VersionEditorProps = {
@@ -34,7 +28,6 @@ function renameRefs(steps: StepDraft[], rename: (ref: string) => string): StepDr
   }));
 }
 
-/** The inputs a recipe reads (slots, bound per device) and the ordered steps computing from them. */
 export function VersionEditor({ draft, algorithms, onChange, withNotes = false }: VersionEditorProps): ReactElement {
   const { formatMessage } = useIntl();
   const [adding, setAdding] = useState("");
@@ -68,7 +61,7 @@ export function VersionEditor({ draft, algorithms, onChange, withNotes = false }
   }
 
   function addStep(name: string) {
-    const algorithm = algorithms.find((candidate) => candidate.name === name);
+    const algorithm = algorithmOf(algorithms, name);
     if (!algorithm) return;
     const step = stepForAlgorithm(algorithm, draft.steps.map((row) => row.key));
     // Declare the slots a first step reads, so a simple recipe needs no extra typing.

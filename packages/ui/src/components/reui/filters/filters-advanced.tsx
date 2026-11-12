@@ -203,7 +203,7 @@ const COMBINATOR_CLASS = cn(
 /** The two static words in that column, CENTRED because the pill's own
  * `justify-center` centres its word. `w-full`, or `truncate` has no box. */
 const COMBINATOR_TEXT_CLASS = cn(
-  "text-muted-foreground w-full truncate px-1 text-center text-sm",
+  "w-full truncate px-1 text-center text-sm text-muted-foreground",
   SERA_TEXT_CLASS
 )
 
@@ -233,7 +233,7 @@ const VALUE_CELL_CLASS = "basis-[var(--filter-value-width,12rem)]"
 /** The trailing band. `pe-1` is on the BAND and not the gutter, since a group
  * card is `pe-0`; the footer and `DROP_SLOT_INDICATOR` restate the same four. */
 const ACTION_BAND_CLASS = cn(
-  "text-muted-foreground flex shrink-0 items-center gap-0.5 pe-1"
+  "flex shrink-0 items-center gap-0.5 pe-1 text-muted-foreground"
 )
 
 /** What the grip and the kebab wear while open. TWO ATTRIBUTES, because Radix
@@ -274,7 +274,7 @@ const PANEL_CLASS = "flex w-full min-w-0 flex-col gap-2 py-(--filter-panel-pad)"
 /** A RING and not a border, the whole answer to the staggered trailing
  * controls: a border pushes the content edge inward a pixel per level. */
 const GROUP_CARD_CLASS = cn(
-  "bg-muted/40 min-w-0 flex-1 rounded-md",
+  "min-w-0 flex-1 rounded-md bg-muted/40",
   "inset-ring inset-ring-border",
   "ps-2 pe-0",
   "data-invalid:inset-ring-destructive/50",
@@ -282,7 +282,7 @@ const GROUP_CARD_CLASS = cn(
   // slot by STYLE and not size: dashed is not there yet, solid exists.
   "data-drop-into:bg-muted/60",
   "data-drop-into:outline-1 data-drop-into:outline-solid",
-  "data-drop-into:outline-border data-drop-into:-outline-offset-2"
+  "data-drop-into:-outline-offset-2 data-drop-into:outline-border"
 )
 
 /** THE CONTAINER a row measures its own room against, on the panel body and on
@@ -311,7 +311,7 @@ const DROP_SLOT_INDICATOR = cn(
   // THE INSERTION LINE lives in the gap rather than overlaying a real row.
   // `end-1` and not `end-0`: four pixels of `pe-1` are the kebab column.
   "data-drop-edge:after:absolute",
-  "data-drop-edge:after:start-0 data-drop-edge:after:end-1",
+  "data-drop-edge:after:inset-s-0 data-drop-edge:after:inset-e-1",
   "data-drop-edge:after:h-0.5 data-drop-edge:after:rounded-full",
   "data-drop-edge:after:bg-primary",
   "data-drop-edge:after:z-10",
@@ -332,8 +332,8 @@ const DROP_INDICATOR = DROP_SLOT_INDICATOR
  * against the PADDING box and `inset-x-0` overran every rule above it. */
 const FOOTER_DROP_CLASS = cn(
   "data-drop-into:after:absolute",
-  "data-drop-into:after:start-(--filter-panel-pad)",
-  "data-drop-into:after:end-[calc(var(--filter-panel-pad)+4px)]",
+  "data-drop-into:after:inset-s-(--filter-panel-pad)",
+  "data-drop-into:after:inset-e-[calc(var(--filter-panel-pad)+4px)]",
   "data-drop-into:after:top-0 data-drop-into:after:h-0.5",
   "data-drop-into:after:rounded-full data-drop-into:after:bg-primary"
 )
@@ -417,7 +417,7 @@ function CombinatorCell({
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute end-1 opacity-0 transition-opacity",
+          "pointer-events-none absolute inset-e-1 opacity-0 transition-opacity",
           "group-hover/combinator:opacity-60",
           "group-focus-visible/combinator:opacity-60",
           "[&_svg]:size-3"
@@ -467,7 +467,7 @@ function RowIssueHint({
               tabIndex={-1}
               aria-hidden="true"
               className={cn(
-                "text-destructive flex shrink-0 items-center justify-center [&_svg]:size-3.5",
+                "flex shrink-0 items-center justify-center text-destructive [&_svg]:size-3.5",
                 className
               )}
             >
@@ -513,7 +513,7 @@ function RowHandle({
       /* `touch-none`, or a finger on the handle becomes a page scroll the
          gesture then fights. Muted at rest, never hidden. */
       className={cn(
-        "focus-visible:text-foreground cursor-grab touch-none",
+        "cursor-grab touch-none focus-visible:text-foreground",
         "active:cursor-grabbing",
         ACTION_CONTROL_CLASS
       )}
@@ -688,7 +688,7 @@ function FilterInlineValueCell<V, O>({
       <RowIssueHint
         message={issueText}
         /* `pointer-events-none`, so a click still lands in the input. */
-        className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 [&>*]:pointer-events-auto"
+        className="pointer-events-none absolute inset-e-2 top-1/2 -translate-y-1/2 *:pointer-events-auto"
       />
     </>
   )
@@ -1078,7 +1078,7 @@ function FilterUnknownRow<V>({
          `data-parent-id` into the surface, and this row carries one. */
       className={cn(ROW_BAND_CLASS, DROP_INDICATOR)}
     >
-      <span className="text-muted-foreground min-w-0 flex-1 truncate text-sm">
+      <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
         {rule.path.join(actions.labels.pathSeparator)}
       </span>
       {/* The same trailing band, so the broken row lands on the kebab column. */}
@@ -1228,7 +1228,7 @@ function FilterAdvancedGroup<V, O>({
               className={cn(
                 /* 70% foreground, not the muted token: on the card's tint the
                    muted foreground measured 4.35:1 in light, under 4.5:1 AA. */
-                "text-foreground/70 rounded-md border border-dashed px-2 py-3",
+                "rounded-md border border-dashed px-2 py-3 text-foreground/70",
                 "text-center text-xs",
                 "data-drop-into:border-primary/60 data-drop-into:bg-primary/5",
                 "data-drop-into:text-primary"
@@ -1258,7 +1258,7 @@ function FilterAdvancedGroup<V, O>({
         {/* `flex-nowrap`, or the group's kebab leaves the kebab column. */}
         <div
           data-slot="filter-group-footer"
-          className="text-muted-foreground flex flex-nowrap items-center gap-2 pt-2 pb-2"
+          className="flex flex-nowrap items-center gap-2 py-2  text-muted-foreground"
           data-drop-parent={group.id}
           data-drop-index={group.rules.length}
         >
@@ -1818,7 +1818,7 @@ export function FiltersAdvancedPanel<V, O>({
       {actions.readOnly ? (
         <p
           data-slot="filters-readonly"
-          className={cn("text-muted-foreground text-xs", PANEL_GUTTER_CLASS)}
+          className={cn("text-xs text-muted-foreground", PANEL_GUTTER_CLASS)}
         >
           {actions.labels.readOnly}
         </p>
@@ -1878,14 +1878,14 @@ export function FiltersAdvancedPanel<V, O>({
             aria-hidden="true"
             /* `rounded-full` is the one radius literal safe in every
                style, square or round. */
-            className="bg-muted text-muted-foreground mb-1 flex size-9 items-center justify-center rounded-full [&_svg]:size-4"
+            className="mb-1 flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground [&_svg]:size-4"
           >
             <ListFilterIcon
             />
           </span>
           <p className="text-sm font-medium">{actions.labels.builderEmpty}</p>
           {actions.readOnly ? null : (
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs text-muted-foreground">
               {actions.labels.builderEmptyHint}
             </p>
           )}
@@ -1951,7 +1951,7 @@ export function FiltersAdvancedPanel<V, O>({
           <Button
             variant="ghost"
             size={sizes.button}
-            className="text-muted-foreground hover:text-foreground ms-auto shrink-0"
+            className="ms-auto shrink-0 text-muted-foreground hover:text-foreground"
             disabled={actions.disabled}
             {...filterReadOnlyProps(actions)}
             onClick={() => actions.clearQuery()}
@@ -1979,7 +1979,7 @@ export function FiltersAdvancedPanel<V, O>({
         {
           [PANEL_PAD_VAR]:
             mode === "inline" ? PANEL_PAD_INLINE : PANEL_PAD_POPOVER,
-        } as React.CSSProperties
+        }
       }
       className={cn(PANEL_CLASS, className)}
     >
@@ -2056,7 +2056,7 @@ export function FiltersAdvanced<V, O>({
               {ruleCount > 0 ? (
                 <span
                   aria-hidden="true"
-                  className="bg-muted text-muted-foreground rounded-sm px-1.5 text-xs tabular-nums"
+                  className="rounded-sm bg-muted px-1.5 text-xs text-muted-foreground tabular-nums"
                 >
                   {ruleCount}
                 </span>
@@ -2072,7 +2072,7 @@ export function FiltersAdvanced<V, O>({
         /* THE POPUP'S OWN NAME: it is a `role="dialog"`, and the panel's is
            one level in, on its `role="group"`. */
         aria-label={actions.labels.advancedFilter}
-        className={cn("w-[42rem] max-w-[95vw] p-0", className)}
+        className={cn("w-2xl max-w-[95vw] p-0", className)}
       >
         {/* `mode` defaults to "popover", which keeps the panel's padding. */}
         <FiltersAdvancedPanel<V, O> reorderable={reorderable} />

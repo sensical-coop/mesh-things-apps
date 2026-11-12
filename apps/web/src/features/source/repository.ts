@@ -1,17 +1,17 @@
 import {
-  sourcesCreateMutation,
-  sourcesDestroyMutation,
-  sourcesListOptions,
-  sourcesListQueryKey,
-  sourcesRestartCreateMutation,
-  sourcesUpdateMutation,
-} from "@mtt/contracts/query";
+  getSourcesCreateMutationOptions,
+  getSourcesDestroyMutationOptions,
+  getSourcesListQueryKey,
+  getSourcesListQueryOptions,
+  getSourcesRestartCreateMutationOptions,
+  getSourcesUpdateMutationOptions,
+} from "@mtt/contracts/api";
 
 export const sourceRepository = {
-  list: sourcesListOptions,
-  listKey: sourcesListQueryKey,
-  create: sourcesCreateMutation,
-  update: sourcesUpdateMutation,
-  destroy: sourcesDestroyMutation,
-  restart: sourcesRestartCreateMutation,
+  list: getSourcesListQueryOptions,
+  listKey: getSourcesListQueryKey,
+  create: getSourcesCreateMutationOptions,
+  update: getSourcesUpdateMutationOptions,
+  destroy: getSourcesDestroyMutationOptions,
+  restart: getSourcesRestartCreateMutationOptions,
 };

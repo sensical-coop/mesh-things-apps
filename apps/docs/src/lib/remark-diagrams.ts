@@ -12,7 +12,7 @@ type MarkdownNode = {
 };
 
 // The SVG ships a <style> that imports a web font and styles every `svg` and `text` on the
-// page. Its variables are defined in pages/docs/styles.css instead, under `.docs-diagram`.
+// page. Its variables are defined in docs.css instead, under `.docs-diagram`.
 const embeddedStyle = /<style>[\s\S]*?<\/style>/;
 
 // The SVG colours point at CSS variables, so one render serves light and dark.

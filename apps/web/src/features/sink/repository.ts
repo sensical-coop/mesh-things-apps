@@ -1,17 +1,23 @@
 import {
-  sinksCreateMutation,
-  sinksCredentialsCreateMutation,
-  sinksDestroyMutation,
-  sinksListOptions,
-  sinksListQueryKey,
-  sinksUpdateMutation,
-} from "@mtt/contracts/query";
+  getSinksCreateMutationOptions,
+  getSinksCredentialsCreateMutationOptions,
+  getSinksDestroyMutationOptions,
+  getSinksListQueryKey,
+  getSinksListQueryOptions,
+  getSinksUpdateMutationOptions,
+} from "@mtt/contracts/api";
+import { readApiError } from "@mtt/contracts/errors";
+
+/** No broker API on this instance: every sink route answers 404. */
+export function isSinksUnavailable(error: unknown): boolean {
+  return readApiError(error).status === 404;
+}
 
 export const sinkRepository = {
-  list: sinksListOptions,
-  listKey: sinksListQueryKey,
-  create: sinksCreateMutation,
-  update: sinksUpdateMutation,
-  rotateCredentials: sinksCredentialsCreateMutation,
-  destroy: sinksDestroyMutation,
+  list: getSinksListQueryOptions,
+  listKey: getSinksListQueryKey,
+  create: getSinksCreateMutationOptions,
+  update: getSinksUpdateMutationOptions,
+  rotateCredentials: getSinksCredentialsCreateMutationOptions,
+  destroy: getSinksDestroyMutationOptions,
 };

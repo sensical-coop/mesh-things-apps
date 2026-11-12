@@ -1,3 +1,4 @@
+/// <reference path="./css-properties.d.ts" />
 import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
@@ -26,7 +27,7 @@ const TEXT_STYLE_SUFFIXES = TEXT_FAMILIES.flatMap((family) =>
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      "font-size": [{ text: TEXT_STYLE_SUFFIXES }],
+      "font-size": [{ text: [...TEXT_STYLE_SUFFIXES, "hero-title", "hero-lead", "section-title"] }],
     },
   },
 });
@@ -36,7 +37,3 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const cx = twMerge;
-
-export function sortCx<T>(classes: T): T {
-  return classes;
-}

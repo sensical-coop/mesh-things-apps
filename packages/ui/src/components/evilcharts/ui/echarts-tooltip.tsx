@@ -32,7 +32,7 @@ export const tooltipVariantClass: Record<TooltipVariant, string> = {
 // series' solid var or multi-stop gradient (indicatorBackground). A chart drops
 // this into a tooltipRow's `indicatorHtml`.
 export function tooltipIndicatorHtml(key: string, colorsCount: number): string {
-  return `<div class="h-2.5 w-2.5 shrink-0 rounded-[2px]" style="background:${indicatorBackground(key, colorsCount)}"></div>`;
+  return `<div class="h-2.5 w-2.5 shrink-0 rounded-xs" style="background:${indicatorBackground(key, colorsCount)}"></div>`;
 }
 
 // One tooltip row: indicator swatch + label/value pair. `dimmed` is a class

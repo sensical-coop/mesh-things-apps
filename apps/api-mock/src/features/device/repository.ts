@@ -1,12 +1,27 @@
-import { Device, matchesDeviceFilter, type DeviceCreate, type DeviceListFilter } from "@mtt/domain/device/Device";
-import type { IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
+import { Device, type DeviceCreate } from "@mtt/domain/device/Device";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 
-export class MemoryDevices implements IDeviceRepository {
+export type DevicePatch = Partial<DeviceCreate> & {
+  isAllowed?: boolean;
+  absenceDetectionEnabled?: boolean;
+  readingIntervalSeconds?: number | null;
+  publishIntervalSeconds?: number | null;
+  locationOverridden?: boolean;
+};
+
+/** POST gateways stay unseen until this elapses. 0 never marks them seen. Seed data does not use insert(). */
+function gatewaySeenAfterMs(): number {
+  const raw = process.env.MOCK_GATEWAY_SEEN_AFTER_MS;
+  if (raw === undefined || raw === "") return 20_000;
+  const ms = Number(raw);
+  return Number.isFinite(ms) && ms > 0 ? ms : 0;
+}
+
+export class MemoryDevices {
   readonly items = new Map<string, Device>();
 
-  async list(filters?: DeviceListFilter): Promise<Device[]> {
-    return [...this.items.values()].filter((d) => matchesDeviceFilter(d, filters));
+  async list(filters?: { meshId?: string }): Promise<Device[]> {
+    return [...this.items.values()].filter((d) => filters?.meshId === undefined || d.meshId === filters.meshId);
   }
 
   async get(uuid: string): Promise<Device | null> {
@@ -22,7 +37,7 @@ export class MemoryDevices implements IDeviceRepository {
       label: input.label ?? null,
       isGateway: input.isGateway,
       isAllowed: true,
-      absenceDetectionEnabled: true,
+      absenceDetectionEnabled: false, // registry default: off until the owner sets a publish interval
       adminKeysB64: [],
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
@@ -32,27 +47,59 @@ export class MemoryDevices implements IDeviceRepository {
       hardwareType: null,
       role: null,
       nodeinfoOverridden: false,
-      postprocessingCount: 0,
       readingIntervalSeconds: null,
       publishIntervalSeconds: null,
-      lastSeen: now,
+      lastSeen: input.isGateway ? null : now,
       createdAt: now,
       updatedAt: now,
     });
     this.items.set(device.uuid, device);
+    const seenAfter = input.isGateway ? gatewaySeenAfterMs() : 0;
+    if (seenAfter > 0) {
+      const timer = setTimeout(() => {
+        const current = this.items.get(device.uuid);
+        if (!current || current.lastSeen) return;
+        const seen = nowIso();
+        current.lastSeen = seen;
+        current.updatedAt = seen;
+        const taken = new Set([...this.items.values()].filter((d) => d.meshId === current.meshId).map((d) => d.nodeId));
+        let nodeId = current.nodeId;
+        for (let i = 1; i <= 2; i++) {
+          do nodeId = (nodeId + 1) % 0x1_0000_0000;
+          while (taken.has(nodeId));
+          taken.add(nodeId);
+          const node = new Device({
+            uuid: newId(),
+            nodeId,
+            meshId: current.meshId,
+            label: null,
+            isGateway: false,
+            isAllowed: true,
+            absenceDetectionEnabled: false,
+            adminKeysB64: [],
+            latitude: null,
+            longitude: null,
+            locationOverridden: false,
+            name: null,
+            shortName: null,
+            hardwareType: null,
+            role: null,
+            nodeinfoOverridden: false,
+                  readingIntervalSeconds: null,
+            publishIntervalSeconds: null,
+            lastSeen: seen,
+            createdAt: seen,
+            updatedAt: seen,
+          });
+          this.items.set(node.uuid, node);
+        }
+      }, seenAfter);
+      timer.unref?.();
+    }
     return device;
   }
 
-  async update(
-    uuid: string,
-    patch: Partial<DeviceCreate> & {
-      isAllowed?: boolean;
-      absenceDetectionEnabled?: boolean;
-      readingIntervalSeconds?: number | null;
-      publishIntervalSeconds?: number | null;
-      locationOverridden?: boolean;
-    },
-  ): Promise<Device | null> {
+  async update(uuid: string, patch: DevicePatch): Promise<Device | null> {
     const device = this.items.get(uuid);
     if (!device) return null;
     if (patch.label !== undefined) device.label = patch.label ?? null;

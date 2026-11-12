@@ -4,7 +4,6 @@
   "private": true,
   "exports": {
     "./base.json": "./base.json",
-    "./node.json": "./node.json",
     "./react-vite.json": "./react-vite.json"
   }
 }

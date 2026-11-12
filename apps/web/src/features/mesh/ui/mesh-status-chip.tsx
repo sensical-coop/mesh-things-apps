@@ -1,10 +1,11 @@
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
 import type { MeshStatus } from "@/features/mesh/model";
+import { useMeshStatusLabels } from "@/features/mesh/use-mesh-status-labels";
 import { useFormatters } from "@/hooks/use-formatters";
 
-export type MeshStatusChipProps = {
+type MeshStatusChipProps = {
   status: MeshStatus;
 };
 
@@ -12,16 +13,17 @@ export type MeshStatusChipProps = {
 export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
+  const { labels } = useMeshStatusLabels();
   if (status.kind === "hidden") return <span className="text-text-tertiary">—</span>;
   const shown = {
     active: {
       color: "lime",
-      label: formatMessage({ id: "feature.mesh.status.active", defaultMessage: "Active" }),
+      label: labels.active,
       title: formatMessage({ id: "feature.mesh.status.activeTitle", defaultMessage: "Storing data from its gateways." }),
     },
     renewSoon: {
       color: "yellow",
-      label: formatMessage({ id: "feature.mesh.status.renewSoon", defaultMessage: "Renew soon" }),
+      label: labels.renewSoon,
       title:
         status.kind === "renewSoon"
           ? formatMessage(
@@ -35,7 +37,7 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
     termsChanged: {
       color: "yellow",
-      label: formatMessage({ id: "feature.mesh.status.termsChanged", defaultMessage: "Terms changed" }),
+      label: labels.termsChanged,
       title: formatMessage({
         id: "feature.mesh.status.termsChangedTitle",
         defaultMessage: "The mesh terms changed since they were accepted. Accept the new version from the mesh page.",
@@ -43,7 +45,7 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
     termsNotAccepted: {
       color: "neutral",
-      label: formatMessage({ id: "feature.mesh.status.termsNotAccepted", defaultMessage: "Terms not accepted" }),
+      label: labels.termsNotAccepted,
       title: formatMessage({
         id: "feature.mesh.status.termsNotAcceptedTitle",
         defaultMessage: "Still storing data. No terms are on record for this mesh; accept them from the mesh page.",
@@ -51,7 +53,7 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
     scheduledForDeletion: {
       color: "rose",
-      label: formatMessage({ id: "feature.mesh.status.scheduledForDeletion", defaultMessage: "Scheduled for deletion" }),
+      label: labels.scheduledForDeletion,
       title: formatMessage({
         id: "feature.mesh.status.scheduledForDeletionTitle",
         defaultMessage:
@@ -60,7 +62,7 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
     sourcePaused: {
       color: "rose",
-      label: formatMessage({ id: "feature.mesh.status.sourcePaused", defaultMessage: "Source paused" }),
+      label: labels.sourcePaused,
       title: formatMessage({
         id: "feature.mesh.status.sourcePausedTitle",
         defaultMessage: "Its source's terms lapsed, so nothing is bridged in until the source is renewed.",
@@ -68,7 +70,7 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
     sourceDisconnected: {
       color: "yellow",
-      label: formatMessage({ id: "feature.mesh.status.sourceDisconnected", defaultMessage: "Source disconnected" }),
+      label: labels.sourceDisconnected,
       title: formatMessage({
         id: "feature.mesh.status.sourceDisconnectedTitle",
         defaultMessage: "Its source's bridge can't reach the remote broker, so no traffic arrives for now.",
@@ -76,7 +78,7 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
     sourceUnknown: {
       color: "neutral",
-      label: formatMessage({ id: "feature.mesh.status.sourceUnknown", defaultMessage: "Source status unknown" }),
+      label: labels.sourceUnknown,
       title: formatMessage({
         id: "feature.mesh.status.sourceUnknownTitle",
         defaultMessage: "The bridge's status couldn't be checked.",
@@ -84,9 +86,5 @@ export function MeshStatusChip({ status }: MeshStatusChipProps): ReactElement {
     },
   } as const;
   const { color, label, title } = shown[status.kind];
-  return (
-    <Chip variant="caption" color={color} className="rounded-full whitespace-nowrap" title={title}>
-      {label}
-    </Chip>
-  );
+  return <StatusChip tone={color} label={label} title={title} className="whitespace-nowrap" />;
 }

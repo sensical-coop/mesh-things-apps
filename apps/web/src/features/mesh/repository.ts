@@ -1,27 +1,30 @@
 import {
-  meshesCreateMutation,
-  meshesDestroyMutation,
-  meshesDevicesListOptions,
-  meshesDevicesListQueryKey,
-  meshesLinksListOptions,
-  meshesListOptions,
-  meshesListQueryKey,
-  meshesRetrieveOptions,
-  meshesRetrieveQueryKey,
-  meshesTraceroutesListOptions,
-  meshesUpdateMutation,
-} from "@mtt/contracts/query";
+  getMeshesCreateMutationOptions,
+  getMeshesDestroyMutationOptions,
+  getMeshesDevicesListQueryKey,
+  getMeshesDevicesListQueryOptions,
+  getMeshesLinksListQueryOptions,
+  getMeshesListQueryKey,
+  getMeshesListQueryOptions,
+  getMeshesRetrieveQueryKey,
+  getMeshesRetrieveQueryOptions,
+  getMeshesTraceroutesListQueryOptions,
+  getMeshesUpdateMutationOptions,
+} from "@mtt/contracts/api";
+import { whenId } from "@/lib/query-when-id";
 
 export const meshRepository = {
-  list: meshesListOptions,
-  listKey: meshesListQueryKey,
-  retrieve: meshesRetrieveOptions,
-  retrieveKey: meshesRetrieveQueryKey,
-  create: meshesCreateMutation,
-  update: meshesUpdateMutation,
-  destroy: meshesDestroyMutation,
-  devices: meshesDevicesListOptions,
-  devicesKey: meshesDevicesListQueryKey,
-  links: meshesLinksListOptions,
-  traceroutes: meshesTraceroutesListOptions,
+  list: getMeshesListQueryOptions,
+  listKey: getMeshesListQueryKey,
+  retrieve: (meshId: string | null | undefined) =>
+    whenId(meshId, ["meshes", "none"], (id) => getMeshesRetrieveQueryOptions(id)),
+  retrieveKey: getMeshesRetrieveQueryKey,
+  create: getMeshesCreateMutationOptions,
+  update: getMeshesUpdateMutationOptions,
+  destroy: getMeshesDestroyMutationOptions,
+  devices: (meshId: string | null | undefined) =>
+    whenId(meshId, ["meshes", "devices", "none"], (id) => getMeshesDevicesListQueryOptions(id)),
+  devicesKey: getMeshesDevicesListQueryKey,
+  links: getMeshesLinksListQueryOptions,
+  traceroutes: getMeshesTraceroutesListQueryOptions,
 };

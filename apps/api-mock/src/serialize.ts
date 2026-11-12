@@ -1,4 +1,5 @@
 import type { Device } from "@mtt/domain/device/Device";
+import { NIL_UUID } from "@mtt/domain/shared/ids";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { LatestReading } from "@mtt/domain/readings/Readings";
@@ -10,10 +11,14 @@ import type { DataDeletionRow } from "./features/data-deletion/repository";
 import { latestVersion, type BlueprintRow, type BlueprintVersionRow } from "./features/blueprint/repository";
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 
-import { flagsForRole, roleFlag, type Actor } from "@mtt/domain/authz/authz";
+import { canSeeMeshSource, canSeePsk, flagsForRole, roleFlag } from "@mtt/contracts/authz";
+import type { Actor } from "./auth";
+import { brokerHost } from "./features/source/rules";
+import type { DeviceChannel } from "./features/device/channels";
+import { VARIANT_ENV_ID, type Store } from "./store";
 
 /** `includeSource` is for the mesh's owner and superusers, as in the API. */
-export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includePsk) {
+export function meshJson(mesh: Mesh, includePsk: boolean, includeSource: boolean) {
   const row: Record<string, unknown> = {
     id: mesh.id,
     channel_id: mesh.channelId,
@@ -35,8 +40,11 @@ export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includ
   return row;
 }
 
+/** A mesh as `actor` may see it. */
+export const meshOut = (actor: Actor, mesh: Mesh) => meshJson(mesh, canSeePsk(actor, mesh), canSeeMeshSource(actor, mesh));
+
 /** The password is write-only: never returned to anyone. */
-export function sourceJson(source: Source) {
+function sourceJson(source: Source) {
   return {
     id: source.id,
     label: source.label,
@@ -56,8 +64,7 @@ export function sourceJson(source: Source) {
 
 /** A lapsed source reports `paused`, whatever its bridge would say. */
 export function sourceReadJson(source: Source, status = "connected") {
-  // An `offline.` host stands in for a remote broker the bridge can't reach.
-  const bridge = source.server.startsWith("offline.") ? "disconnected" : status;
+  const bridge = brokerHost(source.server).offline ? "disconnected" : status;
   return { ...sourceJson(source), status: source.pausedAt ? "paused" : bridge };
 }
 
@@ -88,10 +95,39 @@ export function sinkCredentialsJson(sink: Sink, connections: number | null) {
 }
 
 /** `archive`: whether the viewer may see the archive setting, the mesh's owner or a superuser. */
+export type DeviceJson = {
+  uuid: string;
+  node_id: number;
+  mesh_id: string;
+  label: string | null;
+  is_gateway: boolean;
+  is_allowed: boolean;
+  absence_detection_enabled: boolean;
+  admin_keys_b64: string[];
+  latitude: number | null;
+  longitude: number | null;
+  location_overridden: boolean;
+  name: string | null;
+  short_name: string | null;
+  hardware_type: string | null;
+  role: string | null;
+  nodeinfo_overridden: boolean;
+  reading_interval_seconds: number | null;
+  publish_interval_seconds: number | null;
+  telemetry_variant_ids: string[];
+  archive_enabled?: boolean;
+  archive_enabled_by?: string | null;
+  archive_enabled_at?: string | null;
+  discovered_at: null;
+  last_seen: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export function deviceJson(
   device: Device,
   { archive, telemetryVariantIds }: { archive: boolean; telemetryVariantIds: readonly string[] },
-) {
+): DeviceJson {
   return {
     uuid: device.uuid,
     node_id: device.nodeId,
@@ -141,6 +177,43 @@ export function measurementJson(m: MeasurementType) {
     vocabulary_uri: m.vocabularyUri,
     created_at: m.createdAt,
     updated_at: m.updatedAt,
+  };
+}
+
+function catalogDefaultDetectors(store: Store, measurementTypeId: string): string[] {
+  for (const link of store.telemetryVariantMeasurements.values()) {
+    if (link.measurementTypeId === measurementTypeId) return link.defaultEnabledDetectors;
+  }
+  return [];
+}
+
+export function deviceMeasurementJson(store: Store, device: Device, channel: DeviceChannel) {
+  const { id, type } = channel;
+  const enabledDetectors = store.detectorOverrides.get(id) ?? null;
+  const effectiveDetectors = [...(enabledDetectors ?? catalogDefaultDetectors(store, type.id))].sort();
+  const range = store.deviceMeasurementRanges.get(id) ?? { validMin: null, validMax: null };
+  return {
+    id,
+    telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_UUID,
+    measurement_type: measurementJson(type),
+    enabled_detectors: enabledDetectors,
+    effective_detectors: effectiveDetectors,
+    valid_min: range.validMin,
+    valid_max: range.validMax,
+    produced_by: channel.producedBy,
+    first_seen: device.createdAt,
+    last_seen: device.lastSeen,
+  };
+}
+
+export function telemetryVariantMeasurementJson(store: Store, type: MeasurementType, linkId: string) {
+  const link = store.telemetryVariantMeasurements.get(linkId) ?? { defaultEnabledDetectors: [] };
+  return {
+    id: linkId,
+    measurement_type: measurementJson(type),
+    default_enabled_detectors: [...link.defaultEnabledDetectors].sort(),
+    created_at: type.createdAt,
+    updated_at: type.updatedAt,
   };
 }
 
@@ -265,7 +338,7 @@ export function ownerReadJson(
 
 export function ownerProfileJson(
   actor: Actor,
-  devices: ReturnType<typeof deviceJson>[],
+  devices: DeviceJson[],
   verification: { emailVerifiedAt: string | null; emailVerificationSentAt: string | null },
   accountTermsVersion: string | null = null,
 ) {

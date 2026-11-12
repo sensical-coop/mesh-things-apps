@@ -9,7 +9,7 @@ const PAGE_SIZE = 25;
 /** A mesh this small opens every device, as the page did before it grew a request per device. */
 const AUTO_EXPAND_MAX = 5;
 
-export type MeshAlarmsListProps = {
+type MeshAlarmsListProps = {
   devices: readonly DeviceRead[];
   variants: readonly TelemetryVariantRead[];
 };

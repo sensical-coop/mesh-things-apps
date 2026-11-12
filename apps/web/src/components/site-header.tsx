@@ -1,23 +1,16 @@
-import { BrandMark } from "@/components/brand";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { routes } from "@/router";
-import { Button } from "@mtt/ui/components/base/buttons/button";
-import { toggleTheme } from "@mtt/ui/theme";
-import { RiMoonLine, RiSunLine } from "@remixicon/react";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
+import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
+import { ThemeToggle } from "@mtt/ui/components/theme-toggle";
+import { cx } from "@mtt/ui/utils";
 import { Link } from "@tanstack/react-router";
-import { type ReactElement, useEffect, useState } from "react";
+import { type ReactElement, type ReactNode, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
+import { siteLinkClass } from "@/components/brand";
 import { RouterButtonLink } from "@/components/router-button-link";
-import { useTheme } from "@/hooks/use-theme";
+import { routes } from "@/router";
 
-/**
- * Sticky top bar for standalone content pages (terms, etc.) that don't have
- * the landing page's own sections to anchor-link to — logo, theme toggle,
- * language switcher, sign in. No in-page nav links.
- */
-export function SiteHeader(): ReactElement {
+export function SiteHeader({ nav }: { nav?: ReactNode }): ReactElement {
   const { formatMessage } = useIntl();
-  const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -28,35 +21,28 @@ export function SiteHeader(): ReactElement {
   }, []);
 
   return (
-    <header data-scrolled={scrolled} className="landing-header-morph group sticky top-0 z-sticky h-16 w-full px-4 sm:h-20 sm:px-6">
-      <div className="landing-header-pill relative mx-auto flex h-14 w-full max-w-full items-center justify-between px-0 sm:h-16 sm:max-w-4xl sm:px-4">
-        <span aria-hidden className="glass-noise absolute inset-0 rounded-full" />
-        <Link
-          to={routes.home}
-          aria-label="Sensical"
-          className="relative z-10 shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        >
-          <BrandMark />
-        </Link>
-        <div className="relative z-10 flex items-center gap-2">
-          <a
-            href={routes.docs}
-            className="rounded-full px-2 py-2 text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+    <header data-scrolled={scrolled} className="group sticky top-0 z-sticky h-16 w-full px-4 sm:h-20 sm:px-6">
+      <div className="relative mx-auto flex h-14 w-full max-w-full items-center justify-between px-0 sm:h-16 sm:max-w-4xl sm:px-4">
+        <div className="relative z-10 flex items-center gap-7">
+          <Link
+            to={routes.home}
+            aria-label="Sensical"
+            className="shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
+            <BrandMark />
+          </Link>
+          {nav ? (
+            <nav aria-label="Main" className="hidden items-center gap-7 md:flex">
+              {nav}
+            </nav>
+          ) : null}
+        </div>
+        <div className="relative z-10 flex items-center gap-2">
+          <a href={routes.docs} className={cx(siteLinkClass, "p-2")}>
             {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
           </a>
           <LanguageSwitcher />
-          <Button
-            type="button"
-            variant="secondary"
-            size="small"
-            iconOnly
-            leadingIcon={theme === "dark" ? RiSunLine : RiMoonLine}
-            aria-label={formatMessage({ id: "common.themeToggle.label", defaultMessage: "Toggle color theme" })}
-            onClick={() => {
-              toggleTheme();
-            }}
-          />
+          <ThemeToggle />
           <RouterButtonLink to={routes.login} size="small">
             {formatMessage({ id: "page.home.header.signIn", defaultMessage: "Sign in" })}
           </RouterButtonLink>

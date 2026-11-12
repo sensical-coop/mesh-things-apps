@@ -1,10 +1,13 @@
 import type { Mesh } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
+import { useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { StatusCopy } from "@/components/status-copy";
+import { meshRepository } from "@/features/mesh/repository";
+import { meshTitle } from "@/features/mesh/model";
 import type { TermsStanding } from "@/features/terms/model";
-import { RenewMeshTermsDialog } from "@/features/mesh/ui/renew-mesh-terms-dialog";
+import { RenewTermsDialog } from "@/features/terms/ui/renew-terms-dialog";
 import { useFormatters } from "@/hooks/use-formatters";
 
 export type MeshTermsNoticeProps = {
@@ -18,6 +21,7 @@ export type MeshTermsNoticeProps = {
 export function MeshTermsNotice({ mesh, standing, canRenew }: MeshTermsNoticeProps): ReactElement | null {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   if (standing === "ok") return null;
   const message = {
@@ -43,14 +47,23 @@ export function MeshTermsNotice({ mesh, standing, canRenew }: MeshTermsNoticePro
     }),
   }[standing];
   return (
-    <div className="oa-squircle mb-6 flex flex-wrap items-center justify-between gap-3 bg-background-secondary-default px-4 py-3 shadow-card">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 oa-squircle bg-background-secondary-default px-4 py-3 shadow-card">
       <StatusCopy className="text-text-primary">{message}</StatusCopy>
       {canRenew ? (
         <Button type="button" size="small" onClick={() => setOpen(true)}>
           {formatMessage({ id: "feature.mesh.terms.renew", defaultMessage: "Renew terms" })}
         </Button>
       ) : null}
-      <RenewMeshTermsDialog mesh={open ? mesh : null} onClose={() => setOpen(false)} />
+      <RenewTermsDialog
+        kind="mesh"
+        entity={open ? { id: mesh.id, name: meshTitle(mesh) } : null}
+        onClose={() => setOpen(false)}
+        onRenewed={async (renewed) => {
+          await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
+          await queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey(renewed.id) });
+          setOpen(false);
+        }}
+      />
     </div>
   );
 }

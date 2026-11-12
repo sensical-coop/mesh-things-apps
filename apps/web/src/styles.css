@@ -10,59 +10,44 @@
 
 @source "../../../packages/ui/src";
 
+:root {
+  --landing-plate-background: var(--color-background-secondary-default);
+
+  /* Landing type steps up at sm here, so the components use one class per role. */
+  --landing-hero-title: var(--text-display-3-medium);
+  --landing-hero-title-leading: var(--text-display-3-medium--line-height);
+  --landing-hero-lead: var(--text-title-3-regular);
+  --landing-hero-lead-leading: var(--text-title-3-regular--line-height);
+  --landing-section-title: var(--text-title-1-medium);
+  --landing-section-title-leading: var(--text-title-1-medium--line-height);
+
+  @variant sm {
+    --landing-hero-title: var(--text-display-2-medium);
+    --landing-hero-title-leading: var(--text-display-2-medium--line-height);
+    --landing-hero-lead: var(--text-title-1-regular);
+    --landing-hero-lead-leading: var(--text-title-1-regular--line-height);
+    --landing-section-title: var(--text-display-3-medium);
+    --landing-section-title-leading: var(--text-display-3-medium--line-height);
+  }
+}
+
+.dark {
+  --landing-plate-background: var(--color-background-primary-default);
+}
+
 @theme inline {
-  --font-heading: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
-  --font-sans: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
-  --color-foreground: var(--color-text-primary);
-  --color-background: var(--color-background-primary-default);
-  --color-primary: var(--oa-primary);
-  --color-primary-foreground: var(--color-text-white);
-  --color-muted: var(--color-background-secondary-default);
-  --color-muted-foreground: var(--color-text-secondary);
-  --color-border: var(--color-separator-border);
-  --color-input: var(--color-separator-border);
-  --color-ring: var(--color-border-focus-ring);
-  --color-secondary: var(--oa-secondary);
-  --color-secondary-foreground: var(--ink);
-  --color-destructive: var(--color-text-error-primary);
-  --color-popover: var(--color-background-primary-default);
-  --color-popover-foreground: var(--color-text-primary);
-}
-
-/* EvilCharts probes these class names for axis/tooltip ink. */
-@layer utilities {
-  .text-foreground {
-    color: var(--color-text-primary);
-  }
-
-  .text-muted-foreground {
-    color: var(--color-text-secondary);
-  }
-
-  .text-border {
-    color: var(--color-separator-border);
-  }
-
-  .text-background {
-    color: var(--color-background-primary-default);
-  }
-}
-
-@layer base {
-  * {
-    @apply border-separator-border outline-border-focus-ring/50;
-  }
-
-  html {
-    @apply overflow-x-clip font-sans antialiased;
-
-    font-synthesis: none;
-  }
-
-  body {
-    @apply m-0 min-h-svh bg-background-full text-text-primary;
-  }
+  --text-hero-title: var(--landing-hero-title);
+  --text-hero-title--line-height: var(--landing-hero-title-leading);
+  --text-hero-title--letter-spacing: -0.025em;
+  --text-hero-title--font-weight: 500;
+  --text-hero-lead: var(--landing-hero-lead);
+  --text-hero-lead--line-height: var(--landing-hero-lead-leading);
+  --text-hero-lead--letter-spacing: -0.025em;
+  --text-hero-lead--font-weight: 400;
+  --text-section-title: var(--landing-section-title);
+  --text-section-title--line-height: var(--landing-section-title-leading);
+  --text-section-title--letter-spacing: -0.025em;
+  --text-section-title--font-weight: 500;
 }
 
 @layer components {
@@ -79,53 +64,33 @@
   }
 
   .maplibregl-ctrl-attrib a {
-    @apply text-text-secondary;
+    @apply text-text-secondary hover:text-text-primary;
   }
 
+  /* The attribution icon is a dark glyph. Invert it when the surface is dark. Not a color token. */
   .maplibregl-ctrl-attrib-button {
-    @apply bg-transparent;
+    @apply bg-transparent dark:invert;
   }
 }
 
-@media (hover: hover) {
-  .maplibregl-ctrl-attrib a:hover {
-    color: var(--color-text-primary);
-  }
+@utility landing-plate {
+  background-color: var(--landing-plate-background);
 }
 
-/* The attribution icon is a dark glyph. Invert it when the surface is dark. Not a color token. */
-.dark .maplibregl-ctrl-attrib-button {
-  filter: invert(1);
-}
-
-:root {
-  --landing-plate-background: var(--color-background-secondary-default);
-}
-
-.dark {
-  --landing-plate-background: var(--color-background-primary-default);
-}
-
-.oa-reveal {
+@utility oa-reveal {
   opacity: 0;
   transition: opacity var(--duration-reveal) var(--ease-reveal) var(--reveal-delay, 0s);
-}
 
-.oa-reveal[data-inview] {
-  opacity: 1;
-}
+  &[data-inview] {
+    opacity: 1;
+  }
 
-@media (prefers-reduced-motion: no-preference) {
-  .oa-reveal {
+  @media (prefers-reduced-motion: no-preference) {
     translate: 0 14px;
     transition-property: opacity, translate;
-  }
 
-  .oa-reveal[data-inview] {
-    translate: 0 0;
+    &[data-inview] {
+      translate: 0 0;
+    }
   }
-}
-
-.landing-plate {
-  background-color: var(--landing-plate-background);
 }
