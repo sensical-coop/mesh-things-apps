@@ -12,6 +12,7 @@ import { useIntl } from "react-intl";
 import { useMe } from "@/features/auth/use-me";
 import { DEFAULT_BROKER, NO_SOURCE } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
+import { ProtocolField } from "@mtt/ui/forms/protocol-field";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
@@ -33,6 +34,8 @@ export function MeshForm({
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [discover, setDiscover] = useState(false);
+  const protocols = useQuery(meshRepository.protocols());
+  const [protocol, setProtocol] = useState<string | null>(null);
   const { isOperator } = useMe();
   const showBrokerFields = isOperator;
   const sources = useQuery({ ...sourceRepository.list(), enabled: showBrokerFields });
@@ -56,6 +59,7 @@ export function MeshForm({
     const picked = source;
     const body = meshCreateBody(values, {
       discover_gateways: discover,
+      ...(protocol !== null ? { protocol } : {}),
       ...(showBrokerFields && picked !== NO_SOURCE ? { source_id: picked } : {}),
       terms: picked === NO_SOURCE ? termsAcceptance : null,
     });
@@ -99,6 +103,16 @@ export function MeshForm({
                   })}
                 </p>
             </div>
+            <ProtocolField
+              id="mesh-protocol"
+              protocols={protocols.data}
+              failed={protocols.isError}
+              onRetry={() => void protocols.refetch()}
+              current={null}
+              value={protocol}
+              onValueChange={setProtocol}
+              error={errors.protocol}
+            />
             {showBrokerFields ? (
               <FormField
                 id="mesh-source"

@@ -26,6 +26,9 @@ import { deviceTitle } from "@/features/device/model";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
+import { DeviceProtocolBadge } from "@/features/device/ui/protocol-badge";
+import { DeviceProtocolNotice } from "@/features/device/ui/protocol-notice";
+import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 
 import { DetailHeading } from "@/components/detail-heading";
 import { DeviceStatusTab } from "./device-status-tab";
@@ -60,6 +63,7 @@ export function DeviceDetailPage(): ReactElement {
   // Only on an operator's mesh, and only for its owner or a superuser.
   const canArchive = device.data != null && canEdit && canArchiveDevice(device.data, me, mesh.data?.owner_id);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [meshEditOpen, setMeshEditOpen] = useState(false);
   const [scrollToChannel, setScrollToChannel] = useState<string | null>(null);
 
   function handleViewChart(channel: string) {
@@ -129,6 +133,9 @@ export function DeviceDetailPage(): ReactElement {
           onClose={() => setSettingsOpen(false)}
         />
       ) : null}
+      {mesh.data && canEdit ? (
+        <EditMeshDialog mesh={mesh.data} open={meshEditOpen} onClose={() => setMeshEditOpen(false)} />
+      ) : null}
       <Tabs
         className="flex flex-col gap-0"
         value={tab}
@@ -171,6 +178,7 @@ export function DeviceDetailPage(): ReactElement {
               <>
                 <DeviceRoleBadge device={device.data} />
                 <DeviceSilentBadge device={device.data} />
+                <DeviceProtocolBadge device={device.data} />
               </>
             ) : null
           }
@@ -188,6 +196,14 @@ export function DeviceDetailPage(): ReactElement {
             ) : null
           }
         />
+        {device.data ? (
+          <div className="mt-6">
+            <DeviceProtocolNotice
+              device={device.data}
+              onChangeMesh={canEdit ? () => setMeshEditOpen(true) : undefined}
+            />
+          </div>
+        ) : null}
         <TabsList className="mt-3 p-1">
           <TabsTrigger value="status" className="px-4 py-1.5 text-body-medium">
             {formatMessage({ id: "page.devices.detail.tabs.status", defaultMessage: "Status" })}

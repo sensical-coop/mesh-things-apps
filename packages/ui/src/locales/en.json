@@ -18,6 +18,13 @@
   "feature.device.nodeIdField.invalidHex": "Enter up to 8 hex digits after the !.",
   "feature.device.nodeIdField.label": "Node ID",
   "feature.terms.termsLink": "Read the Mesh Things Terms.",
+  "feature.mesh.protocolField.hint": "The firmware version this mesh's devices run. Packets are decoded with it, and readings keep the same units whatever the version.",
+  "feature.mesh.protocolField.label": "Meshtastic protocol",
+  "feature.mesh.protocolField.loading": "Loading protocols",
+  "feature.mesh.protocolStatus.current": "Current",
+  "feature.mesh.protocolStatus.deprecated": "Deprecated",
+  "feature.mesh.protocolStatus.sunset": "Past its sunset",
+  "feature.mesh.protocolStatus.supported": "Supported",
   "page.login.form.email": "Email",
   "page.login.form.error": "Those credentials were not accepted. Check the email and password and try again.",
   "page.login.form.error.generic": "We couldn't sign you in right now. Try again in a moment.",
@@ -59,5 +66,7 @@
   "page.verifyPending.resend.button": "Resend email",
   "page.verifyPending.resend.countdown": "Resend available in {seconds}s",
   "page.verifyPending.resend.error": "We couldn't resend the email. Check back in a moment.",
-  "page.verifyPending.resend.sending": "Sending"
+  "page.verifyPending.resend.sending": "Sending",
+  "feature.mesh.protocolField.failed": "Couldn't load the protocols.",
+  "feature.mesh.protocolField.retry": "Try again"
 }

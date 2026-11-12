@@ -106,6 +106,7 @@ export function openPath(method: string, path: string): boolean {
     (method === "POST" && path === "/owners/reset-password") ||
     (method === "GET" && path === "/owners/verify-email") ||
     (method === "GET" && path === "/terms") ||
+    (method === "GET" && path === "/protocols") ||
     // Presigned: the signature in the link is the authorisation.
     (method === "GET" && path.startsWith(MOCK_S3_PATH))
   );
