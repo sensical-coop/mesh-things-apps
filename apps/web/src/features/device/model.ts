@@ -98,3 +98,35 @@ export function devicePosition(device: Pick<DeviceRead, "latitude" | "longitude"
   if (latitude == null || longitude == null || !isValidLngLat(longitude, latitude)) return null;
   return [longitude, latitude];
 }
+
+/**
+ * Why a device's readings are lost or misread under its mesh's protocol, or null while they are not:
+ * - `unsupported`: it runs a version newer than every one this instance decodes;
+ * - `ahead`: it sends fields its mesh's version does not know, and `version` decodes them;
+ * - `behind`: its firmware speaks an older version, `version`, which reads some values differently.
+ */
+export type ProtocolMismatch =
+  | { kind: "unsupported" }
+  | { kind: "ahead"; version: string }
+  | { kind: "behind"; version: string };
+
+export function deviceProtocolMismatch(
+  device: Pick<DeviceRead, "protocol" | "observed_protocol" | "firmware_protocol" | "protocol_mismatch">,
+): ProtocolMismatch | null {
+  if (!device.protocol_mismatch) return null;
+  const { observed_protocol: observed, firmware_protocol: firmware } = device;
+  if (observed === "unsupported" || firmware === "unsupported") return { kind: "unsupported" };
+  if (firmware && compareProtocols(firmware, device.protocol) < 0) return { kind: "behind", version: firmware };
+  return { kind: "ahead", version: observed ?? firmware ?? device.protocol };
+}
+
+/** Orders versions such as `2.7` and `2.10` by their numbers, not as text. */
+export function compareProtocols(a: string, b: string): number {
+  const left = a.split(".").map(Number);
+  const right = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    const diff = (left[i] ?? 0) - (right[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}

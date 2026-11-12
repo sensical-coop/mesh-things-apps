@@ -41,6 +41,8 @@ import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
 import { DetailHeading } from "@/components/detail-heading";
+import { MeshProtocolChip } from "@/features/mesh/ui/mesh-protocol-chip";
+import { MeshProtocolNotice } from "@/features/mesh/ui/mesh-protocol-notice";
 import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
 import { useMeshTerms } from "@/features/terms/use-mesh-terms";
 import { useMeshStatus } from "@/features/mesh/use-mesh-status";
@@ -116,6 +118,7 @@ export function MeshDetailPage(): ReactElement {
         badges={
           <>
             {mesh.data ? <MeshAccessBadge mesh={mesh.data} /> : null}
+            {mesh.data ? <MeshProtocolChip mesh={mesh.data} /> : null}
             {/* Only a bridged mesh says so; the default broker is the norm. */}
             {mesh.data?.source_id ? <MeshSourceLabel mesh={mesh.data} sources={sources.data ?? []} /> : null}
             {meshState && meshState.kind !== "hidden" ? <MeshStatusChip status={meshState} /> : null}
@@ -161,6 +164,13 @@ export function MeshDetailPage(): ReactElement {
           mesh={mesh.data}
           standing={termsStanding}
           canRenew={me !== undefined && mesh.data.owner_id === me.id}
+        />
+      ) : null}
+      {mesh.data ? (
+        <MeshProtocolNotice
+          mesh={mesh.data}
+          mismatched={(devices.data ?? []).filter((device) => device.protocol_mismatch).length}
+          onChange={canEdit ? () => setEditOpen(true) : undefined}
         />
       ) : null}
       <Tabs
