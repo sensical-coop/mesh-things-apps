@@ -11,6 +11,7 @@ Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mo
 ```
 mesh-things (snapshot) --> docs/openapi.json --> packages/contracts (Orval)
 apps/web --> packages/ui + packages/contracts
+apps/onboarding --> packages/ui + packages/contracts
 apps/api-mock --> packages/domain + packages/contracts
 ```
 
@@ -20,6 +21,7 @@ apps/api-mock --> packages/domain + packages/contracts
 | `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `source`, `sink`). Entidades e invariantes. Como `@taller/domain`. | Tipos generados. No fetch. No React. No permisos (viven en contracts). No interfaces de repositorio con un solo implementador. |
 | `apps/api-mock` | Servidor HTTP que implementa las rutas de fase 1. Datos en memoria. Sesión Better Auth + cookie. Parsea bodies con Zod de contracts; mapea domain → JSON del OpenAPI. | Backend real. Persistencia. |
 | `apps/web` | Vite + React + TanStack. Chrome de consola (`layout`/`header`/`footer`), `router/`, `pages/`, `features/`, `components/` de app, `lib/`. Tests en `test/`. | Primitivas shadcn/BoardUI/ReUI/EvilCharts. Reglas de malla/device. |
+| `apps/onboarding` | Vite + React 19. Alta guiada en `/start` (`base: /start/`, dev `:5176`). Mismo origen que web: Caddy en prod, proxy de Vite en dev. | Consola ni rutas de web. |
 | `packages/ui` | Tokens OA/BoardUI y **todas** las primitivas instaladas (BoardUI, shadcn, ReUI, EvilCharts, mapcn). Destino del CLI `pnpm shadcn`. | Páginas, fetch, features, chrome de consola. |
 
 `packages/tsconfig` compartido, mismo patrón que taller.
@@ -34,7 +36,7 @@ onboarding -->  ui, contracts
 api-mock   -->  contracts, domain
 domain     -->  (nada de apps ni contracts)
 ui         -->  (React, tokens; no domain)
-contracts  -->  (runtime generado + hechos HTTP a mano; no domain, no UI salvo hooks en módulos propios: `useTermsEnforced` en `terms.ts`, `useResendVerification` en `resend-verification.ts`, `useSignup` en `signup.ts`)
+contracts  -->  (runtime generado + hechos HTTP a mano; no domain, no UI salvo hooks en módulos propios: `useTermsAsked` / `useTermsConfirmed` en `terms.ts`, `useResendVerification` en `resend-verification.ts`, `useSignup` en `signup.ts`, `useLogin` / `useLogout` / `invalidateMe` en `session.ts`, `useRegisterGateway` en `register-gateway.ts`)
 ```
 
 Domain no importa `@meshtastic-things/contracts`. Los DTO del YAML y el modelo de dominio son dos capas: el mock traduce.
@@ -74,24 +76,22 @@ apps/web/
     layout.tsx             # Layout (RouterProvider) + Shell (consola)
     header.tsx             # consola autenticada
     nav-links.tsx            # enlaces de consola que usa el header
-    automation-menu.tsx      # alarmas y blueprints (lo monta nav-links)
-    data-menu.tsx            # CSV, archivo, fuentes y destinos (lo monta nav-links)
+    nav-items.ts             # páginas de consola y grupos Automation y Data; header y footer las pintan
     management-menu.tsx      # menú de superusuario y sus conteos (lo monta nav-links)
     terms-banner.tsx         # aviso de términos pendientes de las mallas (lo monta Shell)
     footer.tsx
     router/
-      router.ts            # paths + href()
+      router.ts            # paths
       app-router.tsx       # createRoute / createRouter
-      index.ts             # reexporta routes, href  (no el instance)
+      index.ts             # reexporta routes (no el instance)
     components/            # piezas de producto, no primitivas
       kpi/                 # kpi, kpi-panel + helpers kpi-icon.ts, kpi-shell.ts
       series/              # series-plot, series-chart
-      brand.tsx            # pageWidth; la marca es BrandMark de @mtt/ui
+      brand.ts             # pageWidth; la marca es BrandMark de @mtt/ui
       smart-filters.tsx    # filtros de producto; solo los usa web
       filter-url.ts        # query string; el wire sale de @mtt/contracts/list-filter
       status-chip.tsx      # chrome de caption compartido; cada feature mapea tono y texto
       list-scaffold.tsx    # cabecera + frame + skeleton/tabla de las listas de consola
-      require-role.tsx     # operator | superuser; redirige al listado de mallas
       site-header.tsx      # barra sticky de la landing y de las páginas legales
       flag.tsx
       modal.tsx
@@ -100,12 +100,12 @@ apps/web/
     lib/                   # sin JSX
       format.ts
       page-heading.ts
-      dialog-actions.ts
     features/<name>/
       repository.ts
       model.ts             # opcional; presentación
       ui/                  # opcional; badges de la feature
     features/mesh-network/expanded-map.ts  # clase del mapa a pantalla completa
+    features/auth/require-role.tsx  # guard operator | superuser; redirige al listado de mallas
     pages/devices/detail/computed-flag.tsx # badge "Computed"; solo lo usan las pestañas del dispositivo
     pages/
       home/                # landing pública
@@ -128,19 +128,19 @@ Arranque (para no ciclar `layout` ↔ `app-router`):
 
 | Pieza | Dónde | Qué hace |
 |---|---|---|
-| Paths | `src/router/router.ts` | `Object.freeze` de rutas absolutas y `consoleChild`. `href(path, params)` sustituye `$param`. Nadie pega `"/console/…"` en JSX. Import de paths: `@/router`. |
+| Paths | `src/router/router.ts` | `Object.freeze` de rutas absolutas y `consoleChild`. Las rutas que comparten web, onboarding y la API (`SITE_PATHS`, `MESH_SEGMENTS`) salen de `@mtt/contracts/site`; `fillPath(path, params)` sustituye `$param`. Nadie pega `"/console/…"` en JSX. Import de paths: `@/router`. |
 | Árbol | `src/router/app-router.tsx` | `createRootRoute` → landing `/`, login `/login`, consola `/console` (`Shell`) + hijos. `/start` lo sirve `apps/onboarding` (Caddy en prod, proxy de Vite en dev). El fichero se llama `app-router.tsx` **a propósito**: Darwin no admite `router.ts` y `router.tsx` en el mismo directorio. |
 | Instance | `export const router` en `app-router.tsx` | Solo `main.tsx` lo monta. `index.ts` no lo reexporta. |
 | Layout | `src/layout.tsx` | `Layout` = `RouterProvider` (prop `router`). `Shell` = auth gate (`authRepository.me`) + `Header` + `<Outlet />` + `Footer`. Única excepción a “un componente por fichero”. |
 | Header / Footer | `src/header.tsx`, `src/footer.tsx` | Mismo nivel que `layout.tsx` / `main.tsx`. No hay carpeta `chrome/`. |
-| Brand | `src/components/brand.tsx` | `pageWidth`. La marca es `@mtt/ui/components/brand-mark`. |
+| Brand | `src/components/brand.ts` | `pageWidth`. La marca es `@mtt/ui/components/brand-mark`. |
 | KPI / series | `src/components/kpi/`, `src/components/series/` | Un componente por `.tsx`. Helpers sin UI en `.ts` junto al KPI. |
 | Forms | `@mtt/ui/forms` | Login, signup, mesh, gateway y fields. Su copy está en el catálogo de ui. |
 | Format | `src/lib/format.ts` | Fechas, duraciones, números. |
-| Shader login | `src/features/auth/ui/auth-shader-backdrop.tsx` | Cinta WebGL detrás de la tarjeta. **No** es `DialogOverlay` (`@mtt/ui/components/ui/dialog`). |
+| Shader login | `@mtt/ui/components/shader-backdrop` | Cinta WebGL detrás de la tarjeta de auth. **No** es `DialogOverlay` (`@mtt/ui/components/ui/dialog`). |
 | Feature HTTP | `src/features/<name>/repository.ts` | Único sitio de esa feature que importa `@mtt/contracts/api`. |
 | Presentación | `src/features/<name>/model.ts` | Títulos, silent, role label. Sin fetch. |
-| UI de feature | `src/features/<name>/ui/` | Solo si se reutiliza en varias rutas (badges de device). Piezas de una sola página van junto a `page.tsx`. Crear malla (`mesh-form.tsx`, `mesh-origin-dialog.tsx`, `create-mesh-dialog.tsx`) vive en `pages/meshes/list/`. Lo que monta diálogos de varias features (el menú de acciones de un canal: alarmas + archivo) vive en la página que lo compone. El menú de superusuario y su conteo viven en `src/management-menu.tsx`, junto al chrome. |
+| UI de feature | `src/features/<name>/ui/` | Piezas de la feature (badges, diálogos, frames): se quedan en la feature aunque solo las use una página. Solo lo que compone piezas de varias features va bajo la página (el menú de acciones de un canal: alarmas + archivo, en `pages/devices/detail/channel-actions-menu.tsx`). Crear malla (`mesh-form.tsx`, `mesh-origin-dialog.tsx`, `create-mesh-dialog.tsx`) vive en `pages/meshes/list/`. El menú de superusuario y su conteo viven en `src/management-menu.tsx`, junto al chrome. |
 | Página | `src/pages/<ruta>/` | `home`, `login`, `signup`, `forgot-password`, `reset-password`, `verify-email`, `verify-pending`, `terms`, `dpa`, `profile`, `meshes`, `devices`, `alarms`, `blueprints`, `sources`, `sinks`, `archive`, `csv-downloads`, `operator-requests`, `data-deletions`. `route.ts` + `page.tsx`. El detalle de device parte la página en `device-dashboard-tab.tsx`, `device-status-tab.tsx` y `telemetry-variant-section.tsx`. La alta guiada es `apps/onboarding`, no una ruta de web. |
 | Tests | `apps/web/test/` | `format`, `router`, `device-model`, `chart-range`. Importan `../src/…`. |
 
@@ -164,7 +164,7 @@ El OpenAPI de la API es el contrato. Zod **no se escribe a mano** para shapes Op
 |---|---|
 | `docs/openapi.json` | Copia del schema que sirve la API en `https://api.sensical.es/schema`. No editar: `pnpm openapi:sync` lo trae y regenera el cliente. |
 | `packages/contracts/src/generated/` | Output Orval: `api.ts` (fetch + React Query) y `model.zod.ts` (Zod + tipos). No editar. |
-| `packages/contracts/src/{api-errors,api-runtime,list-filter,resend-cooldown,resend-verification,signup,terms,terms-notice,source,blueprint,authz,export,sink,query-client}.ts` | Hechos HTTP escritos a mano, al lado del gen. Exports: `@mtt/contracts/errors`, `/runtime`, `/list-filter`, `/resend-cooldown`, `/resend-verification`, `/signup`, `/terms`, `/terms-notice`, `/source`, `/blueprint`, `/authz`, `/export`, `/sink`, `/query-client`. Lo que importa el mock (`resend-cooldown`, `terms-notice`, …) no importa React ni `generated/api`: los hooks viven en su propio módulo. |
+| `packages/contracts/src/{api-errors,api-runtime,list-filter,resend-cooldown,resend-verification,signup,session,terms,terms-notice,register-gateway,mesh,source,blueprint,authz,export,sink,site,mock-accounts,query-client}.ts` | Hechos HTTP escritos a mano, al lado del gen. Exports: `@mtt/contracts/errors`, `/runtime`, `/list-filter`, `/resend-cooldown`, `/resend-verification`, `/signup`, `/session`, `/terms`, `/terms-notice`, `/register-gateway`, `/mesh`, `/source`, `/blueprint`, `/authz`, `/export`, `/sink`, `/site`, `/mock-accounts`, `/query-client`. Lo que importa el mock (`resend-cooldown`, `terms-notice`, …) no importa React ni `generated/api`: los hooks viven en su propio módulo. |
 | `@mtt/contracts` | Schemas y tipos con el mismo nombre (`Mesh`, `MeshCreateRequest`, `DeviceRead`, …) |
 | `@mtt/contracts/api` | Funciones (`meshesUpdate(meshId, body)`), `get*QueryOptions`, `get*QueryKey`, `get*MutationOptions`. Solo desde `repository.ts` |
 | `@mtt/contracts/runtime` | `apiFetch`: `API_URL` sale de `VITE_API_URL` (si no, el mock), pide la cookie CSRF antes del primer método no seguro, lanza el body DRF con `status` (`toApiError`) y hace el `parse` del response |
@@ -175,7 +175,7 @@ El OpenAPI de la API es el contrato. Zod **no se escribe a mano** para shapes Op
 
 drf-spectacular comparte componentes entre request y response. `orval.config.ts` los separa al generar: el body sin campos `readOnly` pasa a `<Nombre>Request` y el response pierde los `writeOnly`. Si el backend activa `COMPONENT_SPLIT_REQUEST`, ese transformer sobra.
 
-Runtime: **Zod 4.6** (`zod@^4.6.6` en `@mtt/contracts`). Sincronizar: `pnpm openapi:sync` (por defecto `https://api.sensical.es`; otra API con `OPENAPI_URL`, p. ej. `OPENAPI_URL=http://localhost`). Solo regenerar sin descargar: `pnpm openapi:generate`.
+Runtime: **Zod 4.6** (`zod@^4.6.6` en `@mtt/contracts`). Sincronizar: `pnpm openapi:sync` (por defecto `https://api.sensical.es`; otra API con `OPENAPI_URL`, p. ej. `OPENAPI_URL=http://localhost`; o el snapshot del backend sin levantarlo con `OPENAPI_FILE=../meshtastic-things/server/mesh_things/src/mesh_things/client/openapi.json`). Solo regenerar sin descargar: `pnpm openapi:generate`.
 
 Qué usar de 4.6 en este repo (y qué no):
 
@@ -293,7 +293,7 @@ packages/ui/src/
     theme-toggle.tsx       # botón de tema; web y docs
 ```
 
-`package.json` de `@mtt/ui` exporta por segmento (`./components/ui/*`, `./components/reui/*`, …) y aliases `#components/*` para que el CLI de shadcn resuelva imports internos **dentro** del paquete.
+`package.json` de `@mtt/ui` exporta `./components/*` (a cualquier profundidad) y `./reui/*`, y aliases `#components/*` para que el CLI de shadcn resuelva imports internos **dentro** del paquete.
 
 Importar por el export del paquete, no por `@/` de web:
 
@@ -305,7 +305,7 @@ Importar por el export del paquete, no por `@/` de web:
 | Filtros / cascader / number-field | `@mtt/ui/components/reui/…` |
 | Charts | `@mtt/ui/components/evilcharts/charts/…` |
 | Data table | `@mtt/ui/components/data-table`. Smart filters: `@/components/smart-filters` (solo web) |
-| `cn` / `cx` | `@mtt/ui/utils` o `@mtt/ui/utils/cx` |
+| `cn` / `cx` | `@mtt/ui/utils` |
 | Tema | `@mtt/ui/theme` |
 | Query string de filtros | `@/components/filter-url` (solo web; el wire sale de `@mtt/contracts/list-filter`) |
 

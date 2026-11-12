@@ -34,7 +34,7 @@ pnpm openapi:sync
 pnpm typecheck
 ```
 
-`pnpm openapi:sync` downloads the schema and regenerates `packages/contracts`. Fix any app code the new types break in the same pull request. Syncing from `api.sensical.es` keeps the contract in step with the API in production. When a feature needs an API change that is not deployed yet, run that API locally and sync from it with `OPENAPI_URL=http://localhost pnpm openapi:sync`, and say so in the pull request.
+`pnpm openapi:sync` downloads the schema and regenerates `packages/contracts`. Fix any app code the new types break in the same pull request. Syncing from `api.sensical.es` keeps the contract in step with the API in production. When a feature needs an API change that is not deployed yet, run that API locally and sync from it with `OPENAPI_URL=http://localhost pnpm openapi:sync`, or sync from the backend's committed snapshot without running it: `OPENAPI_FILE=../meshtastic-things/server/mesh_things/src/mesh_things/client/openapi.json pnpm openapi:sync`. Say which in the pull request.
 
 ## Pull requests
 
