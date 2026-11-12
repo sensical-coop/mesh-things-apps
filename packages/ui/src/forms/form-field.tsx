@@ -6,6 +6,12 @@ import {
 } from "@mtt/ui/components/ui/field";
 import { type ReactElement, type ReactNode } from "react";
 
+/** Element id of a field's error message, for `aria-describedby` on its control. */
+export const fieldErrorId = (id: string): string => `${id}-error`;
+
+/** Element id of a field's hint, for `aria-describedby` on its control. */
+export const fieldHintId = (id: string): string => `${id}-hint`;
+
 export function FormField({
   id,
   label,
@@ -26,11 +32,11 @@ export function FormField({
       </FieldLabel>
       {children}
       {hint ? (
-        <FieldDescription id={`${id}-hint`} className="text-caption-1-regular text-text-tertiary">
+        <FieldDescription id={fieldHintId(id)} className="text-caption-1-regular text-text-tertiary">
           {hint}
         </FieldDescription>
       ) : null}
-      {error ? <FieldError id={`${id}-error`}>{error}</FieldError> : null}
+      {error ? <FieldError id={fieldErrorId(id)}>{error}</FieldError> : null}
     </Field>
   );
 }

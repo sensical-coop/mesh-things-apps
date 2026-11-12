@@ -6,18 +6,17 @@ import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { deviceRepository } from "@/features/device/repository";
 import { meshRepository } from "@/features/mesh/repository";
+import { PUBLISH_INTERVAL_SECONDS } from "@/timing";
 import { NextStepsFigure } from "@/figures/next-steps/figure";
 import { StepHeading } from "./step-heading";
 import { StepLayout } from "./step-layout";
-
-const DEFAULT_PUBLISH_INTERVAL_SECONDS = 1800;
 
 export function NextStepsStep({
   gateway,
   onDone,
 }: {
   gateway: DeviceRead;
-  onDone: (absenceOn: boolean) => void;
+  onDone: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -28,7 +27,7 @@ export function NextStepsStep({
     ...deviceRepository.update(),
     onSuccess: async (device) => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(device.mesh_id) });
-      onDone(device.absence_detection_enabled);
+      onDone();
     },
     onError: () => setError(true),
   });
@@ -36,14 +35,14 @@ export function NextStepsStep({
   function finish() {
     setError(false);
     if (!on) {
-      onDone(false);
+      onDone();
       return;
     }
     update.mutate({
       deviceUuid: gateway.uuid,
       data: {
         absence_detection_enabled: true,
-        publish_interval_seconds: gateway.publish_interval_seconds ?? DEFAULT_PUBLISH_INTERVAL_SECONDS,
+        publish_interval_seconds: gateway.publish_interval_seconds ?? PUBLISH_INTERVAL_SECONDS,
       },
     });
   }

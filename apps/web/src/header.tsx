@@ -1,32 +1,33 @@
-import { authRepository } from "@/features/auth/repository";
+import { useLogout } from "@mtt/contracts/session";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { ThemeToggle } from "@mtt/ui/components/theme-toggle";
 import { cx } from "@mtt/ui/utils";
 import { RiCloseLine, RiMenuLine, RiUserLine } from "@remixicon/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { pageWidth } from "@/components/brand";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { RouterButtonLink } from "@/components/router-button-link";
-import { headerLinkClass, NavLinks } from "@/nav-links";
+import { navLinkClass } from "@/components/nav-link";
+import { NavLinks } from "@/nav-links";
 import { routes } from "@/router";
 
 export function Header(): ReactElement {
   const { formatMessage } = useIntl();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const logout = useMutation({
-    ...authRepository.logout(),
-    onSuccess: async () => {
-      setMenuOpen(false);
-      queryClient.clear();
-      await navigate({ to: routes.login });
-    },
+  const { logout } = useLogout(async () => {
+    setMenuOpen(false);
+    await navigate({ to: routes.login });
   });
+
+  const signOutButton = (className: string) => (
+    <button type="button" className={className} onClick={logout}>
+      {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
+    </button>
+  );
 
   return (
     <header className="fixed inset-x-0 top-0 z-sticky bg-background-full pt-[env(safe-area-inset-top)]">
@@ -45,13 +46,7 @@ export function Header(): ReactElement {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            className={cx(headerLinkClass, "hidden md:inline")}
-            onClick={() => logout.mutate()}
-          >
-            {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
-          </button>
+          {signOutButton(cx(navLinkClass({}), "hidden md:inline"))}
           <LanguageSwitcher />
           <RouterButtonLink
             to={routes.profile}
@@ -86,13 +81,7 @@ export function Header(): ReactElement {
           <nav className="flex flex-col gap-1" aria-label="Primary">
             <NavLinks stacked onNavigate={() => setMenuOpen(false)} />
           </nav>
-          <button
-            type="button"
-            className={cx(headerLinkClass, "w-full px-3 py-2 text-start")}
-            onClick={() => logout.mutate()}
-          >
-            {formatMessage({ id: "console.header.signOut", defaultMessage: "Sign out" })}
-          </button>
+          {signOutButton(cx(navLinkClass({ stacked: true }), "text-start"))}
         </div>
       ) : null}
     </header>

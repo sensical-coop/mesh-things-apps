@@ -1,5 +1,5 @@
 import type { Algorithm, BlueprintVersion, DeviceMeasurement, StepCalibration } from "@mtt/contracts";
-import { calibrationParams, stringMap } from "../../lib/algorithm-params.ts";
+import { algorithmOf, calibrationParams, stringMap } from "../../lib/algorithm-params.ts";
 
 /** The derived fields a version writes, in step order. */
 export function versionOutputFields(version: Pick<BlueprintVersion, "steps">): string[] {
@@ -21,7 +21,7 @@ export function calibratedSteps(
   return [...version.steps]
     .sort((a, b) => a.order - b.order)
     .flatMap((step) => {
-      const algorithm = algorithms.find((candidate) => candidate.name === step.function_name);
+      const algorithm = algorithmOf(algorithms, step.function_name);
       return algorithm && calibrationParams(algorithm).length ? [{ key: step.key, algorithm }] : [];
     });
 }

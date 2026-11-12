@@ -6,6 +6,7 @@
  */
 import { EXPORT_FILE_HOURS, EXPORT_HISTORY_DAYS } from "@mtt/contracts/export";
 import { newId } from "@mtt/domain/shared/ids";
+import { ARCHIVE_BUCKET, MOCK_S3_PATH } from "../archive/repository";
 
 export type ExportFormat = "csv" | "parquet";
 export type ExportStatus = "queued" | "running" | "ready" | "failed" | "expired";
@@ -64,6 +65,14 @@ export function exportFilename(row: ExportRow): string {
   const days = row.start === row.stop ? row.start : `${row.start}_${row.stop}`;
   return `mesh-${row.meshId.slice(0, 8)}_${days}_${row.format}.zip`;
 }
+
+const EXPORT_OBJECTS = `${MOCK_S3_PATH}${ARCHIVE_BUCKET}/exports/`;
+
+/** Where the presigned link of a ready export points, and the route that serves it. */
+export function exportObjectPath(row: Pick<ExportRow, "meshId" | "id">): string {
+  return `${EXPORT_OBJECTS}${row.meshId}/${row.id}.zip`;
+}
+export const EXPORT_OBJECT_ROUTE = `${EXPORT_OBJECTS}:mesh_id/:file`;
 
 export class MemoryExports {
   readonly rows: ExportRow[] = [];

@@ -45,7 +45,7 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 | `apps/web` | Vite + React 19. Landing y consola. Ver tabla siguiente. |
 | `apps/onboarding` | Vite + React 19. Alta guiada en `/start` (`base: /start/`, dev `:5176`). Mismo origen que web: Caddy en prod, proxy de Vite en dev. |
 | `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`. La app se construye con base `/docs` (`/docs/overview`) y Caddy le pasa el `/docs` del sitio. El logo del header enlaza a `VITE_WEB_URL`. |
-| `packages/contracts` | Cliente HTTP generado (Orval + Zod 4.6) y hechos HTTP a mano: `errors`, `runtime`, `list-filter`, `resend-cooldown`, `resend-verification`, `signup`, `terms`, `terms-notice`, `source`, `blueprint`, `authz`, `export`, `sink`, `query-client`. |
+| `packages/contracts` | Cliente HTTP generado (Orval + Zod 4.6) y hechos HTTP a mano: `errors`, `runtime`, `list-filter`, `resend-cooldown`, `resend-verification`, `signup`, `session`, `terms`, `terms-notice`, `register-gateway`, `mesh`, `source`, `blueprint`, `authz`, `export`, `sink`, `site`, `mock-accounts`, `query-client`. |
 | `packages/domain` | Vertical slices (sin Zod) |
 | `apps/api-mock` | HTTP in-memory. `app.ts` compone CORS, sesión y el registro. Cada feature en `src/routes/<feature>.ts`; repos en `src/features/<name>/repository.ts`. Bodies con Zod de contracts. |
 
@@ -57,11 +57,11 @@ Detalle y árbol: [docs/architecture.md](./docs/architecture.md). Resumen:
 |---|---|
 | `src/main.tsx` | Providers + `<Layout router={router} />`. El instance sale de `@/router/app-router`. |
 | `src/layout.tsx` | `Layout` (`RouterProvider`) y `Shell` (auth + header + outlet + footer). Única excepción a un componente por fichero. |
-| `src/header.tsx`, `src/nav-links.tsx`, `src/management-menu.tsx`, `src/terms-banner.tsx`, `src/footer.tsx` | Chrome de consola, mismo nivel que `layout.tsx`. Los enlaces van en `nav-links.tsx`. |
-| `src/router/router.ts` | Paths + `href()`. Import `@/router`. |
+| `src/header.tsx`, `src/nav-links.tsx`, `src/nav-items.ts`, `src/management-menu.tsx`, `src/terms-banner.tsx`, `src/footer.tsx` | Chrome de consola, mismo nivel que `layout.tsx`. Las páginas del menú y del footer salen de una lista: `nav-items.ts`. |
+| `src/router/router.ts` | Paths. Import `@/router`. Rellenar `$param`: `fillPath` de `@mtt/contracts/site`. |
 | `src/router/app-router.tsx` | Árbol TanStack. No llamar al fichero `router.tsx` (choque Darwin con `router.ts`). |
-| `src/components/` | Producto: `kpi/`, `series/`, `pageWidth` en `brand.tsx`, flag, modal, `smart-filters.tsx`, … Un `.tsx` = un componente. Los forms viven en `@mtt/ui/forms`. |
-| `src/lib/` | Helpers sin JSX (`format`, `page-heading`, `dialog-actions`). |
+| `src/components/` | Producto: `kpi/`, `series/`, `pageWidth` en `brand.ts`, flag, modal, `smart-filters.tsx`, … Un `.tsx` = un componente. Los forms viven en `@mtt/ui/forms`. |
+| `src/lib/` | Helpers sin JSX (`format`, `page-heading`). |
 | `src/features/<name>/` | Entidades de negocio: `repository.ts`, opcional `model.ts` / `ui/`. Sin rutas. CSV y el zip del archivo viven en `features/export/ui`. |
 | `src/pages/` | Rutas (`home`, `login`, `signup`, `profile`, `meshes`, `devices`, `alarms`, `blueprints`, `sources`, `sinks`, `archive`, `csv-downloads`, `operator-requests`, `data-deletions`, legales). `route.ts` + `page.tsx`; invocan features. El detalle de device parte la página en `device-dashboard-tab.tsx`, `device-status-tab.tsx` y `telemetry-variant-section.tsx`. `/start` no es una ruta de web. |
 | `test/` | `node:test`. Prohibido `*.test.ts` bajo `src/`. |
@@ -78,7 +78,7 @@ Look: **superficies blancas con esquinas de curvatura continua, sobre un escenar
 - Motion: springs OA en `@mtt/ui/oa/springs`. Chrome no espera; datos con `.oa-arrive` o skeleton pixel-matched. `prefers-reduced-motion`.
 - Copy: sentence case; el botón dice lo que ocurre. Ver `_copy.md` en el skill.
 - Iconos BoardUI: `@remixicon/react` como referencia (`leadingIcon={RiAddLine}`), no como elemento.
-- Clases: `cx` / `cn` de `@mtt/ui/utils` (o `@mtt/ui/utils/cx`).
+- Clases: `cx` / `cn` de `@mtt/ui/utils`.
 
 Instalar primitivas:
 

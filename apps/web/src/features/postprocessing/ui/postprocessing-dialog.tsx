@@ -11,12 +11,11 @@ import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { blueprintRepository } from "@/features/blueprint/repository";
-import { PREFIX_PATTERN } from "@mtt/contracts/blueprint";
-import { deviceRepository } from "@/features/device/repository";
+import { derivedChannel, PREFIX_PATTERN } from "@mtt/contracts/blueprint";
 import { channelLabel, versionOutputFields } from "@/features/postprocessing/model";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
 import { errorMessages, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 const AUTO = "__auto__";
 const FIELDS = ["blueprint_id", "blueprint_version", "output_prefix", "tolerance_seconds"];
@@ -56,10 +55,7 @@ export function PostprocessingDialog({
   const channels = measurements.filter((row) => !postprocessing || row.produced_by !== postprocessing.id);
 
   async function saved() {
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
-    await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
-    await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(deviceUuid) });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+    await invalidatePostprocessing(queryClient, deviceUuid);
     onClose();
   }
 
@@ -246,7 +242,7 @@ export function PostprocessingDialog({
                   id: "feature.postprocessing.dialog.prefixHint",
                   defaultMessage: "Needed to attach a blueprint twice. Output: {channels}.",
                 },
-                { channels: outputFields.map((field) => `derived.${prefix}${field}`).join(", ") },
+                { channels: outputFields.map((field) => derivedChannel(`${prefix}${field}`)).join(", ") },
               )}
               error={fieldErrors.output_prefix}
             >

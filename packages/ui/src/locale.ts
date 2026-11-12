@@ -7,52 +7,31 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
 
-function isSupportedLocale(value: string | null | undefined): value is Locale {
-  return SUPPORTED_LOCALES.includes(value as Locale);
-}
-
-function matchNavigatorLocale(): Locale | null {
-  const candidates = globalThis.navigator?.languages ?? [globalThis.navigator?.language].filter(Boolean);
-  for (const candidate of candidates) {
-    const prefix = candidate.split("-")[0];
-    if (isSupportedLocale(prefix)) return prefix;
-  }
-  return null;
-}
-
-function readStoredLocale(): Locale | null {
+// Serialized into localeInitScript: must not reference anything outside its own body.
+function detectLocale(storageKey: string, supported: readonly string[], fallback: string): string {
   try {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (isSupportedLocale(stored)) return stored;
+    const stored = localStorage.getItem(storageKey);
+    if (stored && supported.includes(stored)) return stored;
   } catch {
-    return null;
+    /* private mode */
   }
-  return null;
+  const nav = globalThis.navigator;
+  for (const candidate of nav?.languages ?? [nav?.language]) {
+    const prefix = (candidate ?? "").split("-")[0] ?? "";
+    if (supported.includes(prefix)) return prefix;
+  }
+  return fallback;
 }
+
+const DETECT_ARGS = [LOCALE_STORAGE_KEY, SUPPORTED_LOCALES, DEFAULT_LOCALE] as const;
 
 export function detectInitialLocale(): Locale {
-  return readStoredLocale() ?? matchNavigatorLocale() ?? DEFAULT_LOCALE;
+  return detectLocale(...DETECT_ARGS) as Locale;
 }
 
-export const localeInitScript = [
-  "(function(){try{",
-  `var stored=localStorage.getItem("${LOCALE_STORAGE_KEY}");`,
-  `var supported=${JSON.stringify(SUPPORTED_LOCALES)};`,
-  "var lang=stored&&supported.indexOf(stored)>-1?stored:null;",
-  "if(!lang){",
-  "var langs=navigator.languages||[navigator.language];",
-  "for(var i=0;i<langs.length;i++){",
-  "var prefix=(langs[i]||'').split('-')[0];",
-  "if(supported.indexOf(prefix)>-1){lang=prefix;break;}",
-  "}",
-  "}",
-  `document.documentElement.lang=lang||"${DEFAULT_LOCALE}";`,
-  "}catch(e){",
-  `document.documentElement.lang="${DEFAULT_LOCALE}";`,
-  "}})();",
-].join("");
+export const localeInitScript = `document.documentElement.lang=(${detectLocale})(${DETECT_ARGS.map((arg) => JSON.stringify(arg)).join(",")});`;
 
-export function applyLocale(locale: Locale): void {
+export function setLocale(locale: Locale): void {
   const root = globalThis.document?.documentElement;
   if (root) root.lang = locale;
   try {
@@ -63,15 +42,8 @@ export function applyLocale(locale: Locale): void {
   globalThis.dispatchEvent(new Event(LOCALE_EVENT));
 }
 
-let currentLocale: Locale | null = null;
-
+// <html lang> is the live source: the init script and setLocale setLocale write it, even when storage is blocked.
 export function getLocale(): Locale {
-  if (currentLocale) return currentLocale;
-  currentLocale = detectInitialLocale();
-  return currentLocale;
-}
-
-export function setLocale(locale: Locale): void {
-  currentLocale = locale;
-  applyLocale(locale);
+  const lang = globalThis.document?.documentElement.lang;
+  return (SUPPORTED_LOCALES as readonly string[]).includes(lang) ? (lang as Locale) : detectInitialLocale();
 }

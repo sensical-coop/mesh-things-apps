@@ -3,6 +3,9 @@ import type { ZodType } from "zod";
 /** Where requests go. Vite inlines `VITE_API_URL` at build; local dev falls back to the mock. */
 export const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
+/** True unless the build targets a real API (`VITE_DISABLE_MOCK_API=true`): the seeded mock accounts can sign in. */
+export const MOCK_API: boolean = import.meta.env.VITE_DISABLE_MOCK_API !== "true";
+
 const CSRF_COOKIE_NAME = "csrftoken";
 const CSRF_HEADER_NAME = "X-CSRFToken";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS", "TRACE"]);
@@ -14,7 +17,7 @@ function readCookie(name: string): string | undefined {
 }
 
 /** What a failed request throws: DRF's body with the HTTP status put on it. */
-export function toApiError(body: unknown, status: number | undefined): unknown {
+function toApiError(body: unknown, status: number | undefined): unknown {
   // DRF answers some refusals with a bare list of messages: those belong to no field.
   if (Array.isArray(body)) return { non_field_errors: body, status };
   if (typeof body === "object" && body !== null) return { ...body, status };

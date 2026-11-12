@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
-import { authRepository } from "@/features/auth/repository";
+import { formLevelMessage } from "@mtt/contracts/errors";
+import { termsFields } from "@mtt/contracts/terms";
+import { invalidateMe } from "@mtt/contracts/session";
+import { termsAcceptError } from "@/features/terms/accept-error";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 
@@ -17,11 +19,10 @@ export function AcceptAccountTermsDialog({ open, onClose }: AcceptAccountTermsDi
   const accept = useMutation({
     ...termsRepository.acceptAccount(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
+      await invalidateMe(queryClient);
       close();
     },
   });
-  const failure = accept.error ? readApiError(accept.error) : null;
 
   function close() {
     accept.reset();
@@ -36,22 +37,18 @@ export function AcceptAccountTermsDialog({ open, onClose }: AcceptAccountTermsDi
       onAccepted={(acceptance) =>
         // No terms on this instance: nothing to accept.
         acceptance
-          ? accept.mutate({ data: { terms_version: acceptance.version, terms_locale: acceptance.locale } })
+          ? accept.mutate({ data: termsFields(acceptance) })
           : close()
       }
       acceptLabel={formatMessage({ id: "feature.terms.account.accept", defaultMessage: "Accept terms" })}
       pending={accept.isPending}
-      error={
-        failure
-          ? failure.fields.terms_version
-            ? formatMessage({
-                id: "feature.terms.renew.outdated",
-                defaultMessage: "The terms changed while you were reading. Close and open them again.",
-              })
-            : (formLevelMessage(accept.error) ??
-              formatMessage({ id: "feature.terms.account.error", defaultMessage: "The terms were not accepted. Try again." }))
-          : null
-      }
+      error={termsAcceptError(
+        accept.error,
+        formatMessage,
+        () =>
+          formLevelMessage(accept.error) ??
+          formatMessage({ id: "feature.terms.account.error", defaultMessage: "The terms were not accepted. Try again." }),
+      )}
     />
   );
 }

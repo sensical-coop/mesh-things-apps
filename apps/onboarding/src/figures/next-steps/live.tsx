@@ -39,27 +39,23 @@ import {
   placeMin,
   placeReading,
 } from "./model";
+import { span } from "../view";
 import "./next-steps.css";
 
 const TAU = 0.28;
 const TOUR = 8.6;
 const PAUSE = 3.6;
 
-const ease = (t: number) => {
-  const u = Math.min(1, Math.max(0, t));
-  return u * u * (3 - 2 * u);
-};
-
 function tourReading(t: number) {
   const at = t % TOUR;
   if (at < 1.3) return REST_READING;
-  if (at < 3.5) return REST_READING + (34 - REST_READING) * ease((at - 1.3) / 2.2);
+  if (at < 3.5) return REST_READING + (34 - REST_READING) * span(at, 1.3, 3.5);
   if (at < 5.3) return 34;
-  if (at < 7.5) return 34 + (REST_READING - 34) * ease((at - 5.3) / 2.2);
+  if (at < 7.5) return 34 + (REST_READING - 34) * span(at, 5.3, 7.5);
   return REST_READING;
 }
 
-interface Props {
+type Props = {
   label: string;
   base: ReactNode;
   sensor: ReactNode;
@@ -72,7 +68,7 @@ interface Props {
   letter: ReactNode;
   slide: ReactNode;
   wire: ReactNode;
-}
+};
 
 export function NextStepsLive(props: Props) {
   const { formatMessage } = useIntl();

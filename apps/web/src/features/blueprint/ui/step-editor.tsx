@@ -6,8 +6,9 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
-import { calibrationParams, configParams } from "@/lib/algorithm-params";
+import { algorithmOf, calibrationParams, configParams } from "@/lib/algorithm-params";
 import { refChoices, type BlueprintDraft, type StepDraft } from "@/features/blueprint/model";
+import { ParamField } from "@/features/blueprint/ui/param-field";
 
 export type StepEditorProps = {
   draft: BlueprintDraft;
@@ -22,7 +23,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
   const { formatMessage } = useIntl();
   const step = draft.steps[index];
   if (!step) throw new Error(`No step ${index}`);
-  const algorithm = algorithms.find((candidate) => candidate.name === step.functionName);
+  const algorithm = algorithmOf(algorithms, step.functionName);
   const choices = refChoices(draft, index).map((choice) => ({
     value: choice.value,
     label: choice.slot
@@ -123,28 +124,14 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {configParams(algorithm).map((param) => (
-              <FormField
+              <ParamField
                 key={param.name}
                 id={`${id}-param-${param.name}`}
-                label={param.unit ? `${param.name} (${param.unit})` : param.name}
-                hint={param.doc || undefined}
-              >
-                <Input
-                  id={`${id}-param-${param.name}`}
-                  value={step.params[param.name] ?? ""}
-                  autoComplete="off"
-                  inputMode="decimal"
-                  placeholder={
-                    param.required
-                      ? formatMessage({ id: "feature.blueprint.step.paramRequired", defaultMessage: "Required" })
-                      : formatMessage(
-                          { id: "feature.blueprint.step.paramDefault", defaultMessage: "Default {value}" },
-                          { value: JSON.stringify(param.default) },
-                        )
-                  }
-                  onChange={(event) => onChange({ ...step, params: { ...step.params, [param.name]: event.target.value } })}
-                />
-              </FormField>
+                param={param}
+                value={step.params[param.name] ?? ""}
+                inputMode="decimal"
+                onChange={(event) => onChange({ ...step, params: { ...step.params, [param.name]: event.target.value } })}
+              />
             ))}
           </div>
         </fieldset>

@@ -1,3 +1,4 @@
+import { SITE_PATHS } from "@mtt/contracts/site";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
@@ -6,17 +7,15 @@ import { BasicsFigure } from "@/figures/basics/figure";
 import type { BasicsConcept } from "@/figures/basics/model";
 import { StepHeading } from "./step-heading";
 
-const CONCEPTS: BasicsConcept[] = ["node", "gateway", "mesh", "reading"];
-
 export function BasicsStep({ onContinue }: { onContinue: () => void }): ReactElement {
   const { formatMessage } = useIntl();
   const [selected, setSelected] = useState<BasicsConcept>("mesh");
   const copy: Record<BasicsConcept, { title: string; body: string }> = {
-    mesh: {
-      title: formatMessage({ id: "page.start.basics.mesh.title", defaultMessage: "Mesh" }),
+    node: {
+      title: formatMessage({ id: "page.start.basics.node.title", defaultMessage: "Node" }),
       body: formatMessage({
-        id: "page.start.basics.mesh.body",
-        defaultMessage: "A mesh is one radio network: a channel name and a key. Mesh Things decrypts what arrives on that channel.",
+        id: "page.start.basics.node.body",
+        defaultMessage: "A node is any other radio on the mesh. Nodes show up here once the gateway has forwarded a packet from them.",
       }),
     },
     gateway: {
@@ -26,11 +25,11 @@ export function BasicsStep({ onContinue }: { onContinue: () => void }): ReactEle
         defaultMessage: "A gateway is the radio that forwards the mesh over MQTT. You register its node ID so the packets have an owner.",
       }),
     },
-    node: {
-      title: formatMessage({ id: "page.start.basics.node.title", defaultMessage: "Node" }),
+    mesh: {
+      title: formatMessage({ id: "page.start.basics.mesh.title", defaultMessage: "Mesh" }),
       body: formatMessage({
-        id: "page.start.basics.node.body",
-        defaultMessage: "A node is any other radio on the mesh. Nodes show up here once the gateway has forwarded a packet from them.",
+        id: "page.start.basics.mesh.body",
+        defaultMessage: "A mesh is one radio network: a channel name and a key. Mesh Things decrypts what arrives on that channel.",
       }),
     },
     reading: {
@@ -59,7 +58,7 @@ export function BasicsStep({ onContinue }: { onContinue: () => void }): ReactEle
         aria-label={formatMessage({ id: "page.start.basics.cards", defaultMessage: "Concepts" })}
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
-        {CONCEPTS.map((id) => {
+        {(Object.keys(copy) as BasicsConcept[]).map((id) => {
           const on = selected === id;
           return (
             <button
@@ -79,7 +78,7 @@ export function BasicsStep({ onContinue }: { onContinue: () => void }): ReactEle
         })}
       </div>
       <p className="text-body-2-regular text-text-secondary">
-        <a className="underline" href="/docs/concepts">
+        <a className="underline" href={`${SITE_PATHS.docs}/concepts`}>
           {formatMessage({ id: "page.start.basics.docs", defaultMessage: "Read the concepts page" })}
         </a>
       </p>

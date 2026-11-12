@@ -13,30 +13,33 @@ import { canReadOwnerEmail } from "@mtt/contracts/authz";
 import type { Actor } from "../auth";
 import { gatewayBrokerFromEnv } from "../features/broker/repository";
 import {
-  TERMS_ENFORCED,
-  TERMS_VERSIONS,
+  acceptAccountTerms,
   termsJson,
   termsLocale,
+  termsVersionError,
 } from "../features/terms/terms";
 import { secondsUntilResendAllowed } from "@mtt/contracts/resend-cooldown";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
+import { SITE_PATHS } from "@mtt/contracts/site";
 import { Hono } from "hono";
-import { setOwnerPassword, stampLogin } from "../auth";
+import { setOwnerPassword } from "../auth";
 import {
-  ownerProfileJson,
   ownerPublicJson,
-  ownerReadJson,
-  ownerWithApiKeyJson,
 } from "../serialize";
 
 import {
-  PASSWORD_RESET_TTL_HOURS, NO_VERIFICATION, returnPathError, verificationLink,
-  parseBody, fieldErrors,
-  applySetCookie, devicesFor,
+  PASSWORD_RESET_TTL_HOURS, returnPathError, sameEmail, verificationLink, verificationOf,
+  parseBody, fieldErrors, termsEnforced,
+  applySetCookie,
 } from "../http";
 
+const mockApiKey = (secret: string) => `mtt_mock_${secret}`;
+
 export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
-  const { db, auth, detachFromSinks, deleteDevice, devicesJson, acceptTerms, ownerTerms } = rt;
+  const { db, auth, deleteMesh, issueVerificationToken, revokeVerificationTokens, ownerRead, ownerProfile, ownerWithApiKey } = rt;
+  /** Emails are unique regardless of case; `exceptId` is the owner changing their own address. */
+  const emailTaken = (email: string, exceptId?: string) =>
+    [...db.actors.values()].some((other) => other.id !== exceptId && sameEmail(other.email, email));
   app.get("/owners/csrf-cookie", (c) => c.json({ detail: "ok" }));
 
   app.post("/owners/login", async (c) => {
@@ -52,9 +55,8 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
       if (!actor) return c.json({ detail: "Invalid email or password" }, 401);
       // Like the API, an unverified owner is signed in and only reaches its own account.
       applySetCookie(c, result.headers);
-      stampLogin(actor);
-      const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-      return c.json(ownerProfileJson(actor, await devicesJson(actor, await devicesFor(db, actor)), verification, ownerTerms(actor.id)));
+      actor.lastLogin = nowIso();
+      return c.json(await ownerProfile(actor));
     } catch {
       return c.json({ detail: "Invalid email or password" }, 401);
     }
@@ -63,14 +65,14 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
   app.post("/owners/request-password-reset", async (c) => {
     const parsed = await parseBody(c, OwnerRequestPasswordReset);
     if ("error" in parsed) return c.json(parsed.error, 400);
-    const actor = [...db.actors.values()].find((candidate) => candidate.email === parsed.data.email);
+    const actor = [...db.actors.values()].find((candidate) => sameEmail(candidate.email, parsed.data.email));
     if (actor) {
       for (const [existingToken, entry] of db.passwordResetTokens) {
         if (entry.ownerId === actor.id) db.passwordResetTokens.delete(existingToken);
       }
       const token = newId();
       db.passwordResetTokens.set(token, { ownerId: actor.id, sentAt: nowIso() });
-      console.info(`[mock] password reset link for ${actor.email}: /reset-password?token=${token}`);
+      console.info(`[mock] password reset link for ${actor.email}: ${SITE_PATHS.resetPassword}?token=${token}`);
     }
     return c.json({ detail: "If an account exists for that email, a reset link has been sent." });
   });
@@ -94,11 +96,11 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const parsed = await parseBody(c, OwnerCreate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const { name, email, password } = parsed.data;
-    const terms = acceptTerms("account", parsed.data.terms_version, "", termsLocale(parsed.data.terms_locale), null, false);
-    if ("error" in terms) return c.json(terms.error, 400);
+    const termsError = termsVersionError("account", parsed.data.terms_version);
+    if (Object.keys(termsError).length) return c.json(termsError, 400);
     const nextError = returnPathError(parsed.data.next);
     if (Object.keys(nextError).length) return c.json(nextError, 400);
-    if ([...db.actors.values()].some((actor) => actor.email.toLowerCase() === email.toLowerCase())) {
+    if (emailTaken(email)) {
       return c.json({ detail: `Owner with email ${email} already exists` }, 409);
     }
     let result;
@@ -128,14 +130,11 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
     };
     db.actors.set(actor.id, actor);
     // Signing up accepts the current account terms; they don't lapse, as an account stores no mesh data.
-    acceptTerms("account", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale));
-    if (TERMS_ENFORCED) db.accountTerms.set(actor.id, TERMS_VERSIONS.account);
-    const token = newId();
-    db.verificationTokens.set(token, actor.id);
-    const verification = { emailVerifiedAt: null, emailVerificationSentAt: now };
-    db.verifications.set(actor.id, verification);
+    acceptAccountTerms(db.accountTerms, actor.id);
+    const token = issueVerificationToken(actor.id);
+    db.verifications.set(actor.id, { emailVerifiedAt: null, emailVerificationSentAt: now });
     console.info(`[mock] verification link for ${email}: ${verificationLink(token, parsed.data.next)}`);
-    return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${token}`, ownerTerms(actor.id)), 201);
+    return c.json(ownerWithApiKey(actor, mockApiKey(token)), 201);
   });
 
   app.get("/owners/verify-email", (c) => {
@@ -148,15 +147,14 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
     db.verificationTokens.delete(token);
     actor.isActive = true;
     const now = nowIso();
-    const previous = db.verifications.get(ownerId) ?? NO_VERIFICATION;
+    const previous = verificationOf(db, ownerId);
     db.verifications.set(ownerId, { ...previous, emailVerifiedAt: now });
     return c.json({ detail: "Your email address has been verified." });
   });
 
   app.post("/owners/me/rotate-key", (c) => {
     const actor = c.get("actor");
-    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-    return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${newId()}`, ownerTerms(actor.id)));
+    return c.json(ownerWithApiKey(actor, mockApiKey(newId())));
   });
 
   app.post("/owners/me/resend-verification", async (c) => {
@@ -167,16 +165,12 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const nextError = returnPathError(next);
     if (Object.keys(nextError).length) return c.json(nextError, 400);
     const actor = c.get("actor");
-    const info = db.verifications.get(actor.id) ?? NO_VERIFICATION;
+    const info = verificationOf(db, actor.id);
     const waitSeconds = secondsUntilResendAllowed(info.emailVerificationSentAt ?? null, Date.now());
     if (waitSeconds > 0) {
       return c.json({ detail: `Please wait ${waitSeconds}s before requesting another email.` }, 429);
     }
-    for (const [existingToken, ownerId] of db.verificationTokens) {
-      if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
-    }
-    const token = newId();
-    db.verificationTokens.set(token, actor.id);
+    const token = issueVerificationToken(actor.id);
     const now = nowIso();
     db.verifications.set(actor.id, { ...info, emailVerificationSentAt: now });
     console.info(`[mock] verification link for ${actor.email}: ${verificationLink(token, next)}`);
@@ -194,8 +188,7 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   app.get("/owners/me", async (c) => {
     const actor = c.get("actor");
-    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-    return c.json(ownerProfileJson(actor, await devicesJson(actor, await devicesFor(db, actor)), verification, ownerTerms(actor.id)));
+    return c.json(await ownerProfile(actor));
   });
 
   app.get("/owners/me/gateway-broker", (c) => {
@@ -219,33 +212,20 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
       actor.sourceRateAlertsEnabled = patch.source_rate_alerts_enabled;
     }
     if (patch.email !== undefined && patch.email !== actor.email) {
-      const taken = [...db.actors.values()].some(
-        (other) => other.id !== actor.id && other.email === patch.email,
-      );
-      if (taken) return c.json({ detail: "That email address is already in use." }, 400);
+      if (emailTaken(patch.email, actor.id)) return c.json({ detail: "That email address is already in use." }, 400);
       actor.email = patch.email;
       actor.isActive = false;
-      for (const [existingToken, ownerId] of db.verificationTokens) {
-        if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
-      }
-      const token = newId();
-      db.verificationTokens.set(token, actor.id);
+      const token = issueVerificationToken(actor.id);
       db.verifications.set(actor.id, { emailVerifiedAt: null, emailVerificationSentAt: nowIso() });
       console.info(`[mock] verification link for ${actor.email}: ${verificationLink(token, undefined)}`);
     }
-    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-    return c.json(ownerReadJson(actor, verification, ownerTerms(actor.id)));
+    return c.json(ownerRead(actor));
   });
 
   app.delete("/owners/me", async (c) => {
     const actor = c.get("actor");
     const ownedMeshes = (await db.meshes.list()).filter((mesh) => mesh.ownerId === actor.id);
-    for (const mesh of ownedMeshes) {
-      const devices = await db.devices.list({ meshId: mesh.id });
-      for (const device of devices) await deleteDevice(device.uuid);
-      detachFromSinks({ meshId: mesh.id });
-      await db.meshes.delete(mesh.id);
-    }
+    for (const mesh of ownedMeshes) await deleteMesh(mesh, actor.id);
     // The owner's sinks go too: their credentials are revoked and consumers disconnected.
     for (const sink of await db.sinks.list()) {
       if (sink.createdById === actor.id) await db.sinks.delete(sink.id);
@@ -255,9 +235,7 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
       if (blueprint.ownerId !== actor.id) return [blueprint];
       return db.postprocessings.some((row) => row.blueprintId === blueprint.id) ? [{ ...blueprint, ownerId: null }] : [];
     });
-    for (const [existingToken, ownerId] of db.verificationTokens) {
-      if (ownerId === actor.id) db.verificationTokens.delete(existingToken);
-    }
+    revokeVerificationTokens(actor.id);
     db.verifications.delete(actor.id);
     db.actors.delete(actor.id);
     const result = await auth.api.signOut({ headers: c.req.raw.headers, returnHeaders: true });
@@ -269,7 +247,7 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const actor = c.get("actor");
     const rows = [...db.actors.values()];
     if (actor.role === "superuser") {
-      return c.json(rows.map((row) => ownerReadJson(row, db.verifications.get(row.id) ?? NO_VERIFICATION, ownerTerms(row.id))));
+      return c.json(rows.map((row) => ownerRead(row)));
     }
     return c.json(rows.map(ownerPublicJson));
   });
@@ -279,21 +257,19 @@ export function registerOwnerRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const subject = db.actors.get(c.req.param("owner_id"));
     if (!subject) return c.json({ detail: "Not found" }, 404);
     if (canReadOwnerEmail(actor, subject)) {
-      return c.json(ownerReadJson(subject, db.verifications.get(subject.id) ?? NO_VERIFICATION, ownerTerms(subject.id)));
+      return c.json(ownerRead(subject));
     }
     return c.json(ownerPublicJson(subject));
   });
-  app.get("/terms", (c) => c.json(termsJson("account", termsLocale(c.req.query("locale")))));
+  app.get("/terms", termsEnforced, (c) => c.json(termsJson("account", termsLocale(c.req.query("locale")))));
 
-  app.post("/owners/me/terms-acceptance", async (c) => {
+  app.post("/owners/me/terms-acceptance", termsEnforced, async (c) => {
     const actor = c.get("actor");
     const parsed = await parseBody(c, AccountTermsAcceptance);
     if ("error" in parsed) return c.json(parsed.error, 400);
-    const terms = acceptTerms("account", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale));
-    if ("error" in terms) return c.json(terms.error, 400);
-    // Accepting changed account terms; nothing is paused by them.
-    if (TERMS_ENFORCED) db.accountTerms.set(actor.id, TERMS_VERSIONS.account);
-    const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
-    return c.json(ownerReadJson(actor, verification, ownerTerms(actor.id)), 201);
+    const termsError = termsVersionError("account", parsed.data.terms_version);
+    if (Object.keys(termsError).length) return c.json(termsError, 400);
+    acceptAccountTerms(db.accountTerms, actor.id);
+    return c.json(ownerRead(actor), 201);
   });
 }

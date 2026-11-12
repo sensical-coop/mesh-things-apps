@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Device, matchesDeviceFilter } from "../../src/device/Device";
+import { Device } from "../../src/device/Device";
 
 function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {}): Device {
   return new Device({
@@ -19,7 +19,6 @@ function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {})
     hardwareType: "tbeam",
     role: "CLIENT",
     nodeinfoOverridden: false,
-    postprocessingCount: 0,
     readingIntervalSeconds: null,
     publishIntervalSeconds: null,
     lastSeen: "2026-01-01T00:00:00.000Z",
@@ -30,22 +29,6 @@ function makeDevice(over: Partial<ConstructorParameters<typeof Device>[0]> = {})
 }
 
 describe("Device", () => {
-  it("filters gateways on one mesh", () => {
-    const gw = makeDevice({ isGateway: true });
-    const node = makeDevice({
-      uuid: "44444444-4444-4444-8444-444444444444",
-      nodeId: 2,
-      isGateway: false,
-    });
-    expect(matchesDeviceFilter(gw, { meshId: gw.meshId, isGateway: true })).toBe(true);
-    expect(matchesDeviceFilter(node, { meshId: gw.meshId, isGateway: true })).toBe(false);
-  });
-
-  it("has postprocessing once a blueprint is attached", () => {
-    expect(matchesDeviceFilter(makeDevice({ postprocessingCount: 1 }), { hasPostprocessing: true })).toBe(true);
-    expect(matchesDeviceFilter(makeDevice(), { hasPostprocessing: true })).toBe(false);
-  });
-
   it("records who switched the archive on, and clears it when switched off", () => {
     const device = makeDevice();
     expect(device.archiveEnabled).toBe(false);

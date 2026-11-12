@@ -6,14 +6,14 @@ import {
   type ProfileFlags,
 } from "@mtt/contracts/authz";
 import { slotRef, stepRef, validateBlueprintStep, validateBlueprintVersion, type BlueprintProblem } from "@mtt/contracts/blueprint";
-import { formatParam, parseParam, stringMap, valueMap } from "../../lib/algorithm-params.ts";
+import { algorithmOf, formatParam, parseParam, stringMap, valueMap } from "../../lib/algorithm-params.ts";
 
 export function canEditBlueprint(
   blueprint: Pick<PostprocessingBlueprint, "owner_id">,
   me: ProfileFlags | undefined,
 ): boolean {
   if (!me) return false;
-  return canWriteBlueprint(viewerOf(me), { ownerId: blueprint.owner_id, isPublic: false });
+  return canWriteBlueprint(viewerOf(me), { ownerId: blueprint.owner_id });
 }
 
 /** The registry's attach rule: the device's mesh owner's own blueprints, and public ones. */
@@ -139,10 +139,6 @@ export type DraftProblem =
   | { kind: "fieldTwice"; field: string }
   | { kind: "pointwise"; key: string; name: string; mode: string }
   | { kind: "unknownAlgorithm"; key: string; name: string };
-
-function algorithmOf(algorithms: readonly Algorithm[], name: string): Algorithm | undefined {
-  return algorithms.find((candidate) => candidate.name === name);
-}
 
 function listed(problem: BlueprintProblem, key: "inputs" | "params" | "outputs" | "slots"): string[] {
   return [...(problem[key] ?? [])];

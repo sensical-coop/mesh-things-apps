@@ -1,9 +1,9 @@
-import { pathOf, type Flat } from "@/iso/iso-kit";
+import { pathOf, type Flat } from "../../iso/iso-kit.ts";
 
-export interface AirPacket {
+export type AirPacket = {
   d: string;
   at: (t: number) => Flat;
-}
+};
 
 function arc(tip: Flat, radius: number, from: number, to: number): string {
   const steps = 14;
@@ -55,12 +55,3 @@ export function pointOnRoute(legs: readonly AirPacket[], progress: number): Flat
   if (!leg) throw new Error("route");
   return leg.at(scaled - index);
 }
-
-function checkAir(): void {
-  const hop = airPacket([0, 0], [40, 10], 16);
-  if (hop.at(0.5)[1] >= 5) throw new Error("packet");
-  const rings = airRings([0, 0]);
-  if (rings.length !== 3 || !rings[0]?.startsWith("M")) throw new Error("rings");
-}
-
-checkAir();

@@ -42,11 +42,28 @@ test("deviceTitle prefers the node name over a role-like label", () => {
   assert.equal(deviceTitle(device), "Hill GW");
 });
 
+const roleLabels = {
+  client: "Client",
+  client_mute: "Client mute",
+  client_hidden: "Client hidden",
+  router: "Router",
+  router_client: "Router client",
+  router_late: "Router late",
+  repeater: "Repeater",
+  tracker: "Tracker",
+  sensor: "Sensor",
+  tak: "TAK",
+  tak_tracker: "TAK tracker",
+  lost_and_found: "Lost and found",
+  gateway: "Gateway",
+  node: "Node",
+};
+
 test("deviceRoleLabel uses the catalog name, else a sentence, and gateway only when there is no role", () => {
-  assert.equal(deviceRoleLabel({ role: "TAK_TRACKER", is_gateway: false }), "TAK tracker");
-  assert.equal(deviceRoleLabel({ role: "CUSTOM_ROLE", is_gateway: true }), "Custom role");
-  assert.equal(deviceRoleLabel({ role: null, is_gateway: true }), "Gateway");
-  assert.equal(deviceRoleLabel({ role: null, is_gateway: false }), "Node");
+  assert.equal(deviceRoleLabel({ role: "TAK_TRACKER", is_gateway: false }, roleLabels), "TAK tracker");
+  assert.equal(deviceRoleLabel({ role: "CUSTOM_ROLE", is_gateway: true }, roleLabels), "Custom role");
+  assert.equal(deviceRoleLabel({ role: null, is_gateway: true }, roleLabels), "Gateway");
+  assert.equal(deviceRoleLabel({ role: null, is_gateway: false }, roleLabels), "Node");
 });
 
 test("parseCoordinate keeps decimals whatever the separator", () => {

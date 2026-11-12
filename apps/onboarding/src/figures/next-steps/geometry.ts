@@ -77,19 +77,19 @@ export function polar(angle: number, radius: number): [number, number] {
   return [Math.sin(angle) * radius, -Math.cos(angle) * radius];
 }
 
-const tenth = (value: number) => (Math.round(value * 100) / 100).toString();
+const hundredth = (value: number) => (Math.round(value * 100) / 100).toString();
 
 export function spoke(angle: number, inner: number, outer: number) {
   const [x0, y0] = polar(angle, inner);
   const [x1, y1] = polar(angle, outer);
-  return `M${tenth(x0)} ${tenth(y0)}L${tenth(x1)} ${tenth(y1)}`;
+  return `M${hundredth(x0)} ${hundredth(y0)}L${hundredth(x1)} ${hundredth(y1)}`;
 }
 
 export function ringPath(radius: number, steps = 48) {
   let d = "";
   for (let index = 0; index <= steps; index++) {
     const [x, y] = polar((index / steps) * Math.PI * 2, radius);
-    d += `${index ? "L" : "M"}${tenth(x)} ${tenth(y)}`;
+    d += `${index ? "L" : "M"}${hundredth(x)} ${hundredth(y)}`;
   }
   return `${d}Z`;
 }
@@ -101,7 +101,7 @@ export function bandPath(maxReading: number) {
   const [x0, y0] = polar(from, radius);
   const [x1, y1] = polar(to, radius);
   const large = to - from > Math.PI ? 1 : 0;
-  return `M${tenth(x0)} ${tenth(y0)}A${radius} ${radius} 0 ${large} 1 ${tenth(x1)} ${tenth(y1)}`;
+  return `M${hundredth(x0)} ${hundredth(y0)}A${radius} ${radius} 0 ${large} 1 ${hundredth(x1)} ${hundredth(y1)}`;
 }
 
 export function needlePath(reading: number) {
@@ -183,11 +183,11 @@ function diskY(cx: number, cz: number, y: number, radius: number, thick: number,
   };
 }
 
-export interface Part {
+export type Part = {
   paths: SolidPaths;
   tone?: "hi" | "mid" | "lo";
   crease?: "faint" | "none";
-}
+};
 
 export const footFlange = (at: [number, number]) => cyl(at[0], at[1], 6.2, -FOOT, 1.5, 20);
 export const footBody = (at: [number, number]) => cyl(at[0], at[1], 4.6, -FOOT + 1.5, FOOT - 1.5, 20);

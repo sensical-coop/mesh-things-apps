@@ -1,6 +1,6 @@
 import type { DeviceRead, MeshRelay, RfLink } from "@mtt/contracts";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { Link } from "@tanstack/react-router";
 import { routes } from "@/router";
 import { type ReactElement } from "react";

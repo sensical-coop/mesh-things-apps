@@ -1,5 +1,4 @@
 import type { DataDeletion } from "@mtt/contracts";
-import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
@@ -7,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { ListScaffold } from "@/components/list-scaffold";
+import { StatusFilter } from "@/components/status-filter";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import {
   DATA_DELETION_STATUSES,
@@ -14,12 +14,15 @@ import {
   type DataDeletionStatusFilter,
 } from "@/features/data-deletion/model";
 import { dataDeletionRepository } from "@/features/data-deletion/repository";
+import { useDataDeletionReasonLabels } from "@/features/data-deletion/use-reason-labels";
+import { useDataDeletionStatusLabels } from "@/features/data-deletion/use-status-labels";
 import { DataDeletionStatusChip } from "@/features/data-deletion/ui/data-deletion-status-chip";
 import { meshTitle } from "@/features/mesh/model";
-import { meshRepository } from "@/features/mesh/repository";
+import { useMeshDirectory } from "@/features/mesh/use-mesh-directory";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { useFormatters } from "@/hooks/use-formatters";
+import { tableLinkClass } from "@/lib/link-class";
 import { routes } from "@/router";
 
 const col = legacyCreateColumnHelper<DataDeletion>();
@@ -31,28 +34,12 @@ export function DataDeletionsView(): ReactElement {
   const [status, setStatus] = useState<DataDeletionStatusFilter>("pending");
   const deletions = useQuery(dataDeletionRepository.list({ status }));
   // Names for meshes and sources that still exist; a deleted mesh shows its id.
-  const meshes = useQuery(meshRepository.list());
   const sources = useQuery(sourceRepository.list());
-  const meshById = useMemo(() => new Map((meshes.data ?? []).map((mesh) => [mesh.id, mesh])), [meshes.data]);
+  const { byId: meshById } = useMeshDirectory();
   const sourceById = useMemo(() => new Map((sources.data ?? []).map((source) => [source.id, source])), [sources.data]);
 
-  const statusLabels: Record<DataDeletionStatusFilter, string> = {
-    pending: formatMessage({ id: "page.dataDeletions.filter.pending", defaultMessage: "Scheduled" }),
-    done: formatMessage({ id: "page.dataDeletions.filter.done", defaultMessage: "Deleted" }),
-    cancelled: formatMessage({ id: "page.dataDeletions.filter.cancelled", defaultMessage: "Cancelled" }),
-    all: formatMessage({ id: "page.dataDeletions.filter.all", defaultMessage: "All" }),
-  };
-  const reasonLabels = useMemo<Record<DataDeletion["reason"], string>>(
-    () => ({
-    mesh_deleted: formatMessage({ id: "page.dataDeletions.reason.meshDeleted", defaultMessage: "Mesh deleted" }),
-    source_detached: formatMessage({
-      id: "page.dataDeletions.reason.sourceDetached",
-      defaultMessage: "Moved off its source",
-    }),
-    terms_lapsed: formatMessage({ id: "page.dataDeletions.reason.termsLapsed", defaultMessage: "Terms lapsed" }),
-    }),
-    [formatMessage],
-  );
+  const statusLabels = useDataDeletionStatusLabels();
+  const reasonLabels = useDataDeletionReasonLabels();
 
   const columns = useMemo(
     () => [
@@ -64,7 +51,7 @@ export function DataDeletionsView(): ReactElement {
             <Link
               to={routes.mesh}
               params={{ meshId: mesh.id }}
-              className="rounded-full text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              className={tableLinkClass}
             >
               {meshTitle(mesh)}
             </Link>
@@ -174,24 +161,7 @@ export function DataDeletionsView(): ReactElement {
               })
         }
         toolbar={
-          <div
-            className="mb-4 flex flex-wrap gap-2"
-            role="group"
-            aria-label={formatMessage({ id: "page.dataDeletions.filter.label", defaultMessage: "Status" })}
-          >
-            {DATA_DELETION_STATUSES.map((value) => (
-              <Button
-                key={value}
-                type="button"
-                size="xs"
-                variant={status === value ? "primary" : "secondary"}
-                aria-pressed={status === value}
-                onClick={() => setStatus(value)}
-              >
-                {statusLabels[value]}
-              </Button>
-            ))}
-          </div>
+          <StatusFilter statuses={DATA_DELETION_STATUSES} value={status} labels={statusLabels} onChange={setStatus} />
         }
         pending={deletions.isPending}
         failed={Boolean(deletions.error)}

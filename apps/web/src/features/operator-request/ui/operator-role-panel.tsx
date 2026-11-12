@@ -9,14 +9,14 @@ import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { authRepository } from "@/features/auth/repository";
+import { invalidateMe } from "@mtt/contracts/session";
 import { useMe } from "@/features/auth/use-me";
 import { canRequestOperator } from "@/features/operator-request/model";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
 import { useFormatters } from "@/hooks/use-formatters";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { routes } from "@/router";
 import { RouterButtonLink } from "@/components/router-button-link";
 
@@ -39,7 +39,7 @@ export function OperatorRolePanel(): ReactElement | null {
   const approved = mine.data?.status === "approved";
   useEffect(() => {
     // Approved: the role changed, so refresh `me` and the Sources tab appears.
-    if (approved && !isOperator) void queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
+    if (approved && !isOperator) void invalidateMe(queryClient);
   }, [approved, isOperator, queryClient]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const create = useMutation({

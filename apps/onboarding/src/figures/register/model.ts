@@ -1,3 +1,5 @@
+import { span } from "../view";
+
 /** Eight hex wheels. The sample is the real 32-bit value `!a1b2c3d4`. */
 export const HEX = "0123456789abcdef";
 export const WHEEL_COUNT = 8;
@@ -39,20 +41,14 @@ export function glyphOf(digit: number): string {
   return HEX.charAt(placeOf(digit));
 }
 
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
-
-const ease = (value: number) => {
-  const t = clamp01(value);
-  return t * t * (3 - 2 * t);
-};
 
 /** Idle tour: the wheels roll to the sample ID, hold, then clear. The screen follows. */
 export function tourAt(time: number): number[] {
   const at = time % TOUR_LOOP;
   return SAMPLE.map((target, index) => {
-    const rolled = ease((at - 0.2 - index * 0.14) / 1.05);
+    const rolled = span(at, 0.2 + index * 0.14, 1.25 + index * 0.14);
     if (at < 6.2) return target * rolled;
-    return target * (1 - ease((at - 6.2) / 1.15));
+    return target * (1 - span(at, 6.2, 7.35));
   });
 }
 

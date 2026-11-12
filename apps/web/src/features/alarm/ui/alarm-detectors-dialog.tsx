@@ -11,7 +11,7 @@ import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { alarmRepository } from "@/features/alarm/repository";
 import { deviceRepository } from "@/features/device/repository";
 
@@ -22,13 +22,11 @@ const DETECTOR_LABEL_IDS: Record<string, { id: string; defaultMessage: string }>
 };
 
 export function AlarmDetectorsDialog({
-  open,
   onClose,
   deviceUuid,
   channel,
   label,
 }: {
-  open: boolean;
   onClose: () => void;
   deviceUuid: string;
   channel: string;
@@ -41,12 +39,12 @@ export function AlarmDetectorsDialog({
 
   const updateMeasurement = useMutation(deviceRepository.measurementUpdate());
 
-  const device = useQuery({ ...deviceRepository.retrieve(deviceUuid), enabled: open });
-  const measurements = useQuery({ ...deviceRepository.measurements(deviceUuid), enabled: open });
+  const device = useQuery(deviceRepository.retrieve(deviceUuid));
+  const measurements = useQuery(deviceRepository.measurements(deviceUuid));
   const row = measurements.data?.find((m) => m.measurement_type.channel === channel);
-  const variants = useQuery({ ...deviceRepository.telemetryVariants(deviceUuid), enabled: open });
+  const variants = useQuery(deviceRepository.telemetryVariants(deviceUuid));
   const variant = variants.data?.find((v) => v.telemetry_variant.id === row?.telemetry_variant_id);
-  const detectorsQuery = useQuery({ ...alarmRepository.detectors(), enabled: open });
+  const detectorsQuery = useQuery(alarmRepository.detectors());
   const measurementDetectors = (detectorsQuery.data ?? []).filter((d) => d.scope === "measurement");
 
   const loading = measurements.isPending || detectorsQuery.isPending || device.isPending;
@@ -97,7 +95,7 @@ export function AlarmDetectorsDialog({
 
   return (
     <Modal
-      open={open}
+      open
       title={formatMessage(
         { id: "feature.alarm.detectorsDialog.title", defaultMessage: "Alarms — {label}" },
         { label },

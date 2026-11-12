@@ -25,16 +25,31 @@ export function lastDays(days: number, now = new Date()): { start: string; stop:
 
 export type RangeProblem = "missing" | "reversed" | "tooLong";
 
+/** What each status means for the screens; a `Record` keeps it exhaustive with the API's statuses. */
+const STATUS: Record<Export["status"], { active: boolean; retryable: boolean }> = {
+  queued: { active: true, retryable: false },
+  running: { active: true, retryable: false },
+  ready: { active: false, retryable: false },
+  failed: { active: false, retryable: true },
+  expired: { active: false, retryable: true },
+};
+
 /** What is wrong with a range before asking the API, or null. */
-export function rangeProblem(start: string, stop: string, maxDays = EXPORT_MAX_DAYS): RangeProblem | null {
+export function rangeProblem(start: string, stop: string): RangeProblem | null {
   if (!start || !stop) return "missing";
   if (stop < start) return "reversed";
-  if (daysInRange(start, stop) > maxDays) return "tooLong";
+  if (daysInRange(start, stop) > EXPORT_MAX_DAYS) return "tooLong";
   return null;
 }
 
+/** Still being built: the list keeps polling. */
 export function isActive(status: Export["status"]): boolean {
-  return status === "queued" || status === "running";
+  return STATUS[status].active;
+}
+
+/** A past download that can be asked for again. */
+export function canRequestAgain(status: Export["status"]): boolean {
+  return STATUS[status].retryable;
 }
 
 /** The request that built an export, to ask for it again or for another range of it. */

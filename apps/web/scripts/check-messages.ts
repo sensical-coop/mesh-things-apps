@@ -14,14 +14,17 @@ function readStdin(): Promise<string> {
 async function main() {
   const catalogPath = process.argv[2];
   if (!catalogPath) {
-    console.error("usage: check-messages.ts <en.json>");
+    console.error("usage: check-messages.ts <en.json> [extra-en.json ...]");
     process.exitCode = 1;
     return;
   }
 
   const input = await readStdin();
   const extracted: Extracted = JSON.parse(input);
-  const en: Record<string, string> = JSON.parse(readFileSync(catalogPath, "utf8"));
+  const en: Record<string, string> = Object.assign(
+    {},
+    ...[catalogPath, ...process.argv.slice(3)].map((path) => JSON.parse(readFileSync(path, "utf8"))),
+  );
 
   const missing: string[] = [];
   const mismatched: string[] = [];

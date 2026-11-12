@@ -34,6 +34,6 @@ export function useFormatters(): Formatters {
     formatClock: (iso) => format.formatClock(iso, locale),
     formatValue: (value) => format.formatValue(value, locale, labels),
     formatRatio: (value) => format.formatRatio(value, locale, labels),
-    formatSecondsAsHms: (seconds) => format.formatSecondsAsHms(seconds, locale, labels),
+    formatSecondsAsHms: (seconds) => format.formatSecondsAsHms(seconds, labels),
   };
 }

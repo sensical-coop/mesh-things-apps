@@ -1,10 +1,12 @@
 import type { DeviceRead, Mesh } from "@mtt/contracts";
+import { fillPath, SITE_PATHS } from "@mtt/contracts/site";
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { formatNodeId } from "@mtt/ui/forms/node-id";
 import { cx } from "@mtt/ui/utils";
 import type { ReactElement, ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { DoneFigure } from "@/figures/done/figure";
+import { gatewayTitle, isSeen } from "@/features/device/model";
 import { StepHeading } from "./step-heading";
 import { StepLayout } from "./step-layout";
 
@@ -12,19 +14,17 @@ export function DoneStep({
   mesh,
   gateway,
   nodeCount,
-  absenceOn,
-  seen,
 }: {
   mesh: Mesh;
   gateway: DeviceRead;
   nodeCount: number;
-  absenceOn: boolean;
-  seen: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();
+  const absenceOn = gateway.absence_detection_enabled;
+  const seen = isSeen(gateway);
   const meshName = mesh.label?.trim() || mesh.channel_id;
   const nodeId = formatNodeId(gateway.node_id, "hex");
-  const gatewayName = gateway.label?.trim() || nodeId;
+  const gatewayName = gatewayTitle(gateway);
   const rows: { label: string; value: ReactNode; detail?: string }[] = [
     {
       label: formatMessage({ id: "page.start.done.meshLabel", defaultMessage: "Mesh" }),
@@ -70,10 +70,10 @@ export function DoneStep({
           </div>
         ))}
       </dl>
-      <ButtonLink href={`/console/meshes/${mesh.id}`}>
+      <ButtonLink href={fillPath(SITE_PATHS.mesh, { meshId: mesh.id })}>
         {formatMessage({ id: "page.start.done.open", defaultMessage: "Open {name} in the console" }, { name: meshName })}
       </ButtonLink>
-      <a className="self-center text-body-2-regular text-text-secondary underline underline-offset-2" href="/docs/start">
+      <a className="self-center text-body-2-regular text-text-secondary underline underline-offset-2" href={`${SITE_PATHS.docs}/start`}>
         {formatMessage({ id: "page.start.done.docs", defaultMessage: "Read how setup works" })}
       </a>
     </StepLayout>

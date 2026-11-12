@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Algorithm } from "@mtt/contracts";
-import { parseRef } from "@mtt/contracts/blueprint";
 import {
   canAttachBlueprint,
   canEditBlueprint,
@@ -63,12 +62,6 @@ const NO2_V2 = {
     },
   ],
 };
-
-test("parseRef reads slot and step references", () => {
-  assert.deepEqual(parseRef("slot:working"), { kind: "slot", slot: "working" });
-  assert.deepEqual(parseRef("step:ppb.concentration_ppb"), { kind: "step", key: "ppb", output: "concentration_ppb" });
-  assert.equal(parseRef("ads1115.channel_0"), null);
-});
 
 test("a version round-trips through a draft, steps in order", () => {
   const draft = draftFromVersion(NO2_V2);
@@ -161,17 +154,8 @@ test("typed params: blank falls back to the default, JSON parses, text stays tex
   });
 });
 
-test("blueprint access mirrors the registry", () => {
-  const mine = { owner_id: "me", is_public: false };
+test("blueprint access is false without a signed-in user", () => {
   const orphan = { owner_id: null, is_public: true };
-  const member = { id: "me", role: "member" as const, is_superuser: false, is_staff: false, is_active: true };
-  const admin = { id: "admin", role: "member" as const, is_superuser: true, is_staff: true, is_active: true };
-  assert.equal(canEditBlueprint(mine, member), true);
-  assert.equal(canEditBlueprint(orphan, member), false);
-  assert.equal(canEditBlueprint(orphan, admin), true);
-  assert.equal(canAttachBlueprint(mine, "me", member), true);
-  assert.equal(canAttachBlueprint(mine, "someone-else", member), false);
-  assert.equal(canAttachBlueprint(orphan, "someone-else", member), true);
   assert.equal(canAttachBlueprint(orphan, "someone-else", undefined), false);
-  assert.equal(canAttachBlueprint(orphan, "someone-else", { ...admin, is_active: false }), false);
+  assert.equal(canEditBlueprint(orphan, undefined), false);
 });

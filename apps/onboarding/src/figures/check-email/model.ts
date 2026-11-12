@@ -1,29 +1,18 @@
 import { RESEND_COOLDOWN_SECONDS } from "@mtt/contracts/resend-cooldown";
-
-/** The step refetches the account on this interval and continues when the link was opened. */
-export const POLL_SECONDS = 5;
+import { span } from "../view";
 
 export const COOLDOWN_SECONDS = RESEND_COOLDOWN_SECONDS;
 
 export const TOUR_SECONDS = 12.4;
 
-export interface Scene {
+export type Scene = {
   drop: number;
   flag: number;
   seconds: number;
   door: number;
   taken: number;
   lamp: number;
-}
-
-const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
-
-const smooth = (value: number) => {
-  const t = clamp(value, 0, 1);
-  return t * t * (3 - 2 * t);
 };
-
-const span = (unit: number, from: number, to: number) => smooth((unit - from) / (to - from));
 
 export function sceneAt(unit: number): Scene {
   const sweep = span(unit, 0.3, 0.62);

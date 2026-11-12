@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { versionErrors } from "../src/features/blueprint/validate.ts";
+import { versionErrors } from "../src/features/blueprint/validate";
 
 const step = {
   key: "cal",

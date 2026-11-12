@@ -11,12 +11,12 @@ import {
   type Point3,
   type Projection,
   type SolidPaths,
-} from "@/iso/iso-kit";
+} from "../../iso/iso-kit.ts";
 
 /** Case at scale 1, in world units. A printed node is about 60×30×16 mm. */
 export const LORA_CASE = { length: 60, width: 30, height: 16 } as const;
 
-export interface LoraRadioSpec {
+export type LoraRadioSpec = {
   x: number;
   y: number;
   z: number;
@@ -24,9 +24,9 @@ export interface LoraRadioSpec {
   scale?: number;
   /** Long axis of the case. USB-C is on the far short end, the antenna on the near one. Defaults to "x". */
   facing?: "x" | "y";
-}
+};
 
-export interface LoraRadioParts {
+export type LoraRadioParts = {
   body: SolidPaths;
   seam: string;
   window: SolidPaths;
@@ -47,9 +47,9 @@ export interface LoraRadioParts {
   usbAt: Flat;
   ledAt: Flat;
   footprint: Plan;
-}
+};
 
-interface Built {
+type Built = {
   scale: number;
   facing: "x" | "y";
   length: number;
@@ -63,7 +63,7 @@ interface Built {
   ax: number;
   ay: number;
   whip: number;
-}
+};
 
 function builtOf(spec: LoraRadioSpec): Built {
   const scale = spec.scale ?? 1;
@@ -160,12 +160,3 @@ export function loraRadio(spec: LoraRadioSpec, projection: Projection): LoraRadi
     footprint: foot,
   };
 }
-
-function checkRadio(): void {
-  const flat = antennaPoint({ x: 0, y: 0, z: 0, facing: "x" });
-  if (flat[0] > 12 || flat[2] < LORA_CASE.height + LORA_CASE.length * 1.6) throw new Error("whip");
-  const turned = antennaPoint({ x: 0, y: 0, z: 0, facing: "y" });
-  if (turned[1] > 12 || turned[2] !== flat[2]) throw new Error("facing");
-}
-
-checkRadio();

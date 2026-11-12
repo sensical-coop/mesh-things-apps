@@ -1,12 +1,13 @@
 import type { Export } from "@mtt/contracts";
 import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
-import { RiCalendarScheduleLine, RiDownloadLine, RiRefreshLine } from "@remixicon/react";
+import { RiCalendarScheduleLine, RiDownloadLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
-import { isActive, progressOf } from "@/features/export/model";
+import { canRequestAgain, isActive, progressOf } from "@/features/export/model";
 import { ExportStatusChip } from "@/features/export/ui/export-status-chip";
-import { cn } from "@mtt/ui/utils";
+import { RequestAgainButton } from "@/features/export/ui/request-again-button";
+import { cx } from "@mtt/ui/utils";
 import { formatBytes } from "@/lib/format";
 
 export type ExportsTableProps = {
@@ -61,7 +62,7 @@ export function ExportsTable({
             <th className={headClass}>
               {formatMessage({ id: "feature.export.table.available", defaultMessage: "Available until" })}
             </th>
-            <th className={cn(headClass, "text-right")}>
+            <th className={cx(headClass, "text-right")}>
               <span className="sr-only">{formatMessage({ id: "feature.export.table.actions", defaultMessage: "Actions" })}</span>
             </th>
           </tr>
@@ -70,10 +71,10 @@ export function ExportsTable({
           {rows.map((row) => (
             <tr key={row.id} className="border-t border-separator-border text-text-primary">
               {meshTitles ? <td className={cellClass}>{meshTitles.get(row.mesh_id) ?? dash}</td> : null}
-              <td className={cn(cellClass, "max-w-[16rem] truncate")} title={devicesLabel(row)}>
+              <td className={cx(cellClass, "max-w-[16rem] truncate")} title={devicesLabel(row)}>
                 {devicesLabel(row)}
               </td>
-              <td className={cn(cellClass, "whitespace-nowrap tabular-nums")}>{daysLabel(row)}</td>
+              <td className={cx(cellClass, "whitespace-nowrap tabular-nums")}>{daysLabel(row)}</td>
               <td className={cellClass}>
                 <div className="flex min-w-36 flex-col items-start gap-1">
                   <ExportStatusChip status={row.status} />
@@ -97,25 +98,22 @@ export function ExportsTable({
                   ) : null}
                 </div>
               </td>
-              <td className={cn(cellClass, "text-text-secondary tabular-nums")}>
+              <td className={cx(cellClass, "text-text-secondary tabular-nums")}>
                 {row.size != null ? formatBytes(row.size, locale) : dash}
               </td>
-              <td className={cn(cellClass, "whitespace-nowrap text-text-secondary tabular-nums")}>
+              <td className={cx(cellClass, "whitespace-nowrap text-text-secondary tabular-nums")}>
                 {row.status === "ready" ? formatWhen(row.expires_at) : dash}
               </td>
-              <td className={cn(cellClass, "text-right")}>
+              <td className={cx(cellClass, "text-right")}>
                 <div className="flex justify-end gap-1.5">
                   {row.status === "ready" && row.url ? (
                     <ButtonLink href={row.url} size="xs" leadingIcon={RiDownloadLine}>
                       {formatMessage({ id: "feature.export.table.download", defaultMessage: "Download" })}
                     </ButtonLink>
                   ) : null}
-                  {row.status === "expired" || row.status === "failed" ? (
-                    <Button
-                      type="button"
+                  {canRequestAgain(row.status) ? (
+                    <RequestAgainButton
                       size="xs"
-                      variant="secondary"
-                      leadingIcon={RiRefreshLine}
                       disabled={requesting || anyActive}
                       title={
                         anyActive
@@ -126,9 +124,7 @@ export function ExportsTable({
                           : undefined
                       }
                       onClick={() => onRequestAgain(row)}
-                    >
-                      {formatMessage({ id: "feature.export.table.requestAgain", defaultMessage: "Request again" })}
-                    </Button>
+                    />
                   ) : null}
                   {onAnotherInterval && !isActive(row.status) ? (
                     <Button

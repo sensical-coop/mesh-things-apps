@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useEffect } from "react";
 import { IntlProvider } from "react-intl";
 import { z } from "zod";
 import { en, es } from "zod/locales";
@@ -17,7 +17,9 @@ export type AppProvidersProps = {
 
 export function AppProviders({ messages, children }: AppProvidersProps): ReactElement {
   const [locale] = useLocale();
-  z.config(ZOD_LOCALE_PACKS[locale]());
+  useEffect(() => {
+    z.config(ZOD_LOCALE_PACKS[locale]());
+  }, [locale]);
 
   return (
     <IntlProvider

@@ -1,6 +1,6 @@
 import { canDecideOperatorRequests } from "@mtt/contracts/authz";
 import { type ReactElement } from "react";
-import { RequireRole } from "@/components/require-role";
+import { RequireRole } from "@/features/auth/require-role";
 import { OperatorRequestsView } from "./view";
 
 export function OperatorRequestsPage(): ReactElement {

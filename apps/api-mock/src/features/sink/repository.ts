@@ -1,6 +1,9 @@
+import { archivesFor, canWriteMesh, visibleOperated } from "@mtt/contracts/authz";
 import { MQTT_TLS_PORT } from "@mtt/contracts/source";
 import type { Sink, SinkPatch } from "@mtt/domain/sink/Sink";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
+import type { Actor } from "../../auth";
+import type { Store } from "../../store";
 
 /** Mirrors REGISTRY__EMQX_API_URL set: off, as on an instance without EMQX, every sink route answers 404. */
 export const SINKS_ENABLED = process.env.MOCK_SINKS !== "false";
@@ -82,4 +85,42 @@ export class MemorySinks {
     this.connections.delete(id);
     return this.items.delete(id);
   }
+}
+
+export async function sinkForOperator(db: Store, actor: Actor, sinkId: string): Promise<Sink | null> {
+  const sink = await db.sinks.get(sinkId);
+  return sink && visibleOperated(actor, [sink]).length > 0 ? sink : null;
+}
+
+export function streamsError(streams: readonly string[] | undefined): Record<string, string[]> {
+  return streams && streams.length === 0 ? { streams: ["This list may not be empty."] } : {};
+}
+
+/**
+ * As SinkWriteSerializer: every mesh, and every device's mesh, must be one the caller may
+ * edit and owned by an operator (a superuser counts).
+ */
+export async function sinkTargetErrors(
+  db: Store,
+  actor: Actor,
+  input: { mesh_ids?: string[]; device_ids?: string[] },
+): Promise<Record<string, string[]>> {
+  const errors: Record<string, string[]> = {};
+  const check = async (label: string, meshId: string | null) => {
+    const mesh = meshId ? await db.meshes.get(meshId) : null;
+    if (!mesh || !canWriteMesh(actor, mesh)) return `${label} not found.`;
+    const owner = db.actors.get(mesh.ownerId);
+    if (!owner || !archivesFor(owner)) return `${label} is on a mesh not owned by an operator.`;
+    return null;
+  };
+  for (const meshId of input.mesh_ids ?? []) {
+    const error = await check(`Mesh ${meshId}`, meshId);
+    if (error) (errors.mesh_ids ??= []).push(error);
+  }
+  for (const deviceId of input.device_ids ?? []) {
+    const device = await db.devices.get(deviceId);
+    const error = await check(`Device ${deviceId}`, device?.meshId ?? null);
+    if (error) (errors.device_ids ??= []).push(error);
+  }
+  return errors;
 }

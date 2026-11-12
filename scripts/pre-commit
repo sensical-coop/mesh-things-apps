@@ -10,7 +10,7 @@ cd "$(git rev-parse --show-toplevel)"
 css="" js="" partial=""
 for file in $(git diff --cached --name-only --diff-filter=ACMR); do
   case "$file" in
-    *.css|*.tsx|*.jsx) ;;
+    *.css|*.ts|*.tsx) ;;
     *) continue ;;
   esac
   if git diff --quiet -- "$file"; then

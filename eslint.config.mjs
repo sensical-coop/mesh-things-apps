@@ -11,7 +11,7 @@ const palette = "(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|g
 const restrict = [
   {
     pattern: `${variants}-?${colorUtilities}-${palette}(?:-\\d+)?(?:/\\d+)?$`,
-    message: "Raw palette colour. Use a semantic token (text-text-primary, bg-background-primary-default, …) or add one in packages/ui/src/oa.css.",
+    message: "Raw palette colour. Use a semantic token (text-text-primary, bg-background-primary-default, …) or add one in packages/ui/src/oa.css or packages/ui/src/boardui/theme.css.",
   },
   { pattern: `${variants}[\\w-]+-\\[#`, message: "Arbitrary colour. Add a semantic token instead." },
   {
@@ -44,7 +44,7 @@ export default [
     ignores: ["**/node_modules/**", "**/.tmp/**", "**/.turbo/**", "**/dist/**", "**/.output/**", "**/openspec/**"],
   },
   {
-    files: ["apps/**/*.{tsx,jsx}", "packages/**/*.{tsx,jsx}"],
+    files: ["apps/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"],
     languageOptions: {
       parser,
       parserOptions: {
@@ -71,10 +71,6 @@ export default [
     },
     settings: tailwind("apps/web/src/styles.css"),
     rules: {
-      "react-hooks/exhaustive-deps": "off",
-      "react-hooks/incompatible-library": "off",
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
       "better-tailwindcss/enforce-consistent-class-order": "error",
       "better-tailwindcss/enforce-canonical-classes": "error",
       "better-tailwindcss/no-duplicate-classes": "error",
@@ -84,7 +80,7 @@ export default [
     },
   },
   {
-    files: ["apps/docs/**/*.{tsx,jsx}"],
+    files: ["apps/docs/**/*.{ts,tsx}"],
     settings: tailwind("apps/docs/src/styles.css"),
     rules: {
       // Plain-CSS hooks in docs.css and Fumadocs' prose opt-out, not Tailwind utilities.
@@ -92,7 +88,7 @@ export default [
     },
   },
   {
-    files: ["apps/onboarding/**/*.{tsx,jsx}"],
+    files: ["apps/onboarding/**/*.{ts,tsx}"],
     settings: tailwind("apps/onboarding/src/styles.css"),
     rules: {
       // Plain-CSS hooks from the vendored iso kit and the figure stylesheets, not Tailwind utilities.

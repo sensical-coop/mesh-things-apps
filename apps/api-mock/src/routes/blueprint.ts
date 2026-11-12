@@ -7,7 +7,7 @@ import {
 } from "@mtt/contracts";
 import {
   canWriteCatalog,
-  canReadBlueprint,
+  canReadShared,
   canWriteBlueprint,
   visibleBlueprints,
 } from "@mtt/contracts/authz";
@@ -26,7 +26,7 @@ import {
 } from "../features/blueprint/repository";
 import { blueprintJson, blueprintVersionJson } from "../serialize";
 import { versionFromBody } from "../features/blueprint/validate";
-import { NO_PERMISSION, parseBody } from "../http";
+import { NO_PERMISSION, parseBody, queryFlag } from "../http";
 
 export function registerBlueprintRoutes(app: Hono<Env>, rt: RouteRuntime) {
   const { db } = rt;
@@ -37,12 +37,12 @@ export function registerBlueprintRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   function readable(actor: Actor, blueprintId: string) {
     const row = findBlueprint(db.blueprints, blueprintId);
-    return row && canReadBlueprint(actor, row) ? row : null;
+    return row && canReadShared(actor, row) ? row : null;
   }
 
   app.get("/postprocessing-blueprints", (c) => {
     const actor = c.get("actor");
-    const owned = ["true", "1"].includes(c.req.query("owned")?.toLowerCase() ?? "");
+    const owned = queryFlag(c, "owned");
     const rows = visibleBlueprints(actor, db.blueprints).filter((row) => !owned || row.ownerId === actor.id);
     return c.json(rows.map(blueprintBody));
   });

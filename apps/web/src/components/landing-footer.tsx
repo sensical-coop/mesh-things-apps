@@ -1,12 +1,10 @@
 import { BrandMark } from "@mtt/ui/components/brand-mark";
-import { SITE } from "@/components/brand";
+import { CONTACT_URL, COPYRIGHT, SITE, siteLinkClass } from "@/components/brand";
+import { LANDING_SECTIONS } from "@/components/landing-sections";
 import { routes } from "@/router";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-
-const linkClass =
-  "rounded-full text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 export function LandingFooter(): ReactElement {
   const { formatMessage } = useIntl();
@@ -33,40 +31,36 @@ export function LandingFooter(): ReactElement {
             <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">
               {formatMessage({ id: "page.home.footer.product", defaultMessage: "Product" })}
             </p>
-            <a href="/#why" className={linkClass}>
-              {formatMessage({ id: "page.home.header.howItWorks", defaultMessage: "How it works" })}
-            </a>
-            <a href="/#features" className={linkClass}>
-              {formatMessage({ id: "page.home.header.features", defaultMessage: "Features" })}
-            </a>
-            <a href="/#faq" className={linkClass}>
-              {formatMessage({ id: "page.home.header.faq", defaultMessage: "FAQ" })}
-            </a>
-            <Link to={routes.login} className={linkClass}>
+            {LANDING_SECTIONS.map((section) => (
+              <a key={section.href} href={section.href} className={siteLinkClass}>
+                {formatMessage(section.label)}
+              </a>
+            ))}
+            <Link to={routes.login} className={siteLinkClass}>
               {formatMessage({ id: "page.home.header.signIn", defaultMessage: "Sign in" })}
             </Link>
-            <Link to={routes.signup} className={linkClass}>
+            <Link to={routes.signup} className={siteLinkClass}>
               {formatMessage({ id: "page.home.header.signUp", defaultMessage: "Sign up" })}
             </Link>
-            <Link to={routes.terms} className={linkClass}>
+            <Link to={routes.terms} className={siteLinkClass}>
               {formatMessage({ id: "page.home.header.terms", defaultMessage: "Terms" })}
             </Link>
-            <Link to={routes.dpa} className={linkClass}>
+            <Link to={routes.dpa} className={siteLinkClass}>
               {formatMessage({ id: "page.home.footer.dpa", defaultMessage: "Data processing" })}
             </Link>
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-caption-1-medium tracking-label text-text-tertiary uppercase">Sensical</p>
-            <a href={SITE} className={linkClass}>
+            <a href={SITE} className={siteLinkClass}>
               {formatMessage({ id: "page.home.footer.website", defaultMessage: "Website" })}
             </a>
-            <a href={`${SITE}/contact`} className={linkClass}>
+            <a href={CONTACT_URL} className={siteLinkClass}>
               {formatMessage({ id: "page.home.footer.contact", defaultMessage: "Contact" })}
             </a>
           </div>
         </nav>
       </div>
-      <p className="mt-10 text-caption-1-medium text-text-tertiary">© 2026 Sensical SCCL</p>
+      <p className="mt-10 text-caption-1-medium text-text-tertiary">{COPYRIGHT}</p>
     </footer>
   );
 }

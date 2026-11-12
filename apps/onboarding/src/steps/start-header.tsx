@@ -1,11 +1,11 @@
+import { useLogout } from "@mtt/contracts/session";
+import { fillPath, SITE_PATHS } from "@mtt/contracts/site";
 import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { RiArrowLeftLine } from "@remixicon/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
-import { authRepository } from "@/features/auth/repository";
 import { writeStartSearch } from "@/start-search";
 import type { StartStep } from "@/start-step";
 import { StartProgress } from "./start-progress";
@@ -13,25 +13,21 @@ import { StartProgress } from "./start-progress";
 export function StartHeader({
   step,
   meshId,
+  signedIn,
   signedInLabel,
   onBack,
 }: {
   step: StartStep;
   meshId?: string;
+  /** A session exists, so "Finish later" can land in the console. */
+  signedIn: boolean;
   signedInLabel?: string;
   /** Absent when no earlier step is reachable with the current account, mesh and gateway. */
   onBack?: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
-  const queryClient = useQueryClient();
-  const logout = useMutation({
-    ...authRepository.logout(),
-    onSuccess: () => {
-      queryClient.clear();
-      writeStartSearch({ step: "account" }, "replace");
-    },
-  });
-  const later = meshId ? `/console/meshes/${meshId}` : signedInLabel ? "/console/meshes" : "/";
+  const logout = useLogout(() => writeStartSearch({ step: "account" }, "replace"));
+  const later = meshId ? fillPath(SITE_PATHS.mesh, { meshId }) : signedIn ? SITE_PATHS.meshes : "/";
 
   return (
     <header className="flex flex-col gap-4">
@@ -63,8 +59,8 @@ export function StartHeader({
               <button
                 type="button"
                 className="rounded-sm underline underline-offset-2 outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:opacity-50"
-                disabled={logout.isPending}
-                onClick={() => logout.mutate()}
+                disabled={logout.pending}
+                onClick={logout.logout}
               >
                 {formatMessage({ id: "page.start.signOut", defaultMessage: "Not you? Sign out" })}
               </button>

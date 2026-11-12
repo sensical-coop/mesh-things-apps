@@ -1,8 +1,8 @@
-import type { SinkCredentials, SinkRead } from "@mtt/contracts";
+import type { SinkCredentials, SinkRead, StreamsEnum } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { RiAddLine, RiDeleteBinLine, RiKey2Line } from "@remixicon/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
@@ -11,60 +11,35 @@ import { SettingsButton } from "@/components/settings-button";
 import { StatusCopy } from "@/components/status-copy";
 import { useMe } from "@/features/auth/use-me";
 import { sinkTitle } from "@/features/sink/model";
-import { entityTermsStanding } from "@/features/terms/model";
-import { sinkRepository } from "@/features/sink/repository";
+import { isSinksUnavailable, sinkRepository } from "@/features/sink/repository";
 import { DeleteSinkDialog } from "@/features/sink/ui/delete-sink-dialog";
 import { RenewTermsDialog } from "@/features/terms/ui/renew-terms-dialog";
 import { RotateSinkCredentialsDialog } from "@/features/sink/ui/rotate-sink-credentials-dialog";
 import { SinkCredentialsDialog } from "@/features/sink/ui/sink-credentials-dialog";
 import { SinkDialog } from "@/features/sink/ui/sink-dialog";
 import { SinkStatusChip } from "@/features/sink/ui/sink-status-chip";
-import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
-import { type TermsAcceptance } from "@/features/terms/model";
-import { termsRepository } from "@/features/terms/repository";
+import { TermsCell } from "@/features/terms/ui/terms-cell";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
-import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
-import { useFormatters } from "@/hooks/use-formatters";
-import { readApiError } from "@mtt/contracts/errors";
+import { useEntityTerms } from "@/features/terms/use-entity-terms";
 
 const col = legacyCreateColumnHelper<SinkRead>();
 
 export function SinksView(): ReactElement {
-  const { formatMessage, locale } = useIntl();
-  const { formatWhen } = useFormatters();
+  const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const { meId } = useMe();
   // A self-hosted instance asks for no terms: no terms step, column or renewals.
-  const enforced = useTermsEnforced();
-  const termsEnforced = enforced !== false;
-  const currentTerms = useQuery({
-    ...termsRepository.sink({ locale: termsLocale(locale) }),
-    enabled: enforced === true,
-  });
+  const { asked: termsEnforced, currentVersion, ...create } = useEntityTerms("sink");
   const sinks = useQuery(sinkRepository.list());
-  // No broker API on this instance: every sink route answers 404.
-  const unavailable = sinks.error ? readApiError(sinks.error).status === 404 : false;
-  const [termsOpen, setTermsOpen] = useState(false);
-  // Accepted anew for every sink created, and dropped when the create dialog closes.
-  const [createOpen, setCreateOpen] = useState(false);
-  const [termsAcceptance, setTermsAcceptance] = useState<TermsAcceptance | null>(null);
+  const unavailable = sinks.error ? isSinksUnavailable(sinks.error) : false;
   const [credentials, setCredentials] = useState<{ value: SinkCredentials; rotated: boolean } | null>(null);
   const [saved, setSaved] = useState<SinkRead | null>(null);
   const [sinkToEdit, setSinkToEdit] = useState<SinkRead | null>(null);
   const [sinkToRotate, setSinkToRotate] = useState<SinkRead | null>(null);
   const [sinkToRenew, setSinkToRenew] = useState<SinkRead | null>(null);
   const [sinkToDelete, setSinkToDelete] = useState<SinkRead | null>(null);
-  const renew = useMutation({
-    ...termsRepository.renewSink(),
-    onSuccess: async (renewed) => {
-      await queryClient.invalidateQueries({ queryKey: sinkRepository.listKey() });
-      setSaved(renewed);
-      renew.reset();
-      setSinkToRenew(null);
-    },
-  });
 
-  const streamLabel = useMemo(
+  const streamLabel = useMemo<Record<StreamsEnum, string>>(
     () => ({
       decoded: formatMessage({ id: "page.sinks.list.stream.decoded", defaultMessage: "Decoded" }),
       derived: formatMessage({ id: "page.sinks.list.stream.derived", defaultMessage: "Derived" }),
@@ -122,29 +97,14 @@ export function SinksView(): ReactElement {
             col.accessor("terms_expires_at", {
               id: "terms",
               header: formatMessage({ id: "page.sinks.list.columns.terms", defaultMessage: "Terms" }),
-              cell: (info) => {
-                const row = info.row.original;
-                const standing = entityTermsStanding(row, currentTerms.data?.version, new Date());
-                return (
-                  <span className="flex items-center gap-2">
-                    <span className="text-text-secondary">
-                      {row.terms_expires_at
-                        ? formatMessage(
-                            { id: "page.sinks.list.terms.until", defaultMessage: "Until {when}" },
-                            { when: formatWhen(row.terms_expires_at) },
-                          )
-                        : formatMessage({ id: "page.sinks.list.terms.noLimit", defaultMessage: "No time limit" })}
-                    </span>
-                    <TermsStandingChip standing={standing} />
-                    {/* Only the operator who created a sink accepts its terms. */}
-                    {standing !== "ok" && row.created_by_id === meId ? (
-                      <Button type="button" size="xs" variant="secondary" onClick={() => setSinkToRenew(row)}>
-                        {formatMessage({ id: "page.sinks.list.renew", defaultMessage: "Renew" })}
-                      </Button>
-                    ) : null}
-                  </span>
-                );
-              },
+              cell: (info) => (
+                <TermsCell
+                  entity={info.row.original}
+                  currentVersion={currentVersion}
+                  canRenew={info.row.original.created_by_id === meId}
+                  onRenew={() => setSinkToRenew(info.row.original)}
+                />
+              ),
             }),
           ]
         : []),
@@ -180,7 +140,7 @@ export function SinksView(): ReactElement {
         ),
       }),
     ],
-    [formatMessage, formatWhen, meId, currentTerms.data?.version, termsEnforced, streamLabel],
+    [formatMessage, meId, currentVersion, termsEnforced, streamLabel],
   );
 
   return (
@@ -193,7 +153,7 @@ export function SinksView(): ReactElement {
               type="button"
               size="small"
               leadingIcon={RiAddLine}
-              onClick={() => (termsEnforced ? setTermsOpen(true) : setCreateOpen(true))}
+              onClick={create.startCreate}
             >
               {formatMessage({ id: "page.sinks.list.create", defaultMessage: "Create sink" })}
             </Button>
@@ -237,32 +197,18 @@ export function SinksView(): ReactElement {
           })}
         />
       </ListScaffold>
-      <TermsDialog
-        open={termsOpen}
-        kind="sink"
-        onClose={() => setTermsOpen(false)}
-        onAccepted={(acceptance) => {
-          setTermsOpen(false);
-          setTermsAcceptance(acceptance);
-          setCreateOpen(true);
-        }}
-      />
+      <TermsDialog open={create.termsOpen} kind="sink" onClose={create.closeTerms} onAccepted={create.accepted} />
       <SinkDialog
-        open={createOpen}
-        termsAcceptance={termsAcceptance}
-        onClose={() => {
-          setCreateOpen(false);
-          setTermsAcceptance(null);
-        }}
+        open={create.formOpen}
+        termsAcceptance={create.acceptance}
+        onClose={create.closeForm}
         onCreated={(created) => setCredentials({ value: created, rotated: false })}
-        onSaved={setSaved}
       />
       {sinkToEdit ? (
         <SinkDialog
           open
           sink={sinkToEdit}
           onClose={() => setSinkToEdit(null)}
-          onCreated={() => undefined}
           onSaved={setSaved}
         />
       ) : null}
@@ -280,26 +226,14 @@ export function SinksView(): ReactElement {
         }}
       />
       <RenewTermsDialog
-        open={sinkToRenew !== null}
         kind="sink"
-        acceptLabel={
-          sinkToRenew
-            ? formatMessage({ id: "feature.sink.renew.accept", defaultMessage: "Renew {sink}" }, { sink: sinkTitle(sinkToRenew) })
-            : undefined
-        }
-        pending={renew.isPending}
-        error={renew.error}
-        onClose={() => {
-          renew.reset();
+        entity={sinkToRenew && { id: sinkToRenew.id, name: sinkTitle(sinkToRenew) }}
+        onClose={() => setSinkToRenew(null)}
+        onRenewed={async (renewed) => {
+          await queryClient.invalidateQueries({ queryKey: sinkRepository.listKey() });
+          setSaved(renewed);
           setSinkToRenew(null);
         }}
-        onAccepted={(acceptance) =>
-          sinkToRenew &&
-          renew.mutate({
-            sinkId: sinkToRenew.id,
-            data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
-          })
-        }
       />
       <DeleteSinkDialog
         key={sinkToDelete?.id ?? "none"}

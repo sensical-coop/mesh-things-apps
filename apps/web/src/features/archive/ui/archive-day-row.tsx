@@ -3,9 +3,9 @@ import { RiArrowDownSLine, RiArrowRightSLine, RiFolderZipLine } from "@remixicon
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
-import { API_URL } from "@mtt/contracts/runtime";
-import { partitionDownloadUrl, partitionLabel, type ArchiveDay } from "@/features/archive/model";
-import { cn } from "@mtt/ui/utils";
+import { partitionLabel, type ArchiveDay } from "@/features/archive/model";
+import { archiveRepository } from "@/features/archive/repository";
+import { cx } from "@mtt/ui/utils";
 import { formatBytes } from "@/lib/format";
 
 export type ArchiveDayRowProps = {
@@ -50,15 +50,15 @@ export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, expor
             <span className="tabular-nums">{dayLabel}</span>
           </button>
         </td>
-        <td className={cn(cellClass, "text-text-secondary tabular-nums")}>
+        <td className={cx(cellClass, "text-text-secondary tabular-nums")}>
           {formatMessage(
             { id: "feature.archive.files.hourCount", defaultMessage: "{count, plural, one {# hour} other {# hours}}" },
             { count: day.hours.length },
           )}
         </td>
-        <td className={cn(cellClass, "text-text-secondary tabular-nums")}>{formatBytes(day.bytes, locale)}</td>
-        <td className={cn(cellClass, "text-text-secondary tabular-nums")}>{formatWhen(day.lastModified)}</td>
-        <td className={cn(cellClass, "text-right")}>
+        <td className={cx(cellClass, "text-text-secondary tabular-nums")}>{formatBytes(day.bytes, locale)}</td>
+        <td className={cx(cellClass, "text-text-secondary tabular-nums")}>{formatWhen(day.lastModified)}</td>
+        <td className={cx(cellClass, "text-right")}>
           <Button
             type="button"
             size="xs"
@@ -82,7 +82,7 @@ export function ArchiveDayRow({ meshId, day, expanded, onToggle, onExport, expor
               {day.hours.map((hour) => (
                 <li key={hour.hour}>
                   <ButtonLink
-                    href={partitionDownloadUrl(API_URL, meshId, hour)}
+                    href={archiveRepository.partitionUrl(meshId, hour)}
                     size="xs"
                     variant="secondary"
                     className="tabular-nums"

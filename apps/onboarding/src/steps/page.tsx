@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, useEffect, useRef } from "react";
 import { useIntl } from "react-intl";
 import { authRepository } from "@/features/auth/repository";
+import { isSeen, nodesOf } from "@/features/device/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { useStartSearch, writeStartSearch } from "@/start-search";
 import { previousStartStep, resolveStartStep, START_STEPS, type StartFacts, type StartStep } from "@/start-step";
@@ -45,11 +46,9 @@ export function StartPage(): ReactElement {
   const devicesQuery = useQuery({
     ...meshRepository.devices(meshId ?? ""),
     enabled: session === "verified" && meshQuery.isSuccess,
-    refetchInterval: search.step === "connect" ? 5000 : false,
-    refetchIntervalInBackground: false,
   });
 
-  const meshMissing = Boolean(meshId) && meshQuery.isError && (readApiError(meshQuery.error).status === 404 || readApiError(meshQuery.error).status === 403);
+  const meshMissing = Boolean(meshId) && meshQuery.isError && meshRepository.isMissing(meshQuery.error);
   const mesh: Mesh | undefined = meshQuery.isSuccess ? meshQuery.data : undefined;
   const devices: DeviceRead[] = devicesQuery.data ?? [];
   const gateway = devices.find((device) => device.is_gateway);
@@ -57,7 +56,7 @@ export function StartPage(): ReactElement {
     session === "none" || session === "unverified"
       ? { session, mesh: "none", gateway: "none" }
       : session === "verified" && (!meshId || meshMissing || (meshQuery.isSuccess && devicesQuery.isSuccess))
-        ? { session, mesh: mesh ? "owned" : "none", gateway: !gateway ? "none" : gateway.last_seen ? "seen" : "unseen" }
+        ? { session, mesh: mesh ? "owned" : "none", gateway: !gateway ? "none" : isSeen(gateway) ? "seen" : "unseen" }
         : undefined;
   const step: StartStep | undefined = facts && !meshMissing ? resolveStartStep(search.step, facts) : undefined;
 
@@ -80,7 +79,7 @@ export function StartPage(): ReactElement {
   }
 
   const signedInLabel = me.data ? me.data.name.trim() || me.data.email : undefined;
-  const nodeCount = devices.filter((device) => !device.is_gateway).length;
+  const nodeCount = nodesOf(devices).length;
 
   const back = step && facts ? previousStartStep(step, facts) : undefined;
 
@@ -90,6 +89,7 @@ export function StartPage(): ReactElement {
         <StartHeader
           step={step ?? "welcome"}
           meshId={mesh?.id}
+          signedIn={session === "verified" || session === "unverified"}
           signedInLabel={session === "none" ? undefined : signedInLabel}
           onBack={back ? () => go(back) : undefined}
         />
@@ -132,11 +132,11 @@ export function StartPage(): ReactElement {
               {step === "mesh" ? <MeshStep onCreated={(created) => writeStartSearch({ mesh: created.id, step: "register" }, "push")} /> : null}
               {step === "register" && mesh ? <RegisterGatewayStep meshId={mesh.id} onRegistered={() => go("connect", mesh.id)} /> : null}
               {step === "connect" && mesh && gateway ? (
-                <ConnectStep mesh={mesh} gateway={gateway} onContinue={() => go("next-steps")} onSkip={() => go("next-steps")} />
+                <ConnectStep mesh={mesh} gateway={gateway} onNext={() => go("next-steps")} />
               ) : null}
               {step === "next-steps" && gateway ? <NextStepsStep gateway={gateway} onDone={() => go("done")} /> : null}
               {step === "done" && mesh && gateway ? (
-                <DoneStep mesh={mesh} gateway={gateway} nodeCount={nodeCount} absenceOn={gateway.absence_detection_enabled} seen={gateway.last_seen !== null} />
+                <DoneStep mesh={mesh} gateway={gateway} nodeCount={nodeCount} />
               ) : null}
             </MeasuredSteps>
           )}

@@ -10,10 +10,11 @@ import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { errorMessages } from "@mtt/contracts/errors";
+import { BACKFILL_MAX_DAYS } from "@mtt/contracts/export";
 import { localInputToIso } from "@/features/postprocessing/model";
 import { postprocessingRepository } from "@/features/postprocessing/repository";
 import { useFormatters } from "@/hooks/use-formatters";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type BackfillDialogProps = {
   deviceUuid: string;
@@ -74,11 +75,14 @@ export function BackfillDialog({ deviceUuid, postprocessing, canEdit, onClose }:
         { id: "feature.postprocessing.backfill.title", defaultMessage: "Recompute history — {name}" },
         { name: postprocessing.blueprint_name },
       )}
-      description={formatMessage({
-        id: "feature.postprocessing.backfill.description",
-        defaultMessage:
-          "Recomputes outputs for stored readings, using the calibration data stored (if any) for each period. This will replace derived outputs, up to 90 days per request. Backfilled values do not raise alarms.",
-      })}
+      description={formatMessage(
+        {
+          id: "feature.postprocessing.backfill.description",
+          defaultMessage:
+            "Recomputes outputs for stored readings, using the calibration data stored (if any) for each period. This will replace derived outputs, up to {days} days per request. Backfilled values do not raise alarms.",
+        },
+        { days: BACKFILL_MAX_DAYS },
+      )}
       onClose={onClose}
     >
       <div className="flex flex-col gap-6">

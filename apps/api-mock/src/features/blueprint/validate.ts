@@ -4,6 +4,7 @@ import {
   validateBlueprintVersion,
   type BlueprintProblem,
 } from "@mtt/contracts/blueprint";
+import type { Algorithm } from "@mtt/contracts";
 import { algorithmNamed } from "../algorithm/catalog";
 import { plainRecord, stringRecord } from "./records";
 import type { BlueprintInputRow, BlueprintStepRow, BlueprintVersionRow } from "./repository";
@@ -69,6 +70,10 @@ export function versionErrors(inputs: BlueprintInputRow[], steps: BlueprintStepR
   return errors.length ? { steps: errors } : null;
 }
 
+export function requiredCalibrationParams(spec: Algorithm) {
+  return spec.params.filter((param) => param.calibration && param.required);
+}
+
 /** A step's per-device calibration: every required calibration param, and nothing that is configuration. */
 export function validateCalibration(functionName: string, params: Record<string, unknown>): string[] {
   const spec = algorithmNamed(functionName);
@@ -81,7 +86,7 @@ export function validateCalibration(functionName: string, params: Record<string,
   }
   const unknown = given.filter((name) => !spec.params.some((param) => param.name === name));
   if (unknown.length) errors.push(`'${functionName}' does not accept param(s) ${unknown.join(", ")}`);
-  const missing = spec.params.filter((param) => param.calibration && param.required && !given.includes(param.name));
+  const missing = requiredCalibrationParams(spec).filter((param) => !given.includes(param.name));
   if (missing.length) {
     errors.push(`'${functionName}' requires calibration param(s) ${missing.map((p) => p.name).join(", ")}`);
   }

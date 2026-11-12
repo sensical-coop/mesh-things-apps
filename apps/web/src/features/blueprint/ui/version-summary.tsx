@@ -1,8 +1,8 @@
 import type { BlueprintVersion } from "@mtt/contracts";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { parseRef } from "@mtt/contracts/blueprint";
-import { formatParam, stringMap, valueMap } from "@/lib/algorithm-params";
+import { derivedChannel, parseRef } from "@mtt/contracts/blueprint";
+import { formatParams, stringMap, valueMap } from "@/lib/algorithm-params";
 
 export type VersionSummaryProps = {
   version: Pick<BlueprintVersion, "inputs" | "steps">;
@@ -49,7 +49,7 @@ export function VersionSummary({ version }: VersionSummaryProps): ReactElement {
         <ol className="flex flex-col gap-2">
           {steps.map((step, index) => {
             const inputs = Object.entries(stringMap(step.inputs));
-            const params = Object.entries(valueMap(step.params));
+            const params = formatParams(valueMap(step.params));
             const outputs = Object.values(stringMap(step.outputs));
             return (
               <li key={step.key} className="flex min-w-0 flex-col gap-0.5 text-body-regular text-text-primary">
@@ -64,13 +64,13 @@ export function VersionSummary({ version }: VersionSummaryProps): ReactElement {
                     { id: "feature.blueprint.summary.flow", defaultMessage: "Inputs: {inputs}. Outputs: {outputs}" },
                     {
                       inputs: inputs.map(([, ref]) => refText(ref)).join(", ") || "—",
-                      outputs: outputs.map((field) => `derived.${field}`).join(", ") || "—",
+                      outputs: outputs.map(derivedChannel).join(", ") || "—",
                     },
                   )}
                 </p>
-                {params.length ? (
+                {params ? (
                   <p className="min-w-0 pl-4 font-mono text-caption-1-regular wrap-break-word text-text-tertiary">
-                    {params.map(([name, value]) => `${name}=${formatParam(value)}`).join("  ")}
+                    {params}
                   </p>
                 ) : null}
               </li>

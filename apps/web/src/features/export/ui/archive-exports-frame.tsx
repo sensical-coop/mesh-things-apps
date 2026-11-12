@@ -3,12 +3,12 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiFolderZipLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactElement, type ReactNode, type Ref, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
-import { pollInterval, rangeProblem, requestOf, shiftDay } from "@/features/export/model";
+import { pollInterval, rangeProblem, shiftDay } from "@/features/export/model";
 import { exportRepository } from "@/features/export/repository";
 import type { RequestExportState } from "@/features/export/use-request-export";
 import { ExportHistoryHeading } from "@/features/export/ui/export-history-heading";
@@ -20,6 +20,8 @@ export type ArchiveExportsFrameProps = {
   manifest: ArchiveManifest | undefined;
   requested: RequestExportState;
   picker: ReactNode;
+  /** The frame itself, for a page that scrolls to it. */
+  ref?: Ref<HTMLDivElement>;
 };
 
 /** The whole archive, or its last EXPORT_MAX_DAYS days when it holds more. */
@@ -35,7 +37,8 @@ function wholeArchive(manifest: ArchiveManifest | undefined): ExportRange {
  * A range of the archive as one zip of its hourly files, prepared in the background,
  * and the mesh's Parquet exports so far.
  */
-export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: ArchiveExportsFrameProps): ReactElement {
+export function ArchiveExportsFrame({ meshId, manifest, requested, picker, ref }: ArchiveExportsFrameProps): ReactElement {
+  const startRef = useRef<HTMLInputElement>(null);
   const { formatMessage } = useIntl();
   const [range, setRange] = useState<ExportRange>(() => wholeArchive(manifest));
   const exports = useQuery({
@@ -51,7 +54,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
   }
 
   return (
-    <Frame className="shadow-card" id="archive-exports">
+    <Frame ref={ref} className="shadow-card">
       <FrameHeader>
         <FrameTitle>{formatMessage({ id: "feature.archive.exports.title", defaultMessage: "New download" })}</FrameTitle>
         <FrameDescription>
@@ -75,6 +78,7 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
           <form className="flex flex-col gap-4" onSubmit={onSubmit}>
             <ExportRangeFields
               idPrefix="archive-export"
+              startRef={startRef}
               value={range}
               onChange={(next) => {
                 requested.reset();
@@ -113,11 +117,11 @@ export function ArchiveExportsFrame({ meshId, manifest, requested, picker }: Arc
           <ExportsTable
             rows={rows}
             requesting={requested.pending}
-            onRequestAgain={(row) => requested.request(meshId, requestOf(row))}
+            onRequestAgain={requested.requestAgain}
             onAnotherInterval={(row) => {
               requested.reset();
               setRange({ start: row.start, stop: row.stop });
-              document.getElementById("archive-export-start")?.focus();
+              startRef.current?.focus();
             }}
           />
         ) : null}

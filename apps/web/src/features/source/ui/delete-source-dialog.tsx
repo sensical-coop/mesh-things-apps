@@ -7,12 +7,14 @@ import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { meshTitle } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { routes } from "@/router";
+import { inlineLinkClass } from "@/lib/link-class";
+import { cx } from "@mtt/ui/utils";
 
 export type DeleteSourceDialogProps = {
   source: Pick<SourceRead, "id" | "label" | "server" | "topic"> | null;
@@ -78,7 +80,7 @@ export function DeleteSourceDialog({ source, onClose }: DeleteSourceDialogProps)
                   <Link
                     to={routes.mesh}
                     params={{ meshId: mesh.id }}
-                    className="text-body-medium text-accent-500 underline underline-offset-2"
+                    className={cx("text-body-medium", inlineLinkClass)}
                   >
                     {meshTitle(mesh)}
                   </Link>

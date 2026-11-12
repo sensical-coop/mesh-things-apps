@@ -1,20 +1,24 @@
 import { isVerifiedOwner } from "@mtt/contracts/authz";
+import { useResendVerification } from "@mtt/contracts/resend-verification";
+import { SITE_PATHS } from "@mtt/contracts/site";
 import { Button } from "@mtt/ui/components/base/buttons/button";
+import { ResendButton } from "@mtt/ui/forms/resend-button";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, type ReactNode, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ResendButton } from "@/features/auth/resend-button";
 import { authRepository } from "@/features/auth/repository";
 import { CheckEmailFigure } from "@/figures/check-email/figure";
+import { POLL_MS } from "@/timing";
 import { StepHeading } from "./step-heading";
 import { StepLayout } from "./step-layout";
 
 export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: string | null }): ReactElement {
   const { formatMessage } = useIntl();
   const [notYet, setNotYet] = useState(false);
+  const resend = useResendVerification(sentAt, SITE_PATHS.start);
   const me = useQuery({
     ...authRepository.me(),
-    refetchInterval: 5000,
+    refetchInterval: POLL_MS,
     refetchIntervalInBackground: false,
   });
 
@@ -35,7 +39,7 @@ export function CheckEmailStep({ email, sentAt }: { email: string; sentAt: strin
           values={{ strong: (chunks: ReactNode) => <strong>{chunks}</strong>, email }}
         />
       </p>
-      <ResendButton sentAt={sentAt} next="/start" />
+      <ResendButton {...resend} />
       <Button type="button" size="medium" variant="secondary" disabled={me.isRefetching} onClick={() => void checkNow()}>
         {formatMessage({ id: "page.start.checkEmail.confirmed", defaultMessage: "Check again" })}
       </Button>

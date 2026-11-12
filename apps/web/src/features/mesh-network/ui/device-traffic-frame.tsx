@@ -8,12 +8,12 @@ import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { readingsRepository } from "@/features/readings/repository";
 import { parseWindowMs } from "@/lib/duration";
-import { portnumLabel } from "../model";
+import { DEVICE_WINDOW, portnumLabel } from "../model";
 import { RankedBars } from "./ranked-bars";
 
 export function DeviceTrafficFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
-  const traffic = useQuery(readingsRepository.deviceTraffic(device.uuid, { range: "7d" }));
+  const traffic = useQuery(readingsRepository.deviceTraffic(device.uuid, { range: DEVICE_WINDOW }));
   const title = formatMessage({ id: "page.devices.detail.traffic.title", defaultMessage: "Traffic" });
   return (
     <Frame className="shadow-card">

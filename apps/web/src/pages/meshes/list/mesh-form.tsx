@@ -1,6 +1,7 @@
-import { MeshCreateRequest, type Mesh } from "@mtt/contracts";
-import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { useTermsEnforced } from "@mtt/contracts/terms";
+import type { Mesh } from "@mtt/contracts";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
+import { meshCreateBody } from "@mtt/contracts/mesh";
+import { termsFields, useTermsAsked, type TermsAcceptance } from "@mtt/contracts/terms";
 import { MeshFormAlert, MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
 import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { FormField } from "@mtt/ui/forms/form-field";
@@ -8,12 +9,11 @@ import { FormSelect } from "@mtt/ui/forms/form-select";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
-import { NO_SOURCE } from "@/features/mesh/model";
+import { useMe } from "@/features/auth/use-me";
+import { DEFAULT_BROKER, NO_SOURCE } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
-import { type TermsAcceptance } from "@/features/terms/model";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 
 export function MeshForm({
@@ -28,20 +28,17 @@ export function MeshForm({
   onCreated?: (mesh: Mesh) => void | Promise<void>;
   onCancel?: () => void;
 }): ReactElement {
-  const termsEnforced = useTermsEnforced() !== false;
+  const termsEnforced = useTermsAsked();
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [discover, setDiscover] = useState(false);
-  const { isOperator } = useOwnerDirectory();
+  const { isOperator } = useMe();
   const showBrokerFields = isOperator;
   const sources = useQuery({ ...sourceRepository.list(), enabled: showBrokerFields });
   const [source, setSource] = useState(sourceId ?? NO_SOURCE);
   const sourceItems = [
-    {
-      label: formatMessage({ id: "page.meshes.list.createDialog.defaultBroker", defaultMessage: "Default broker" }),
-      value: NO_SOURCE,
-    },
+    { label: formatMessage(DEFAULT_BROKER), value: NO_SOURCE },
     ...(sources.data ?? []).map((item) => ({ label: sourceTitle(item), value: item.id })),
   ];
   const create = useMutation({
@@ -57,29 +54,22 @@ export function MeshForm({
   function onSubmit(values: MeshFormValues) {
     if (create.isPending) return;
     const picked = source;
-    const parsed = MeshCreateRequest.safeParse({
-      channel_id: values.channel_id,
-      psk_b64: values.psk_b64,
-      label: values.label === "" ? null : values.label,
+    const body = meshCreateBody(values, {
       discover_gateways: discover,
       ...(showBrokerFields && picked !== NO_SOURCE ? { source_id: picked } : {}),
-      ...(picked === NO_SOURCE && termsAcceptance
-        ? { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
-        : {}),
+      terms: picked === NO_SOURCE ? termsAcceptance : null,
     });
-    if (!parsed.success) {
-      setErrors(issueErrors(parsed.error.issues));
+    if ("errors" in body) {
+      setErrors(body.errors);
       return;
     }
     setErrors({});
     if (termsEnforced && picked === NO_SOURCE && !termsAcceptance) {
-      setAwaitingTerms({ data: parsed.data });
+      setAwaitingTerms(body);
       return;
     }
-    create.mutate({ data: parsed.data });
+    create.mutate(body);
   }
-
-  const cancelLabel = formatMessage({ id: "page.meshes.list.createDialog.cancel", defaultMessage: "Cancel" });
 
   return (
     <>
@@ -87,7 +77,6 @@ export function MeshForm({
         errors={errors}
         pending={create.isPending}
         onCancel={onCancel}
-        cancelLabel={cancelLabel}
         onSubmit={onSubmit}
         extraFields={
           <>
@@ -156,7 +145,7 @@ export function MeshForm({
           if (!awaitingTerms) return;
           create.mutate(
             acceptance
-              ? { data: { ...awaitingTerms.data, terms_version: acceptance.version, terms_locale: acceptance.locale } }
+              ? { data: { ...awaitingTerms.data, ...termsFields(acceptance) } }
               : awaitingTerms,
           );
           setAwaitingTerms(null);

@@ -9,7 +9,7 @@ import {
   ownersMeOperatorRequestRetrieve,
 } from "@mtt/contracts/api";
 import { queryOptions } from "@tanstack/react-query";
-import { readApiError } from "@mtt/contracts/errors";
+import { nullOn404 } from "@mtt/contracts/errors";
 
 export const operatorRequestRepository = {
   /** The caller's latest request, or `null` when they never asked. */
@@ -31,13 +31,6 @@ export const operatorRequestRepository = {
 function myOperatorRequestQuery() {
   return queryOptions({
     queryKey: getOwnersMeOperatorRequestRetrieveQueryKey(),
-    queryFn: async ({ signal }) => {
-      try {
-        return await ownersMeOperatorRequestRetrieve({ signal });
-      } catch (error) {
-        if (readApiError(error).status === 404) return null;
-        throw error;
-      }
-    },
+    queryFn: ({ signal }) => nullOn404(() => ownersMeOperatorRequestRetrieve({ signal })),
   });
 }

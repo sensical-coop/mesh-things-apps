@@ -38,7 +38,7 @@ export function ArchiveButton({ device, className }: ArchiveButtonProps): ReactE
         title={label}
         onClick={() => setOpen(true)}
       />
-      {open ? <ArchiveSettingsDialog device={device} open onClose={() => setOpen(false)} /> : null}
+      {open ? <ArchiveSettingsDialog device={device} onClose={() => setOpen(false)} /> : null}
     </>
   );
 }

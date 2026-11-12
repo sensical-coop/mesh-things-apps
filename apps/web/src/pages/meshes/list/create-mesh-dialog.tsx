@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { NO_SOURCE } from "@/features/mesh/model";
-import { type TermsAcceptance } from "@/features/terms/model";
+import { type TermsAcceptance } from "@mtt/contracts/terms";
 import { routes } from "@/router";
 import { MeshForm } from "./mesh-form";
 

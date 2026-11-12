@@ -1,4 +1,5 @@
 import { useIntl } from "react-intl";
+import { figLabel } from "../view";
 import { Plate } from "@/iso/react/draw";
 import { NextStepsArt } from "./art";
 import { REST_READING, fahrenheit, formatTenths } from "./model";
@@ -9,7 +10,7 @@ export function NextStepsFigure() {
   const state = formatMessage({ id: "figure.next-steps.inRange", defaultMessage: "in range" });
   return (
     <Plate
-      fig="Fig 8"
+      fig={figLabel("next-steps")}
       title={formatMessage({ id: "figure.next-steps.title", defaultMessage: "Alarms and blueprints" })}
       hint={formatMessage({ id: "figure.next-steps.hint", defaultMessage: "Drag · ← → · ↑ ↓" })}
       readout={formatMessage(

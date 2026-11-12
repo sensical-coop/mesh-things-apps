@@ -1,5 +1,5 @@
 import { type ReactElement, type ReactNode } from "react";
-import { cn } from "@mtt/ui/utils";
+import { cx } from "@mtt/ui/utils";
 
 export function StatusCopy({
   children,
@@ -9,7 +9,7 @@ export function StatusCopy({
   className?: string;
 }): ReactElement {
   return (
-    <p className={cn("text-body-regular text-text-secondary", className)} role="status">
+    <p className={cx("text-body-regular text-text-secondary", className)} role="status">
       {children}
     </p>
   );

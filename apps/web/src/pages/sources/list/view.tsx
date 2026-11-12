@@ -2,7 +2,7 @@ import type { SourceRead } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { RiAddLine, RiDeleteBinLine, RiRestartLine } from "@remixicon/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
@@ -10,60 +10,36 @@ import { ListScaffold } from "@/components/list-scaffold";
 import { SettingsButton } from "@/components/settings-button";
 import { StatusCopy } from "@/components/status-copy";
 import { useMe } from "@/features/auth/use-me";
+import { SOURCE_DEFAULTS } from "@mtt/contracts/source";
 import { meshRepository } from "@/features/mesh/repository";
 import { sourceTitle } from "@/features/source/model";
-import { entityTermsStanding } from "@/features/terms/model";
 import { sourceRepository } from "@/features/source/repository";
+import { DeleteSourceDialog } from "@/features/source/ui/delete-source-dialog";
 import { SourceDialog } from "@/features/source/ui/source-dialog";
 import { RenewTermsDialog } from "@/features/terms/ui/renew-terms-dialog";
 import { RestartSourceDialog } from "@/features/source/ui/restart-source-dialog";
 import { SourceStatusChip } from "@/features/source/ui/source-status-chip";
-import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
-import { type TermsAcceptance } from "@/features/terms/model";
-import { termsRepository } from "@/features/terms/repository";
+import { TermsCell } from "@/features/terms/ui/terms-cell";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
-import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
-import { useFormatters } from "@/hooks/use-formatters";
-import { DeleteSourceDialog } from "./delete-source-dialog";
+import { useEntityTerms } from "@/features/terms/use-entity-terms";
 
 type SourceRow = SourceRead & { meshes: number };
 
 const col = legacyCreateColumnHelper<SourceRow>();
 
 export function SourcesView(): ReactElement {
-  const { formatMessage, locale } = useIntl();
-  const { formatWhen } = useFormatters();
+  const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const { meId } = useMe();
   // A self-hosted instance asks for no terms: no terms step, column or renewals.
-  // Flows treat "unknown" as enforced; the version lookup waits for a definite yes.
-  const enforced = useTermsEnforced();
-  const termsEnforced = enforced !== false;
-  // The current version, to tell a source accepted under older terms.
-  const currentTerms = useQuery({
-    ...termsRepository.source({ locale: termsLocale(locale) }),
-    enabled: enforced === true,
-  });
+  const { asked: termsEnforced, currentVersion, ...add } = useEntityTerms("source");
   const sources = useQuery(sourceRepository.list());
   const meshes = useQuery(meshRepository.list());
-  const [termsOpen, setTermsOpen] = useState(false);
-  // Accepted anew for every source added, and dropped when the add dialog closes.
-  const [addOpen, setAddOpen] = useState(false);
-  const [termsAcceptance, setTermsAcceptance] = useState<TermsAcceptance | null>(null);
   const [sourceToRenew, setSourceToRenew] = useState<SourceRow | null>(null);
   const [saved, setSaved] = useState<{ source: SourceRead; action: "created" | "updated" | "restarted" } | null>(null);
   const [sourceToEdit, setSourceToEdit] = useState<SourceRow | null>(null);
   const [sourceToDelete, setSourceToDelete] = useState<SourceRow | null>(null);
   const [sourceToRestart, setSourceToRestart] = useState<SourceRow | null>(null);
-  const renew = useMutation({
-    ...termsRepository.renewSource(),
-    onSuccess: async (renewed) => {
-      await queryClient.invalidateQueries({ queryKey: sourceRepository.listKey() });
-      setSaved({ source: renewed, action: "updated" });
-      renew.reset();
-      setSourceToRenew(null);
-    },
-  });
 
   const rows = useMemo<SourceRow[]>(() => {
     const counts = new Map<string, number>();
@@ -88,7 +64,7 @@ export function SourcesView(): ReactElement {
         header: formatMessage({ id: "page.sources.list.columns.topic", defaultMessage: "Topic filter" }),
         cell: (info) => <span className="font-mono text-text-secondary">{info.getValue()}</span>,
       }),
-      col.accessor((row) => row.ssl ?? true, {
+      col.accessor((row) => row.ssl ?? SOURCE_DEFAULTS.ssl, {
         id: "ssl",
         header: formatMessage({ id: "page.sources.list.columns.ssl", defaultMessage: "TLS" }),
         cell: (info) => (
@@ -99,7 +75,7 @@ export function SourcesView(): ReactElement {
           </span>
         ),
       }),
-      col.accessor((row) => row.qos ?? 1, {
+      col.accessor((row) => row.qos ?? SOURCE_DEFAULTS.qos, {
         id: "qos",
         header: formatMessage({ id: "page.sources.list.columns.qos", defaultMessage: "QoS" }),
         cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
@@ -113,29 +89,14 @@ export function SourcesView(): ReactElement {
           col.accessor("terms_expires_at", {
             id: "terms",
             header: formatMessage({ id: "page.sources.list.columns.terms", defaultMessage: "Terms" }),
-            cell: (info) => {
-              const row = info.row.original;
-              const standing = entityTermsStanding(row, currentTerms.data?.version, new Date());
-              return (
-                <span className="flex items-center gap-2">
-                  <span className="text-text-secondary">
-                    {row.terms_expires_at
-                      ? formatMessage(
-                          { id: "page.sources.list.terms.until", defaultMessage: "Until {when}" },
-                          { when: formatWhen(row.terms_expires_at) },
-                        )
-                      : formatMessage({ id: "page.sources.list.terms.noLimit", defaultMessage: "No time limit" })}
-                  </span>
-                  <TermsStandingChip standing={standing} />
-                  {/* Only the operator who created a source accepts its terms. */}
-                  {standing !== "ok" && row.created_by_id === meId ? (
-                    <Button type="button" size="xs" variant="secondary" onClick={() => setSourceToRenew(row)}>
-                      {formatMessage({ id: "page.sources.list.renew", defaultMessage: "Renew" })}
-                    </Button>
-                  ) : null}
-                </span>
-              );
-            },
+            cell: (info) => (
+              <TermsCell
+                entity={info.row.original}
+                currentVersion={currentVersion}
+                canRenew={info.row.original.created_by_id === meId}
+                onRenew={() => setSourceToRenew(info.row.original)}
+              />
+            ),
           }),
           ]
         : []),
@@ -178,7 +139,7 @@ export function SourcesView(): ReactElement {
         ),
       }),
     ],
-    [formatMessage, formatWhen, meId, currentTerms.data?.version, termsEnforced],
+    [formatMessage, meId, currentVersion, termsEnforced],
   );
 
   return (
@@ -186,7 +147,7 @@ export function SourcesView(): ReactElement {
       <ListScaffold
         title={formatMessage({ id: "page.sources.list.title", defaultMessage: "Sources" })}
         actions={
-          <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => (termsEnforced ? setTermsOpen(true) : setAddOpen(true))}>
+          <Button type="button" size="small" leadingIcon={RiAddLine} onClick={add.startCreate}>
             {formatMessage({ id: "page.sources.list.addSource", defaultMessage: "Add source" })}
           </Button>
         }
@@ -242,23 +203,11 @@ export function SourcesView(): ReactElement {
           })}
         />
       </ListScaffold>
-      <TermsDialog
-        open={termsOpen}
-        kind="source"
-        onClose={() => setTermsOpen(false)}
-        onAccepted={(acceptance) => {
-          setTermsOpen(false);
-          setTermsAcceptance(acceptance);
-          setAddOpen(true);
-        }}
-      />
+      <TermsDialog open={add.termsOpen} kind="source" onClose={add.closeTerms} onAccepted={add.accepted} />
       <SourceDialog
-        open={addOpen}
-        termsAcceptance={termsAcceptance}
-        onClose={() => {
-          setAddOpen(false);
-          setTermsAcceptance(null);
-        }}
+        open={add.formOpen}
+        termsAcceptance={add.acceptance}
+        onClose={add.closeForm}
         onSaved={(source) => setSaved({ source, action: "created" })}
       />
       {sourceToEdit ? (
@@ -270,29 +219,14 @@ export function SourcesView(): ReactElement {
         />
       ) : null}
       <RenewTermsDialog
-        open={sourceToRenew !== null}
         kind="source"
-        acceptLabel={
-          sourceToRenew
-            ? formatMessage(
-                { id: "feature.source.renew.accept", defaultMessage: "Renew {source}" },
-                { source: sourceTitle(sourceToRenew) },
-              )
-            : undefined
-        }
-        pending={renew.isPending}
-        error={renew.error}
-        onClose={() => {
-          renew.reset();
+        entity={sourceToRenew && { id: sourceToRenew.id, name: sourceTitle(sourceToRenew) }}
+        onClose={() => setSourceToRenew(null)}
+        onRenewed={async (renewed) => {
+          await queryClient.invalidateQueries({ queryKey: sourceRepository.listKey() });
+          setSaved({ source: renewed, action: "updated" });
           setSourceToRenew(null);
         }}
-        onAccepted={(acceptance) =>
-          sourceToRenew &&
-          renew.mutate({
-            sourceId: sourceToRenew.id,
-            data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
-          })
-        }
       />
       <RestartSourceDialog
         source={sourceToRestart}

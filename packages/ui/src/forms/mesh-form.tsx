@@ -3,15 +3,13 @@ import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { type FormEvent, type ReactElement, type ReactNode, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@mtt/ui/forms/form-field";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { fieldErrorId, fieldHintId, FormField } from "@mtt/ui/forms/form-field";
 
 /** Meshtastic's published default channel key. Traffic on it is readable by anyone. */
-export const PUBLIC_DEFAULT_PSK = "AQ==";
+const PUBLIC_DEFAULT_PSK = "AQ==";
 
-const actionsClass =
-  "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end [&_button]:w-full sm:[&_button]:w-auto";
-
-export type MeshFormValues = { label: string; channel_id: string; psk_b64: string };
+export type MeshFormValues = { label: string | null; channel_id: string; psk_b64: string };
 
 export function useMeshSubmitLabel(pending: boolean): string {
   const { formatMessage } = useIntl();
@@ -38,7 +36,6 @@ export function MeshForm({
   onSubmit,
   extraFields,
   onCancel,
-  cancelLabel,
   formId,
 }: {
   errors?: Record<string, string | undefined>;
@@ -47,7 +44,6 @@ export function MeshForm({
   /** Console-only fields (broker, discovery), rendered after the shared ones. */
   extraFields?: ReactNode;
   onCancel?: () => void;
-  cancelLabel?: string;
   /** Renders no actions: a submit button elsewhere on the page targets the form with `form={formId}`. */
   formId?: string;
 }): ReactElement {
@@ -55,7 +51,7 @@ export function MeshForm({
   const submitLabel = useMeshSubmitLabel(pending);
   const [psk, setPsk] = useState("");
   const publicPsk = psk === PUBLIC_DEFAULT_PSK;
-  const pskDescribed = [publicPsk ? "mesh-psk-public" : null, errors?.psk_b64 ? "mesh-psk-error" : null]
+  const pskDescribed = [publicPsk ? "mesh-psk-public" : null, errors?.psk_b64 ? fieldErrorId("mesh-psk") : null]
     .filter(Boolean)
     .join(" ") || undefined;
 
@@ -65,7 +61,7 @@ export function MeshForm({
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
     onSubmit({
-      label,
+      label: label === "" ? null : label,
       channel_id: String(form.get("channel_id") ?? "").trim(),
       psk_b64: String(form.get("psk_b64") ?? ""),
     });
@@ -83,7 +79,7 @@ export function MeshForm({
           })}
           error={errors?.label}
         >
-          <Input id="mesh-label" name="label" autoComplete="off" aria-invalid={errors?.label ? true : undefined} aria-describedby={errors?.label ? "mesh-label-error" : "mesh-label-hint"} />
+          <Input id="mesh-label" name="label" autoComplete="off" aria-invalid={errors?.label ? true : undefined} aria-describedby={errors?.label ? fieldErrorId("mesh-label") : fieldHintId("mesh-label")} />
         </FormField>
         <FormField
           id="mesh-channel"
@@ -100,7 +96,7 @@ export function MeshForm({
             required
             autoComplete="off"
             aria-invalid={errors?.channel_id ? true : undefined}
-            aria-describedby={errors?.channel_id ? "mesh-channel-error" : "mesh-channel-hint"}
+            aria-describedby={errors?.channel_id ? fieldErrorId("mesh-channel") : fieldHintId("mesh-channel")}
           />
         </FormField>
         <FormField
@@ -137,10 +133,10 @@ export function MeshForm({
         {extraFields}
       </FieldGroup>
       {formId ? null : (
-        <div className={actionsClass}>
+        <div className={dialogActionsClass}>
           {onCancel ? (
             <Button type="button" variant="secondary" size="small" onClick={onCancel}>
-              {cancelLabel}
+              {formatMessage({ id: "common.cancel", defaultMessage: "Cancel" })}
             </Button>
           ) : null}
           <Button type="submit" size="small" disabled={pending}>

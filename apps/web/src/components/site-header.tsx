@@ -1,15 +1,13 @@
 import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { ThemeToggle } from "@mtt/ui/components/theme-toggle";
-import { cn } from "@mtt/ui/utils";
+import { cx } from "@mtt/ui/utils";
 import { Link } from "@tanstack/react-router";
 import { type ReactElement, type ReactNode, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
+import { siteLinkClass } from "@/components/brand";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
-
-export const siteHeaderLinkClass =
-  "rounded-full text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 
 export function SiteHeader({ nav }: { nav?: ReactNode }): ReactElement {
   const { formatMessage } = useIntl();
@@ -40,7 +38,7 @@ export function SiteHeader({ nav }: { nav?: ReactNode }): ReactElement {
           ) : null}
         </div>
         <div className="relative z-10 flex items-center gap-2">
-          <a href={routes.docs} className={cn(siteHeaderLinkClass, "p-2")}>
+          <a href={routes.docs} className={cx(siteLinkClass, "p-2")}>
             {formatMessage({ id: "common.navigation.docs", defaultMessage: "Docs" })}
           </a>
           <LanguageSwitcher />

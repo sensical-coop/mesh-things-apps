@@ -3,11 +3,9 @@ import {
   archivesFor,
   canAttachBlueprint,
   canDecideOperatorRequests,
-  canManageSinks,
-  canManageSources,
+  canOperate,
   canReadArchive,
-  canReadBlueprint,
-  canReadMesh,
+  canReadShared,
   canReadOwnerEmail,
   canRequestOperator,
   canSeeArchiveSetting,
@@ -22,8 +20,7 @@ import {
   viewerOf,
   visibleBlueprints,
   visibleMeshes,
-  visibleSinks,
-  visibleSources,
+  visibleOperated,
   type Role,
   type Viewer,
 } from "../src/authz";
@@ -39,16 +36,16 @@ function actor(role: Role, id = "ada", isActive = true): Viewer {
 describe("authz", () => {
   it("keeps an owner on their own mesh, including the PSK", () => {
     const ada = actor("owner");
-    expect(canReadMesh(ada, hill)).toBe(true);
+    expect(canReadShared(ada, hill)).toBe(true);
     expect(canSeePsk(ada, hill)).toBe(true);
     expect(canWriteMesh(ada, hill)).toBe(true);
-    expect(canReadMesh(ada, river)).toBe(false);
+    expect(canReadShared(ada, river)).toBe(false);
     expect(canSeePsk(ada, river)).toBe(false);
   });
 
   it("lets staff read every mesh without the PSK or writes", () => {
     const staff = actor("staff", "pat");
-    expect(canReadMesh(staff, hill)).toBe(true);
+    expect(canReadShared(staff, hill)).toBe(true);
     expect(canSeePsk(staff, hill)).toBe(false);
     expect(canWriteMesh(staff, hill)).toBe(false);
     expect(canWriteCatalog(staff)).toBe(false);
@@ -67,7 +64,7 @@ describe("authz", () => {
 
   it("lets an owner read public meshes, without the PSK or writes", () => {
     const ada = actor("owner");
-    expect(canReadMesh(ada, lake)).toBe(true);
+    expect(canReadShared(ada, lake)).toBe(true);
     expect(canSeePsk(ada, lake)).toBe(false);
     expect(canWriteMesh(ada, lake)).toBe(false);
     expect(visibleMeshes(ada, [hill, river, lake])).toEqual([hill, lake]);
@@ -82,20 +79,20 @@ describe("authz", () => {
     const op = actor("operator", "op");
     const mine = { createdById: "op" };
     const theirs = { createdById: "other" };
-    expect(canManageSources(op)).toBe(true);
-    expect(visibleSources(op, [mine, theirs])).toEqual([mine]);
+    expect(canOperate(op)).toBe(true);
+    expect(visibleOperated(op, [mine, theirs])).toEqual([mine]);
     expect(canWriteCatalog(op)).toBe(true);
-    expect(canReadMesh(op, hill)).toBe(false);
+    expect(canReadShared(op, hill)).toBe(false);
     expect(canWriteMesh(op, { ownerId: "op" })).toBe(true);
     expect(flagsForRole("operator")).toEqual({ isSuperuser: false, isStaff: false });
   });
 
   it("gives superusers every source and nobody else any", () => {
     const rows = [{ createdById: "op" }, { createdById: null }];
-    expect(visibleSources(actor("superuser", "admin"), rows)).toEqual(rows);
-    expect(visibleSources(actor("owner"), rows)).toEqual([]);
-    expect(visibleSources(actor("staff", "pat"), rows)).toEqual([]);
-    expect(canManageSources(actor("operator", "op", false))).toBe(false);
+    expect(visibleOperated(actor("superuser", "admin"), rows)).toEqual(rows);
+    expect(visibleOperated(actor("owner"), rows)).toEqual([]);
+    expect(visibleOperated(actor("staff", "pat"), rows)).toEqual([]);
+    expect(canOperate(actor("operator", "op", false))).toBe(false);
     expect(roleFlag("superuser")).toBe("member");
   });
 
@@ -141,9 +138,9 @@ describe("authz", () => {
     const theirs = { ownerId: "bo", isPublic: false };
     const shared = { ownerId: "bo", isPublic: true };
     const orphan = { ownerId: null, isPublic: false };
-    expect(canReadBlueprint(ada, mine)).toBe(true);
-    expect(canReadBlueprint(ada, shared)).toBe(true);
-    expect(canReadBlueprint(ada, theirs)).toBe(false);
+    expect(canReadShared(ada, mine)).toBe(true);
+    expect(canReadShared(ada, shared)).toBe(true);
+    expect(canReadShared(ada, theirs)).toBe(false);
     expect(canWriteBlueprint(ada, mine)).toBe(true);
     expect(canWriteBlueprint(ada, shared)).toBe(false);
     expect(canWriteBlueprint(ada, orphan)).toBe(false);
@@ -172,13 +169,13 @@ describe("authz", () => {
     const op = actor("operator", "op");
     const mine = { createdById: "op" };
     const theirs = { createdById: "other" };
-    expect(canManageSinks(op)).toBe(true);
-    expect(visibleSinks(op, [mine, theirs])).toEqual([mine]);
-    expect(visibleSinks(actor("superuser", "admin"), [mine, theirs])).toEqual([mine, theirs]);
-    expect(visibleSinks(actor("owner"), [mine])).toEqual([]);
-    expect(visibleSinks(actor("staff", "pat"), [mine])).toEqual([]);
-    expect(canManageSinks(actor("operator", "op", false))).toBe(false);
-    expect(visibleSinks(actor("superuser", "admin", false), [mine])).toEqual([]);
+    expect(canOperate(op)).toBe(true);
+    expect(visibleOperated(op, [mine, theirs])).toEqual([mine]);
+    expect(visibleOperated(actor("superuser", "admin"), [mine, theirs])).toEqual([mine, theirs]);
+    expect(visibleOperated(actor("owner"), [mine])).toEqual([]);
+    expect(visibleOperated(actor("staff", "pat"), [mine])).toEqual([]);
+    expect(canOperate(actor("operator", "op", false))).toBe(false);
+    expect(visibleOperated(actor("superuser", "admin", false), [mine])).toEqual([]);
   });
 
   it("treats is_active as a verified owner", () => {

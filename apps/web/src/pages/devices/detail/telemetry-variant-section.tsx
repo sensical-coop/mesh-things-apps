@@ -3,13 +3,14 @@ import type {
   DeviceRead,
   DeviceTelemetryVariant,
 } from "@mtt/contracts";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { useFormatters } from "@/hooks/use-formatters";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { ArchiveButton } from "@/features/archive/ui/archive-button";
-import { channelShortName, isDerivedMeasurement } from "@/lib/measurement";
+import { variantTitle } from "@/features/device/model";
+import { isDerivedMeasurement, measurementLabel } from "@/lib/measurement";
 import { ComputedFlag } from "./computed-flag";
 import { StatusCopy } from "@/components/status-copy";
 
@@ -44,8 +45,8 @@ export function TelemetryVariantSection({
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3 className="flex min-w-0 items-center gap-2 text-body-medium wrap-break-word text-text-primary">
             {tv
-              ? (tv.name ?? tv.payload_kind)
-              : formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" })}
+              ? variantTitle(tv)
+              : formatMessage({ id: "feature.device.variantGroup.computed", defaultMessage: "Computed" })}
           </h3>
           {variant && tv ? (
             <span className="min-w-0 text-caption-1-regular wrap-break-word text-text-secondary">
@@ -137,7 +138,7 @@ export function TelemetryVariantSection({
                   <tr key={row.id} className="text-text-primary hover:bg-background-primary-hover">
                     <td className="h-8 w-72 px-3.5 py-0 align-middle wrap-break-word">
                       <span className="flex min-w-0 items-center gap-2">
-                        {row.measurement_type.display_name ?? channelShortName(channel)}
+                        {measurementLabel(row.measurement_type)}
                         {isDerivedMeasurement(row.measurement_type) ? <ComputedFlag /> : null}
                       </span>
                     </td>
@@ -173,7 +174,7 @@ export function TelemetryVariantSection({
                           <AlarmBellButton
                             deviceUuid={device.uuid}
                             channel={channel}
-                            label={row.measurement_type.display_name ?? channel}
+                            label={measurementLabel(row.measurement_type)}
                           />
                         ) : null}
                       </td>

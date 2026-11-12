@@ -1,15 +1,16 @@
-import type { DeviceRead, Export, ExportRequest } from "@mtt/contracts";
+import type { DeviceRead, Export } from "@mtt/contracts";
 import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
-import { RiDownloadLine, RiRefreshLine } from "@remixicon/react";
+import { RiDownloadLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { useFormatters } from "@/hooks/use-formatters";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { deviceTitle } from "@/features/device/model";
-import { isActive, lastDays, pollInterval, progressOf, rangeProblem, requestOf } from "@/features/export/model";
+import { canRequestAgain, isActive, lastDays, pollInterval, progressOf, rangeProblem } from "@/features/export/model";
+import { RequestAgainButton } from "@/features/export/ui/request-again-button";
 import { exportRepository } from "@/features/export/repository";
 import { useRequestExport } from "@/features/export/use-request-export";
 import { ExportLimits } from "@/features/export/ui/export-limits";
@@ -39,13 +40,11 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
   const latest = exports.data?.find((row) => isThisDevice(row, device));
   const title = deviceTitle(device);
 
-  function submit(body: ExportRequest = { format: "csv", ...range, node_ids: [device.node_id] }) {
-    requested.request(device.mesh_id, body);
-  }
-
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (rangeProblem(range.start, range.stop) === null) submit();
+    if (rangeProblem(range.start, range.stop) === null) {
+      requested.request(device.mesh_id, { format: "csv", ...range, node_ids: [device.node_id] });
+    }
   }
 
   return (
@@ -133,18 +132,13 @@ export function DeviceCsvDialog({ device, onClose }: DeviceCsvDialogProps): Reac
                 <ButtonLink href={latest.url} size="small" leadingIcon={RiDownloadLine} className="shrink-0">
                   {formatMessage({ id: "feature.export.table.download", defaultMessage: "Download" })}
                 </ButtonLink>
-              ) : latest.status === "expired" || latest.status === "failed" ? (
-                <Button
-                  type="button"
+              ) : canRequestAgain(latest.status) ? (
+                <RequestAgainButton
                   size="small"
-                  variant="secondary"
-                  leadingIcon={RiRefreshLine}
                   className="shrink-0"
                   disabled={requested.pending}
-                  onClick={() => submit(requestOf(latest))}
-                >
-                  {formatMessage({ id: "feature.export.table.requestAgain", defaultMessage: "Request again" })}
-                </Button>
+                  onClick={() => requested.requestAgain(latest)}
+                />
               ) : null}
             </div>
           </section>

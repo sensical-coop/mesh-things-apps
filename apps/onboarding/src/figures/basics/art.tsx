@@ -8,15 +8,9 @@ import { BasicsLive } from "./live";
 import type { BasicsConcept } from "./model";
 
 export function BasicsArt({ selected, label }: { selected: BasicsConcept; label: string }): ReactElement {
-  const intl = useIntl();
-  const { formatMessage } = intl;
-  const say = (id: string, fallback: string): string =>
-    Object.prototype.hasOwnProperty.call(intl.messages, id) ? formatMessage({ id, defaultMessage: fallback }) : fallback;
+  const { formatMessage } = useIntl();
   const mqtt = formatMessage({ id: "figure.basics.face.mqtt", defaultMessage: "MQTT" });
-  const nodes = [
-    say("figure.basics.node.c3d4", "!c3d4"),
-    say("figure.basics.node.09ae", "!09ae"),
-  ];
+  const nodes = ["!c3d4", "!09ae"];
 
   return (
     <BasicsLive
@@ -53,7 +47,7 @@ export function BasicsArt({ selected, label }: { selected: BasicsConcept; label:
           <Solid paths={GATE.plinth} tone="lo" crease="faint" />
           <LoraRadio
             parts={GATE.radio}
-            screen={say("figure.basics.gate.screen", "Wi-Fi")}
+            screen={formatMessage({ id: "figure.basics.gate.screen", defaultMessage: "Wi-Fi" })}
           />
         </g>
       }

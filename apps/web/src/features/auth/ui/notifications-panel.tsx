@@ -13,7 +13,8 @@ import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
 import { useMe } from "@/features/auth/use-me";
 import { readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { invalidateMe } from "@mtt/contracts/session";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 const SECONDS_PER_HOUR = 3600;
 const MAX_ALARM_COOLDOWN_HOURS = 720; // matches the backend's 30-day (2592000s) cap
@@ -39,7 +40,7 @@ export function NotificationsPanel(): ReactElement {
     ...authRepository.update(),
     onSuccess: async () => {
       setError(null);
-      await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
+      await invalidateMe(queryClient);
     },
     onError: (failure) => {
       const fields = readApiError(failure).fields;

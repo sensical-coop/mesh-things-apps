@@ -6,8 +6,9 @@ import {
   DeviceUpdate,
   TelemetryVariantMeasurementUpdate,
 } from "@mtt/contracts";
-import { deviceChannels, findDeviceMeasurement } from "../features/device/channels";
-import { deviceListFilterFields, matchesDeviceQuery } from "../features/device/filter";
+import { deviceChannels } from "../features/device/channels";
+import { DETECTOR_CATALOG, MEASUREMENT_DETECTORS } from "../features/device/detectors";
+import { deviceListFilterFields, matchesDeviceFilters } from "../features/device/filter";
 import {
   archivesFor,
   canWriteMesh,
@@ -15,11 +16,10 @@ import {
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 import { Hono } from "hono";
 import {
-  DETECTOR_CATALOG,
   DEVICE_NODE_ID,
   DEVICE_VARIANT_ID,
-  MEASUREMENT_DETECTORS,
   TELEMETRY_VARIANTS,
+  SEED_EPOCH,
   VARIANT_ENV_ID,
   type Store,
 } from "../store";
@@ -28,14 +28,16 @@ import {
   ARCHIVE_ENABLED,
 } from "../features/archive/repository";
 import {
+  deviceMeasurementJson,
   measurementJson,
+  telemetryVariantMeasurementJson,
 } from "../serialize";
 
 import {
   NO_PERMISSION, 
   queryFilters, parseBody, 
-  devicesFor, meshForRead,
-  deviceForRead, deviceMeasurementJson, telemetryVariantMeasurementJson,
+  devicesFor, deviceForWrite,
+  deviceForRead,
 } from "../http";
 import { telemetryVariantJson } from "../present";
 
@@ -47,9 +49,11 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
     if ("error" in variants) return c.json(variants.error, 400);
     const devices = (await devicesFor(db, actor)).filter(
       (device) =>
-        matchesDeviceQuery(device, {
-          extra: queryFilters(c, deviceListFilterFields),
-        }) && reportsVariants(device, variants.filter),
+        matchesDeviceFilters(
+          device,
+          db.postprocessings.some((row) => row.deviceUuid === device.uuid),
+          queryFilters(c, deviceListFilterFields),
+        ) && reportsVariants(device, variants.filter),
     );
     return c.json(await devicesJson(actor, devices));
   });
@@ -85,13 +89,9 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   app.put("/devices/:device_uuid", async (c) => {
     const actor = c.get("actor");
-    const existing = await db.devices.get(c.req.param("device_uuid"));
-    if (!existing) return c.json({ detail: "Not found" }, 404);
-    const mesh = await meshForRead(db, actor, existing.meshId);
-    if (!mesh) return c.json({ detail: "Not found" }, 404);
-    if (!canWriteMesh(actor, mesh)) {
-      return c.json(NO_PERMISSION, 403);
-    }
+    const found = await deviceForWrite(db, actor, c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
+    const { device: existing, mesh } = found;
     const parsed = await parseBody(c, DeviceUpdate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const patch = parsed.data;
@@ -134,37 +134,25 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
   app.get("/devices/:device_uuid/measurements/:measurement_id", async (c) => {
     const device = await deviceForRead(db, c.get("actor"), c.req.param("device_uuid"));
     if (!device) return c.json({ detail: "Not found" }, 404);
-    const found = await findDeviceMeasurement(db, device, c.req.param("measurement_id"));
+    const found = (await deviceChannels(db, device)).find((channel) => channel.id === c.req.param("measurement_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
     return c.json(deviceMeasurementJson(db, device, found));
   });
 
   app.put("/devices/:device_uuid/measurements/:measurement_id", async (c) => {
     const actor = c.get("actor");
-    const device = await deviceForRead(db, actor, c.req.param("device_uuid"));
-    if (!device) return c.json({ detail: "Not found" }, 404);
-    const mesh = await db.meshes.get(device.meshId);
-    if (!mesh || !canWriteMesh(actor, mesh)) {
-      return c.json(NO_PERMISSION, 403);
-    }
-    const found = await findDeviceMeasurement(db, device, c.req.param("measurement_id"));
+    const writable = await deviceForWrite(db, actor, c.req.param("device_uuid"));
+    if ("status" in writable) return c.json(writable.body, writable.status);
+    const { device } = writable;
+    const found = (await deviceChannels(db, device)).find((channel) => channel.id === c.req.param("measurement_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
     const parsed = await parseBody(c, DeviceMeasurementUpdate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const patch = parsed.data;
     if ("enabled_detectors" in patch) {
       const enabledDetectors = patch.enabled_detectors ?? null;
-      if (enabledDetectors) {
-        const unknownNames = enabledDetectors.filter((name) => !MEASUREMENT_DETECTORS.includes(name));
-        if (unknownNames.length) {
-          return c.json(
-            {
-              detail: `Unknown detector(s) ${unknownNames.join(", ")}. Valid: ${MEASUREMENT_DETECTORS.join(", ")}`,
-            },
-            400,
-          );
-        }
-      }
+      const unknown = enabledDetectors && unknownDetectors(enabledDetectors);
+      if (unknown) return c.json(unknown, 400);
       db.detectorOverrides.set(c.req.param("measurement_id"), enabledDetectors);
     }
     if ("valid_min" in patch || "valid_max" in patch) {
@@ -198,7 +186,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.get("/telemetry-variants", (c) =>
-    c.json(TELEMETRY_VARIANTS.map((variant) => telemetryVariantJson(variant, "2026-01-01T00:00:00.000Z"))),
+    c.json(TELEMETRY_VARIANTS.map((variant) => telemetryVariantJson(variant, SEED_EPOCH))),
   );
 
   app.get("/measurements", async (c) => {
@@ -223,8 +211,7 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
   app.get("/telemetry-variants/:telemetry_variant_id/measurements/:link_id", async (c) => {
     const found = variantLink(db, c.req.param("telemetry_variant_id"), c.req.param("link_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
-    const type = (db.measurements).find((t) => t.id === found.link.measurementTypeId);
-    if (!type) return c.json({ detail: "Not found" }, 404);
+    const { type } = found;
     return c.json(telemetryVariantMeasurementJson(db, type, found.linkId));
   });
 
@@ -235,22 +222,12 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
     }
     const found = variantLink(db, c.req.param("telemetry_variant_id"), c.req.param("link_id"));
     if (!found) return c.json({ detail: "Not found" }, 404);
-    const type = (db.measurements).find((t) => t.id === found.link.measurementTypeId);
-    if (!type) return c.json({ detail: "Not found" }, 404);
+    const { type } = found;
     const parsed = await parseBody(c, TelemetryVariantMeasurementUpdate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const patch = parsed.data;
-    if (patch.default_enabled_detectors) {
-      const unknownNames = patch.default_enabled_detectors.filter((name) => !MEASUREMENT_DETECTORS.includes(name));
-      if (unknownNames.length) {
-        return c.json(
-          {
-            detail: `Unknown detector(s) ${unknownNames.join(", ")}. Valid: ${MEASUREMENT_DETECTORS.join(", ")}`,
-          },
-          400,
-        );
-      }
-    }
+    const unknown = patch.default_enabled_detectors && unknownDetectors(patch.default_enabled_detectors);
+    if (unknown) return c.json(unknown, 400);
     db.telemetryVariantMeasurements.set(found.linkId, {
       ...found.link,
       defaultEnabledDetectors: patch.default_enabled_detectors ?? found.link.defaultEnabledDetectors,
@@ -259,8 +236,17 @@ export function registerDeviceRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 }
 
+/** The 400 body for detector names the catalog doesn't know, or null when all are valid. */
+function unknownDetectors(names: readonly string[]) {
+  const unknown = names.filter((name) => !MEASUREMENT_DETECTORS.includes(name));
+  return unknown.length
+    ? { detail: `Unknown detector(s) ${unknown.join(", ")}. Valid: ${MEASUREMENT_DETECTORS.join(", ")}` }
+    : null;
+}
+
 function variantLink(db: Store, variantId: string, linkId: string) {
   const link = db.telemetryVariantMeasurements.get(linkId);
   if (!link || link.variantId !== variantId) return undefined;
-  return { linkId, link };
+  const type = db.measurements.find((t) => t.id === link.measurementTypeId);
+  return type && { linkId, link, type };
 }

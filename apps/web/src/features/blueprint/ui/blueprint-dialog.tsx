@@ -18,10 +18,11 @@ import {
   versionBody,
   type BlueprintDraft,
 } from "@/features/blueprint/model";
-import { blueprintRepository } from "@/features/blueprint/repository";
+import { nameErrorMessage } from "@/features/blueprint/name-error-message";
+import { blueprintRepository, invalidateBlueprint } from "@/features/blueprint/repository";
 import { VersionEditor } from "@/features/blueprint/ui/version-editor";
 import { errorMessages, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type BlueprintDialogProps = {
   /** Given: add a version to it, starting from its latest. Absent: create a blueprint. */
@@ -41,24 +42,19 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
   const [nameError, setNameError] = useState<string | undefined>();
 
   async function saved(blueprintId: string) {
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey(blueprintId) });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.versionsKey(blueprintId) });
+    await invalidateBlueprint(queryClient, blueprintId);
     onSaved?.(blueprintId);
     onClose();
   }
 
   function failed(error: unknown) {
-    const { status, fields } = readApiError(error);
-    if (status === 409) {
-      setNameError(
-        formatMessage({ id: "feature.blueprint.dialog.nameTaken", defaultMessage: "You already have a blueprint with this name." }),
-      );
+    const name = nameErrorMessage(error, formatMessage);
+    setNameError(name);
+    if (readApiError(error).status === 409) {
       setShown([]);
       return;
     }
-    setNameError(fields.name);
-    const messages = errorMessages(error).filter((message) => message !== fields.name);
+    const messages = errorMessages(error).filter((message) => message !== name);
     setShown(
       messages.length
         ? messages

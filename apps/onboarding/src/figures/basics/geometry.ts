@@ -58,8 +58,6 @@ export const BASE = {
   halo: slabOf({ x: BENCH.x - 8, y: BENCH.y - 6, w: BENCH.w + 18, d: BENCH.d + 14, r: 10 }, 0, 1, P).fill,
 };
 
-export const LABEL_AT = topMatrix([BENCH.x + 50, BENCH.y + BENCH.d - 14], TOP + 1.4, P, "x");
-
 export const RADIOS = NODE_SPECS.map((spec) => loraRadio(spec, P));
 
 function sideSlots(x: number, y0: number, y1: number, z: number, h: number): string {
@@ -117,7 +115,7 @@ export const SORT = {
   port: box(port, brZ + 10, 8),
 };
 
-export const PORT_AT: Flat = iso([port.x + port.w / 2, port.y + port.d, brZ + 18], P);
+const PORT_AT: Flat = iso([port.x + port.w / 2, port.y + port.d, brZ + 18], P);
 export const SORT_LABEL = topMatrix([BROKER.x + 8, BROKER.y + 10], brZ + BROKER.h, P, "x");
 
 export const STORE = {
@@ -165,7 +163,7 @@ const ROUTE = [
 
 export const ROUTE_START: Flat = PACKET.at(0);
 
-export function routeAt(progress: number): Flat {
+function routeAt(progress: number): Flat {
   return pointOnRoute(ROUTE, progress);
 }
 

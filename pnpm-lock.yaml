@@ -78,6 +78,9 @@ importers:
       '@fontsource/geist-mono':
         specifier: ^5.2.7
         version: 5.3.0
+      '@mtt/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@mtt/ui':
         specifier: workspace:*
         version: link:../../packages/ui

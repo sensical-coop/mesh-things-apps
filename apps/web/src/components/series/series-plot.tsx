@@ -2,7 +2,8 @@ import { EChartsAreaChart, type ChartConfig } from "@mtt/ui/components/evilchart
 import { type ReactElement } from "react";
 import type { Point } from "@mtt/contracts";
 import { useIntl } from "react-intl";
-import { asNumber, formatClock, formatWhen } from "@/lib/format";
+import { useFormatters } from "@/hooks/use-formatters";
+import { asNumber } from "@/lib/format";
 import { StatusCopy } from "@/components/status-copy";
 import { fillTimeGaps } from "@/components/series/fill-gaps";
 
@@ -31,6 +32,7 @@ export function SeriesPlot({
   computed?: boolean;
 }): ReactElement {
   const { formatMessage } = useIntl();
+  const { formatClock, formatWhen } = useFormatters();
   // Keep null-valued buckets (missing data within the aggregation window) instead
   // of dropping them, and reinsert buckets the API omitted entirely: the chart's
   // x-axis spaces points by array index, so either one collapses real time gaps

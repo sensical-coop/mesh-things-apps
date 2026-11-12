@@ -5,27 +5,30 @@ import { type FormEvent, type ReactElement, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 
+/** Style for the link placed in the `forgotPassword` slot. */
+export const forgotPasswordLinkClass = "self-end text-caption-1-regular text-text-secondary underline underline-offset-2";
+
 export type LoginFormValues = { email: string; password: string };
 
 export type LoginFailure = { kind: "unauthorized" | "throttled" | "generic" };
-
-const MOCK_DEFAULTS = { email: "owner@sensical.test", password: "mesh-owner-12" };
 
 export function LoginForm({
   failure,
   pending,
   onSubmit,
+  defaults,
   forgotPassword,
   footer,
 }: {
   failure?: LoginFailure | null;
   pending: boolean;
   onSubmit: (values: LoginFormValues) => void;
+  /** Prefilled values, for demos. */
+  defaults?: LoginFormValues;
   forgotPassword?: ReactNode;
   footer?: ReactNode;
 }): ReactElement {
   const { formatMessage } = useIntl();
-  const defaults = import.meta.env.VITE_DISABLE_MOCK_API === "true" ? undefined : MOCK_DEFAULTS;
   const error =
     failure?.kind === "unauthorized"
       ? formatMessage({

@@ -1,17 +1,16 @@
 import { ListScaffold } from "@/components/list-scaffold";
-import { SmartFilterToolbar, useSmartFilters } from "@/components/smart-filters";
+import { SmartFilterToolbar } from "@/components/smart-filters";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsString, useQueryState } from "nuqs";
 import { type ReactElement, useMemo } from "react";
 import { useIntl } from "react-intl";
-import { deviceFilterSpecs, deviceFilterValue } from "@/features/device/device-filter";
+import { filterDevices, useDeviceFilters } from "@/features/device/device-filter";
 import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
 import { meshRepository } from "@/features/mesh/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { useMe } from "@/features/auth/use-me";
 import { StatusCopy } from "@/components/status-copy";
 import { SkeletonRows } from "@/components/skeleton-rows";
-import { matchesListQuery } from "@mtt/contracts/list-filter";
 import { MeshAlarmsList } from "./mesh-alarms-list";
 import { MeshPicker } from "@/features/mesh/ui/mesh-picker";
 
@@ -32,15 +31,9 @@ export function AlarmsPage(): ReactElement {
   );
   const current = editableMeshes.find((mesh) => mesh.id === selected) ?? editableMeshes[0];
   const devices = useQuery(meshRepository.devices(current?.id));
-  const { options: variantOptions, variants } = useTelemetryVariants();
-  const specs = useMemo(
-    () => deviceFilterSpecs({ formatMessage, variantOptions }),
-    [variantOptions, formatMessage],
-  );
-  const filters = useSmartFilters({ specs });
-  const shownDevices = (devices.data ?? []).filter((device) =>
-    matchesListQuery((field) => deviceFilterValue(device, field), filters.queryString),
-  );
+  const { variants } = useTelemetryVariants();
+  const filters = useDeviceFilters();
+  const shownDevices = filterDevices(devices.data ?? [], filters);
 
   const meshesLoading = meshes.isPending || !me;
 

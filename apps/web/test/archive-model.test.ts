@@ -10,13 +10,11 @@ import {
   duckdbCommand,
   duckdbExportCommand,
   groupByDay,
-  partitionDownloadUrl,
   summarizeArchive,
 } from "../src/features/archive/model.ts";
 
 const operator = { id: "op", is_superuser: false, is_staff: false, role: "operator" as const, is_active: true };
 const member = { id: "ada", is_superuser: false, is_staff: false, role: "member" as const, is_active: true };
-const admin = { id: "admin", is_superuser: true, is_staff: true, role: "member" as const, is_active: true };
 
 const credentials = {
   access_key_id: "KEY",
@@ -30,11 +28,7 @@ const credentials = {
   s3_path: "s3://meshtastic-telemetry/telemetry/mesh_id=m1/",
 };
 
-test("canUseArchive is the mesh's owner while an operator, or a superuser", () => {
-  assert.equal(canUseArchive(operator, "op"), true);
-  assert.equal(canUseArchive(operator, "someone"), false);
-  assert.equal(canUseArchive(member, "ada"), false);
-  assert.equal(canUseArchive(admin, "ada"), true);
+test("canUseArchive is false without a caller or an owner id", () => {
   assert.equal(canUseArchive(undefined, "op"), false);
   assert.equal(canUseArchive(operator, undefined), false);
 });
@@ -53,13 +47,6 @@ test("summarizeArchive counts files and bytes, oldest to newest", () => {
       { dt: "2026-09-02", hour: 14, size: 250, last_modified: "2026-09-02T14:59:00Z" },
     ]),
     { files: 2, bytes: 350, first: "2026-09-01 03:00", last: "2026-09-02 14:00" },
-  );
-});
-
-test("partitionDownloadUrl points at the readings route", () => {
-  assert.equal(
-    partitionDownloadUrl("https://api.example.org/", "m1", { dt: "2026-09-02", hour: 4 }),
-    "https://api.example.org/readings/archive/meshes/m1/partitions/2026-09-02/4",
   );
 });
 

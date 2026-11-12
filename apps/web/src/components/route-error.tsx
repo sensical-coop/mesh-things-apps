@@ -3,13 +3,14 @@ import { RiArrowLeftLine, RiRefreshLine } from "@remixicon/react";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { NoticePanel } from "@/components/notice-panel";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
 
 export function RouteError({ error, reset }: ErrorComponentProps): ReactElement {
   const { formatMessage } = useIntl();
   return (
-    <section className="flex oa-arrive flex-col items-start gap-3 oa-squircle bg-background-secondary-default p-6 shadow-card sm:p-10">
+    <NoticePanel>
       <h1 className="text-title-2-medium tracking-tight text-text-primary">
         {formatMessage({ id: "routeError.title", defaultMessage: "This page couldn't be shown" })}
       </h1>
@@ -30,6 +31,6 @@ export function RouteError({ error, reset }: ErrorComponentProps): ReactElement 
           {formatMessage({ id: "routeError.back", defaultMessage: "Back to meshes" })}
         </RouterButtonLink>
       </div>
-    </section>
+    </NoticePanel>
   );
 }

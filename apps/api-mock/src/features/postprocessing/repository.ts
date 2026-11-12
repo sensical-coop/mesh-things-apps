@@ -1,6 +1,7 @@
 import type { DevicePostprocessingWriteOutput, PostprocessingBackfillRequestOutput, StepCalibrationRequestOutput } from "@mtt/contracts";
-import { PREFIX_PATTERN } from "@mtt/contracts/blueprint";
-import { canAttachBlueprint, canReadBlueprint } from "@mtt/contracts/authz";
+import { PREFIX_PATTERN, derivedChannel, parseRef } from "@mtt/contracts/blueprint";
+import { BACKFILL_MAX_DAYS } from "@mtt/contracts/export";
+import { canAttachBlueprint, canReadShared } from "@mtt/contracts/authz";
 import type { Actor } from "../../auth";
 import type { Device } from "@mtt/domain/device/Device";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
@@ -8,9 +9,9 @@ import { plainRecord } from "../blueprint/records";
 import { deviceChannels } from "../device/channels";
 import { ensureMeasurement } from "../measurement/repository";
 import type { Store } from "../../store";
-import { ALGORITHMS, algorithmNamed } from "../algorithm/catalog";
+import { algorithmNamed } from "../algorithm/catalog";
 import { latestVersion, versionNumbered, type BlueprintRow, type BlueprintVersionRow } from "../blueprint/repository";
-import { validateCalibration } from "../blueprint/validate";
+import { requiredCalibrationParams, validateCalibration } from "../blueprint/validate";
 
 export type DerivedOutputRow = {
   fieldName: string;
@@ -60,7 +61,6 @@ export type BackfillRow = {
 };
 
 export const DEFAULT_TOLERANCE_SECONDS = 30;
-export const MAX_BACKFILL_DAYS = 90;
 
 export function toleranceFor(row: PostprocessingRow, readingIntervalSeconds: number | null): number {
   if (row.toleranceSeconds) return row.toleranceSeconds;
@@ -90,7 +90,7 @@ export function problems(
       found.push(`Step '${step.key}' uses '${step.function_name}', which is no longer available`);
       continue;
     }
-    const required = spec.params.filter((param) => param.calibration && param.required).map((param) => param.name);
+    const required = requiredCalibrationParams(spec).map((param) => param.name);
     if (required.length && !calibrated.has(`${step.key}:${step.function_name}`)) {
       found.push(`Step '${step.key}' needs a calibration setting [${required.map((name) => `'${name}'`).join(", ")}]`);
     }
@@ -104,10 +104,19 @@ export function problems(
   return found;
 }
 
+const OUTPUT_IN_USE = ["Another postprocessing on this device reads a channel this change would remove"];
+const PREFIX_ERROR = { output_prefix: ["Use lowercase letters, digits and underscores"] };
+
 type Fail = { status: 400 | 403 | 404 | 409; body: unknown };
 
 function fail(status: Fail["status"], body: unknown): Fail {
   return { status, body };
+}
+
+/** A refused write leaves no measurement types behind that `syncOutputs` created for it. */
+function refused(db: Store, knownTypes: number, status: Fail["status"], body: unknown): Fail {
+  db.measurements.length = knownTypes;
+  return fail(status, body);
 }
 
 export function versionOf(db: Store, row: PostprocessingRow): { blueprint: BlueprintRow; version: BlueprintVersionRow } | null {
@@ -165,13 +174,13 @@ async function syncOutputs(db: Store, row: PostprocessingRow, device: Device, ve
     .flatMap((other) => other.outputs.map((output) => output.fieldName));
   const clash = fields.filter((field) => taken.includes(field));
   if (clash.length) {
-    return [`Derived channel(s) ${clash.map((f) => `derived.${f}`).join(", ")} already exist on this device. Set an output_prefix`];
+    return [`Derived channel(s) ${clash.map((f) => `${derivedChannel(f)}`).join(", ")} already exist on this device. Set an output_prefix`];
   }
   const dropped = row.outputs.filter((output) => !fields.includes(output.fieldName));
   const readers = db.postprocessings.filter(
     (other) => other.id !== row.id && Object.values(other.bindings).some((id) => dropped.some((output) => output.measurementId === id)),
   );
-  if (readers.length) return ["Another postprocessing on this device reads a channel this change would remove"];
+  if (readers.length) return OUTPUT_IN_USE;
   const channels = await deviceChannels(db, device);
   const now = nowIso();
   row.outputs = fields.map((field) => {
@@ -179,17 +188,18 @@ async function syncOutputs(db: Store, row: PostprocessingRow, device: Device, ve
     if (kept) return kept;
     const step = version.steps.find((candidate) => Object.values(candidate.outputs).some((name) => `${row.outputPrefix}${name}` === field));
     const output = step ? Object.entries(step.outputs).find(([, name]) => `${row.outputPrefix}${name}` === field)?.[0] : undefined;
-    const declared = step && output ? ALGORITHMS.find((a) => a.name === step.function_name)?.output_units[output] : undefined;
+    const declared = step && output ? algorithmNamed(step.function_name)?.output_units[output] : undefined;
     // "@<input>" preserves the unit of whatever channel feeds that input.
     const ref = declared?.startsWith("@") && step ? step.inputs[declared.slice(1)] : undefined;
-    const boundId = ref?.startsWith("slot:") ? row.bindings[ref.slice(5)] : undefined;
+    const parsedRef = ref ? parseRef(ref) : null;
+    const boundId = parsedRef?.kind === "slot" ? row.bindings[parsedRef.slot] : undefined;
     const unit = declared?.startsWith("@") ? (channels.find((c) => c.id === boundId)?.type.nativeUnit ?? null) : (declared ?? null);
     const type = ensureMeasurement(
       db.measurements,
       {
         payloadKind: "computed:derived",
         fieldName: field,
-        channel: `derived.${field}`,
+        channel: derivedChannel(field),
         origin: "computed",
         displayName: null,
         description: null,
@@ -205,10 +215,6 @@ async function syncOutputs(db: Store, row: PostprocessingRow, device: Device, ve
   return [];
 }
 
-function countAttached(db: Store, device: Device) {
-  device.postprocessingCount = db.postprocessings.filter((row) => row.deviceUuid === device.uuid).length;
-}
-
 export async function createPostprocessing(
   db: Store,
   actor: Actor,
@@ -218,10 +224,10 @@ export async function createPostprocessing(
 ): Promise<{ row: PostprocessingRow } | Fail> {
   if (!data.blueprint_id) return fail(400, { blueprint_id: ["This field is required."] });
   if (data.output_prefix !== undefined && !PREFIX_PATTERN.test(data.output_prefix)) {
-    return fail(400, { output_prefix: ["Use lowercase letters, digits and underscores"] });
+    return fail(400, PREFIX_ERROR);
   }
   const blueprint = db.blueprints.find((candidate) => candidate.id === data.blueprint_id);
-  if (!blueprint || !canReadBlueprint(actor, blueprint)) return fail(404, { detail: "Not found" });
+  if (!blueprint || !canReadShared(actor, blueprint)) return fail(404, { detail: "Not found" });
   if (!canAttachBlueprint(actor, blueprint, meshOwnerId)) {
     return fail(403, { detail: "This blueprint is neither public nor owned by the device's mesh owner" });
   }
@@ -241,18 +247,18 @@ export async function createPostprocessing(
     createdAt: now,
     updatedAt: now,
   };
+  const knownTypes = db.measurements.length;
   const errors = [...(await rebind(db, row, device, version, data.input_bindings ?? {})), ...(await syncOutputs(db, row, device, version))];
-  if (errors.length) return fail(400, errors);
+  if (errors.length) return refused(db, knownTypes, 400, errors);
   db.postprocessings.push(row);
   if (data.is_enabled) {
     const found = await postprocessingProblems(db, row, device);
     if (found.length) {
       db.postprocessings = db.postprocessings.filter((candidate) => candidate.id !== row.id);
-      return fail(400, { is_enabled: found });
+      return refused(db, knownTypes, 400, { is_enabled: found });
     }
     row.isEnabled = true;
   }
-  countAttached(db, device);
   return { row };
 }
 
@@ -268,7 +274,7 @@ export async function updatePostprocessing(
     return fail(400, { blueprint_id: ["Detach this postprocessing and attach the other blueprint instead"] });
   }
   if (data.output_prefix !== undefined && !PREFIX_PATTERN.test(data.output_prefix)) {
-    return fail(400, { output_prefix: ["Use lowercase letters, digits and underscores"] });
+    return fail(400, PREFIX_ERROR);
   }
   const next: PostprocessingRow = { ...row, bindings: { ...row.bindings }, outputs: [...row.outputs] };
   let version = resolved.version;
@@ -282,23 +288,22 @@ export async function updatePostprocessing(
   }
   if (data.output_prefix !== undefined) next.outputPrefix = data.output_prefix;
   if (data.tolerance_seconds !== undefined) next.toleranceSeconds = data.tolerance_seconds;
+  const knownTypes = db.measurements.length;
   if (rewired) {
     const errors = [...(await rebind(db, next, device, version, data.input_bindings ?? {})), ...(await syncOutputs(db, next, device, version))];
-    if (errors.length) return fail(400, errors);
+    if (errors.length) return refused(db, knownTypes, 400, errors);
   }
   next.isEnabled = data.is_enabled ?? row.isEnabled;
   if (next.isEnabled) {
     const blockers = await postprocessingProblems(db, next, device);
-    if (blockers.length) return fail(400, { is_enabled: blockers });
+    if (blockers.length) return refused(db, knownTypes, 400, { is_enabled: blockers });
   }
   next.updatedAt = nowIso();
   Object.assign(row, next);
   return { row };
 }
 
-const OUTPUT_IN_USE = ["Another postprocessing on this device reads a channel this change would remove"];
-
-export function deletePostprocessing(db: Store, device: Device, row: PostprocessingRow): { deleted: true } | Fail {
+export function deletePostprocessing(db: Store, row: PostprocessingRow): { deleted: true } | Fail {
   const outputIds = new Set(row.outputs.map((output) => output.measurementId));
   if (db.postprocessings.some((other) => other.id !== row.id && Object.values(other.bindings).some((id) => outputIds.has(id)))) {
     return fail(409, OUTPUT_IN_USE);
@@ -306,7 +311,6 @@ export function deletePostprocessing(db: Store, device: Device, row: Postprocess
   db.postprocessings = db.postprocessings.filter((candidate) => candidate.id !== row.id);
   db.calibrations = db.calibrations.filter((calibration) => calibration.postprocessingId !== row.id);
   db.backfills = db.backfills.filter((backfill) => backfill.postprocessingId !== row.id);
-  countAttached(db, device);
   return { deleted: true };
 }
 
@@ -366,8 +370,8 @@ export async function createBackfill(
   const stop = data.stop ?? now;
   const start = data.start;
   if (Date.parse(start) >= Date.parse(stop)) return fail(400, { start: ["Must be before stop"] });
-  if (Date.parse(stop) - Date.parse(start) > MAX_BACKFILL_DAYS * 86_400_000) {
-    return fail(400, { start: [`A backfill covers at most ${MAX_BACKFILL_DAYS} days. Split it`] });
+  if (Date.parse(stop) - Date.parse(start) > BACKFILL_MAX_DAYS * 86_400_000) {
+    return fail(400, { start: [`A backfill covers at most ${BACKFILL_MAX_DAYS} days. Split it`] });
   }
   const blockers = await postprocessingProblems(db, row, device);
   if (blockers.length) return fail(400, blockers);

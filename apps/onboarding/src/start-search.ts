@@ -32,7 +32,7 @@ export function writeStartSearch(search: StartSearch, mode: "push" | "replace"):
   if (search.mesh) params.set("mesh", search.mesh);
   if (search.step) params.set("step", search.step);
   const qs = params.toString();
-  const url = `/start/${qs ? `?${qs}` : ""}`;
+  const url = `${import.meta.env.BASE_URL}${qs ? `?${qs}` : ""}`;
   if (url === `${window.location.pathname}${window.location.search}`) return;
   if (mode === "replace") history.replaceState(null, "", url);
   else history.pushState(null, "", url);

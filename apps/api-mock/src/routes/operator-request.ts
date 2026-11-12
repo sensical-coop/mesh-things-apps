@@ -1,6 +1,6 @@
 import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
-import { OperatorRequestCreate, OperatorRequestDecision } from "@mtt/contracts";
+import { OperatorRequestCreate, OperatorRequestDecision, OperatorRequestStatusEnum } from "@mtt/contracts";
 import { canDecideOperatorRequests, canRequestOperator } from "@mtt/contracts/authz";
 import { Hono } from "hono";
 import {
@@ -11,7 +11,7 @@ import {
   listOperatorRequests,
 } from "../features/operator-request/repository";
 import { operatorRequestAdminJson, operatorRequestJson } from "../serialize";
-import { SUPERUSERS_ONLY, parseBody } from "../http";
+import { NO_PERMISSION, parseBody, statusFilterError } from "../http";
 
 export function registerOperatorRequestRoutes(app: Hono<Env>, rt: RouteRuntime) {
   const { db, syncArchive } = rt;
@@ -36,15 +36,16 @@ export function registerOperatorRequestRoutes(app: Hono<Env>, rt: RouteRuntime) 
 
   app.get("/operator-requests", (c) => {
     const actor = c.get("actor");
-    if (!canDecideOperatorRequests(actor)) return c.json(SUPERUSERS_ONLY, 403);
-    const listed = listOperatorRequests(db.operatorRequests, c.req.query("status") ?? "pending");
-    if ("invalid" in listed) return c.json({ status: ["Must be pending, approved, rejected or all."] }, 400);
-    return c.json(listed.map((row) => operatorRequestAdminJson(row, db.actors.get(row.ownerId))));
+    if (!canDecideOperatorRequests(actor)) return c.json(NO_PERMISSION, 403);
+    const wanted = c.req.query("status") ?? "pending";
+    const statusError = statusFilterError(OperatorRequestStatusEnum.options, wanted);
+    if (statusError) return c.json(statusError, 400);
+    return c.json(listOperatorRequests(db.operatorRequests, wanted).map((row) => operatorRequestAdminJson(row, db.actors.get(row.ownerId))));
   });
 
   app.get("/operator-requests/:request_id", (c) => {
     const actor = c.get("actor");
-    if (!canDecideOperatorRequests(actor)) return c.json(SUPERUSERS_ONLY, 403);
+    if (!canDecideOperatorRequests(actor)) return c.json(NO_PERMISSION, 403);
     const row = findOperatorRequest(db.operatorRequests, c.req.param("request_id"));
     if (!row) return c.json({ detail: "Operator request not found" }, 404);
     return c.json(operatorRequestAdminJson(row, db.actors.get(row.ownerId)));
@@ -52,7 +53,7 @@ export function registerOperatorRequestRoutes(app: Hono<Env>, rt: RouteRuntime) 
 
   app.put("/operator-requests/:request_id", async (c) => {
     const actor = c.get("actor");
-    if (!canDecideOperatorRequests(actor)) return c.json(SUPERUSERS_ONLY, 403);
+    if (!canDecideOperatorRequests(actor)) return c.json(NO_PERMISSION, 403);
     const row = findOperatorRequest(db.operatorRequests, c.req.param("request_id"));
     if (!row) return c.json({ detail: "Operator request not found" }, 404);
     const parsed = await parseBody(c, OperatorRequestDecision);

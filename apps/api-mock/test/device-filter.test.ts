@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Device } from "@mtt/domain/device/Device";
-import { matchesDeviceQuery } from "../src/features/device/filter.ts";
+import { matchesDeviceFilters } from "../src/features/device/filter";
 
 function device(patch: Partial<ConstructorParameters<typeof Device>[0]> = {}) {
   return new Device({
@@ -21,7 +21,6 @@ function device(patch: Partial<ConstructorParameters<typeof Device>[0]> = {}) {
     hardwareType: null,
     role: null,
     nodeinfoOverridden: false,
-    postprocessingCount: 0,
     readingIntervalSeconds: null,
     publishIntervalSeconds: null,
     lastSeen: null,
@@ -33,12 +32,10 @@ function device(patch: Partial<ConstructorParameters<typeof Device>[0]> = {}) {
 
 test("list-filter wire matches label, gateway and postprocessing", () => {
   const gw = device();
-  assert.equal(matchesDeviceQuery(gw, { extra: [{ field: "label", operator: "contains", values: ["g"] }] }), true);
-  assert.equal(matchesDeviceQuery(gw, { extra: [{ field: "is_gateway", operator: "is", values: ["false"] }] }), false);
+  assert.equal(matchesDeviceFilters(gw, false, [{ field: "label", operator: "contains", values: ["g"] }]), true);
+  assert.equal(matchesDeviceFilters(gw, false, [{ field: "is_gateway", operator: "is", values: ["false"] }]), false);
   assert.equal(
-    matchesDeviceQuery(device({ postprocessingCount: 1 }), {
-      extra: [{ field: "has_postprocessing", operator: "is", values: ["true"] }],
-    }),
+    matchesDeviceFilters(device(), true, [{ field: "has_postprocessing", operator: "is", values: ["true"] }]),
     true,
   );
 });

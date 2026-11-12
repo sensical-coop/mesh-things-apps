@@ -5,11 +5,9 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { blueprintRepository } from "@/features/blueprint/repository";
 import { errorMessages } from "@mtt/contracts/errors";
-import { deviceRepository } from "@/features/device/repository";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type DetachPostprocessingDialogProps = {
   deviceUuid: string;
@@ -23,10 +21,7 @@ export function DetachPostprocessingDialog({ deviceUuid, postprocessing, onClose
   const detach = useMutation({
     ...postprocessingRepository.detach(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(deviceUuid) });
-      await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+      await invalidatePostprocessing(queryClient, deviceUuid);
       onClose();
     },
   });

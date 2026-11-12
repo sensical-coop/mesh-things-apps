@@ -6,9 +6,9 @@ import { KNOB_R, PILL, ROW_Y, SCREEN_AT, TOGGLE_OFF, TOGGLE_ON } from "./geometr
 import { REST_GATE, SWITCHES, gateSeen, readoutOf, switchesOn, tourGate, valueText, withSwitch, type Gate, type ReadoutWords } from "./model";
 import { knobShift, packetShift } from "./pose";
 
-export interface ConnectCopy extends ReadoutWords {
+export type ConnectCopy = ReadoutWords & {
   aria: string;
-}
+};
 
 const TRAVEL = 1.45;
 const GAP = 0.35;

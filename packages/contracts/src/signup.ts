@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { classifySignupFailure, type SignupFailure } from "./api-errors";
-import { getOwnersCreateMutationOptions, getOwnersMeRetrieveQueryKey } from "./generated/api";
-import { accountTermsQuery, signupCreateBody, signupTermsStale, termsLocale, useTermsEnforced } from "./terms";
+import { getOwnersCreateMutationOptions } from "./generated/api";
+import { invalidateMe } from "./session";
+import { accountTermsQuery, signupCreateBody, signupTermsStale, termsLocale, useTermsAsked } from "./terms";
 
 /** Account terms, the create call, and a refetch when the accepted terms version is stale. */
 export function useSignup({
@@ -17,14 +18,14 @@ export function useSignup({
 } = {}) {
   const { locale } = useIntl();
   const termsQuery = useQuery(accountTermsQuery(termsLocale(locale)));
-  const termsOff = useTermsEnforced() === false;
+  const termsOff = !useTermsAsked();
   const [termsResetKey, setTermsResetKey] = useState(0);
   const queryClient = useQueryClient();
   const [failure, setFailure] = useState<SignupFailure | null>(null);
   const signup = useMutation({
     ...getOwnersCreateMutationOptions(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: getOwnersMeRetrieveQueryKey() });
+      await invalidateMe(queryClient);
       await onSignedUp?.();
     },
   });

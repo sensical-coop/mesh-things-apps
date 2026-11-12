@@ -1,18 +1,19 @@
+import { PUBLISH_INTERVAL_SECONDS } from "@/timing";
+
 /** Figure time is 60× wall time so a 30 min interval is readable. */
-export const PUBLISH_INTERVAL_SECONDS = 1800;
-export const TIME_SCALE = 60;
+const TIME_SCALE = 60;
 export const INTERVAL = PUBLISH_INTERVAL_SECONDS / TIME_SCALE;
 export const MISSED_TO_TRIP = 3;
 export const TRIP = INTERVAL * MISSED_TO_TRIP;
-export const TOUR = 36;
-export const MISS_FROM = 9;
-export const MISS_TO = 27;
+const TOUR = 36;
+const MISS_FROM = 9;
+const MISS_TO = 27;
 
-export interface Bench {
+type Bench = {
   age: number;
   held: boolean;
   trip: boolean;
-}
+};
 
 const TRIP_HOLD = 4;
 

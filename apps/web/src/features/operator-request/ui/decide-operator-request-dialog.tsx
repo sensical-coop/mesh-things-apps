@@ -9,7 +9,7 @@ import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { authRepository } from "@/features/auth/repository";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
 

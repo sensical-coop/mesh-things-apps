@@ -1,30 +1,16 @@
 import type { Context } from "hono";
 import type { Device } from "@mtt/domain/device/Device";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
-import { archivesFor, canSeeArchiveSetting, canWriteMesh, visibleSinks, visibleSources } from "@mtt/contracts/authz";
-import { parseListFilterValue } from "@mtt/contracts/list-filter";
-import { matchesTelemetryVariantFilter, type TelemetryVariantFilter } from "@mtt/domain/device/TelemetryVariantFilter";
+import { archivesFor, canSeeArchiveSetting } from "@mtt/contracts/authz";
+import { matchList, parseListFilterValue, type ListFilter } from "@mtt/contracts/list-filter";
 import type { Actor } from "./auth";
-import type { Sink } from "@mtt/domain/sink/Sink";
-import type { Source } from "@mtt/domain/source/Source";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
-
-const TELEMETRY_VARIANT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 import type { DataDeletionReason } from "./features/data-deletion/repository";
-import {
-  acceptTerms as commitTerms,
-  recordAcceptance as pushAcceptance,
-  DATA_DELETION_GRACE_DAYS,
-  TERMS_VERSIONS,
-  type AcceptTermsResult,
-  type TermsKind,
-  type TermsLocale,
-} from "./features/terms/terms";
+import { DATA_DELETION_GRACE_DAYS, TERMS_VERSIONS, acceptTerms } from "./features/terms/terms";
 import type { MockAuth } from "./auth";
-import { deviceJson, type DeviceJson } from "./serialize";
+import { devicesFor, isUuid, verificationOf } from "./http";
+import { deviceJson, ownerProfileJson, ownerReadJson, ownerWithApiKeyJson, type DeviceJson } from "./serialize";
 import type { Store } from "./store";
-
-export type { AcceptTermsResult };
 
 export type RouteRuntime = {
   db: Store;
@@ -33,19 +19,19 @@ export type RouteRuntime = {
   detachFromSinks: (target: { meshId?: string; deviceUuid?: string }) => void;
   deleteDevice: (uuid: string) => Promise<void>;
   devicesJson: (actor: Actor, devices: Device[]) => Promise<DeviceJson[]>;
-  telemetryVariantQuery: (c: Context) => { filter: TelemetryVariantFilter | null } | { error: Record<string, string[]> };
-  reportsVariants: (device: Device, filter: TelemetryVariantFilter | null) => boolean;
+  telemetryVariantQuery: (c: Context) => { filter: ListFilter | null } | { error: Record<string, string[]> };
+  reportsVariants: (device: Device, filter: ListFilter | null) => boolean;
   deviceOut: (actor: Actor, device: Device) => Promise<DeviceJson | undefined>;
-  canAttachSource: (actor: Actor, sourceId: string, current: string | null) => Promise<boolean>;
-  acceptTerms: (kind: TermsKind, version: string | undefined, ownerId: string, locale: TermsLocale, sourceId?: string | null, commit?: boolean) => AcceptTermsResult;
-  recordAcceptance: (kind: TermsKind, ownerId: string, locale: TermsLocale, sourceId?: string | null) => string | null;
+  deleteMesh: (mesh: Mesh, requestedById: string) => Promise<void>;
+  revokeVerificationTokens: (ownerId: string) => void;
+  issueVerificationToken: (ownerId: string) => string;
   scheduleMeshDeletion: (meshId: string, reason: DataDeletionReason, opts?: { sourceId?: string | null; requestedById?: string | null; dataUntil?: string | null }) => void;
   cancelMeshDeletions: (meshIds: readonly string[], reason: DataDeletionReason, sourceId: string | null) => void;
+  renewMeshTerms: (mesh: Mesh) => void;
   meshTermsCurrent: (mesh: { termsAcceptedVersion: string | null; termsExpiresAt: string | null }) => boolean;
-  ownerTerms: (ownerId: string) => string | null;
-  sinkForOperator: (actor: Actor, sinkId: string) => Promise<Sink | null>;
-  sinkTargetErrors: (actor: Actor, input: { mesh_ids?: string[]; device_ids?: string[] }) => Promise<Record<string, string[]>>;
-  sourceForOperator: (actor: Actor, sourceId: string) => Promise<Source | null>;
+  ownerRead: (owner: Actor) => ReturnType<typeof ownerReadJson>;
+  ownerProfile: (owner: Actor) => Promise<ReturnType<typeof ownerProfileJson>>;
+  ownerWithApiKey: (owner: Actor, apiKey: string) => ReturnType<typeof ownerWithApiKeyJson>;
 };
 
 export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
@@ -92,19 +78,17 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
   }
 
   /** Bare ids mean `has_any_of`. Anything else must already be one of the three set operators. */
-  function telemetryVariantFilter(raw: string): TelemetryVariantFilter | null {
+  function telemetryVariantFilter(raw: string): ListFilter | null {
     const parsed = parseListFilterValue(raw);
     if (!parsed) return null;
     const operator = raw.includes(":") ? parsed.operator : "has_any_of";
     if (operator !== "has_any_of" && operator !== "has_all_of" && operator !== "has_none_of") return null;
-    if (!parsed.values.length || !parsed.values.every((id) => TELEMETRY_VARIANT_ID.test(id))) return null;
-    return { operator, ids: parsed.values.map((id) => id.toLowerCase()) };
+    if (!parsed.values.length || !parsed.values.every((id) => isUuid(id))) return null;
+    return { field: "telemetry_variant", operator, values: parsed.values };
   }
 
   /** `?telemetry_variant=`: no filter when absent, a 400 body when malformed. */
-  function telemetryVariantQuery(
-    c: Context,
-  ): { filter: TelemetryVariantFilter | null } | { error: Record<string, string[]> } {
+  function telemetryVariantQuery(c: Context): { filter: ListFilter | null } | { error: Record<string, string[]> } {
     const raw = c.req.query("telemetry_variant");
     if (!raw) return { filter: null };
     const filter = telemetryVariantFilter(raw);
@@ -118,8 +102,8 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
     return { filter };
   }
 
-  function reportsVariants(device: Device, filter: TelemetryVariantFilter | null): boolean {
-    return !filter || matchesTelemetryVariantFilter(db.deviceTelemetryVariants.get(device.uuid) ?? [], filter);
+  function reportsVariants(device: Device, filter: ListFilter | null): boolean {
+    return !filter || matchList(db.deviceTelemetryVariants.get(device.uuid) ?? [], filter);
   }
 
   async function deviceOut(actor: Actor, device: Device) {
@@ -127,18 +111,26 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
     return json;
   }
 
-  async function canAttachSource(actor: Actor, sourceId: string, current: string | null): Promise<boolean> {
-    if (sourceId === current) return true;
-    const source = await db.sources.get(sourceId);
-    return source != null && visibleSources(actor, [source]).length > 0;
+  /** The mesh, its devices and its sink links go; its stored readings follow once the grace period ends. */
+  async function deleteMesh(mesh: Mesh, requestedById: string) {
+    for (const device of await db.devices.list({ meshId: mesh.id })) await deleteDevice(device.uuid);
+    detachFromSinks({ meshId: mesh.id });
+    await db.meshes.delete(mesh.id);
+    scheduleMeshDeletion(mesh.id, "mesh_deleted", { sourceId: mesh.sourceId, requestedById });
   }
 
-  function acceptTerms(kind: TermsKind, version: string | undefined, ownerId: string, locale: TermsLocale, sourceId: string | null = null, commit = true) {
-    return commitTerms(db.termsAcceptances, kind, version, ownerId, locale, sourceId, commit);
+  function revokeVerificationTokens(ownerId: string) {
+    for (const [existing, id] of db.verificationTokens) {
+      if (id === ownerId) db.verificationTokens.delete(existing);
+    }
   }
 
-  function recordAcceptance(kind: TermsKind, ownerId: string, locale: TermsLocale, sourceId: string | null = null) {
-    return pushAcceptance(db.termsAcceptances, kind, ownerId, locale, sourceId);
+  /** A fresh verification link replaces any earlier one of the owner. */
+  function issueVerificationToken(ownerId: string): string {
+    revokeVerificationTokens(ownerId);
+    const token = newId();
+    db.verificationTokens.set(token, ownerId);
+    return token;
   }
 
   /** A mesh's stored readings, deleted once the grace period ends unless cancelled first. */
@@ -175,52 +167,32 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
     }
   }
 
+  /** Accepting the mesh terms resumes a mesh a lapse paused and cancels the deletion that lapse scheduled. */
+  function renewMeshTerms(mesh: Mesh) {
+    if (mesh.pausedAt) cancelMeshDeletions([mesh.id], "terms_lapsed", null);
+    acceptTerms("mesh", mesh);
+  }
+
   /** A mesh on the default broker needs a current mesh acceptance; on a source, its source terms apply. */
   function meshTermsCurrent(mesh: { termsAcceptedVersion: string | null; termsExpiresAt: string | null }): boolean {
     const lapsed = mesh.termsExpiresAt !== null && new Date(mesh.termsExpiresAt).getTime() <= Date.now();
     return mesh.termsAcceptedVersion === TERMS_VERSIONS.mesh && !lapsed;
   }
 
-  function ownerTerms(ownerId: string) {
-    return db.accountTerms.get(ownerId) ?? null;
+  const termsOf = (owner: Actor) => db.accountTerms.get(owner.id) ?? null;
+
+  /** An owner as the API shows them, with their verification state and accepted account terms. */
+  function ownerRead(owner: Actor) {
+    return ownerReadJson(owner, verificationOf(db, owner.id), termsOf(owner));
   }
 
-  async function sinkForOperator(actor: Actor, sinkId: string): Promise<Sink | null> {
-    const sink = await db.sinks.get(sinkId);
-    return sink && visibleSinks(actor, [sink]).length > 0 ? sink : null;
+  async function ownerProfile(owner: Actor) {
+    const devices = await devicesJson(owner, await devicesFor(db, owner));
+    return ownerProfileJson(owner, devices, verificationOf(db, owner.id), termsOf(owner));
   }
 
-  /**
-   * As SinkWriteSerializer: every mesh, and every device's mesh, must be one the caller may
-   * edit and owned by an operator (a superuser counts).
-   */
-  async function sinkTargetErrors(
-    actor: Actor,
-    input: { mesh_ids?: string[]; device_ids?: string[] },
-  ): Promise<Record<string, string[]>> {
-    const errors: Record<string, string[]> = {};
-    const check = async (label: string, meshId: string | null) => {
-      const mesh = meshId ? await db.meshes.get(meshId) : null;
-      if (!mesh || !canWriteMesh(actor, mesh)) return `${label} not found.`;
-      const owner = db.actors.get(mesh.ownerId);
-      if (!owner || !archivesFor(owner)) return `${label} is on a mesh not owned by an operator.`;
-      return null;
-    };
-    for (const meshId of input.mesh_ids ?? []) {
-      const error = await check(`Mesh ${meshId}`, meshId);
-      if (error) (errors.mesh_ids ??= []).push(error);
-    }
-    for (const deviceId of input.device_ids ?? []) {
-      const device = await db.devices.get(deviceId);
-      const error = await check(`Device ${deviceId}`, device?.meshId ?? null);
-      if (error) (errors.device_ids ??= []).push(error);
-    }
-    return errors;
+  function ownerWithApiKey(owner: Actor, apiKey: string) {
+    return ownerWithApiKeyJson(owner, verificationOf(db, owner.id), apiKey, termsOf(owner));
   }
-
-  async function sourceForOperator(actor: Actor, sourceId: string): Promise<Source | null> {
-    const source = await db.sources.get(sourceId);
-    return source && visibleSources(actor, [source]).length > 0 ? source : null;
-  }
-  return { db, auth, syncArchive, detachFromSinks, deleteDevice, devicesJson, telemetryVariantQuery, reportsVariants, deviceOut, canAttachSource, acceptTerms, recordAcceptance, scheduleMeshDeletion, cancelMeshDeletions, meshTermsCurrent, ownerTerms, sinkForOperator, sinkTargetErrors, sourceForOperator };
+  return { db, auth, syncArchive, detachFromSinks, deleteDevice, devicesJson, telemetryVariantQuery, reportsVariants, deviceOut, deleteMesh, revokeVerificationTokens, issueVerificationToken, scheduleMeshDeletion, cancelMeshDeletions, renewMeshTerms, meshTermsCurrent, ownerRead, ownerProfile, ownerWithApiKey };
 }

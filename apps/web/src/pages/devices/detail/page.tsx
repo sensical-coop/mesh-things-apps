@@ -2,7 +2,7 @@ import type {
   MeasurementTypeRead,
 } from "@mtt/contracts";
 import { buttonStyles } from "@mtt/ui/components/base/buttons/button";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, useCallback, useMemo, useState } from "react";
 import { Link, notFound, useParams } from "@tanstack/react-router";
@@ -19,7 +19,7 @@ import { routes } from "@/router";
 import { canArchiveDevice } from "@/features/archive/model";
 import { DeviceCsvButton } from "@/features/export/ui/device-csv-button";
 import { isChartableMeasurement } from "@/lib/measurement";
-import { COMPUTED_VARIANT_GROUP, groupByTelemetryVariant } from "@/features/device/variant-groups";
+import { groupByTelemetryVariant, variantGroupTitle } from "@/features/device/variant-groups";
 import { SettingsButton } from "@/components/settings-button";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
@@ -27,6 +27,7 @@ import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
 import { DeviceSettingsDialog } from "@/features/device/ui/settings-dialog";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
 
+import { DetailHeading } from "@/components/detail-heading";
 import { DeviceStatusTab } from "./device-status-tab";
 import { DeviceDashboardTab, type ChartChannelGroup, type LatestKpiGroup } from "./device-dashboard-tab";
 
@@ -39,7 +40,7 @@ export function DeviceDetailPage(): ReactElement {
   const device = useQuery(deviceRepository.retrieve(deviceUuid));
   if (isNotFoundError(device.error)) throw notFound();
   const mesh = useQuery(meshRepository.retrieve(device.data?.mesh_id));
-  const catalog = useQuery(readingsRepository.catalog());
+  const catalog = useQuery(deviceRepository.measurementCatalog());
   const seen = useQuery(deviceRepository.measurements(deviceUuid));
   const variants = useQuery(deviceRepository.telemetryVariants(deviceUuid));
   const latest = useQuery(readingsRepository.latest(deviceUuid));
@@ -95,17 +96,7 @@ export function DeviceDetailPage(): ReactElement {
 
   // Channels a blueprint derives get a group of their own, after what the device reports.
   const groupTitle = useCallback(
-    (variantId: string): string => {
-      if (variantId === COMPUTED_VARIANT_GROUP) {
-        return formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" });
-      }
-      const tv = variantId ? variantById.get(variantId) : undefined;
-      return (
-        tv?.name ??
-        tv?.payload_kind ??
-        formatMessage({ id: "page.devices.detail.dashboard.latest.other", defaultMessage: "Other" })
-      );
-    },
+    (variantId: string): string => variantGroupTitle(variantId, variantById.get(variantId), formatMessage),
     [variantById, formatMessage],
   );
 
@@ -142,55 +133,61 @@ export function DeviceDetailPage(): ReactElement {
         className="flex flex-col gap-0"
         value={tab}
         onValueChange={(value) => {
-          if (value === "status" || value === "dashboard") void setTab(value);
+          const next = DEVICE_TABS.find((tabValue) => tabValue === value);
+          if (next) void setTab(next);
         }}
       >
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <Link
-              to={routes.devices}
-              aria-label={formatMessage({ id: "page.devices.detail.back", defaultMessage: "Back to devices" })}
-              className={cx(
-                buttonStyles.base,
-                buttonStyles.size.small,
-                buttonStyles.variant.ghost,
-                buttonStyles.iconOnlySize.small,
-                "shrink-0 rounded-full",
-              )}
-            >
-              <RiArrowLeftLine className={buttonStyles.icon.small} aria-hidden />
-            </Link>
-            <div className="flex min-w-0 flex-col gap-1">
-              {mesh.data ? (
-                <p className="text-caption-1-regular text-text-secondary">
-                  <Link to={routes.mesh} params={{ meshId: mesh.data.id }} className="hover:text-text-primary">
-                    {meshTitle(mesh.data)}
-                  </Link>
-                </p>
-              ) : null}
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h1 className="min-w-0 text-title-2-medium tracking-tight text-balance wrap-break-word text-text-primary">
-                  {device.data
-                    ? deviceTitle(device.data)
-                    : formatMessage({ id: "page.devices.detail.fallbackTitle", defaultMessage: "Device" })}
-                </h1>
-                {device.data ? <DeviceRoleBadge device={device.data} /> : null}
-                {device.data ? <DeviceSilentBadge device={device.data} /> : null}
-              </div>
-            </div>
-          </div>
-          {device.data && canEdit ? (
-            <div className="flex shrink-0 flex-wrap gap-2">
-              <DeviceCsvButton device={device.data} />
-              <SettingsButton
-                size="small"
-                className="shrink-0"
-                label={formatMessage({ id: "page.devices.detail.editSettings", defaultMessage: "Edit settings" })}
-                onClick={() => setSettingsOpen(true)}
-              />
-            </div>
-          ) : null}
-        </div>
+        <DetailHeading
+          className="mb-0"
+          leading={
+    <Link
+      to={routes.devices}
+      aria-label={formatMessage({ id: "page.devices.detail.back", defaultMessage: "Back to devices" })}
+      className={cx(
+        buttonStyles.base,
+        buttonStyles.size.small,
+        buttonStyles.variant.ghost,
+        buttonStyles.iconOnlySize.small,
+        "shrink-0 rounded-full",
+      )}
+    >
+      <RiArrowLeftLine className={buttonStyles.icon.small} aria-hidden />
+    </Link>
+          }
+          crumb={
+            mesh.data ? (
+              <Link to={routes.mesh} params={{ meshId: mesh.data.id }}>
+                {meshTitle(mesh.data)}
+              </Link>
+            ) : null
+          }
+          title={
+            device.data
+              ? deviceTitle(device.data)
+              : formatMessage({ id: "page.devices.detail.fallbackTitle", defaultMessage: "Device" })
+          }
+          badges={
+            device.data ? (
+              <>
+                <DeviceRoleBadge device={device.data} />
+                <DeviceSilentBadge device={device.data} />
+              </>
+            ) : null
+          }
+          actions={
+            device.data && canEdit ? (
+              <>
+                <DeviceCsvButton device={device.data} />
+                <SettingsButton
+                  size="small"
+                  className="shrink-0"
+                  label={formatMessage({ id: "common.actions.editSettings", defaultMessage: "Edit settings" })}
+                  onClick={() => setSettingsOpen(true)}
+                />
+              </>
+            ) : null
+          }
+        />
         <TabsList className="mt-3 p-1">
           <TabsTrigger value="status" className="px-4 py-1.5 text-body-medium">
             {formatMessage({ id: "page.devices.detail.tabs.status", defaultMessage: "Status" })}

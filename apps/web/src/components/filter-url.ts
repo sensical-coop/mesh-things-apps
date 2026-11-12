@@ -1,4 +1,9 @@
-import { multiValueFilterOperators, serializeListFilterValue, valuelessFilterOperators } from "@mtt/contracts/list-filter";
+import {
+  multiValueFilterOperators,
+  serializeListFilterValue,
+  splitListFilterValue,
+  valuelessFilterOperators,
+} from "@mtt/contracts/list-filter";
 import { createParser } from "nuqs";
 import {
   createFilterQuery,
@@ -14,14 +19,9 @@ export type ParsedFilterValue = {
 
 export const parseAsFilterValue = createParser({
   parse(query) {
-    if (!query) return null;
-    const idx = query.indexOf(":");
-    if (idx === -1) return null;
-    const operator = query.slice(0, idx);
-    const valuesPart = query.slice(idx + 1);
-    const values = valuesPart ? valuesPart.split("|").filter((v) => v.length > 0) : [];
-    if (!values.length && !valuelessFilterOperators.has(operator)) return null;
-    return { operator, values };
+    const split = splitListFilterValue(query);
+    if (!split || (!split.values.length && !valuelessFilterOperators.has(split.operator))) return null;
+    return split;
   },
   serialize(value) {
     if (!value) return "";

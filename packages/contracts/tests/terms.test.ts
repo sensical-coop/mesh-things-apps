@@ -35,13 +35,7 @@ describe("terms", () => {
       password: "secret",
       next: "/start",
     });
-    expect(signupCreateBody({ ...values, accepted: [] }, { off: false, current: { ...current, statements: [] } })).toEqual({
-      name: "Ada",
-      email: "ada@example.com",
-      password: "secret",
-      terms_version: "3",
-      terms_locale: "es",
-    });
+    expect(signupCreateBody({ ...values, accepted: [] }, { off: false, current: { ...current, statements: [] } })).toBeNull();
     expect(signupTermsStale({ terms_version: ["out of date"] })).toBe(true);
     expect(signupTermsStale({ email: ["taken"] })).toBe(false);
   });

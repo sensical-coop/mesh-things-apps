@@ -1,5 +1,5 @@
 import { Input } from "@mtt/ui/components/ui/input";
-import { type ReactElement } from "react";
+import { type ReactElement, type Ref } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
@@ -11,11 +11,11 @@ export type ExportRangeFieldsProps = {
   idPrefix: string;
   value: ExportRange;
   onChange: (value: ExportRange) => void;
-  /** A refusal from the API about the range, shown under it. */
-  error?: string;
+  /** The first-day input, for a parent that wants to focus it. */
+  startRef?: Ref<HTMLInputElement>;
 };
 
-export function ExportRangeFields({ idPrefix, value, onChange, error }: ExportRangeFieldsProps): ReactElement {
+export function ExportRangeFields({ idPrefix, value, onChange, startRef }: ExportRangeFieldsProps): ReactElement {
   const { formatMessage } = useIntl();
   const problem = rangeProblem(value.start, value.stop);
   const today = utcToday();
@@ -44,6 +44,7 @@ export function ExportRangeFields({ idPrefix, value, onChange, error }: ExportRa
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField id={`${idPrefix}-start`} label={formatMessage({ id: "feature.export.range.start", defaultMessage: "First day" })}>
           <Input
+            ref={startRef}
             id={`${idPrefix}-start`}
             type="date"
             required
@@ -63,11 +64,7 @@ export function ExportRangeFields({ idPrefix, value, onChange, error }: ExportRa
           />
         </FormField>
       </div>
-      {error ? (
-        <p className="text-caption-1-regular text-text-error-primary" role="alert">
-          {error}
-        </p>
-      ) : hint ? (
+      {hint ? (
         <p
           className={
             problem ? "text-caption-1-regular text-text-error-primary" : "text-caption-1-regular text-text-tertiary"

@@ -8,7 +8,7 @@ import { StatusCopy } from "@/components/status-copy";
 import { useMe } from "@/features/auth/use-me";
 import { deviceRepository } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
-import { daysInRange, lastDays, pollInterval, requestOf, shiftDay, utcToday } from "@/features/export/model";
+import { daysInRange, lastDays, pollInterval, shiftDay, utcToday } from "@/features/export/model";
 import { exportRepository } from "@/features/export/repository";
 import { useRequestExport } from "@/features/export/use-request-export";
 import { CsvRequestForm, type CsvRequestDraft } from "@/features/export/ui/csv-request-form";
@@ -44,6 +44,7 @@ export function CsvDownloadsFrame(): ReactElement {
   const requested = useRequestExport();
   const requestedAgain = useRequestExport();
   const formRef = useRef<HTMLDivElement>(null);
+  const startRef = useRef<HTMLInputElement>(null);
   // Bumped to restart the form from a past download's mesh and devices.
   const [draft, setDraft] = useState<{ key: number; value: CsvRequestDraft } | null>(null);
   const initial: CsvRequestDraft = draft?.value ?? { meshId: own[0]?.id ?? "", nodeIds: null, range: lastDays(7) };
@@ -51,7 +52,7 @@ export function CsvDownloadsFrame(): ReactElement {
   useEffect(() => {
     if (draft?.key == null) return;
     // After the draft key remounts the form. preventScroll keeps the smooth scroll above.
-    document.getElementById("csv-start")?.focus({ preventScroll: true });
+    startRef.current?.focus({ preventScroll: true });
   }, [draft?.key]);
 
   function anotherInterval(row: Export) {
@@ -94,7 +95,13 @@ export function CsvDownloadsFrame(): ReactElement {
                 </StatusCopy>
               ) : null}
               {own.length ? (
-                <CsvRequestForm key={draft?.key ?? 0} meshes={own} initial={initial} requested={requested} />
+                <CsvRequestForm
+                  key={draft?.key ?? 0}
+                  meshes={own}
+                  initial={initial}
+                  requested={requested}
+                  startRef={startRef}
+                />
               ) : null}
               <ExportHistoryHeading
                 description={formatMessage({
@@ -126,7 +133,7 @@ export function CsvDownloadsFrame(): ReactElement {
                   requesting={requestedAgain.pending}
                   onRequestAgain={(row) => {
                     requested.reset();
-                    requestedAgain.request(row.mesh_id, requestOf(row));
+                    requestedAgain.requestAgain(row);
                   }}
                   onAnotherInterval={anotherInterval}
                 />

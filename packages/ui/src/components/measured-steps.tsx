@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { type ReactNode, useCallback, useState } from "react";
 import { LAYOUT } from "../oa/springs";
-import { cn } from "../utils";
+import { cx } from "@mtt/ui/utils";
 
 export function MeasuredSteps({
   stepKey,
@@ -31,7 +31,7 @@ export function MeasuredSteps({
     <motion.div
       animate={{ height: reduced ? "auto" : height }}
       transition={reduced ? { duration: 0 } : LAYOUT}
-      className={cn("relative overflow-hidden", className)}
+      className={cx("relative overflow-hidden", className)}
     >
       <AnimatePresence custom={direction} initial={false} mode="popLayout">
         <motion.div

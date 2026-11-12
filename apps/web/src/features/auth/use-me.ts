@@ -1,21 +1,31 @@
 import type { OwnerProfile } from "@mtt/contracts";
-import { canDecideOperatorRequests, canSeeDataDeletions, viewerOf } from "@mtt/contracts/authz";
+import {
+  canDecideOperatorRequests,
+  canOperate,
+  canSeeDataDeletions,
+  viewerOf,
+  type Viewer,
+} from "@mtt/contracts/authz";
 import { useQuery } from "@tanstack/react-query";
 import { authRepository } from "@/features/auth/repository";
-import { isOperator } from "@/features/auth/session";
 
+/** The signed-in owner and what they may do. Role flags stay false while `me` is missing, so gated UI stays hidden. */
 export function useMe(): {
   me: OwnerProfile | undefined;
+  isPending: boolean;
+  viewer: Viewer | undefined;
   isSuperuser: boolean;
   isOperator: boolean;
   meId: string | undefined;
 } {
-  const me = useQuery(authRepository.me());
-  const viewer = me.data ? viewerOf(me.data) : undefined;
+  const query = useQuery(authRepository.me());
+  const viewer = query.data ? viewerOf(query.data) : undefined;
   return {
-    me: me.data,
+    me: query.data,
+    isPending: query.isPending,
+    viewer,
     isSuperuser: viewer != null && (canDecideOperatorRequests(viewer) || canSeeDataDeletions(viewer)),
-    isOperator: isOperator(me.data),
-    meId: me.data?.id,
+    isOperator: viewer != null && canOperate(viewer),
+    meId: query.data?.id,
   };
 }

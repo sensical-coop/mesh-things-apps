@@ -11,18 +11,17 @@ import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { issueErrors, readApiError } from "@mtt/contracts/errors";
-import { brokerDialogError } from "@/lib/broker-dialog-error";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { brokerDialogError } from "@/features/source/broker-dialog-error";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
 import { canEditMesh, meshTitle } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { orderStreams, SINK_STREAMS } from "@mtt/contracts/sink";
-import { devicesByMesh, singleDeviceIds, sinkStreamsError, sinkTitle } from "@/features/sink/model";
+import { devicesByMesh, singleDeviceIds, sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
-import type { TermsAcceptance } from "@/features/terms/model";
-import { useTermsEnforced } from "@mtt/contracts/terms";
+import { termsFields, useTermsAsked, type TermsAcceptance } from "@mtt/contracts/terms";
 
 export type SinkDialogProps = {
   open: boolean;
@@ -32,8 +31,8 @@ export type SinkDialogProps = {
   termsAcceptance?: TermsAcceptance | null;
   onClose: () => void;
   /** Creating answers with the credentials, shown once. */
-  onCreated: (credentials: SinkCredentials) => void;
-  onSaved: (sink: SinkRead) => void;
+  onCreated?: (credentials: SinkCredentials) => void;
+  onSaved?: (sink: SinkRead) => void;
 };
 
 const listClass =
@@ -51,9 +50,8 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
   const queryClient = useQueryClient();
   const { me } = useMe();
   const editing = sink !== undefined;
-  // A self-hosted instance asks for no terms; unknown counts as enforced.
-  const termsEnforced = useTermsEnforced() !== false;
-  const [streams, setStreams] = useState<ReadonlySet<string>>(() => new Set(sink?.streams ?? ["decoded"]));
+  const termsAsked = useTermsAsked();
+  const [streams, setStreams] = useState<ReadonlySet<string>>(() => new Set(sink?.streams ?? SINK_STREAMS.slice(0, 1)));
   const [meshIds, setMeshIds] = useState<ReadonlySet<string>>(() => new Set(sink?.mesh_ids ?? []));
   const [deviceIds, setDeviceIds] = useState<ReadonlySet<string>>(() => new Set(sink?.device_ids ?? []));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -135,7 +133,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
     ...sinkRepository.create(),
     onSuccess: async (created) => {
       await refresh();
-      onCreated(created);
+      onCreated?.(created);
       close();
     },
     onError,
@@ -144,7 +142,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
     ...sinkRepository.update(),
     onSuccess: async (saved) => {
       await refresh();
-      onSaved(saved);
+      onSaved?.(saved);
       close();
     },
     onError,
@@ -161,7 +159,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editing && termsEnforced && !termsAcceptance) {
+    if (!editing && termsAsked && !termsAcceptance) {
       setFormError(
         formatMessage({ id: "feature.sink.dialog.termsRequired", defaultMessage: "Accept the sink terms before creating a sink." }),
       );
@@ -176,7 +174,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
       device_ids: singleDeviceIds(deviceIds, meshIds, (id) => devices.data?.find((row) => row.uuid === id)?.mesh_id),
     };
     const streamsError =
-      sinkStreamsError(chosenStreams) === "empty"
+      chosenStreams.length === 0
         ? formatMessage({ id: "feature.sink.dialog.streamsRequired", defaultMessage: "Choose at least one stream." })
         : undefined;
     setFormError(null);
@@ -188,7 +186,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
       return;
     }
     const withTerms = termsAcceptance
-      ? { ...body, terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }
+      ? { ...body, ...termsFields(termsAcceptance) }
       : body;
     const parsed = SinkCreate.safeParse(withTerms);
     const next = { ...(streamsError ? { streams: streamsError } : {}), ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };

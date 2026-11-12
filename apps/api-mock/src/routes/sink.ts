@@ -6,50 +6,47 @@ import {
   SinkWrite,
 } from "@mtt/contracts";
 import {
-  canManageSinks,
-  visibleSinks,
+  visibleOperated,
 } from "@mtt/contracts/authz";
 import { orderStreams } from "@mtt/contracts/sink";
 import type { Sink } from "@mtt/domain/sink/Sink";
-import { SINKS_ENABLED } from "../features/sink/repository";
-import {
-  TERMS_ENFORCED,
-  TERMS_VERSIONS,
-  termsJson,
-  termsLocale,
-} from "../features/terms/terms";
+import { SINKS_ENABLED, sinkForOperator, sinkTargetErrors, streamsError } from "../features/sink/repository";
+import { acceptTerms, termsJson, termsLocale, termsVersionError } from "../features/terms/terms";
 import { Hono } from "hono";
 import {
   sinkCredentialsJson,
   sinkReadJson,
 } from "../serialize";
 
-import { NO_SINKS, SINK_OPERATORS_ONLY, parseBody } from "../http";
+import { operatorsOnly, parseBody, termsEnforced } from "../http";
+
+const NO_SINKS = { detail: "Not found" };
 
 export function registerSinkRoutes(app: Hono<Env>, rt: RouteRuntime) {
-  const { db, acceptTerms, sinkForOperator, sinkTargetErrors } = rt;
+  const { db } = rt;
+  // Every sink route: off without EMQX, and for operators only.
+  app.use("/sinks/*", async (c, next) => {
+    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+    await next();
+  });
+  app.use("/sinks/*", operatorsOnly("sinks"));
   const sinkConnections = (sink: Sink) => db.sinks.connections.get(sink.id) ?? 0;
   const uniqueIds = (ids: readonly string[] | undefined) => (ids ? [...new Set(ids)] : undefined);
 
   app.get("/sinks", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
-    return c.json(visibleSinks(actor, await db.sinks.list()).map((sink) => sinkReadJson(sink, sinkConnections(sink))));
+    return c.json(visibleOperated(actor, await db.sinks.list()).map((sink) => sinkReadJson(sink, sinkConnections(sink))));
   });
 
   app.post("/sinks", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
     const parsed = await parseBody(c, SinkCreate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const input = parsed.data;
-    const terms = acceptTerms("sink", input.terms_version, actor.id, termsLocale(input.terms_locale), null, false);
     const errors = {
-      ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
-      ...(await sinkTargetErrors(actor, input)),
-      ...("error" in terms ? terms.error : {}),
+      ...streamsError(input.streams),
+      ...(await sinkTargetErrors(db, actor, input)),
+      ...termsVersionError("sink", input.terms_version),
     };
     if (Object.keys(errors).length) return c.json(errors, 400);
     const sink = await db.sinks.insert({
@@ -59,61 +56,48 @@ export function registerSinkRoutes(app: Hono<Env>, rt: RouteRuntime) {
       deviceIds: uniqueIds(input.device_ids),
       createdById: actor.id,
     });
-    const accepted = acceptTerms("sink", input.terms_version, actor.id, termsLocale(input.terms_locale));
-    sink.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.sink : null;
-    sink.termsExpiresAt = "expiresAt" in accepted ? accepted.expiresAt : null;
+    acceptTerms("sink", sink);
     return c.json(sinkCredentialsJson(sink, 0), 201);
   });
 
-  app.get("/sinks/terms", (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
-    const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
+  app.get("/sinks/terms", termsEnforced, (c) => {
     return c.json(termsJson("sink", termsLocale(c.req.query("locale"))));
   });
 
-  app.post("/sinks/:sink_id/terms-acceptance", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
+  app.post("/sinks/:sink_id/terms-acceptance", termsEnforced, async (c) => {
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
-    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    const sink = await sinkForOperator(db, actor, c.req.param("sink_id"));
     if (!sink) return c.json({ detail: "Sink not found" }, 404);
     if (sink.createdById !== actor.id) {
       return c.json({ detail: "Only the operator who created this sink can accept its terms" }, 403);
     }
     const parsed = await parseBody(c, SinkTermsAcceptance);
     if ("error" in parsed) return c.json(parsed.error, 400);
-    const terms = acceptTerms("sink", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale));
-    if ("error" in terms) return c.json(terms.error, 400);
+    const termsError = termsVersionError("sink", parsed.data.terms_version);
+    if (Object.keys(termsError).length) return c.json(termsError, 400);
     // Renewing resumes a paused sink with the same credentials; a sink stores nothing to restore.
-    sink.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.sink : null;
-    sink.termsExpiresAt = terms.expiresAt;
-    sink.pausedAt = null;
+    acceptTerms("sink", sink);
     return c.json(sinkReadJson(sink, sinkConnections(sink)), 201);
   });
 
   app.get("/sinks/:sink_id", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
-    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    const sink = await sinkForOperator(db, actor, c.req.param("sink_id"));
     if (!sink) return c.json({ detail: "Sink not found" }, 404);
     return c.json(sinkReadJson(sink, sinkConnections(sink)));
   });
 
   app.put("/sinks/:sink_id", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
-    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    const sink = await sinkForOperator(db, actor, c.req.param("sink_id"));
     if (!sink) return c.json({ detail: "Sink not found" }, 404);
     const parsed = await parseBody(c, SinkWrite);
     if ("error" in parsed) return c.json(parsed.error, 400);
     // Any subset; a list sent replaces the current one, a list left out is kept.
     const input = parsed.data;
     const errors = {
-      ...(input.streams && input.streams.length === 0 ? { streams: ["This list may not be empty."] } : {}),
-      ...(await sinkTargetErrors(actor, input)),
+      ...streamsError(input.streams),
+      ...(await sinkTargetErrors(db, actor, input)),
     };
     if (Object.keys(errors).length) return c.json(errors, 400);
     const updated = await db.sinks.update(sink.id, {
@@ -127,10 +111,8 @@ export function registerSinkRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.post("/sinks/:sink_id/credentials", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
-    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    const sink = await sinkForOperator(db, actor, c.req.param("sink_id"));
     if (!sink) return c.json({ detail: "Sink not found" }, 404);
     // A new password, and connected consumers are dropped.
     const rotated = await db.sinks.rotate(sink.id);
@@ -139,10 +121,8 @@ export function registerSinkRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.delete("/sinks/:sink_id", async (c) => {
-    if (!SINKS_ENABLED) return c.json(NO_SINKS, 404);
     const actor = c.get("actor");
-    if (!canManageSinks(actor)) return c.json(SINK_OPERATORS_ONLY, 403);
-    const sink = await sinkForOperator(actor, c.req.param("sink_id"));
+    const sink = await sinkForOperator(db, actor, c.req.param("sink_id"));
     if (!sink) return c.json({ detail: "Sink not found" }, 404);
     if (sink.meshIds.length > 0 || sink.deviceIds.length > 0) {
       return c.json({ detail: "Sink has meshes or devices attached; detach them first" }, 409);

@@ -1,5 +1,6 @@
 import type { Export, ExportRequest } from "@mtt/contracts";
-import { readApiError } from "@mtt/contracts/errors";
+import { isThrottled, readApiError } from "@mtt/contracts/errors";
+import { requestOf } from "./model.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { isExportStorageMissing } from "./storage-missing.ts";
@@ -7,6 +8,8 @@ import { exportRepository } from "./repository.ts";
 
 export type RequestExportState = {
   request: (meshId: string, body: ExportRequest) => void;
+  /** Asks again for what a past download was. */
+  requestAgain: (row: Export) => void;
   pending: boolean;
   /** The export the last request created or found already building. */
   created: Export | undefined;
@@ -32,7 +35,7 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
   });
 
   const refusal = mutation.isError ? readApiError(mutation.error) : undefined;
-  const busy = refusal?.status === 429;
+  const busy = isThrottled(refusal?.status);
   let error: string | undefined;
   if (refusal) {
     if (busy) {
@@ -47,14 +50,17 @@ export function useRequestExport(onCreated?: (row: Export) => void): RequestExpo
       });
     } else {
       error =
-        Object.values(refusal.fields)[0] ??
-        refusal.detail ??
+        Object.values(refusal.fields).join(" ") ||
+        refusal.detail ||
         formatMessage({ id: "feature.export.error.generic", defaultMessage: "The download couldn't be requested. Try again." });
     }
   }
 
+  const request = (meshId: string, body: ExportRequest) => mutation.mutate({ meshId, data: body });
+
   return {
-    request: (meshId, body) => mutation.mutate({ meshId: meshId, data: body }),
+    request,
+    requestAgain: (row) => request(row.mesh_id, requestOf(row)),
     pending: mutation.isPending,
     created: mutation.data,
     error,

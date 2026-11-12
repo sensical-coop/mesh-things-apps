@@ -1,6 +1,7 @@
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
+import { SectionHeading } from "./section-heading";
 import { LandingReveal } from "./reveal";
 
 const extras = [
@@ -73,15 +74,13 @@ export function LandingExtras(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <section id="more" className="scroll-mt-24">
-      <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
-          <FormattedMessage
-            id="page.home.extras.heading"
-            defaultMessage="Choose your deployment type. <secondary>For your sensors and your platform.</secondary>"
-            values={richTextValues}
-          />
-        </h2>
-      </LandingReveal>
+      <SectionHeading>
+        <FormattedMessage
+          id="page.home.extras.heading"
+          defaultMessage="Choose your deployment type. <secondary>For your sensors and your platform.</secondary>"
+          values={richTextValues}
+        />
+      </SectionHeading>
       <LandingReveal className="mt-12 sm:mt-16">
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {extras.map((item) => (

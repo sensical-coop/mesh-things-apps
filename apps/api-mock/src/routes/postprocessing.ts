@@ -1,9 +1,8 @@
 import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
 import { DevicePostprocessingWrite, PostprocessingBackfillRequest, StepCalibrationRequest } from "@mtt/contracts";
+import { derivedChannel } from "@mtt/contracts/blueprint";
 import type { Device } from "@mtt/domain/device/Device";
-import { canWriteMesh } from "@mtt/contracts/authz";
-import type { Actor } from "../auth";
 import { Hono } from "hono";
 import {
   addCalibration,
@@ -19,7 +18,7 @@ import {
   type PostprocessingRow,
 } from "../features/postprocessing/repository";
 import { backfillJson, calibrationJson, postprocessingJson } from "../serialize";
-import { NO_PERMISSION, parseBody, deviceForRead } from "../http";
+import { deviceForRead, deviceForWrite, parseBody } from "../http";
 
 export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   const { db } = rt;
@@ -32,17 +31,9 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
       row,
       resolved.blueprint,
       toleranceFor(row, device.readingIntervalSeconds),
-      (output) => types.find((type) => type.id === output.measurementTypeId)?.channel ?? `derived.${output.fieldName}`,
+      (output) => types.find((type) => type.id === output.measurementTypeId)?.channel ?? derivedChannel(output.fieldName),
       await postprocessingProblems(db, row, device),
     );
-  }
-
-  async function deviceForWrite(actor: Actor, deviceUuid: string) {
-    const device = await deviceForRead(db, actor, deviceUuid);
-    if (!device) return { error: 404 as const };
-    const mesh = await db.meshes.get(device.meshId);
-    if (!mesh || !canWriteMesh(actor, mesh)) return { error: 403 as const };
-    return { device, mesh };
   }
 
   app.get("/devices/:device_uuid/postprocessings", async (c) => {
@@ -54,8 +45,8 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   app.post("/devices/:device_uuid/postprocessings", async (c) => {
     const actor = c.get("actor");
-    const found = await deviceForWrite(actor, c.req.param("device_uuid"));
-    if (found.error) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const found = await deviceForWrite(db, actor, c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
     const parsed = await parseBody(c, DevicePostprocessingWrite);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const created = await createPostprocessing(db, actor, found.device, found.mesh.ownerId, parsed.data);
@@ -71,8 +62,8 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.put("/devices/:device_uuid/postprocessings/:postprocessing_id", async (c) => {
-    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
-    if (found.error) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const found = await deviceForWrite(db, c.get("actor"), c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
     const row = attachedPostprocessing(db, found.device, c.req.param("postprocessing_id"));
     if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
     const parsed = await parseBody(c, DevicePostprocessingWrite);
@@ -83,11 +74,11 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.delete("/devices/:device_uuid/postprocessings/:postprocessing_id", async (c) => {
-    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
-    if (found.error) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const found = await deviceForWrite(db, c.get("actor"), c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
     const row = attachedPostprocessing(db, found.device, c.req.param("postprocessing_id"));
     if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
-    const removed = deletePostprocessing(db, found.device, row);
+    const removed = deletePostprocessing(db, row);
     if ("status" in removed) return c.json(removed.body, removed.status);
     return c.body(null, 204);
   });
@@ -103,8 +94,8 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.post("/devices/:device_uuid/postprocessings/:postprocessing_id/calibrations", async (c) => {
-    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
-    if (found.error) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const found = await deviceForWrite(db, c.get("actor"), c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
     const row = attachedPostprocessing(db, found.device, c.req.param("postprocessing_id"));
     if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
     const parsed = await parseBody(c, StepCalibrationRequest);
@@ -115,8 +106,8 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.delete("/devices/:device_uuid/postprocessings/:postprocessing_id/calibrations/:calibration_id", async (c) => {
-    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
-    if (found.error) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const found = await deviceForWrite(db, c.get("actor"), c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
     const row = attachedPostprocessing(db, found.device, c.req.param("postprocessing_id"));
     if (!row) return c.json({ detail: "Not found" }, 404);
     const removed = await deleteCalibration(db, found.device, row, c.req.param("calibration_id"));
@@ -133,8 +124,8 @@ export function registerPostprocessingRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   app.post("/devices/:device_uuid/postprocessings/:postprocessing_id/backfills", async (c) => {
-    const found = await deviceForWrite(c.get("actor"), c.req.param("device_uuid"));
-    if (found.error) return c.json(found.error === 404 ? { detail: "Not found" } : NO_PERMISSION, found.error);
+    const found = await deviceForWrite(db, c.get("actor"), c.req.param("device_uuid"));
+    if ("status" in found) return c.json(found.body, found.status);
     const row = attachedPostprocessing(db, found.device, c.req.param("postprocessing_id"));
     if (!row) return c.json({ detail: "Postprocessing not found on this device" }, 404);
     const parsed = await parseBody(c, PostprocessingBackfillRequest);

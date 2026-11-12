@@ -1,6 +1,12 @@
 /** Field name to message, the same keys the API answers 400 with. */
 export type SourceErrors = Partial<Record<"server" | "topic" | "qos", string>>;
 
+/** MQTT delivery levels a bridge accepts, preferred first. */
+export const SOURCE_QOS = [1, 0] as const;
+
+/** What the API assumes for a source that leaves these out. */
+export const SOURCE_DEFAULTS = { ssl: true, qos: 1 } as const satisfies { ssl: boolean; qos: (typeof SOURCE_QOS)[number] };
+
 /** MQTT over TLS's usual port, when a broker address gives no port. */
 export const MQTT_TLS_PORT = 8883;
 
@@ -18,7 +24,7 @@ function splitHostPort(value: string): { host: string; port: string } | null {
   return { host: value.slice(0, at), port };
 }
 
-export function isHostPort(value: string): boolean {
+function isHostPort(value: string): boolean {
   return splitHostPort(value) !== null;
 }
 
@@ -28,7 +34,7 @@ export function brokerHostPort(broker: string): { host: string; port: string } {
 }
 
 /** A plain filter: `$share` and `$SYS` topics are refused. */
-export function isPlainTopic(value: string): boolean {
+function isPlainTopic(value: string): boolean {
   return value !== "" && !value.startsWith("$");
 }
 
@@ -43,6 +49,6 @@ export function validateSource(input: { server?: string; topic?: string; qos?: n
   if (input.topic !== undefined && !isPlainTopic(input.topic.trim())) {
     errors.topic = "Must be a plain topic filter; $share and $SYS topics are not accepted.";
   }
-  if (input.qos !== undefined && input.qos !== 0 && input.qos !== 1) errors.qos = "Must be 0 or 1.";
+  if (input.qos !== undefined && !SOURCE_QOS.some((qos) => qos === input.qos)) errors.qos = "Must be 0 or 1.";
   return errors;
 }

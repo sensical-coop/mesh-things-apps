@@ -15,8 +15,6 @@ type DeviceProps = {
   hardwareType: string | null;
   role: string | null;
   nodeinfoOverridden: boolean;
-  /** Blueprints attached to this device (`DevicePostprocessing` rows). */
-  postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
   /** Opt-in to the Parquet archive; applies only while the mesh's owner is an operator. */
@@ -40,13 +38,6 @@ export type DeviceCreate = {
   longitude?: number | null;
 };
 
-export type DeviceListFilter = {
-  meshId?: string;
-  isGateway?: boolean;
-  isAllowed?: boolean;
-  hasPostprocessing?: boolean;
-};
-
 export class Device implements DeviceProps {
   readonly uuid: string;
   declare readonly nodeId: number;
@@ -64,7 +55,6 @@ export class Device implements DeviceProps {
   hardwareType: string | null;
   role: string | null;
   nodeinfoOverridden: boolean;
-  postprocessingCount: number;
   readingIntervalSeconds: number | null;
   publishIntervalSeconds: number | null;
   archiveEnabled: boolean;
@@ -101,7 +91,6 @@ export class Device implements DeviceProps {
     this.hardwareType = props.hardwareType;
     this.role = props.role;
     this.nodeinfoOverridden = props.nodeinfoOverridden;
-    this.postprocessingCount = props.postprocessingCount;
     this.readingIntervalSeconds = props.readingIntervalSeconds;
     this.publishIntervalSeconds = props.publishIntervalSeconds;
     this.archiveEnabled = props.archiveEnabled ?? false;
@@ -112,10 +101,6 @@ export class Device implements DeviceProps {
     this.updatedAt = props.updatedAt;
   }
 
-  hasPostprocessing(): boolean {
-    return this.postprocessingCount > 0;
-  }
-
   /** Switches the archive on or off, recording who switched it on. */
   setArchive(enabled: boolean, by: string, at: string): void {
     if (enabled === this.archiveEnabled) return;
@@ -123,13 +108,4 @@ export class Device implements DeviceProps {
     this.archiveEnabledAt = enabled ? at : null;
     this.archiveEnabledBy = enabled ? by : null;
   }
-}
-
-export function matchesDeviceFilter(device: Device, filters?: DeviceListFilter): boolean {
-  if (!filters) return true;
-  if (filters.meshId !== undefined && device.meshId !== filters.meshId) return false;
-  if (filters.isGateway !== undefined && device.isGateway !== filters.isGateway) return false;
-  if (filters.isAllowed !== undefined && device.isAllowed !== filters.isAllowed) return false;
-  if (filters.hasPostprocessing !== undefined && device.hasPostprocessing() !== filters.hasPostprocessing) return false;
-  return true;
 }

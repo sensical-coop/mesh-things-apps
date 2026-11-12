@@ -1,7 +1,7 @@
 import { spanMs } from "../../../lib/duration.ts";
 
 export type DeviceChartRange =
-  | { kind: "preset"; label: string; start: string; spanMs: number }
+  | { kind: "preset"; start: string; spanMs: number }
   | { kind: "custom"; label: string; start: string; stop: string; spanMs: number };
 
 export const CHART_RANGE_PRESETS = [
@@ -25,9 +25,12 @@ export const CHART_RANGE_PRESETS = [
   },
 ] as const;
 
+export function presetRange(preset: (typeof CHART_RANGE_PRESETS)[number]): DeviceChartRange {
+  return { kind: "preset", start: preset.start, spanMs: preset.spanMs };
+}
+
 export function defaultChartRange(): DeviceChartRange {
-  const preset = CHART_RANGE_PRESETS[0];
-  return { kind: "preset", label: preset.label, start: preset.start, spanMs: preset.spanMs };
+  return presetRange(CHART_RANGE_PRESETS[0]);
 }
 
 export function chartRangeQuery(range: DeviceChartRange): {
@@ -50,7 +53,7 @@ export function windowForSpanMs(span: number): string {
   return "1d";
 }
 
-export function formatCustomRangeLabel(start: Date, end: Date, locale?: string): string {
+function formatCustomRangeLabel(start: Date, end: Date, locale?: string): string {
   const sameDay = start.toDateString() === end.toDateString();
   const sameYear = start.getFullYear() === end.getFullYear();
   const startFmt = new Intl.DateTimeFormat(locale, {

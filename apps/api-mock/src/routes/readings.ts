@@ -2,6 +2,7 @@ import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
 import {
   ExportRequest,
+  ReadingsMeshesStatsRetrieveParams,
 } from "@mtt/contracts";
 import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
 import type { Actor } from "../auth";
@@ -11,14 +12,17 @@ import {
   DEVICE_GW_ID,
 } from "../store";
 import {
-  ARCHIVE_BUCKET,
   ARCHIVE_ENABLED,
+  MOCK_S3_PATH,
+  MOCK_S3_SIGNATURE,
   partitionKey,
 } from "../features/archive/repository";
 import { storedZip } from "../features/archive/zip";
 import {
   daysBetween,
   daysDone,
+  EXPORT_OBJECT_ROUTE,
+  exportObjectPath,
   expiresAt,
   exportFilename,
   finishedAt,
@@ -30,11 +34,10 @@ import {
 } from "../serialize";
 
 import {
-  parseBody, 
-  MOCK_S3_PATH, meshForRead,
+  parseBody, parseQuery, meshForRead,
   deviceForRead,
 } from "../http";
-import { MESH_STATS_RANGES, meshStatsJson } from "../present";
+import { meshStatsJson } from "../present";
 
 export function registerReadingsRoutes(app: Hono<Env>, rt: RouteRuntime) {
   const { db } = rt;
@@ -43,7 +46,7 @@ export function registerReadingsRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const status = statusOf(row);
     const url =
       status === "ready"
-        ? new URL(`${MOCK_S3_PATH}${ARCHIVE_BUCKET}/exports/${row.meshId}/${row.id}.zip?X-Amz-Signature=mock`, requestUrl).toString()
+        ? new URL(`${exportObjectPath(row)}?X-Amz-Signature=${MOCK_S3_SIGNATURE}`, requestUrl).toString()
         : null;
     const finished = status === "queued" || status === "running" ? null : new Date(finishedAt(row)).toISOString();
     return {
@@ -81,13 +84,11 @@ export function registerReadingsRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   app.get("/readings/meshes/:mesh_id/stats", async (c) => {
     const mesh = await meshForRead(db, c.get("actor"), c.req.param("mesh_id"));
-    if (!mesh) return c.json({ detail: "Device not found" }, 404);
-    const range = c.req.query("range") ?? "24h";
-    if (!(range in MESH_STATS_RANGES)) {
-      return c.json({ detail: `range must be one of ${Object.keys(MESH_STATS_RANGES).join(", ")}` }, 400);
-    }
-    const devices = (await db.devices.list()).filter((device) => device.meshId === mesh.id && device.isAllowed);
-    return c.json(meshStatsJson(mesh.id, range as keyof typeof MESH_STATS_RANGES, devices));
+    if (!mesh) return c.json({ detail: "Mesh not found" }, 404);
+    const query = parseQuery(c, ReadingsMeshesStatsRetrieveParams);
+    if ("error" in query) return c.json(query.error, 400);
+    const devices = (await db.devices.list({ meshId: mesh.id })).filter((device) => device.isAllowed);
+    return c.json(meshStatsJson(mesh.id, query.data.range, devices));
   });
 
   app.get("/readings/meshes/:mesh_id/exports", async (c) => {
@@ -151,7 +152,7 @@ export function registerReadingsRoutes(app: Hono<Env>, rt: RouteRuntime) {
   });
 
   // The zip a ready export's link names. CSV holds one sample file per day; Parquet the archive's hours.
-  app.get(`${MOCK_S3_PATH}${ARCHIVE_BUCKET}/exports/:mesh_id/:file`, (c) => {
+  app.get(EXPORT_OBJECT_ROUTE, (c) => {
     const row = db.exports.get(c.req.param("file").replace(/\.zip$/, ""));
     if (!row || statusOf(row) !== "ready") return c.json({ detail: "Not found" }, 404);
     const encoder = new TextEncoder();

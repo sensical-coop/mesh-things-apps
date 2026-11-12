@@ -35,6 +35,33 @@ export function meshArchiveState(devices: readonly Pick<DeviceRead, "archive_ena
   return { devices: known.length, archived: known.filter((device) => device.archive_enabled === true).length };
 }
 
+/** Per-mesh archive state of a flat device list. */
+export function archiveStateByMesh(devices: readonly Pick<DeviceRead, "archive_enabled" | "mesh_id">[]): Map<string, MeshArchiveState> {
+  const byMesh = new Map<string, Pick<DeviceRead, "archive_enabled">[]>();
+  for (const device of devices) byMesh.set(device.mesh_id, [...(byMesh.get(device.mesh_id) ?? []), device]);
+  return new Map([...byMesh].map(([meshId, rows]) => [meshId, meshArchiveState(rows)]));
+}
+
+/** Whether a mesh-wide archive switch makes sense: the caller sees the setting of at least one device. */
+export function canSwitchMeshArchive(
+  me: ProfileFlags | undefined,
+  meshOwnerId: string,
+  devices: readonly Pick<DeviceRead, "archive_enabled">[],
+): boolean {
+  return canUseArchive(me, meshOwnerId) && meshArchiveState(devices).devices > 0;
+}
+
+/** The meshes the archive page lists: an operator's own, a superuser's too, plus every mesh that already archives something. */
+export function archivableMeshes<T extends { id: string; owner_id: string }>(
+  meshes: readonly T[],
+  me: ProfileFlags | undefined,
+  states: ReadonlyMap<string, MeshArchiveState>,
+): T[] {
+  return meshes.filter(
+    (mesh) => canUseArchive(me, mesh.owner_id) && (mesh.owner_id === me?.id || (states.get(mesh.id)?.archived ?? 0) > 0),
+  );
+}
+
 /** The devices a mesh-wide switch has to change to leave every one of them `enabled`. */
 export function devicesToSwitch<T extends Pick<DeviceRead, "archive_enabled">>(devices: readonly T[], enabled: boolean): T[] {
   return devices.filter((device) => device.archive_enabled !== undefined && device.archive_enabled !== enabled);
@@ -62,11 +89,6 @@ export function summarizeArchive(partitions: readonly ArchivePartition[]): Archi
     first: first ? partitionLabel(first) : null,
     last: last ? partitionLabel(last) : null,
   };
-}
-
-/** Where one hour downloads from: a redirect to a temporary link, followed by the browser. */
-export function partitionDownloadUrl(apiUrl: string, meshId: string, partition: Pick<ArchivePartition, "dt" | "hour">): string {
-  return `${apiUrl.replace(/\/+$/, "")}/readings/archive/meshes/${meshId}/partitions/${partition.dt}/${partition.hour}`;
 }
 
 function sqlString(value: string): string {

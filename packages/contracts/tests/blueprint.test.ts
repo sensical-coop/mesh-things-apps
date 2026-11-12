@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateBlueprintStep, validateBlueprintVersion, type BlueprintAlgorithm, type BlueprintStepCheck } from "../src/blueprint";
+import { parseRef, validateBlueprintStep, validateBlueprintVersion, type BlueprintAlgorithm, type BlueprintStepCheck } from "../src/blueprint";
 
 const reading = { slot: "reading" };
 
@@ -57,5 +57,13 @@ describe("validateBlueprintVersion", () => {
     expect(
       validateBlueprintVersion([reading], [step(), step({ key: "other" })], () => pointwise).map((problem) => problem.code),
     ).toEqual(["duplicate_order"]);
+  });
+});
+
+describe("parseRef", () => {
+  it("reads slot and step references", () => {
+    expect(parseRef("slot:working")).toEqual({ kind: "slot", slot: "working" });
+    expect(parseRef("step:ppb.concentration_ppb")).toEqual({ kind: "step", key: "ppb", output: "concentration_ppb" });
+    expect(parseRef("ads1115.channel_0")).toBeNull();
   });
 });

@@ -27,7 +27,9 @@ test("Fumadocs serves the same documentation pages in English and Spanish", asyn
         [...urls].sort(),
       );
       for (const slug of pages) {
-        assert.equal(docsSource.getPage([slug], language)?.url, `/${slug}`);
+        const page = docsSource.getPage([slug], language);
+        assert.equal(page?.url, `/${slug}`);
+        assert.equal(page?.locale, language);
       }
     }
     assert.deepEqual(

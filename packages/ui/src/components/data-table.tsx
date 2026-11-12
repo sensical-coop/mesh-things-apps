@@ -9,7 +9,7 @@ import { type CSSProperties, type ReactElement, type ReactNode, useEffect, useRe
 import { useIntl } from "react-intl";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiArrowUpSLine } from "@remixicon/react";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 
 // ponytail: TanStack Table v9 column values are invariant across mixed columns.
 export type DataTableColumn<T> = any;
@@ -152,7 +152,7 @@ export function DataTable<T>({ data, columns, empty, getRowId }: DataTableProps<
             ) : (
               <tr>
                 <td colSpan={columns.length} className="h-24 px-3.5 text-center text-body-regular text-text-secondary">
-                  {empty ?? "Nothing to show."}
+                  {empty ?? formatMessage({ id: "common.dataTable.empty", defaultMessage: "Nothing to show." })}
                 </td>
               </tr>
             )}

@@ -1,13 +1,15 @@
-import type { DeviceRead, GatewayBroker, Mesh } from "@mtt/contracts";
+import type { DeviceRead, Mesh } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { useQuery } from "@tanstack/react-query";
 import { cx } from "@mtt/ui/utils";
 import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import { formatNodeId } from "@mtt/ui/forms/node-id";
 import { authRepository } from "@/features/auth/repository";
+import { gatewayTitle, isSeen, nodesOf } from "@/features/device/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { ConnectFigure } from "@/figures/connect/figure";
+import { POLL_MS } from "@/timing";
+import { BrokerDetails } from "./broker-details";
 import { StepHeading } from "./step-heading";
 import { StepLayout } from "./step-layout";
 
@@ -16,26 +18,23 @@ const CHECKLIST_AFTER_MS = 10 * 60 * 1000;
 export function ConnectStep({
   mesh,
   gateway,
-  onContinue,
-  onSkip,
+  onNext,
 }: {
   mesh: Mesh;
   gateway: DeviceRead;
-  onContinue: () => void;
-  onSkip: () => void;
+  onNext: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const [startedAt] = useState(() => Date.now());
   const [now, setNow] = useState(() => Date.now());
   const devices = useQuery({
     ...meshRepository.devices(mesh.id),
-    refetchInterval: 5000,
+    refetchInterval: POLL_MS,
     refetchIntervalInBackground: false,
   });
   const broker = useQuery(authRepository.broker());
-  const live = (devices.data ?? []).find((device) => device.uuid === gateway.uuid) ?? gateway;
-  const seen = live.last_seen !== null;
-  const nodes = (devices.data ?? []).filter((device) => !device.is_gateway);
+  const seen = isSeen(gateway);
+  const nodes = nodesOf(devices.data ?? []);
   const showChecklist = !seen && now - startedAt >= CHECKLIST_AFTER_MS;
 
   useEffect(() => {
@@ -97,7 +96,7 @@ export function ConnectStep({
           <ul className="flex flex-wrap gap-2">
             {nodes.map((node) => (
               <li key={node.uuid} className="rounded-full border border-separator-border px-2.5 py-0.5 font-mono text-caption-1-regular text-text-primary">
-                {node.label?.trim() || formatNodeId(node.node_id, "hex")}
+                {gatewayTitle(node)}
               </li>
             ))}
           </ul>
@@ -116,7 +115,7 @@ export function ConnectStep({
         </ul>
       ) : null}
       {seen ? (
-        <Button type="button" size="medium" onClick={onContinue}>
+        <Button type="button" size="medium" onClick={onNext}>
           {formatMessage({ id: "page.start.connect.continue", defaultMessage: "Continue to next steps" })}
         </Button>
       ) : (
@@ -124,115 +123,11 @@ export function ConnectStep({
           <Button type="button" size="medium" variant="secondary" disabled={devices.isFetching} onClick={() => void devices.refetch()}>
             {formatMessage({ id: "page.start.connect.checkNow", defaultMessage: "Check now" })}
           </Button>
-          <Button type="button" size="medium" variant="ghost" onClick={onSkip}>
+          <Button type="button" size="medium" variant="ghost" onClick={onNext}>
             {formatMessage({ id: "page.start.connect.later", defaultMessage: "I'll do this later" })}
           </Button>
         </div>
       )}
     </StepLayout>
-  );
-}
-
-function BrokerDetails({
-  broker,
-}: {
-  broker: {
-    data: GatewayBroker | null | undefined;
-    isPending: boolean;
-    isError: boolean;
-    refetch: () => Promise<unknown>;
-  };
-}): ReactElement {
-  const { formatMessage } = useIntl();
-  const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState("");
-
-  async function copy(value: string) {
-    try {
-      await navigator.clipboard.writeText(value);
-    } catch {
-      return;
-    }
-    setCopied("");
-    window.setTimeout(() => setCopied(formatMessage({ id: "page.start.connect.copied", defaultMessage: "Copied" })), 30);
-  }
-
-  if (broker.isPending) {
-    return (
-      <p role="status">
-        {formatMessage({ id: "page.start.connect.loading", defaultMessage: "Loading the broker details." })}
-      </p>
-    );
-  }
-  if (broker.isError || broker.data === undefined) {
-    return (
-      <div className="flex flex-col items-start gap-2" role="alert">
-        <p>{formatMessage({ id: "page.start.connect.error", defaultMessage: "The broker details didn't load. Try again.", })}</p>
-        <Button type="button" size="small" variant="secondary" onClick={() => void broker.refetch()}>
-          {formatMessage({ id: "page.start.connect.retry", defaultMessage: "Load again" })}
-        </Button>
-      </div>
-    );
-  }
-  if (broker.data === null) {
-    return (
-      <p>
-        {formatMessage({
-          id: "page.start.connect.admin",
-          defaultMessage: "Ask your Mesh Things administrator for the broker host, port, and gateway login.",
-        })}
-      </p>
-    );
-  }
-
-  const tls = formatMessage(
-    broker.data.tls
-      ? { id: "page.start.connect.tlsOn", defaultMessage: "On" }
-      : { id: "page.start.connect.tlsOff", defaultMessage: "Off" },
-  );
-  const rows = [
-    { label: formatMessage({ id: "page.start.connect.host", defaultMessage: "Host" }), value: broker.data.host, copy: formatMessage({ id: "page.start.connect.copyHost", defaultMessage: "Copy host" }) },
-    { label: formatMessage({ id: "page.start.connect.port", defaultMessage: "Port" }), value: String(broker.data.port), copy: formatMessage({ id: "page.start.connect.copyPort", defaultMessage: "Copy port" }) },
-    { label: formatMessage({ id: "page.start.connect.tls", defaultMessage: "TLS" }), value: tls, copy: formatMessage({ id: "page.start.connect.copyTls", defaultMessage: "Copy TLS" }) },
-    { label: formatMessage({ id: "page.start.connect.username", defaultMessage: "Username" }), value: broker.data.username, copy: formatMessage({ id: "page.start.connect.copyUsername", defaultMessage: "Copy username" }) },
-  ];
-
-  return (
-    <div className="flex flex-col gap-2">
-      <dl className="flex flex-col gap-2">
-        {rows.map((row) => (
-          <div key={row.label} className="flex flex-wrap items-center gap-2">
-            <dt className="text-text-primary">{row.label}</dt>
-            <dd className="font-mono text-text-primary">{row.value}</dd>
-            <Button type="button" size="xs" variant="secondary" onClick={() => void copy(row.value)}>
-              {row.copy}
-            </Button>
-          </div>
-        ))}
-        <div className="flex flex-wrap items-center gap-2">
-          <dt className="text-text-primary">{formatMessage({ id: "page.start.connect.password", defaultMessage: "Password" })}</dt>
-          <dd className="font-mono text-text-primary">{revealed ? broker.data.password : "••••••••"}</dd>
-          <Button
-            type="button"
-            size="xs"
-            variant="secondary"
-            aria-pressed={revealed}
-            onClick={() => setRevealed((current) => !current)}
-          >
-            {formatMessage(
-              revealed
-                ? { id: "page.start.connect.hidePassword", defaultMessage: "Hide password" }
-                : { id: "page.start.connect.showPassword", defaultMessage: "Show password" },
-            )}
-          </Button>
-          <Button type="button" size="xs" variant="secondary" onClick={() => void copy(broker.data?.password ?? "")}>
-            {formatMessage({ id: "page.start.connect.copyPassword", defaultMessage: "Copy password" })}
-          </Button>
-        </div>
-      </dl>
-      <p className="text-text-primary" role="status" aria-live="polite">
-        {copied}
-      </p>
-    </div>
   );
 }

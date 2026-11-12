@@ -11,13 +11,13 @@ import {
   ARCHIVE_ISSUES_CREDENTIALS,
   ARCHIVE_PUBLIC_ENDPOINT,
   ARCHIVE_REGION,
+  MOCK_S3_PATH,
+  MOCK_S3_SIGNATURE,
   meshPrefix,
   partitionKey,
 } from "../features/archive/repository";
 
-import {
-  MOCK_S3_PATH, DAY_PATTERN,
-} from "../http";
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export function registerArchiveRoutes(app: Hono<Env>, rt: RouteRuntime) {
   const { db } = rt;
@@ -72,7 +72,7 @@ export function registerArchiveRoutes(app: Hono<Env>, rt: RouteRuntime) {
     if (!DAY_PATTERN.test(day) || !found) return c.json({ detail: "Partition not found" }, 404);
     const url = new URL(`${MOCK_S3_PATH}${ARCHIVE_BUCKET}/${partitionKey(meshId, day, hour)}`, c.req.url);
     url.searchParams.set("X-Amz-Expires", String(ARCHIVE_CREDENTIAL_TTL_S));
-    url.searchParams.set("X-Amz-Signature", "mock");
+    url.searchParams.set("X-Amz-Signature", MOCK_S3_SIGNATURE);
     return c.redirect(url.toString(), 302);
   });
 }

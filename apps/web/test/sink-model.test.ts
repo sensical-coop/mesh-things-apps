@@ -4,7 +4,6 @@ import {
   consumerCommand,
   devicesByMesh,
   singleDeviceIds,
-  sinkStreamsError,
   sinkTitle,
 } from "../src/features/sink/model.ts";
 
@@ -12,11 +11,6 @@ test("sinkTitle falls back to the start of the id", () => {
   assert.equal(sinkTitle({ id: "30303030-3030-4303-8303-303030303030", label: "Partner" }), "Partner");
   assert.equal(sinkTitle({ id: "30303030-3030-4303-8303-303030303030", label: "  " }), "Sink 30303030");
   assert.equal(sinkTitle({ id: "30303030-3030-4303-8303-303030303030", label: null }), "Sink 30303030");
-});
-
-test("sinkStreamsError asks for at least one stream", () => {
-  assert.equal(sinkStreamsError([]), "empty");
-  assert.equal(sinkStreamsError(["decoded"]), undefined);
 });
 
 test("devicesByMesh groups devices under their mesh, meshes in order", () => {

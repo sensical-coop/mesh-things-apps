@@ -1,18 +1,16 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { type ReactElement, type ReactNode, useState } from "react";
+import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
-import { allStatementsAccepted, termsLocale } from "@mtt/contracts/terms";
-import { type TermsAcceptance, type TermsKind } from "@/features/terms/model";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { termsLocale, useTermsAcceptance, type TermsAcceptance } from "@mtt/contracts/terms";
+import { type TermsKind } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
-import { routes } from "@/router";
+import { TermsFootnote } from "@/features/terms/ui/terms-footnote";
 
 export type TermsDialogProps = {
   open: boolean;
@@ -56,35 +54,17 @@ export function TermsDialog({
     ...options,
     enabled: open,
   });
-  const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
-  const statementIds = (terms.data?.statements ?? []).map((statement) => statement.id);
   // A self-hosted instance with terms switched off answers 404: nothing to accept.
-  const notRequired = terms.error ? readApiError(terms.error).status === 404 : false;
-  const canAccept =
-    (notRequired || (terms.data !== undefined && allStatementsAccepted(statementIds, accepted))) && !pending;
-
-  function toggle(id: string, checked: boolean) {
-    setAccepted((current) => {
-      const next = new Set(current);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }
+  const { notRequired, accepted, complete, acceptance, toggle, reset } = useTermsAcceptance(terms);
+  const canAccept = complete && !pending;
 
   function close() {
-    setAccepted(new Set());
+    reset();
     onClose();
   }
 
   function accept() {
-    if (!canAccept) return;
-    if (notRequired) {
-      onAccepted(null);
-      return;
-    }
-    if (!terms.data) return;
-    onAccepted({ version: terms.data.version, locale: termsLocale(terms.data.locale) });
+    if (canAccept) onAccepted(acceptance);
   }
 
   return (
@@ -142,37 +122,3 @@ export function TermsDialog({
   );
 }
 
-const linkClass = "underline underline-offset-2 text-accent-500";
-
-function TermsFootnote({ kind }: { kind: TermsKind }): ReactElement {
-  const { formatMessage } = useIntl();
-  if (kind === "account") {
-    return (
-      <Link to={routes.terms} target="_blank" className={linkClass}>
-        {formatMessage({ id: "feature.terms.termsLink", defaultMessage: "Read the Mesh Things Terms." })}
-      </Link>
-    );
-  }
-  return (
-    <>
-      {formatMessage(
-        {
-          id: "feature.terms.termsAndDpaLink",
-          defaultMessage: "Read the <terms>Mesh Things Terms</terms> and the <dpa>Data Processing Agreement</dpa>.",
-        },
-        {
-          terms: (chunks: ReactNode) => (
-            <Link to={routes.terms} target="_blank" className={linkClass}>
-              {chunks}
-            </Link>
-          ),
-          dpa: (chunks: ReactNode) => (
-            <Link to={routes.dpa} target="_blank" className={linkClass}>
-              {chunks}
-            </Link>
-          ),
-        },
-      )}
-    </>
-  );
-}

@@ -1,16 +1,15 @@
+import type { OperatorRequestStatusEnum } from "@mtt/contracts";
 import type { Actor } from "../../auth";
 import type { Device } from "@mtt/domain/device/Device";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 import type { Store } from "../../store";
 
-export type OperatorRequestStatus = "pending" | "approved" | "rejected";
-
 export type OperatorRequestRow = {
   id: string;
   ownerId: string;
   reason: string;
-  status: OperatorRequestStatus;
+  status: OperatorRequestStatusEnum;
   decidedById: string | null;
   decisionNote: string;
   decidedAt: string | null;
@@ -43,10 +42,7 @@ export function createOperatorRequest(
   return { row };
 }
 
-const STATUSES = new Set(["pending", "approved", "rejected", "all"]);
-
-export function listOperatorRequests(rows: readonly OperatorRequestRow[], status: string): OperatorRequestRow[] | { invalid: true } {
-  if (!STATUSES.has(status)) return { invalid: true };
+export function listOperatorRequests(rows: readonly OperatorRequestRow[], status: string): OperatorRequestRow[] {
   return rows.filter((row) => status === "all" || row.status === status).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
@@ -61,7 +57,7 @@ export async function decideOperatorRequest(
   decision: "approve" | "reject",
   note: string | undefined,
   syncArchive: (device: Device, mesh: Mesh) => void,
-): Promise<{ already: OperatorRequestStatus } | { row: OperatorRequestRow }> {
+): Promise<{ already: OperatorRequestStatusEnum } | { row: OperatorRequestRow }> {
   if (row.status !== "pending") return { already: row.status };
   const approve = decision === "approve";
   row.status = approve ? "approved" : "rejected";

@@ -1,15 +1,11 @@
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Navigate } from "@tanstack/react-router";
-import { type ReactElement } from "react";
-import type { OwnerProfile } from "@mtt/contracts";
+import { type ReactElement, type ReactNode } from "react";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
+import { goToReturnPath, isOwnerSession } from "@/features/auth/session";
+import { AuthPage } from "@/features/auth/ui/auth-page";
+import { BlankScreen } from "@/features/auth/ui/blank-screen";
 import { routes } from "@/router";
-
-/** `GET /owners/me` for pages that are only for signed-out owners. */
-export function useSessionProbe(): UseQueryResult<OwnerProfile> {
-  return useQuery(authRepository.me());
-}
 
 type Probe = { isSuccess: boolean; data?: { is_active: boolean } };
 
@@ -17,13 +13,16 @@ type Probe = { isSuccess: boolean; data?: { is_active: boolean } };
 export function activeSessionRedirect(me: Probe, href?: string): ReactElement | null {
   if (!isOwnerSession(me)) return null;
   if (href) {
-    window.location.assign(href);
-    return <div className="min-h-svh bg-background-full" />;
+    goToReturnPath(href);
+    return <BlankScreen />;
   }
   return <Navigate to={routes.meshes} />;
 }
 
-/** Active session to meshes (or `href`); inactive session to verify-pending. */
-export function guestRedirect(me: Probe, href?: string): ReactElement | null {
-  return activeSessionRedirect(me, href) ?? (me.isSuccess && !isOwnerSession(me) ? <Navigate to={routes.verifyPending} /> : null);
+/** The page of a signed-out visitor: an active session goes to meshes (or `next`), an inactive one to verify-pending. */
+export function GuestPage({ next, children }: { next?: string; children: ReactNode }): ReactElement {
+  const me = useQuery(authRepository.me());
+  const redirect =
+    activeSessionRedirect(me, next) ?? (me.isSuccess ? <Navigate to={routes.verifyPending} /> : null);
+  return redirect ?? <AuthPage>{children}</AuthPage>;
 }

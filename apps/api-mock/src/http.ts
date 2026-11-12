@@ -1,41 +1,61 @@
 import type { Device } from "@mtt/domain/device/Device";
-import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
-import { visibleMeshes as meshesVisibleTo, canReadMesh, canWriteMesh } from "@mtt/contracts/authz";
-import type { Actor } from "./auth";
-import { validateSource } from "@mtt/contracts/source";
-import type { Source } from "@mtt/domain/source/Source";
+import { visibleMeshes as meshesVisibleTo, canOperate, canReadShared, canWriteMesh } from "@mtt/contracts/authz";
 import { parseListFilters } from "@mtt/contracts/list-filter";
-import { NIL_UUID } from "@mtt/domain/shared/ids";
-import { type Context } from "hono";
-import { VARIANT_ENV_ID, type Store } from "./store";
-import type { DeviceChannel } from "./features/device/channels";
-import { brokerHost, measurementJson } from "./serialize";
+import { RETURN_PATHS, SITE_PATHS } from "@mtt/contracts/site";
+import type { Context, MiddlewareHandler } from "hono";
+import type { Actor } from "./auth";
+import { MOCK_S3_PATH } from "./features/archive/repository";
+import { TERMS_ENFORCED } from "./features/terms/terms";
+import type { Store } from "./store";
 
 export type Env = { Variables: { actor: Actor } };
 
 export const NO_PERMISSION = { detail: "You do not have permission to perform this action." };
-export const SUPERUSERS_ONLY = NO_PERMISSION;
-export const OPERATORS_ONLY = { detail: "Only an operator may access sources" };
-export const SINK_OPERATORS_ONLY = { detail: "Only an operator may access sinks" };
-export const NO_SINKS = { detail: "Not found" };
 
-/** Mirrors REGISTRY__FRONTEND_RETURN_PATHS: pages a verification link may send the owner back to. */
-export const FRONTEND_RETURN_PATHS = (process.env.MOCK_FRONTEND_RETURN_PATHS ?? "/start").split(",").filter(Boolean);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const isUuid = (value: string) => UUID.test(value);
+
+const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
+export const verificationOf = (store: Store, ownerId: string) => store.verifications.get(ownerId) ?? NO_VERIFICATION;
+
+/** Emails are unique regardless of case, so every lookup compares them this way. */
+export const sameEmail = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
+export const operatorsOnly = (noun: string): MiddlewareHandler<Env> => async (c, next) => {
+  if (!canOperate(c.get("actor"))) return c.json({ detail: `Only an operator may access ${noun}` }, 403);
+  await next();
+};
+
+/** The API types `?status=` as a plain string, so these routes check it themselves; `all` lists every status. */
+export function statusFilterError(statuses: readonly string[], wanted: string): Record<string, string[]> | null {
+  if (wanted === "all" || statuses.includes(wanted)) return null;
+  return { status: [`Must be ${statuses.join(", ")} or all.`] };
+}
 
 /** `next` must match an allowed path exactly, as in the API, so the link can't redirect elsewhere. */
 export function returnPathError(next: string | undefined): Record<string, string[]> {
-  return next === undefined || FRONTEND_RETURN_PATHS.includes(next)
+  return next === undefined || RETURN_PATHS.includes(next)
     ? {}
     : { next: ["This page is not an allowed return path."] };
 }
 
 export function verificationLink(token: string, next: string | undefined): string {
-  return `/verify-email?${new URLSearchParams(next ? { next, token } : { token })}`;
+  return `${SITE_PATHS.verifyEmail}?${new URLSearchParams(next ? { next, token } : { token })}`;
 }
 export const PASSWORD_RESET_TTL_HOURS = 1; // keep in sync with meshtastic-things REGISTRY__PASSWORD_RESET_TTL_HOURS
 export const INACTIVE_ALLOWED_PATHS = new Set(["/owners/me", "/owners/me/resend-verification"]);
-export const NO_VERIFICATION = { emailVerifiedAt: null, emailVerificationSentAt: null };
+
+/** A terms route answers 404 on an instance that doesn't enforce terms. */
+export const termsEnforced: MiddlewareHandler<Env> = async (c, next) => {
+  if (!TERMS_ENFORCED) return c.json({ detail: "Terms are not enforced on this instance" }, 404);
+  await next();
+};
+
+/** `?owned=` as the API reads it: `true` or `1`, any case. */
+export function queryFlag(c: Context, name: string): boolean {
+  return ["true", "1"].includes((c.req.query(name) ?? "").toLowerCase());
+}
 
 export function queryFilters(c: { req: { query: (name: string) => string | undefined } }, fields: readonly string[]) {
   const query: Record<string, string | undefined> = {};
@@ -45,16 +65,23 @@ export function queryFilters(c: { req: { query: (name: string) => string | undef
 
 type ParseIssue = { path: PropertyKey[]; message: string };
 type SafeParse<T> = { success: true; data: T } | { success: false; error: { issues: ParseIssue[] } };
+type Schema<T> = { safeParse: (data: unknown) => SafeParse<T> };
+type Parsed<T> = { data: T } | { error: Record<string, string[]> };
 
-/** DRF answers a bad body with `{ field: [message] }`; so does the mock. */
-export async function parseBody<T>(
-  c: Context,
-  schema: { safeParse: (data: unknown) => SafeParse<T> },
-): Promise<{ data: T } | { error: Record<string, string[]> }> {
-  const body: unknown = await c.req.json().catch(() => null);
-  const parsed = schema.safeParse(body);
+function parseWith<T>(schema: Schema<T>, input: unknown): Parsed<T> {
+  const parsed = schema.safeParse(input);
   if (!parsed.success) return { error: fieldErrors(parsed.error.issues) };
   return { data: parsed.data };
+}
+
+/** DRF answers a bad body with `{ field: [message] }`; so does the mock. */
+export async function parseBody<T>(c: Context, schema: Schema<T>): Promise<Parsed<T>> {
+  return parseWith(schema, await c.req.json().catch(() => null));
+}
+
+/** A bad query string is answered the same way. Query values are text, so pass a generated schema only for its text fields. */
+export function parseQuery<T>(c: Context, schema: Schema<T>): Parsed<T> {
+  return parseWith(schema, c.req.query());
 }
 
 export function fieldErrors(issues: { path: PropertyKey[]; message: string }[]): Record<string, string[]> {
@@ -66,32 +93,6 @@ export function fieldErrors(issues: { path: PropertyKey[]; message: string }[]):
     (errors[key] ??= []).push(issue.message);
   }
   return errors;
-}
-
-/** Mirrors SourceSerializer: a password needs a username, also once an edit removes it. */
-export function credentialErrors(username: string | null | undefined, password: string | null | undefined): Record<string, string[]> {
-  return password && !username ? { username: ["A password needs a username."] } : {};
-}
-
-// Mirrors REGISTRY__SOURCES_BLOCKED_TOPICS left blank, which blocks `#`.
-export const SOURCES_BLOCKED_TOPICS = new Set(["#"]);
-
-/** The server-side source checks, including the ones only the API can make. */
-export function sourceErrors(input: Partial<Pick<Source, "server" | "topic" | "qos">>): Record<string, string[]> {
-  const errors: Record<string, string[]> = {};
-  for (const [key, message] of Object.entries(validateSource(input))) errors[key] = [message];
-  if (!errors.server && input.server && brokerHost(input.server).own) {
-    errors.server = ["A source cannot point at this instance's own broker."];
-  }
-  if (!errors.topic && input.topic !== undefined && SOURCES_BLOCKED_TOPICS.has(input.topic.trim())) {
-    errors.topic = ["This topic filter is not allowed as a source."];
-  }
-  return errors;
-}
-
-/** Stands in for EMQX: a `.invalid` host fails the bridge, as an unreachable EMQX API would. */
-export function bridgeFails(source: Pick<Source, "server">): boolean {
-  return brokerHost(source.server).invalid;
 }
 
 export function openPath(method: string, path: string): boolean {
@@ -109,10 +110,6 @@ export function openPath(method: string, path: string): boolean {
     (method === "GET" && path.startsWith(MOCK_S3_PATH))
   );
 }
-
-/** Where the mock's presigned links point, standing in for the S3 endpoint. */
-export const MOCK_S3_PATH = "/mock-s3/";
-export const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export function applySetCookie(c: Context, headers: Headers) {
   const cookies = typeof headers.getSetCookie === "function" ? headers.getSetCookie() : [];
@@ -143,7 +140,7 @@ export async function devicesFor(store: Store, actor: Actor) {
 
 export async function meshForRead(store: Store, actor: Actor, meshId: string) {
   const mesh = await store.meshes.get(meshId);
-  if (!mesh || !canReadMesh(actor, mesh)) return null;
+  if (!mesh || !canReadShared(actor, mesh)) return null;
   return mesh;
 }
 
@@ -155,40 +152,11 @@ export async function deviceForRead(store: Store, actor: Actor, uuid: string) {
   return device;
 }
 
-export function catalogDefaultDetectors(store: Store, measurementTypeId: string): string[] {
-  for (const link of store.telemetryVariantMeasurements.values()) {
-    if (link.measurementTypeId === measurementTypeId) return link.defaultEnabledDetectors;
-  }
-  return [];
+/** The device and its mesh for a write, or the status and body to answer with. */
+export async function deviceForWrite(store: Store, actor: Actor, uuid: string) {
+  const device = await deviceForRead(store, actor, uuid);
+  if (!device) return { status: 404 as const, body: { detail: "Not found" } };
+  const mesh = await store.meshes.get(device.meshId);
+  if (!mesh || !canWriteMesh(actor, mesh)) return { status: 403 as const, body: NO_PERMISSION };
+  return { device, mesh };
 }
-
-export function deviceMeasurementJson(store: Store, device: Device, channel: DeviceChannel) {
-  const { id, type } = channel;
-  const enabledDetectors = store.detectorOverrides.get(id) ?? null;
-  const effectiveDetectors = [...(enabledDetectors ?? catalogDefaultDetectors(store, type.id))].sort();
-  const range = store.deviceMeasurementRanges.get(id) ?? { validMin: null, validMax: null };
-  return {
-    id,
-    telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_UUID,
-    measurement_type: measurementJson(type),
-    enabled_detectors: enabledDetectors,
-    effective_detectors: effectiveDetectors,
-    valid_min: range.validMin,
-    valid_max: range.validMax,
-    produced_by: channel.producedBy,
-    first_seen: device.createdAt,
-    last_seen: device.lastSeen,
-  };
-}
-
-export function telemetryVariantMeasurementJson(store: Store, type: MeasurementType, linkId: string) {
-  const link = store.telemetryVariantMeasurements.get(linkId) ?? { defaultEnabledDetectors: [] };
-  return {
-    id: linkId,
-    measurement_type: measurementJson(type),
-    default_enabled_detectors: [...link.defaultEnabledDetectors].sort(),
-    created_at: type.createdAt,
-    updated_at: type.updatedAt,
-  };
-}
-

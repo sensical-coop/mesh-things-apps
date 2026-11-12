@@ -1,5 +1,5 @@
 export type DataDeletionReason = "mesh_deleted" | "source_detached" | "terms_lapsed";
-export type DataDeletionStatus = "pending" | "cancelled" | "done";
+import type { DataDeletionStatusEnum } from "@mtt/contracts";
 
 /** A mesh's stored readings, scheduled for deletion after the grace period. */
 export type DataDeletionRow = {
@@ -12,7 +12,7 @@ export type DataDeletionRow = {
   deleteAfter: string;
   /** Readings up to this time are deleted; null deletes them all. */
   dataUntil: string | null;
-  status: DataDeletionStatus;
+  status: DataDeletionStatusEnum;
   attempts: number;
   lastError: string;
   completedAt: string | null;

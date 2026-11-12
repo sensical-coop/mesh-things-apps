@@ -4,7 +4,7 @@ import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldLabel } from "@mtt/ui/components/ui/field";
 import { RiDownloadLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { type FormEvent, type ReactElement, useState } from "react";
+import { type FormEvent, type ReactElement, type Ref, useState } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
@@ -26,9 +26,11 @@ export type CsvRequestFormProps = {
   meshes: readonly Mesh[];
   initial: CsvRequestDraft;
   requested: RequestExportState;
+  /** The first-day input of the range, for a parent that wants to focus it. */
+  startRef?: Ref<HTMLInputElement>;
 };
 
-export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormProps): ReactElement {
+export function CsvRequestForm({ meshes, initial, requested, startRef }: CsvRequestFormProps): ReactElement {
   const { formatMessage } = useIntl();
   const [meshId, setMeshId] = useState(initial.meshId);
   const [nodeIds, setNodeIds] = useState<number[] | null>(initial.nodeIds);
@@ -120,6 +122,7 @@ export function CsvRequestForm({ meshes, initial, requested }: CsvRequestFormPro
       ) : null}
       <ExportRangeFields
         idPrefix="csv"
+        startRef={startRef}
         value={range}
         onChange={(next) => {
           requested.reset();

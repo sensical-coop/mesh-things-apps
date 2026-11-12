@@ -11,7 +11,7 @@ export const CHART_AGG_OPTIONS: { value: ChartAgg; messageId: string; label: str
   { value: "max", messageId: "page.devices.detail.chartResolution.aggMax", label: "Max" },
 ];
 
-export type ResolutionOption = { value: string; messageId: string; label: string; ms: number };
+type ResolutionOption = { value: string; messageId: string; label: string; ms: number };
 
 // `window` is InfluxDB's `every:` duration for aggregateWindow — the backend
 // accepts ms/s/m/h/d/w/mo/y and enforces no minimum or bucket-count cap, so

@@ -2,6 +2,7 @@ import { RiArrowLeftLine } from "@remixicon/react";
 import { DocsPage } from "fumadocs-ui/layouts/spacious/page";
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { LANDING_HREF } from "@/lib/paths";
 
 export function DocumentationNotFound(): ReactElement {
   const { formatMessage } = useIntl();
@@ -19,7 +20,7 @@ export function DocumentationNotFound(): ReactElement {
           })}
         </p>
         <a
-          href="/docs/overview"
+          href={LANDING_HREF}
           className="mt-2 inline-flex items-center gap-2 rounded-full bg-background-primary-default px-3 py-2 text-body-medium text-text-primary"
         >
           <RiArrowLeftLine aria-hidden className="size-4" />

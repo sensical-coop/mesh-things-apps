@@ -1,5 +1,4 @@
-import type { TermsLocale } from "@mtt/contracts/terms";
-import { TERMS_RENEWAL_NOTICE_DAYS } from "@mtt/contracts/terms-notice";
+import { TERMS_RENEWAL_NOTICE_MS } from "@mtt/contracts/terms-notice";
 
 /** A mesh, source or sink that accepted terms and can lapse. */
 export type TermsEntity = {
@@ -10,9 +9,6 @@ export type TermsEntity = {
 
 /** Account terms at signup; mesh terms per mesh on the default broker; source and sink terms per source and sink. */
 export type TermsKind = "account" | "mesh" | "source" | "sink";
-
-/** What was accepted: sent back as `terms_version` and `terms_locale`. */
-export type TermsAcceptance = { version: string; locale: TermsLocale };
 
 /**
  * Where an acceptance stands (a mesh's, a source's, or an owner's account terms,
@@ -37,7 +33,7 @@ export function termsStanding(input: {
   if (input.pausedAt || (expires !== null && expires <= now)) return "lapsed";
   if (!input.acceptedVersion) return "none";
   if (input.currentVersion && input.acceptedVersion !== input.currentVersion) return "outdated";
-  if (expires !== null && expires - now <= TERMS_RENEWAL_NOTICE_DAYS * 86_400_000) return "expiring";
+  if (expires !== null && expires - now <= TERMS_RENEWAL_NOTICE_MS) return "expiring";
   return "ok";
 }
 
@@ -55,4 +51,3 @@ export function entityTermsStanding(
     now,
   });
 }
-

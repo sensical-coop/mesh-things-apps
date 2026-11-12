@@ -2,7 +2,7 @@ import { routes } from "@/router";
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
 import { LandingCobe } from "./cobe";
 import { LandingReveal } from "./reveal";
 import { RouterButtonLink } from "@/components/router-button-link";
@@ -30,7 +30,7 @@ export function LandingHero(): ReactElement {
             />
           </p>
           <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-            <ButtonLink href="/start" size="medium">
+            <ButtonLink href={routes.start} size="medium">
               {formatMessage({ id: "page.home.hero.start", defaultMessage: "Set up your first mesh" })}
             </ButtonLink>
             <RouterButtonLink to={routes.login} variant="secondary" size="medium">

@@ -1,5 +1,4 @@
 import {
-  getMeasurementsListQueryOptions,
   getReadingsDevicesLatestRetrieveQueryOptions,
   getReadingsDevicesQualityRetrieveQueryOptions,
   getReadingsDevicesRetrieveQueryOptions,
@@ -13,5 +12,4 @@ export const readingsRepository = {
   series: getReadingsDevicesRetrieveQueryOptions,
   meshStats: getReadingsMeshesStatsRetrieveQueryOptions,
   deviceTraffic: getReadingsDevicesTrafficRetrieveQueryOptions,
-  catalog: getMeasurementsListQueryOptions,
 };

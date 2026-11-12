@@ -47,7 +47,7 @@ Una fuente es un broker MQTT remoto + filtro de topic que EMQX trae a esta insta
 **US-14 · Añadir una fuente**
 Como operator, doy de alta un broker remoto para asociarle mallas.
 
-- **Ruta:** `/console/sources`, en el menú “Data” de la cabecera (`components/data-menu.tsx`, con Sources y Archive), oculto para el resto; la URL directa redirige a mallas. Data agrupa también los *sinks* (US-19).
+- **Ruta:** `/console/sources`, en el menú “Data” de la cabecera (grupo Data de `src/nav-items.ts`, con Sources y Archive), oculto para el resto; la URL directa redirige a mallas. Data agrupa también los *sinks* (US-19).
 - **Paso previo (condiciones):** antes del formulario, `SourceTermsDialog` muestra lo que devuelve `GET /sources/terms` (la API es dueña de la versión y del texto, en el idioma de la consola): una casilla por afirmación, todas obligatorias. El operator es responsable del tratamiento del tráfico traído y Sensical su encargado (RGPD art. 28); aceptar es un contrato con el operator, no consentimiento de los interesados. Sin aceptar todas no se abre el formulario. El `POST` lleva `terms_version`; la API rechaza una versión ausente o antigua y guarda la aceptación. Se acepta en cada alta, nunca al editar. El backend real aún no tiene este endpoint (ver `plans/sources.md` en meshtastic-things).
 - **Campos:** label, server (`host:port`), topic, TLS (por defecto sí), usuario, password (write-only, nunca vuelve), QoS 0/1 (por defecto 1)
 - **Validación:** Zod de `POST /sources` + reglas del backend sin configuración (`validateSourceFields`: `host:port`, sin `$share`/`$SYS`, QoS 0/1). Los 400 del servidor (broker propio, listas de bloqueo) se pintan en su campo.

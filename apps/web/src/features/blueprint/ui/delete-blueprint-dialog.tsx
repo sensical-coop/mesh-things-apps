@@ -5,9 +5,9 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { blueprintRepository } from "@/features/blueprint/repository";
+import { blueprintRepository, invalidateBlueprint } from "@/features/blueprint/repository";
 import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type DeleteBlueprintDialogProps = {
   blueprint: PostprocessingBlueprint | null;
@@ -21,7 +21,7 @@ export function DeleteBlueprintDialog({ blueprint, onClose, onDeleted }: DeleteB
   const destroy = useMutation({
     ...blueprintRepository.destroy(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+      await invalidateBlueprint(queryClient);
       onDeleted?.();
       onClose();
     },

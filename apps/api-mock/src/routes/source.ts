@@ -6,41 +6,35 @@ import {
   SourceUpdateRequest,
 } from "@mtt/contracts";
 import {
-  canManageSources,
-  visibleSources,
+  canOperate,
+  visibleOperated,
 } from "@mtt/contracts/authz";
-import {
-  TERMS_ENFORCED,
-  TERMS_VERSIONS,
-  termsJson,
-  termsLocale,
-} from "../features/terms/terms";
+import { acceptTerms, termsJson, termsLocale, termsVersionError } from "../features/terms/terms";
+import { bridgeFails, credentialErrors, sourceErrors, sourceForOperator } from "../features/source/rules";
 import { Hono } from "hono";
 import {
   sourceReadJson,
 } from "../serialize";
 
-import { OPERATORS_ONLY, parseBody, credentialErrors, sourceErrors, bridgeFails } from "../http";
+import { operatorsOnly, parseBody, termsEnforced } from "../http";
 
 export function registerSourceRoutes(app: Hono<Env>, rt: RouteRuntime) {
-  const { db, acceptTerms, recordAcceptance, cancelMeshDeletions, sourceForOperator } = rt;
+  const { db, cancelMeshDeletions } = rt;
+  app.use("/sources/*", operatorsOnly("sources"));
   app.get("/sources", async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
-    return c.json(visibleSources(actor, await db.sources.list()).map((source) => sourceReadJson(source)));
+    return c.json(visibleOperated(actor, await db.sources.list()).map((source) => sourceReadJson(source)));
   });
 
   app.post("/sources", async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
     const parsed = await parseBody(c, SourceCreateRequest);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const input = parsed.data;
-    const terms = acceptTerms("source", input.terms_version, actor.id, termsLocale(input.terms_locale), null, false);
     const errors = {
       ...sourceErrors(input),
       ...credentialErrors(input.username, input.password),
-      ...("error" in terms ? terms.error : {}),
+      ...termsVersionError("source", input.terms_version),
     };
     if (Object.keys(errors).length) return c.json(errors, 400);
     const source = await db.sources.insert({
@@ -58,29 +52,25 @@ export function registerSourceRoutes(app: Hono<Env>, rt: RouteRuntime) {
       return c.json({ detail: "Failed to create the bridge, source NOT created: connection refused" }, 502);
     }
     // Recorded only once the bridge is up, and kept if the source is deleted later.
-    source.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.source : null;
-    source.termsExpiresAt = recordAcceptance("source", actor.id, termsLocale(input.terms_locale), source.id);
+    acceptTerms("source", source);
     return c.json(sourceReadJson(source), 201);
   });
 
-  app.get("/sources/terms", (c) => {
-    const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
+  app.get("/sources/terms", termsEnforced, (c) => {
     return c.json(termsJson("source", termsLocale(c.req.query("locale"))));
   });
 
-  app.post("/sources/:source_id/terms-acceptance", async (c) => {
+  app.post("/sources/:source_id/terms-acceptance", termsEnforced, async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
-    const source = await sourceForOperator(actor, c.req.param("source_id"));
+    const source = await sourceForOperator(db, actor, c.req.param("source_id"));
     if (!source) return c.json({ detail: "Source not found" }, 404);
     if (source.createdById !== actor.id) {
       return c.json({ detail: "Only the operator who created this source can accept its terms" }, 403);
     }
     const parsed = await parseBody(c, SourceTermsAcceptance);
     if ("error" in parsed) return c.json(parsed.error, 400);
-    const terms = acceptTerms("source", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale), source.id, false);
-    if ("error" in terms) return c.json(terms.error, 400);
+    const termsError = termsVersionError("source", parsed.data.terms_version);
+    if (Object.keys(termsError).length) return c.json(termsError, 400);
     if (source.pausedAt && bridgeFails(source)) {
       return c.json({ detail: "Failed to restart the bridge, terms NOT renewed: connection refused" }, 502);
     }
@@ -89,16 +79,13 @@ export function registerSourceRoutes(app: Hono<Env>, rt: RouteRuntime) {
       const attached = (await db.meshes.list()).filter((mesh) => mesh.sourceId === source.id);
       cancelMeshDeletions(attached.map((mesh) => mesh.id), "terms_lapsed", source.id);
     }
-    source.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.source : null;
-    source.termsExpiresAt = recordAcceptance("source", actor.id, termsLocale(parsed.data.terms_locale), source.id);
-    source.pausedAt = null;
+    acceptTerms("source", source);
     return c.json(sourceReadJson(source), 201);
   });
 
   app.post("/sources/:source_id/restart", async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
-    const source = await sourceForOperator(actor, c.req.param("source_id"));
+    const source = await sourceForOperator(db, actor, c.req.param("source_id"));
     if (!source) return c.json({ detail: "Source not found" }, 404);
     if (source.pausedAt) return c.json({ detail: "Source is paused; renew its terms to restart it" }, 409);
     if (bridgeFails(source)) return c.json({ detail: "Failed to restart the bridge: connection refused" }, 502);
@@ -107,16 +94,14 @@ export function registerSourceRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   app.get("/sources/:source_id", async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
-    const source = await sourceForOperator(actor, c.req.param("source_id"));
+    const source = await sourceForOperator(db, actor, c.req.param("source_id"));
     if (!source) return c.json({ detail: "Source not found" }, 404);
     return c.json(sourceReadJson(source));
   });
 
   app.put("/sources/:source_id", async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
-    const source = await sourceForOperator(actor, c.req.param("source_id"));
+    const source = await sourceForOperator(db, actor, c.req.param("source_id"));
     if (!source) return c.json({ detail: "Source not found" }, 404);
     const parsed = await parseBody(c, SourceUpdateRequest);
     if ("error" in parsed) return c.json(parsed.error, 400);
@@ -149,8 +134,7 @@ export function registerSourceRoutes(app: Hono<Env>, rt: RouteRuntime) {
 
   app.delete("/sources/:source_id", async (c) => {
     const actor = c.get("actor");
-    if (!canManageSources(actor)) return c.json(OPERATORS_ONLY, 403);
-    const source = await sourceForOperator(actor, c.req.param("source_id"));
+    const source = await sourceForOperator(db, actor, c.req.param("source_id"));
     if (!source) return c.json({ detail: "Source not found" }, 404);
     if ((await db.meshes.list()).some((mesh) => mesh.sourceId === source.id)) {
       return c.json({ detail: "Source has meshes attached; move or delete them first" }, 409);

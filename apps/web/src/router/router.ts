@@ -1,9 +1,11 @@
-const consoleRoot = "/console" as const;
+import { MESH_SEGMENTS, SITE_PATHS } from "@mtt/contracts/site";
+
+const consoleRoot = SITE_PATHS.console;
 
 const consoleChild = Object.freeze({
   index: "/",
-  meshes: "meshes",
-  mesh: "meshes/$meshId",
+  meshes: MESH_SEGMENTS.list,
+  mesh: MESH_SEGMENTS.detail,
   devices: "devices",
   device: "devices/$deviceUuid",
   alarms: "alarms",
@@ -21,19 +23,19 @@ const consoleChild = Object.freeze({
 
 export const routes = Object.freeze({
   home: "/",
-  docs: "/docs",
-  login: "/login",
+  docs: SITE_PATHS.docs,
+  login: SITE_PATHS.login,
   signup: "/signup",
-  forgotPassword: "/forgot-password",
-  resetPassword: "/reset-password",
+  forgotPassword: SITE_PATHS.forgotPassword,
+  resetPassword: SITE_PATHS.resetPassword,
   verifyPending: "/verify-pending",
-  verifyEmail: "/verify-email",
-  start: "/start",
-  terms: "/terms",
-  dpa: "/dpa",
+  verifyEmail: SITE_PATHS.verifyEmail,
+  start: SITE_PATHS.start,
+  terms: SITE_PATHS.terms,
+  dpa: SITE_PATHS.dpa,
   console: consoleRoot,
-  meshes: `${consoleRoot}/${consoleChild.meshes}`,
-  mesh: `${consoleRoot}/${consoleChild.mesh}`,
+  meshes: SITE_PATHS.meshes,
+  mesh: SITE_PATHS.mesh,
   devices: `${consoleRoot}/${consoleChild.devices}`,
   device: `${consoleRoot}/${consoleChild.device}`,
   alarms: `${consoleRoot}/${consoleChild.alarms}`,
@@ -49,7 +51,3 @@ export const routes = Object.freeze({
   profile: `${consoleRoot}/${consoleChild.profile}`,
   consoleChild,
 } as const);
-
-export function href(path: string, params: Record<string, string>): string {
-  return path.replaceAll(/\$([A-Za-z0-9_]+)/g, (_, name: string) => params[name] ?? `$${name}`);
-}

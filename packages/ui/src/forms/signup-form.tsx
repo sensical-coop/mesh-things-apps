@@ -1,11 +1,13 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { RiArrowDownSLine } from "@remixicon/react";
 import { type FormEvent, type ReactElement, type ReactNode, useRef, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@mtt/ui/forms/form-field";
+import { fieldErrorId, FormField } from "@mtt/ui/forms/form-field";
+import { PASSWORD_MIN_LENGTH } from "@mtt/ui/forms/password";
+import { TermsLink } from "@mtt/ui/forms/terms-link";
 import { TermsChecklist, type TermsStatement } from "@mtt/ui/forms/terms-checklist";
 
 export type SignupFormValues = { name: string; email: string; password: string; accepted: string[] };
@@ -16,17 +18,19 @@ export type SignupFailure =
   | { kind: "field"; message: string }
   | { kind: "generic" };
 
+/** The terms as the API serves them. */
 export type SignupTerms = {
   title: string;
   description: string;
   statements: readonly TermsStatement[];
-  footnote?: ReactNode;
+  footnote: string;
 };
 
 export function SignupForm({
   failure,
   pending,
   terms,
+  termsHref,
   termsLoading = false,
   termsLoadFailed = false,
   termsResetKey = 0,
@@ -35,8 +39,10 @@ export function SignupForm({
 }: {
   failure?: SignupFailure | null;
   pending: boolean;
-  /** `null` when this instance asks for no terms. */
-  terms: SignupTerms | null;
+  /** Absent when this instance asks for no terms. */
+  terms?: SignupTerms;
+  /** Where the full terms live, linked after the footnote. */
+  termsHref: string;
   termsLoading?: boolean;
   termsLoadFailed?: boolean;
   /** Bump when the served terms changed so previous ticks are cleared. */
@@ -58,10 +64,10 @@ export function SignupForm({
   }
   const credentialsReady = credentials.email.trim() !== "" && credentials.password !== "";
   const passwordMismatch = credentials.confirm !== "" && credentials.confirm !== credentials.password;
-  const showTerms = terms !== null || termsLoading || termsLoadFailed;
+  const showTerms = terms !== undefined || termsLoading || termsLoadFailed;
   const statements = terms?.statements ?? [];
   const termsAccepted =
-    !showTerms || (terms !== null && statements.length > 0 && statements.every((statement) => accepted.has(statement.id)));
+    !showTerms || (terms !== undefined && statements.length > 0 && statements.every((statement) => accepted.has(statement.id)));
 
   const failureMessage =
     failure?.kind === "throttled"
@@ -93,14 +99,12 @@ export function SignupForm({
             : null;
 
   function onCredential(field: "email" | "password" | "confirm", value: string) {
-    setCredentials((current) => {
-      const next = { ...current, [field]: value };
-      if (!autoOpened.current && next.email.trim() !== "" && next.password !== "") {
-        autoOpened.current = true;
-        setTermsOpen(true);
-      }
-      return next;
-    });
+    const next = { ...credentials, [field]: value };
+    if (!autoOpened.current && next.email.trim() !== "" && next.password !== "") {
+      autoOpened.current = true;
+      setTermsOpen(true);
+    }
+    setCredentials(next);
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -143,7 +147,7 @@ export function SignupForm({
               name="password"
               type="password"
               required
-              minLength={8}
+              minLength={PASSWORD_MIN_LENGTH}
               autoComplete="new-password"
               onChange={(event) => onCredential("password", event.currentTarget.value)}
             />
@@ -162,10 +166,10 @@ export function SignupForm({
               name="confirm_password"
               type="password"
               required
-              minLength={8}
+              minLength={PASSWORD_MIN_LENGTH}
               autoComplete="new-password"
               aria-invalid={passwordMismatch || undefined}
-              aria-describedby={passwordMismatch ? "signup-confirm-password-error" : undefined}
+              aria-describedby={passwordMismatch ? fieldErrorId("signup-confirm-password") : undefined}
               onChange={(event) => onCredential("confirm", event.currentTarget.value)}
             />
           </FormField>
@@ -226,7 +230,11 @@ export function SignupForm({
                 {terms ? (
                   <TermsChecklist
                     statements={terms.statements}
-                    footnote={terms.footnote}
+                    footnote={
+                      <>
+                        {terms.footnote} <TermsLink href={termsHref} />
+                      </>
+                    }
                     accepted={accepted}
                     idPrefix="signup-terms"
                     onToggle={(id, checked) =>

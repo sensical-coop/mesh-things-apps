@@ -1,4 +1,4 @@
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { type ReactElement, type ReactNode } from "react";
 import { type RemixiconComponentType } from "@remixicon/react";
 import { kpiIconFor } from "@/components/kpi/kpi-icon";

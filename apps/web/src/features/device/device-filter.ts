@@ -1,6 +1,9 @@
 import type { DeviceRead, DevicesListParams } from "@mtt/contracts";
-import { listQueryBoolean } from "@mtt/contracts/list-filter";
-import type { FilterSpec } from "@/components/smart-filters";
+import { listQueryBoolean, matchesListQuery } from "@mtt/contracts/list-filter";
+import { useMemo } from "react";
+import { useIntl } from "react-intl";
+import { useSmartFilters, type FilterSpec, type SmartFilters } from "@/components/smart-filters";
+import { useTelemetryVariants } from "@/features/device/use-telemetry-variant-options";
 import { deviceTitle } from "./model.ts";
 
 type FormatMessage = (descriptor: { id: string; defaultMessage: string }) => string;
@@ -17,7 +20,7 @@ function text(formatMessage: FormatMessage, pair: readonly [string, string]): st
   return formatMessage({ id: pair[0], defaultMessage: pair[1] });
 }
 
-export function deviceFilterValue(device: DeviceRead, field: string): string | readonly string[] | undefined {
+function deviceFilterValue(device: DeviceRead, field: string): string | readonly string[] | undefined {
   switch (field) {
     case "label":
       return deviceTitle(device);
@@ -44,11 +47,10 @@ export function deviceListParams(queryString: string): DevicesListParams | undef
   return hasPostprocessing === undefined ? undefined : { has_postprocessing: hasPostprocessing };
 }
 
-export function deviceFilterSpecs(input: {
+function deviceFilterSpecs(input: {
   formatMessage: FormatMessage;
   variantOptions: { value: string; label: string }[];
   meshOptions?: { value: string; label: string }[];
-  mesh?: boolean;
   allowed?: boolean;
   /** Blueprint attachment. The list route filters it; the row does not say. */
   blueprint?: boolean;
@@ -60,13 +62,13 @@ export function deviceFilterSpecs(input: {
   const specs: FilterSpec[] = [
     { key: "label", urlKey: "label", label: say(COPY.label), type: "text" },
   ];
-  if (input.mesh) {
+  if (input.meshOptions) {
     specs.push({
       key: "mesh_id",
       urlKey: "mesh_id",
       label: formatMessage({ id: "feature.device.filters.mesh", defaultMessage: "Mesh" }),
       type: "select",
-      options: input.meshOptions ?? [],
+      options: input.meshOptions,
     });
   }
   specs.push({
@@ -132,4 +134,21 @@ export function deviceFilterSpecs(input: {
     });
   }
   return specs;
+}
+
+type DeviceFilterOptions = Omit<Parameters<typeof deviceFilterSpecs>[0], "formatMessage" | "variantOptions">;
+
+/** The devices filter bar. Memoise `meshOptions`. */
+export function useDeviceFilters({ meshOptions, allowed, blueprint, archive }: DeviceFilterOptions = {}): SmartFilters {
+  const { formatMessage } = useIntl();
+  const { options: variantOptions } = useTelemetryVariants();
+  const specs = useMemo(
+    () => deviceFilterSpecs({ formatMessage, variantOptions, meshOptions, allowed, blueprint, archive }),
+    [formatMessage, variantOptions, meshOptions, allowed, blueprint, archive],
+  );
+  return useSmartFilters({ specs });
+}
+
+export function filterDevices<T extends DeviceRead>(devices: readonly T[], filters: SmartFilters): T[] {
+  return devices.filter((device) => matchesListQuery((field) => deviceFilterValue(device, field), filters.queryString));
 }

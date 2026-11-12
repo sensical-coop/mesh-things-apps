@@ -45,6 +45,7 @@ import {
   slotMouth,
 } from "./geometry";
 import { CheckEmailLive } from "./live";
+import { COOLDOWN_SECONDS } from "./model";
 
 const BASE = (
   <g key="base">
@@ -107,7 +108,7 @@ const DIAL = (
     <Line d={dialTicks.minor} tone="lo" />
     <Line d={dialTicks.major} tone="mid" />
     <FaceText transform={numeralAt} size={3.2}>
-      60
+      {COOLDOWN_SECONDS}
     </FaceText>
     <Solid paths={dialHub} tone="hi" />
     <Solid paths={crownStem} tone="mid" crease="none" />

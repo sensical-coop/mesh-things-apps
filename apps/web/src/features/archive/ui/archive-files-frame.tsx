@@ -8,9 +8,8 @@ import { Kpi } from "@/components/kpi/kpi";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { groupByDay, summarizeArchive } from "@/features/archive/model";
-import type { RequestExportState } from "@/features/export/use-request-export";
 import { ArchiveDayRow } from "@/features/archive/ui/archive-day-row";
-import { cn } from "@mtt/ui/utils";
+import { cx } from "@mtt/ui/utils";
 import { formatBytes } from "@/lib/format";
 
 export type ArchiveFilesFrameProps = {
@@ -18,7 +17,10 @@ export type ArchiveFilesFrameProps = {
   manifest: ArchiveManifest | undefined;
   pending: boolean;
   failed: boolean;
-  requested: RequestExportState;
+  /** While a day's export is on its way. */
+  exporting: boolean;
+  /** Asks for the zip of one UTC day (`YYYY-MM-DD`). */
+  onExportDay: (dt: string) => void;
 };
 
 /** Two weeks at first; the rest on request. */
@@ -26,7 +28,7 @@ const DAYS_SHOWN = 14;
 
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 
-export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested }: ArchiveFilesFrameProps): ReactElement {
+export function ArchiveFilesFrame({ meshId, manifest, pending, failed, exporting, onExportDay }: ArchiveFilesFrameProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const partitions = manifest?.partitions ?? [];
   const summary = summarizeArchive(partitions);
@@ -121,7 +123,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
                         <th className={headClass}>
                           {formatMessage({ id: "feature.archive.files.columns.updated", defaultMessage: "Last written" })}
                         </th>
-                        <th className={cn(headClass, "text-right")}>
+                        <th className={cx(headClass, "text-right")}>
                           {formatMessage({ id: "feature.archive.files.columns.export", defaultMessage: "Export" })}
                         </th>
                       </tr>
@@ -134,11 +136,8 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
                           day={day}
                           expanded={expanded.has(day.dt)}
                           onToggle={() => toggle(day.dt)}
-                          exporting={requested.pending}
-                          onExport={() => {
-                            requested.request(meshId, { format: "parquet", start: day.dt, stop: day.dt });
-                            document.getElementById("archive-exports")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }}
+                          exporting={exporting}
+                          onExport={() => onExportDay(day.dt)}
                         />
                       ))}
                     </tbody>

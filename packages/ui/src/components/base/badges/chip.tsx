@@ -1,5 +1,5 @@
 import type { HTMLAttributes, Ref } from "react";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 
 /**
  * Figma source: Board UI → dashboard 1 "Chip" layers (status chips, delta

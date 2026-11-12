@@ -29,7 +29,6 @@ export const valuelessFilterOperators = new Set<string>(
   operatorTable.flatMap(([operator, arity]) => (arity === "none" ? [operator] : [])),
 );
 
-/** Set operators. */
 export const multiValueFilterOperators = new Set<string>(
   operatorTable.flatMap(([operator, arity]) => (arity === "many" ? [operator] : [])),
 );
@@ -42,46 +41,37 @@ export type ListFilter = {
 
 const listOnlyOperators = new Set<string>(["has_any_of", "has_all_of", "has_none_of"]);
 
+/** `operator:value1|value2` with no check of the operator; null when the token has no colon. */
+export function splitListFilterValue(raw: string): { operator: string; values: string[] } | null {
+  const idx = raw.indexOf(":");
+  if (idx === -1) return null;
+  const values = raw
+    .slice(idx + 1)
+    .split("|")
+    .filter((value) => value.length > 0);
+  return { operator: raw.slice(0, idx), values };
+}
+
 /**
  * `operator:value1|value2`. A bare value is `is:<value>`. An unknown operator is
  * `is` of the whole token. A scalar operator with no values is dropped.
  */
 export function parseListFilterValue(raw: string): { operator: ListFilterOperator; values: string[] } | null {
   if (!raw) return null;
-  const idx = raw.indexOf(":");
-  if (idx === -1) return { operator: "is", values: [raw] };
-  const operator = raw.slice(0, idx);
-  const arity = operatorArity.get(operator);
-  if (!arity) return { operator: "is", values: [raw] };
-  const values = raw
-    .slice(idx + 1)
-    .split("|")
-    .filter((value) => value.length > 0);
-  if (!values.length && arity === "scalar") return null;
-  return { operator: operator as ListFilterOperator, values };
+  const split = splitListFilterValue(raw);
+  const arity = split && operatorArity.get(split.operator);
+  if (!split || !arity) return { operator: "is", values: [raw] };
+  if (!split.values.length && arity === "scalar") return null;
+  return { operator: split.operator as ListFilterOperator, values: split.values };
 }
 
 export function serializeListFilterValue(filter: { operator: string; values: string[] }): string {
   return `${filter.operator}:${filter.values.join("|")}`;
 }
 
-/** UI operator ids that are not the wire name. */
-export function toWireOperator(operator: string): string {
-  switch (operator) {
-    case "eq":
-      return "equals";
-    case "gt":
-      return "greater_than";
-    case "lt":
-      return "less_than";
-    default:
-      return operator;
-  }
-}
-
-export function parseListFilters(query: Record<string, string | undefined>): ListFilter[] {
+function parseEntries(entries: Iterable<[string, string | undefined]>): ListFilter[] {
   const out: ListFilter[] = [];
-  for (const [field, raw] of Object.entries(query)) {
+  for (const [field, raw] of entries) {
     if (!raw) continue;
     const parsed = parseListFilterValue(raw);
     if (parsed) out.push({ field, ...parsed });
@@ -89,15 +79,13 @@ export function parseListFilters(query: Record<string, string | undefined>): Lis
   return out;
 }
 
+export function parseListFilters(query: Record<string, string | undefined>): ListFilter[] {
+  return parseEntries(Object.entries(query));
+}
+
 /** Every `field=operator:values` of a query string, parsed like {@link parseListFilterValue}. */
 export function parseListQuery(queryString: string): ListFilter[] {
-  const filters: ListFilter[] = [];
-  for (const [field, raw] of new URLSearchParams(queryString)) {
-    if (!raw) continue;
-    const parsed = parseListFilterValue(raw);
-    if (parsed) filters.push({ field, ...parsed });
-  }
-  return filters;
+  return parseEntries(new URLSearchParams(queryString));
 }
 
 /** A scalar field has no set. Those operators stay the whole token, matched as `is`. */
@@ -138,7 +126,7 @@ export function listQueryBoolean(queryString: string, field: string): boolean | 
   return passing.length === 1 ? passing[0] === "true" : undefined;
 }
 
-function matchList(values: readonly string[], filter: ListFilter): boolean {
+export function matchList(values: readonly string[], filter: ListFilter): boolean {
   const have = new Set(values.map((value) => value.toLowerCase()));
   const needles = filter.values.map((needle) => needle.toLowerCase());
   switch (filter.operator) {

@@ -23,12 +23,12 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 
 | Capacidad | Función | owner | operator | staff | superuser |
 |---|---|---|---|---|---|
-| Listar / leer mallas y devices | `canReadMesh` | las suyas y las públicas (`is_public`) | igual que owner | todas | todas |
+| Listar / leer mallas y devices | `canReadShared` | las suyas y las públicas (`is_public`) | igual que owner | todas | todas |
 | Ver `psk_b64` | `canSeePsk` | la suya | la suya | no | sí |
 | Crear / editar malla o device | `canWriteMesh` | las suyas | las suyas | no | sí |
 | Crear blueprint | `canWriteCatalog` | sí (queda a su nombre) | sí | no | sí |
-| Gestionar fuentes (`/sources`) | `canManageSources` / `visibleSources` | no (403) | solo las suyas; ajenas 404 | no (403) | todas |
-| Gestionar destinos (`/sinks`) | `canManageSinks` / `visibleSinks` | no (403) | solo los suyos; ajenos 404 | no (403) | todos |
+| Gestionar fuentes (`/sources`) | `canOperate` / `visibleOperated` | no (403) | solo las suyas; ajenas 404 | no (403) | todas |
+| Gestionar destinos (`/sinks`) | `canOperate` / `visibleOperated` | no (403) | solo los suyos; ajenos 404 | no (403) | todos |
 | Asociar una malla o device a un destino | `canWriteMesh` + `archivesFor` (dueño de la malla) | — | en sus mallas | no | en mallas de un operator |
 | Ver `source_id` de una malla | `canSeeMeshSource` | solo en las suyas | solo en las suyas | no | todas (solo lectura en ajenas) |
 | Cambiar `source_id` de una malla | — | — | en las suyas, solo a una fuente propia | no | en las suyas |
@@ -40,11 +40,11 @@ Un `operator` es un `owner` a todos los efectos de mallas, devices y blueprints;
 | Ver email y flags de un owner | `canReadOwnerEmail` | solo el propio | solo el propio | no (directorio público) | sí |
 | `GET /owners` | — | `OwnerPublic` | `OwnerPublic` | `OwnerPublic` | `OwnerRead` completo |
 
-`visibleMeshes` recorta la lista de mallas con `canReadMesh`. `visibleBlueprints` enseña las plantillas propias y las públicas (staff y superuser, todas); editar exige `canWriteBlueprint` (dueño, o superuser si el dueño borró su cuenta) y vincular a un device, `canAttachBlueprint` (públicas o del dueño de la malla).
+`visibleMeshes` recorta la lista de mallas con `canReadShared`. `visibleBlueprints` enseña las plantillas propias y las públicas con la misma regla (staff y superuser, todas); editar exige `canWriteBlueprint` (dueño, o superuser si el dueño borró su cuenta) y vincular a un device, `canAttachBlueprint` (públicas o del dueño de la malla). Fuentes, destinos y la página de archivo comparten el nivel operator: `canOperate`.
 
 Leer no es editar: en una malla pública ajena el lector no ve PSK ni devices rechazados (`is_allowed: false`), y recibe 403 en cualquier write. En web, `canEditMesh` (`features/mesh/model.ts`) oculta toda acción de escritura (editar, borrar, registrar, ajustes de device, alarmas) cuando la malla no es suya.
 
-`source_id` se devuelve al dueño de la malla y a los superusers (solo lectura en ajenas); `psk_b64` sigue siendo solo del dueño. Asociar una fuente que el actor no ve responde 400 en `source_id`, igual que un id inexistente; reenviar la fuente actual siempre se acepta. En web, `canManageSources` (`features/source/model.ts`) decide la pestaña Sources y el selector de fuente en *Edit mesh*.
+`source_id` se devuelve al dueño de la malla y a los superusers (solo lectura en ajenas); `psk_b64` sigue siendo solo del dueño. Asociar una fuente que el actor no ve responde 400 en `source_id`, igual que un id inexistente; reenviar la fuente actual siempre se acepta. En web, `useMe().isOperator` (`canOperate`) decide la pestaña Sources y el selector de fuente en *Edit mesh*.
 
 404 vs 403: si el actor no puede **leer** el recurso, el mock responde 404 (no revela que existe). Si puede leer pero no escribir, 403.
 

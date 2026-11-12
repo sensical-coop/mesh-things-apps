@@ -12,7 +12,7 @@ import { useLocale } from "@mtt/ui/hooks/use-locale";
 import { SUPPORTED_LOCALES, type Locale } from "@mtt/ui/locale";
 
 // "size-" opts out of the menu item rule that forces svgs to size-4.
-const FLAG_CLASS = "size-auto h-3.5 w-5 shrink-0 rounded-[2px] ring-1 ring-black/10";
+const FLAG_CLASS = "size-auto h-3.5 w-5 shrink-0 rounded-[2px] ring-1 ring-border-button-default";
 
 // Flat SVG flags: emoji flags look wavy on macOS and render as letters on Windows.
 const LOCALES: Record<Locale, { flag: ReactElement; name: string }> = {

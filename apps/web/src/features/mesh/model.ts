@@ -1,10 +1,14 @@
 import type { Mesh } from "@mtt/contracts";
+import { defineMessage } from "react-intl";
 import { canWriteMesh, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
 import type { SourceStatus } from "../source/model.ts";
 import { termsStanding, type TermsStanding } from "../terms/model.ts";
 
 /** Select and filter value for a mesh on the instance broker (no source). */
 export const NO_SOURCE = "default";
+
+/** What a mesh with no source is called: its traffic comes through this instance's broker. */
+export const DEFAULT_BROKER = defineMessage({ id: "feature.mesh.defaultBroker", defaultMessage: "Default broker" });
 
 export function meshTitle(mesh: Pick<Mesh, "channel_id" | "label">): string {
   return mesh.label?.trim() || mesh.channel_id;
@@ -38,6 +42,26 @@ export function meshTermsStanding(
     currentVersion,
     now,
   });
+}
+
+/**
+ * Whether a mesh holds a current mesh-terms acceptance, wherever it is now. Pause is not part of
+ * "current": a paused mesh moving back to the default broker keeps its acceptance when the version
+ * still matches, which `meshTermsStanding` would call lapsed.
+ */
+export function meshTermsCurrent(
+  mesh: Pick<Mesh, "terms_accepted_version" | "terms_expires_at">,
+  currentVersion: string | undefined,
+  now: Date,
+): boolean {
+  const standing = termsStanding({
+    acceptedVersion: mesh.terms_accepted_version ?? null,
+    expiresAt: mesh.terms_expires_at ?? null,
+    pausedAt: null,
+    currentVersion,
+    now,
+  });
+  return standing === "ok" || standing === "expiring";
 }
 
 /**
@@ -100,6 +124,26 @@ export function meshStatus(
       return { kind: "active" };
   }
 }
+
+export type ShownMeshStatus = Exclude<MeshStatus["kind"], "hidden">;
+
+function inOrder<const T extends readonly ShownMeshStatus[]>(
+  kinds: Exclude<ShownMeshStatus, T[number]> extends never ? T : never,
+): T {
+  return kinds;
+}
+
+/** Every status a mesh row can show, usable states first, then the ones that have stopped. A missing kind does not typecheck. */
+export const SHOWN_MESH_STATUSES = inOrder([
+  "active",
+  "renewSoon",
+  "termsChanged",
+  "termsNotAccepted",
+  "scheduledForDeletion",
+  "sourcePaused",
+  "sourceDisconnected",
+  "sourceUnknown",
+]);
 
 /** For sorting the Status column: most urgent first. */
 export const MESH_STATUS_RANK: Record<MeshStatus["kind"], number> = {

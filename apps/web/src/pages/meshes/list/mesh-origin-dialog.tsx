@@ -4,10 +4,11 @@ import { RiArrowRightSLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { DEFAULT_BROKER } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 
-export type MeshOriginDialogProps = {
+type MeshOriginDialogProps = {
   open: boolean;
   sources: readonly Pick<SourceRead, "id" | "label" | "server" | "topic">[];
   onClose: () => void;
@@ -42,7 +43,7 @@ export function MeshOriginDialog({ open, sources, onClose, onChoose }: MeshOrigi
             <button type="button" className={optionClass} onClick={() => onChoose(null)}>
               <span className="flex flex-col">
                 <span className="text-body-medium text-text-primary">
-                  {formatMessage({ id: "feature.mesh.originDialog.default", defaultMessage: "Default broker" })}
+                  {formatMessage(DEFAULT_BROKER)}
                 </span>
                 <span className="text-caption-1-regular text-text-tertiary">
                   {formatMessage({

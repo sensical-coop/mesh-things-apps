@@ -9,9 +9,9 @@ import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { deviceTitle, roundCoordinate } from "@/features/device/model";
-import { deviceRepository } from "@/features/device/repository";
+import { deviceRepository, invalidateDevice } from "@/features/device/repository";
 import { DeviceDot } from "@/features/device/ui/device-dot";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { DeviceLocationSourceBadge } from "@/features/device/ui/location-source-badge";
@@ -42,10 +42,7 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
     ...deviceRepository.update(),
     onSuccess: async () => {
       if (!device) return;
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
-      await queryClient.invalidateQueries({
-        queryKey: deviceRepository.retrieveKey(device.uuid),
-      });
+      await invalidateDevice(queryClient, device);
       stopEditing();
     },
   });

@@ -4,18 +4,22 @@ import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { routes } from "@/router";
 
-export function AuthHeader(): ReactElement {
+export function AuthHeader({ bare = false }: { bare?: boolean }): ReactElement {
   return (
     <header className="absolute inset-x-0 top-0 z-10 h-16 w-full px-4 pt-[env(safe-area-inset-top)] sm:h-20 sm:px-6">
       <div className="mx-auto flex h-14 w-full max-w-full items-center justify-between px-0 sm:h-16 sm:max-w-4xl sm:px-4">
-        <Link
-          to={routes.home}
-          aria-label="Sensical"
-          className="shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        >
-          <BrandMark />
-        </Link>
-        <LanguageSwitcher />
+        {bare ? null : (
+          <Link
+            to={routes.home}
+            aria-label="Sensical"
+            className="shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            <BrandMark />
+          </Link>
+        )}
+        <div className="ms-auto">
+          <LanguageSwitcher />
+        </div>
       </div>
     </header>
   );

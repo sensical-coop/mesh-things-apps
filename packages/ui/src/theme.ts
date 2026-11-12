@@ -11,25 +11,18 @@ export type Theme = (typeof THEMES)[keyof typeof THEMES];
 /** ponytail: OA body is white; first visit stays light. Toggle still persists. */
 const DEFAULT_THEME: Theme = THEMES.light;
 
-export const themeInitScript = [
-  "(function(){try{",
-  `var stored=localStorage.getItem("${THEME_STORAGE_KEY}");`,
-  `var dark=stored?stored==="${THEMES.dark}":false;`,
-  'document.documentElement.classList.toggle("dark",dark)',
-  "}catch(e){",
-  'document.documentElement.classList.remove("dark")',
-  "}})();",
-].join("");
-
-function readStoredTheme(): Theme | null {
+// Serialized into themeInitScript: must not reference anything outside its own body.
+function initTheme(storageKey: string, fallback: string, dark: string): void {
+  let stored: string | null = null;
   try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === THEMES.dark || stored === THEMES.light) return stored;
+    stored = localStorage.getItem(storageKey);
   } catch {
-    return null;
+    /* private mode */
   }
-  return null;
+  document.documentElement.classList.toggle("dark", (stored ?? fallback) === dark);
 }
+
+export const themeInitScript = `(${initTheme})(${[THEME_STORAGE_KEY, DEFAULT_THEME, THEMES.dark].map((arg) => JSON.stringify(arg)).join(",")});`;
 
 function applyTheme(theme: Theme): void {
   const root = globalThis.document?.documentElement;

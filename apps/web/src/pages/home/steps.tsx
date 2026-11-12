@@ -7,7 +7,8 @@ import {
 } from "@mtt/ui/reui/frame";
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
+import { SectionHeading } from "./section-heading";
 import { LandingPacketFeed } from "./packet-feed";
 import { LandingReveal } from "./reveal";
 
@@ -22,15 +23,13 @@ export function LandingSteps(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <section id="why" className="scroll-mt-24">
-      <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
-          <FormattedMessage
-            id="page.home.steps.heading"
-            defaultMessage="Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>"
-            values={richTextValues}
-          />
-        </h2>
-      </LandingReveal>
+      <SectionHeading>
+        <FormattedMessage
+          id="page.home.steps.heading"
+          defaultMessage="Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>"
+          values={richTextValues}
+        />
+      </SectionHeading>
       <LandingReveal className="mt-12 sm:mt-16">
         <ul className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           <li>
@@ -92,9 +91,7 @@ export function LandingSteps(): ReactElement {
                   })}
                 </FrameDescription>
               </FrameHeader>
-              <FramePanel className="h-44 overflow-hidden mask-[linear-gradient(to_bottom,#000_72%,transparent)] p-0">
-                <LandingPacketFeed />
-              </FramePanel>
+              <LandingPacketFeed className="h-44" />
             </Frame>
           </li>
           <li>

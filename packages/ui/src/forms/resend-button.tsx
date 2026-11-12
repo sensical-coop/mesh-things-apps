@@ -6,12 +6,12 @@ export function ResendButton({
   remaining,
   pending,
   failed,
-  onResend,
+  resend,
 }: {
   remaining: number;
   pending: boolean;
   failed: boolean;
-  onResend: () => void;
+  resend: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const label =
@@ -32,7 +32,7 @@ export function ResendButton({
         variant="secondary"
         className="tabular-nums"
         disabled={remaining > 0 || pending}
-        onClick={onResend}
+        onClick={resend}
       >
         {label}
       </Button>

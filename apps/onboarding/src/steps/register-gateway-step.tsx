@@ -1,4 +1,3 @@
-import type { DeviceRead } from "@mtt/contracts";
 import type { ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { GatewayForm } from "@/features/device/gateway-form";
@@ -11,7 +10,7 @@ export function RegisterGatewayStep({
   onRegistered,
 }: {
   meshId: string;
-  onRegistered: (device: DeviceRead) => void;
+  onRegistered: () => void;
 }): ReactElement {
   const { formatMessage } = useIntl();
   return (

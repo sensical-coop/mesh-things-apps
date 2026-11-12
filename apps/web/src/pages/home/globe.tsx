@@ -1,6 +1,7 @@
-import { cx } from "@mtt/ui/utils";
 import { useMemo, type ReactElement } from "react";
+import { useIntl } from "react-intl";
 import { Map, MapArc, MapMarker, MarkerContent } from "@mtt/ui/components/ui/map";
+import { tokenColor } from "@/lib/token-color";
 import { DeviceDot } from "@/features/device/ui/device-dot";
 import { landingHops, landingNodes } from "./mesh";
 import { MapUnsupported } from "@/components/map-unsupported";
@@ -10,16 +11,11 @@ const OPEN_FREE_MAP = {
   dark: "https://tiles.openfreemap.org/styles/dark",
 } as const;
 
-function cssToken(name: string, fallback: string): string {
-  if (typeof document === "undefined") return fallback;
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return value || fallback;
-}
-
-export function LandingGlobe({ className }: { className?: string }): ReactElement {
+export function LandingGlobe(): ReactElement {
+  const { formatMessage } = useIntl();
   const arcs = useMemo(() => {
     const byId = Object.fromEntries(landingNodes.map((node) => [node.id, node]));
-    const color = cssToken("--oa-primary", "#ff495f");
+    const color = tokenColor("--oa-primary");
     return landingHops.flatMap((hop) => {
       const from = byId[hop.from];
       const to = byId[hop.to];
@@ -29,7 +25,7 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
   }, []);
 
   return (
-    <div className={cx("pointer-events-none relative isolate h-full min-h-52 overflow-hidden", className)} aria-hidden>
+    <div className="pointer-events-none relative isolate h-full min-h-52 overflow-hidden" aria-hidden>
       <Map
         className="absolute inset-0 size-full "
         styles={OPEN_FREE_MAP}
@@ -72,14 +68,20 @@ export function LandingGlobe({ className }: { className?: string }): ReactElemen
         <ul className="flex items-center gap-3">
           <li className="flex items-center gap-1.5">
             <DeviceDot isGateway />
-            <span className="text-caption-1-medium text-text-primary">Gateway</span>
+            <span className="text-caption-1-medium text-text-primary">
+              {formatMessage({ id: "feature.device.kindBadge.gateway", defaultMessage: "Gateway" })}
+            </span>
           </li>
           <li className="flex items-center gap-1.5">
             <DeviceDot isGateway={false} />
-            <span className="text-caption-1-medium text-text-primary">Node</span>
+            <span className="text-caption-1-medium text-text-primary">
+              {formatMessage({ id: "feature.device.kindBadge.node", defaultMessage: "Node" })}
+            </span>
           </li>
         </ul>
-        <p className="text-caption-1-regular text-text-tertiary">Map © OpenStreetMap</p>
+        <p className="text-caption-1-regular text-text-tertiary">
+          {formatMessage({ id: "page.home.proof.globe.attribution", defaultMessage: "Map © OpenStreetMap" })}
+        </p>
       </div>
     </div>
   );

@@ -1,4 +1,7 @@
+import type { TelemetryVariantRead } from "@mtt/contracts";
+import type { IntlShape } from "react-intl";
 import { isDerivedMeasurement } from "../../lib/measurement.ts";
+import { variantTitle } from "./model.ts";
 
 /** Derived channels share this group and sort after what the device reports. */
 export const COMPUTED_VARIANT_GROUP = "computed";
@@ -33,4 +36,16 @@ export function groupByTelemetryVariant<T>(
     const rows = groups.get(id);
     return rows ? [{ key: id, items: rows }] : [];
   });
+}
+
+/** Title of a group: the variant's name, `Computed` for derived channels, `Other` when the group has no known variant. */
+export function variantGroupTitle(
+  key: string,
+  variant: Pick<TelemetryVariantRead, "name" | "payload_kind"> | undefined,
+  formatMessage: IntlShape["formatMessage"],
+): string {
+  if (key === COMPUTED_VARIANT_GROUP) {
+    return formatMessage({ id: "feature.device.variantGroup.computed", defaultMessage: "Computed" });
+  }
+  return variant ? variantTitle(variant) : formatMessage({ id: "feature.device.variantGroup.other", defaultMessage: "Other" });
 }

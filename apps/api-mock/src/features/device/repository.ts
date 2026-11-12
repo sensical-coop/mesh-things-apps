@@ -1,5 +1,4 @@
 import { Device, type DeviceCreate } from "@mtt/domain/device/Device";
-import { type DeviceListQuery, matchesDeviceQuery } from "./filter";
 import { newId, nowIso } from "@mtt/domain/shared/ids";
 
 export type DevicePatch = Partial<DeviceCreate> & {
@@ -21,8 +20,8 @@ function gatewaySeenAfterMs(): number {
 export class MemoryDevices {
   readonly items = new Map<string, Device>();
 
-  async list(filters?: DeviceListQuery): Promise<Device[]> {
-    return [...this.items.values()].filter((d) => matchesDeviceQuery(d, filters));
+  async list(filters?: { meshId?: string }): Promise<Device[]> {
+    return [...this.items.values()].filter((d) => filters?.meshId === undefined || d.meshId === filters.meshId);
   }
 
   async get(uuid: string): Promise<Device | null> {
@@ -48,7 +47,6 @@ export class MemoryDevices {
       hardwareType: null,
       role: null,
       nodeinfoOverridden: false,
-      postprocessingCount: 0,
       readingIntervalSeconds: null,
       publishIntervalSeconds: null,
       lastSeen: input.isGateway ? null : now,
@@ -87,8 +85,7 @@ export class MemoryDevices {
             hardwareType: null,
             role: null,
             nodeinfoOverridden: false,
-            postprocessingCount: 0,
-            readingIntervalSeconds: null,
+                  readingIntervalSeconds: null,
             publishIntervalSeconds: null,
             lastSeen: seen,
             createdAt: seen,

@@ -4,7 +4,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { CodeBlock } from "@/components/code-block";
 import { Modal } from "@/components/modal";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { consumerCommand, sinkTitle } from "@/features/sink/model";
 
 export type SinkCredentialsDialogProps = {

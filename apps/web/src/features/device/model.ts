@@ -1,7 +1,11 @@
-import type { DeviceRead } from "@mtt/contracts";
+import type { DeviceRead, TelemetryVariantRead } from "@mtt/contracts";
 
 export function deviceTitle(device: DeviceRead): string {
   return device.name?.trim() || device.label?.trim() || `Node ${device.node_id}`;
+}
+
+export function variantTitle(variant: Pick<TelemetryVariantRead, "name" | "payload_kind">): string {
+  return variant.name ?? variant.payload_kind;
 }
 
 const KNOWN_DEVICE_ROLES = [
@@ -24,26 +28,9 @@ export type DeviceRoleLabels = Record<(typeof KNOWN_DEVICE_ROLES)[number], strin
   node: string;
 };
 
-const EN_DEVICE_ROLE_LABELS: DeviceRoleLabels = {
-  client: "Client",
-  client_mute: "Client mute",
-  client_hidden: "Client hidden",
-  router: "Router",
-  router_client: "Router client",
-  router_late: "Router late",
-  repeater: "Repeater",
-  tracker: "Tracker",
-  sensor: "Sensor",
-  tak: "TAK",
-  tak_tracker: "TAK tracker",
-  lost_and_found: "Lost and found",
-  gateway: "Gateway",
-  node: "Node",
-};
-
 export function deviceRoleLabel(
   device: Pick<DeviceRead, "role" | "is_gateway">,
-  labels: DeviceRoleLabels = EN_DEVICE_ROLE_LABELS,
+  labels: DeviceRoleLabels,
 ): string {
   const role = device.role?.trim();
   if (!role) return device.is_gateway ? labels.gateway : labels.node;
@@ -60,10 +47,11 @@ export function deviceLastSeen(device: Pick<DeviceRead, "last_seen" | "discovere
   return device.last_seen ?? device.discovered_at ?? null;
 }
 
+const MISSED_PUBLISHES = 5;
+
 export function deviceSilent(
   device: Pick<DeviceRead, "last_seen" | "discovered_at" | "publish_interval_seconds">,
   nowMs = Date.now(),
-  missed = 5,
 ): boolean {
   const lastSeen = deviceLastSeen(device);
   if (!lastSeen) return true;
@@ -73,7 +61,7 @@ export function deviceSilent(
       : 300) * 1000;
   const seen = Date.parse(lastSeen);
   if (!Number.isFinite(seen)) return true;
-  return seen + missed * intervalMs < nowMs;
+  return seen + MISSED_PUBLISHES * intervalMs < nowMs;
 }
 
 export type CoordinateParse = { ok: true; value: number | null } | { ok: false };

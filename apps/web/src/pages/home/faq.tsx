@@ -1,7 +1,8 @@
 import { RiArrowDownSLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
+import { SectionHeading } from "./section-heading";
 import { LandingReveal } from "./reveal";
 
 const faqs = [
@@ -11,7 +12,7 @@ const faqs = [
     qDefault: "What is Mesh Things?",
     aId: "page.home.faq.meshtastic.a",
     aDefault:
-      "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQQT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
+      "A storage and data layer for Meshtastic networks and telemetry data. The data comes from MQTT and gets stored and processed in Mesh Things. Mesh Things can be deployed locally on a Raspberry Pi or on a cloud server.",
   },
   {
     id: "federated",
@@ -42,15 +43,13 @@ export function LandingFaq(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <section id="faq" className="scroll-mt-24">
-      <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
-          <FormattedMessage
-            id="page.home.faq.heading"
-            defaultMessage="Frequently asked <secondary>questions</secondary>"
-            values={richTextValues}
-          />
-        </h2>
-      </LandingReveal>
+      <SectionHeading>
+        <FormattedMessage
+          id="page.home.faq.heading"
+          defaultMessage="Frequently asked <secondary>questions</secondary>"
+          values={richTextValues}
+        />
+      </SectionHeading>
       <LandingReveal className="mx-auto mt-12 w-full max-w-2xl sm:mt-16">
         <div>
           {faqs.map((item) => (

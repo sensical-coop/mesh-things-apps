@@ -11,11 +11,12 @@ import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { errorMessages, readApiError } from "@mtt/contracts/errors";
-import { calibrationParams, formatParam, parseParam, valueMap } from "@/lib/algorithm-params";
+import { calibrationParams, formatParam, formatParams, parseParam, valueMap } from "@/lib/algorithm-params";
+import { ParamField } from "@/features/blueprint/ui/param-field";
 import { calibratedSteps, calibrationInForce, localInputToIso } from "@/features/postprocessing/model";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
 import { useFormatters } from "@/hooks/use-formatters";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type CalibrationDialogProps = {
   deviceUuid: string;
@@ -50,7 +51,7 @@ export function CalibrationDialog({
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: postprocessingRepository.calibrationsKey(deviceUuid, postprocessing.id) });
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
+    await invalidatePostprocessing(queryClient, deviceUuid);
   }
 
   const calibrate = useMutation({
@@ -123,30 +124,16 @@ export function CalibrationDialog({
                 </FormField>
               ) : null}
               {calibrationParams(step.algorithm).map((param) => (
-                <FormField
+                <ParamField
                   key={param.name}
                   id={`calibration-${param.name}`}
-                  label={param.unit ? `${param.name} (${param.unit})` : param.name}
-                  hint={param.doc || undefined}
-                >
-                  <Input
-                    id={`calibration-${param.name}`}
-                    name={param.name}
-                    required={param.required}
-                    autoComplete="off"
-                    inputMode={param.default === null || typeof param.default === "number" ? "decimal" : undefined}
-                    // Start from the calibration in force, so recalibrating one constant keeps the others.
-                    defaultValue={inForce && param.name in valueMap(inForce.params) ? formatParam(valueMap(inForce.params)[param.name]) : ""}
-                    placeholder={
-                      param.required
-                        ? formatMessage({ id: "feature.blueprint.step.paramRequired", defaultMessage: "Required" })
-                        : formatMessage(
-                            { id: "feature.blueprint.step.paramDefault", defaultMessage: "Default {value}" },
-                            { value: JSON.stringify(param.default) },
-                          )
-                    }
-                  />
-                </FormField>
+                  param={param}
+                  name={param.name}
+                  required={param.required}
+                  inputMode={param.default === null || typeof param.default === "number" ? "decimal" : undefined}
+                  // Start from the calibration in force, so recalibrating one constant keeps the others.
+                  defaultValue={inForce && param.name in valueMap(inForce.params) ? formatParam(valueMap(inForce.params)[param.name]) : ""}
+                />
               ))}
               <FormField
                 id="calibration-valid-from"
@@ -211,9 +198,7 @@ export function CalibrationDialog({
                         ) : null}
                       </p>
                       <p className="min-w-0 font-mono text-caption-1-regular wrap-break-word text-text-tertiary">
-                        {Object.entries(valueMap(row.params))
-                          .map(([name, value]) => `${name}=${formatParam(value)}`)
-                          .join("  ")}
+                        {formatParams(valueMap(row.params))}
                       </p>
                     </div>
                     {canEdit ? (

@@ -26,8 +26,9 @@ function RootComponent() {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        {headInitScripts.map((script) => (
-          <script key={script} dangerouslySetInnerHTML={{ __html: script }} />
+        {headInitScripts.map((script, index) => (
+          // Server and client bundles stringify the init functions differently; the script already ran.
+          <script key={index} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: script }} />
         ))}
         <HeadContent />
       </head>

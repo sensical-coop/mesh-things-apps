@@ -1,7 +1,7 @@
 import type { SourceRead } from "@mtt/contracts";
 
 /** Bridge states the status chip and mesh status both understand. Anything else is unknown. */
-export const SOURCE_STATUSES = ["connected", "disconnected", "paused"] as const;
+const SOURCE_STATUSES = ["connected", "disconnected", "paused"] as const;
 
 export type SourceStatus = (typeof SOURCE_STATUSES)[number];
 

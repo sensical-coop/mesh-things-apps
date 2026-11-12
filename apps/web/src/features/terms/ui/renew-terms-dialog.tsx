@@ -1,84 +1,75 @@
+import { useMutation } from "@tanstack/react-query";
 import { type ReactElement } from "react";
-import { useIntl } from "react-intl";
-import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
-import { type TermsAcceptance, type TermsKind } from "@/features/terms/model";
+import { defineMessages, type MessageDescriptor, useIntl } from "react-intl";
+import { formLevelMessage } from "@mtt/contracts/errors";
+import { termsFields } from "@mtt/contracts/terms";
+import { termsAcceptError } from "@/features/terms/accept-error";
+import { type TermsKind } from "@/features/terms/model";
+import { termsRepository, type Renewal, type TermsRenewed } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 
 type RenewKind = Extract<TermsKind, "mesh" | "source" | "sink">;
 
-const RENEW_COPY: Record<
-  RenewKind,
-  {
-    resumeFailed: { id: string; defaultMessage: string };
-    generic: { id: string; defaultMessage: string };
-  }
-> = {
+const RESUME_FAILED = defineMessages({
   mesh: {
-    resumeFailed: {
-      id: "feature.mesh.renew.resumeFailed",
-      defaultMessage: "The mesh's gateways could not be resumed, so the terms were not renewed. Try again.",
-    },
-    generic: { id: "feature.mesh.renew.error", defaultMessage: "The terms were not renewed. Try again." },
+    id: "feature.mesh.renew.resumeFailed",
+    defaultMessage: "The mesh's gateways could not be resumed, so the terms were not renewed. Try again.",
   },
   source: {
-    resumeFailed: {
-      id: "feature.source.renew.bridgeFailed",
-      defaultMessage: "The bridge could not be restarted, so the terms were not renewed. Try again.",
-    },
-    generic: { id: "feature.source.renew.error", defaultMessage: "The terms were not renewed. Try again." },
+    id: "feature.source.renew.bridgeFailed",
+    defaultMessage: "The bridge could not be restarted, so the terms were not renewed. Try again.",
   },
   sink: {
-    resumeFailed: {
-      id: "feature.sink.renew.brokerFailed",
-      defaultMessage: "The broker could not resume the sink, so the terms were not renewed. Try again.",
-    },
-    generic: { id: "feature.sink.renew.error", defaultMessage: "The terms were not renewed. Try again." },
+    id: "feature.sink.renew.brokerFailed",
+    defaultMessage: "The broker could not resume the sink, so the terms were not renewed. Try again.",
   },
-};
+} satisfies Record<RenewKind, { id: string; defaultMessage: string }>);
 
-export type RenewTermsDialogProps = {
-  open: boolean;
-  kind: RenewKind;
-  acceptLabel?: string;
-  pending: boolean;
-  error: unknown;
+export type RenewTermsDialogProps<K extends RenewKind> = {
+  kind: K;
+  /** What is being renewed; the dialog is open while this is set. */
+  entity: { id: string; name: string } | null;
   onClose: () => void;
-  onAccepted: (acceptance: TermsAcceptance) => void;
+  /** Runs once the renewal is saved; the caller refreshes what it shows and closes the dialog. */
+  onRenewed: (renewed: TermsRenewed<K>) => Promise<void> | void;
 };
 
-export function RenewTermsDialog({
-  open,
+export function RenewTermsDialog<K extends RenewKind>({
   kind,
-  acceptLabel,
-  pending,
-  error,
+  entity,
   onClose,
-  onAccepted,
-}: RenewTermsDialogProps): ReactElement {
+  onRenewed,
+}: RenewTermsDialogProps<K>): ReactElement {
   const { formatMessage } = useIntl();
-  const failure = error ? readApiError(error) : null;
-  const copy = RENEW_COPY[kind];
+  const resumeFailed: MessageDescriptor = RESUME_FAILED[kind];
+  const renew = useMutation({
+    ...(termsRepository.renew[kind] as { mutationFn: (renewal: Renewal) => Promise<TermsRenewed<K>> }),
+    onSuccess: async (renewed) => {
+      await onRenewed(renewed);
+      renew.reset();
+    },
+  });
 
   return (
     <TermsDialog
-      open={open}
+      open={entity !== null}
       kind={kind}
-      onClose={onClose}
-      onAccepted={(acceptance) => (!acceptance ? onClose() : onAccepted(acceptance))}
-      acceptLabel={acceptLabel}
-      pending={pending}
-      error={
-        failure
-          ? failure.fields.terms_version
-            ? formatMessage({
-                id: "feature.terms.renew.outdated",
-                defaultMessage: "The terms changed while you were reading. Close and open them again.",
-              })
-            : failure.status === 502
-              ? formatMessage(copy.resumeFailed)
-              : (formLevelMessage(error) ?? formatMessage(copy.generic))
-          : null
-      }
+      onClose={() => {
+        renew.reset();
+        onClose();
+      }}
+      onAccepted={(acceptance) => {
+        if (!acceptance) onClose();
+        else if (entity) renew.mutate({ id: entity.id, data: termsFields(acceptance) });
+      }}
+      acceptLabel={entity ? formatMessage({ id: "feature.terms.renew.accept", defaultMessage: "Renew {name}" }, { name: entity.name }) : undefined}
+      pending={renew.isPending}
+      error={termsAcceptError(renew.error, formatMessage, (failure) =>
+        failure.status === 502
+          ? formatMessage(resumeFailed)
+          : (formLevelMessage(renew.error) ??
+            formatMessage({ id: "feature.terms.renew.error", defaultMessage: "The terms were not renewed. Try again." })),
+      )}
     />
   );
 }

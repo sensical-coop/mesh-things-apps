@@ -12,7 +12,7 @@ import { useIntl } from "react-intl";
 import { AlarmDetectorsDialog } from "@/features/alarm/ui/alarm-detectors-dialog";
 import { ArchiveSettingsDialog } from "@/features/archive/ui/archive-settings-dialog";
 
-export type ChannelActionsMenuProps = {
+type ChannelActionsMenuProps = {
   device: DeviceRead;
   channel: string;
   label: string;
@@ -58,9 +58,9 @@ export function ChannelActionsMenu({ device, channel, label }: ChannelActionsMen
         </DropdownMenuContent>
       </DropdownMenu>
       {dialog === "alarms" ? (
-        <AlarmDetectorsDialog open onClose={() => setDialog(null)} deviceUuid={device.uuid} channel={channel} label={label} />
+        <AlarmDetectorsDialog onClose={() => setDialog(null)} deviceUuid={device.uuid} channel={channel} label={label} />
       ) : null}
-      {dialog === "archive" ? <ArchiveSettingsDialog device={device} open onClose={() => setDialog(null)} /> : null}
+      {dialog === "archive" ? <ArchiveSettingsDialog device={device} onClose={() => setDialog(null)} /> : null}
     </>
   );
 }

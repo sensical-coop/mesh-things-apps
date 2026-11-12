@@ -1,4 +1,5 @@
 import type { Device } from "@mtt/domain/device/Device";
+import { NIL_UUID } from "@mtt/domain/shared/ids";
 import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { LatestReading } from "@mtt/domain/readings/Readings";
@@ -10,11 +11,14 @@ import type { DataDeletionRow } from "./features/data-deletion/repository";
 import { latestVersion, type BlueprintRow, type BlueprintVersionRow } from "./features/blueprint/repository";
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 
-import { flagsForRole, roleFlag } from "@mtt/contracts/authz";
+import { canSeeMeshSource, canSeePsk, flagsForRole, roleFlag } from "@mtt/contracts/authz";
 import type { Actor } from "./auth";
+import { brokerHost } from "./features/source/rules";
+import type { DeviceChannel } from "./features/device/channels";
+import { VARIANT_ENV_ID, type Store } from "./store";
 
 /** `includeSource` is for the mesh's owner and superusers, as in the API. */
-export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includePsk) {
+export function meshJson(mesh: Mesh, includePsk: boolean, includeSource: boolean) {
   const row: Record<string, unknown> = {
     id: mesh.id,
     channel_id: mesh.channelId,
@@ -36,6 +40,9 @@ export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includ
   return row;
 }
 
+/** A mesh as `actor` may see it. */
+export const meshOut = (actor: Actor, mesh: Mesh) => meshJson(mesh, canSeePsk(actor, mesh), canSeeMeshSource(actor, mesh));
+
 /** The password is write-only: never returned to anyone. */
 function sourceJson(source: Source) {
   return {
@@ -52,22 +59,6 @@ function sourceJson(source: Source) {
     created_by_id: source.createdById,
     created_at: source.createdAt,
     updated_at: source.updatedAt,
-  };
-}
-
-/**
- * Host of `host:port`. `own` is this instance (`localhost` / `emqx`), `invalid` is an
- * unreachable `*.invalid` host, `offline` is an `offline.*` host the bridge can't reach.
- */
-export function brokerHost(server: string): { own: boolean; invalid: boolean; offline: boolean } {
-  const trimmed = server.trim();
-  const at = trimmed.lastIndexOf(":");
-  const host = at < 0 ? trimmed.slice(0, -1) : trimmed.slice(0, at);
-  const lower = host.toLowerCase();
-  return {
-    own: lower === "localhost" || lower === "emqx",
-    invalid: host.endsWith(".invalid"),
-    offline: host.startsWith("offline."),
   };
 }
 
@@ -186,6 +177,43 @@ export function measurementJson(m: MeasurementType) {
     vocabulary_uri: m.vocabularyUri,
     created_at: m.createdAt,
     updated_at: m.updatedAt,
+  };
+}
+
+function catalogDefaultDetectors(store: Store, measurementTypeId: string): string[] {
+  for (const link of store.telemetryVariantMeasurements.values()) {
+    if (link.measurementTypeId === measurementTypeId) return link.defaultEnabledDetectors;
+  }
+  return [];
+}
+
+export function deviceMeasurementJson(store: Store, device: Device, channel: DeviceChannel) {
+  const { id, type } = channel;
+  const enabledDetectors = store.detectorOverrides.get(id) ?? null;
+  const effectiveDetectors = [...(enabledDetectors ?? catalogDefaultDetectors(store, type.id))].sort();
+  const range = store.deviceMeasurementRanges.get(id) ?? { validMin: null, validMax: null };
+  return {
+    id,
+    telemetry_variant_id: type.origin === "measured" ? VARIANT_ENV_ID : NIL_UUID,
+    measurement_type: measurementJson(type),
+    enabled_detectors: enabledDetectors,
+    effective_detectors: effectiveDetectors,
+    valid_min: range.validMin,
+    valid_max: range.validMax,
+    produced_by: channel.producedBy,
+    first_seen: device.createdAt,
+    last_seen: device.lastSeen,
+  };
+}
+
+export function telemetryVariantMeasurementJson(store: Store, type: MeasurementType, linkId: string) {
+  const link = store.telemetryVariantMeasurements.get(linkId) ?? { defaultEnabledDetectors: [] };
+  return {
+    id: linkId,
+    measurement_type: measurementJson(type),
+    default_enabled_detectors: [...link.defaultEnabledDetectors].sort(),
+    created_at: type.createdAt,
+    updated_at: type.updatedAt,
   };
 }
 

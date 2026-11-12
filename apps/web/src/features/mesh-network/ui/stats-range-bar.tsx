@@ -9,11 +9,11 @@ import {
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { MESH_STATS_RANGES, type MeshStatsRange } from "../model";
+import { DEFAULT_STATS_RANGE, MESH_STATS_RANGES, type MeshStatsRange } from "../model";
 
 /** The stats range, in the URL so the Traffic and Topology tabs share it. */
 export function useStatsRange() {
-  return useQueryState("range", parseAsStringLiteral(MESH_STATS_RANGES).withDefault("24h"));
+  return useQueryState("range", parseAsStringLiteral(MESH_STATS_RANGES).withDefault(DEFAULT_STATS_RANGE));
 }
 
 export function StatsRangeBar({ description }: { description: string }): ReactElement {

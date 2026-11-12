@@ -6,7 +6,7 @@ import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 

@@ -7,7 +7,7 @@ import { RouterButtonLink } from "@/components/router-button-link";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { alarmVariantGroups } from "@/features/alarm/model";
-import { COMPUTED_VARIANT_GROUP } from "@/features/device/variant-groups";
+import { variantGroupTitle } from "@/features/device/variant-groups";
 import { AlarmBellButton } from "@/features/alarm/ui/alarm-bell-button";
 import { deviceTitle } from "@/features/device/model";
 import { deviceRepository } from "@/features/device/repository";
@@ -15,7 +15,7 @@ import { DeviceKindBadge } from "@/features/device/ui/kind-badge";
 import { routes } from "@/router";
 import { DeviceAbsenceToggle } from "./device-absence-toggle";
 
-export type DeviceAlarmsRowProps = {
+type DeviceAlarmsRowProps = {
   device: DeviceRead;
   variants: readonly TelemetryVariantRead[];
   expanded: boolean;
@@ -32,10 +32,8 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
     ...deviceRepository.measurements(device.uuid),
     enabled: expanded,
   });
-  const groups = useMemo(
-    () => alarmVariantGroups(measurements.data ?? [], variants),
-    [measurements.data, variants],
-  );
+  const groups = useMemo(() => alarmVariantGroups(measurements.data ?? []), [measurements.data]);
+  const variantById = useMemo(() => new Map(variants.map((variant) => [variant.id, variant])), [variants]);
   const channelsId = `alarm-channels-${device.uuid}`;
 
   return (
@@ -60,7 +58,7 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
         </div>
         <div className="flex gap-2">
           <RouterButtonLink to={routes.device} params={{ deviceUuid: device.uuid }} size="xs" variant="secondary">
-            {formatMessage({ id: "page.alarms.list.open", defaultMessage: "Open" })}
+            {formatMessage({ id: "common.actions.open", defaultMessage: "Open" })}
           </RouterButtonLink>
           <DeviceAbsenceToggle device={device} />
         </div>
@@ -87,9 +85,7 @@ export function DeviceAlarmsRow({ device, variants, expanded, onToggle }: Device
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
               <h4 className="min-w-0 text-caption-1-medium wrap-break-word text-text-secondary">
-                {group.key === COMPUTED_VARIANT_GROUP
-                  ? formatMessage({ id: "page.devices.detail.computedGroup", defaultMessage: "Computed" })
-                  : (group.title ?? formatMessage({ id: "page.alarms.list.otherVariant", defaultMessage: "Other" }))}
+                {variantGroupTitle(group.key, variantById.get(group.key), formatMessage)}
               </h4>
               <div className="oa-arrive overflow-x-auto">
                 <table className="w-full min-w-lg table-fixed caption-bottom text-left text-body-2-regular">

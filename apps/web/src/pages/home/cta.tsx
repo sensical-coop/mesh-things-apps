@@ -1,4 +1,4 @@
-import { SITE } from "@/components/brand";
+import { CONTACT_URL } from "@/components/brand";
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
@@ -26,7 +26,7 @@ export function LandingCta(): ReactElement {
           </p>
         </LandingReveal>
         <LandingReveal className="mt-8">
-          <ButtonLink href={`${SITE}/contact`} size="medium">
+          <ButtonLink href={CONTACT_URL} size="medium">
             {formatMessage({ id: "page.home.cta.contactUs", defaultMessage: "Contact us" })}
           </ButtonLink>
         </LandingReveal>

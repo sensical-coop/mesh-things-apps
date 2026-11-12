@@ -8,7 +8,7 @@ import { useIntl } from "react-intl";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { errorMessages } from "@mtt/contracts/errors";
 import { calibratedSteps, channelLabel } from "@/features/postprocessing/model";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
 import { PostprocessingStateChip } from "@/features/postprocessing/ui/postprocessing-state-chip";
 import { StartRefusedDialog } from "@/features/postprocessing/ui/start-refused-dialog";
 import { routes } from "@/router";
@@ -50,7 +50,7 @@ export function PostprocessingItem({
     ...postprocessingRepository.update(),
     onSuccess: async () => {
       setRefused([]);
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
+      await invalidatePostprocessing(queryClient, deviceUuid);
     },
     onError: (error) => setRefused(errorMessages(error)),
   });

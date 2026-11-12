@@ -1,3 +1,6 @@
+import type { TermsLocaleEnum as TermsLocale } from "@mtt/contracts";
+import { DEV_PORTS, SITE_PATHS } from "@mtt/contracts/site";
+
 /**
  * The terms owners accept, as the API serves them: the account terms at signup, the mesh
  * terms per mesh on the default broker, the source terms per source and the sink terms per
@@ -6,7 +9,6 @@
  * console shows what these routes return and keeps no copy of its own.
  */
 export type TermsKind = "account" | "mesh" | "source" | "sink";
-export type TermsLocale = "en" | "es";
 
 export const TERMS_VERSIONS: Record<TermsKind, string> = {
   account: "account-2026-09",
@@ -29,7 +31,7 @@ export const DATA_RETENTION_DAYS: number | null =
 export const DATA_DELETION_GRACE_DAYS = 30;
 
 /** Mirrors `dpa_url()`: the Data Processing Agreement page, under REGISTRY__PUBLIC_FRONTEND_URL. */
-const DPA_URL = `${(process.env.MOCK_PUBLIC_FRONTEND_URL ?? "http://localhost:5173").replace(/\/$/, "")}/dpa`;
+const DPA_URL = `${(process.env.MOCK_PUBLIC_FRONTEND_URL ?? `http://localhost:${DEV_PORTS.web}`).replace(/\/$/, "")}${SITE_PATHS.dpa}`;
 
 type Copy = {
   title: string;
@@ -298,17 +300,6 @@ export function acceptanceExpiry(from: Date): string | null {
   ).toISOString();
 }
 
-/** One row per acceptance, platform or source; kept after the owner or source is deleted. */
-export type TermsAcceptance = {
-  kind: TermsKind;
-  ownerId: string | null;
-  sourceId: string | null;
-  termsVersion: string;
-  locale: TermsLocale;
-  acceptedAt: string;
-  expiresAt: string | null;
-};
-
 /** The API's check on `terms_version`: only the current version counts. */
 export function termsVersionError(kind: TermsKind, version: string | undefined): Record<string, string[]> {
   // Terms off: `terms_version` is optional and ignored, even a stale one.
@@ -323,48 +314,17 @@ export function termsVersionError(kind: TermsKind, version: string | undefined):
   };
 }
 
-export type AcceptTermsResult = { error: Record<string, string[]> } | { expiresAt: string | null };
+/** What a mesh, source or sink carries of the terms it was accepted under, and whether a lapse paused it. */
+export type TermsStamp = { termsAcceptedVersion: string | null; termsExpiresAt: string | null; pausedAt: string | null };
 
-export function recordAcceptance(
-  rows: TermsAcceptance[],
-  kind: TermsKind,
-  ownerId: string,
-  locale: TermsLocale,
-  sourceId: string | null = null,
-): string | null {
-  // Terms off: nothing is recorded, and nothing lapses.
-  if (!TERMS_ENFORCED) return null;
-  const now = new Date();
-  const expiresAt = acceptanceExpiry(now);
-  rows.push({
-    kind,
-    ownerId,
-    sourceId,
-    termsVersion: TERMS_VERSIONS[kind],
-    locale,
-    acceptedAt: now.toISOString(),
-    expiresAt,
-  });
-  return expiresAt;
+/** Stamps `target` with the current terms of `kind` and resumes it. Terms off: the stamp is null, as nothing lapses. */
+export function acceptTerms(kind: Exclude<TermsKind, "account">, target: TermsStamp): void {
+  target.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS[kind] : null;
+  target.termsExpiresAt = TERMS_ENFORCED ? acceptanceExpiry(new Date()) : null;
+  target.pausedAt = null;
 }
 
-export function acceptTerms(
-  rows: TermsAcceptance[],
-  kind: TermsKind,
-  version: string | undefined,
-  ownerId: string,
-  locale: TermsLocale,
-  sourceId: string | null = null,
-  commit = true,
-): AcceptTermsResult {
-  const error = termsVersionError(kind, version);
-  if (Object.keys(error).length) return { error };
-  return { expiresAt: commit ? recordAcceptance(rows, kind, ownerId, locale, sourceId) : null };
+/** Accepting the account terms never lapses or pauses anything. Terms off: nothing recorded. */
+export function acceptAccountTerms(accountTerms: Map<string, string>, ownerId: string): void {
+  if (TERMS_ENFORCED) accountTerms.set(ownerId, TERMS_VERSIONS.account);
 }
-
-/** A mesh's or a source's standing with its terms, as the API reports it. */
-export type TermsStanding = {
-  acceptedVersion: string | null;
-  expiresAt: string | null;
-  pausedAt: string | null;
-};

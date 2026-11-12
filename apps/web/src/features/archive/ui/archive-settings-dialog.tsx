@@ -7,21 +7,19 @@ import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { archiveRepository } from "@/features/archive/repository";
-import { deviceRepository } from "@/features/device/repository";
+import { deviceRepository, invalidateDevice } from "@/features/device/repository";
 import { deviceTitle } from "@/features/device/model";
-import { meshRepository } from "@/features/mesh/repository";
 
 export type ArchiveSettingsDialogProps = {
   device: DeviceRead;
-  open: boolean;
   onClose: () => void;
 };
 
-export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettingsDialogProps): ReactElement {
+export function ArchiveSettingsDialog({ device, onClose }: ArchiveSettingsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
   const { ownerName } = useOwnerDirectory();
@@ -31,9 +29,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
     ...deviceRepository.update(),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(device.uuid) }),
-        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(device.mesh_id) }),
+        invalidateDevice(queryClient, device),
         queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey(device.mesh_id) }),
       ]);
       onClose();
@@ -62,7 +58,7 @@ export function ArchiveSettingsDialog({ device, open, onClose }: ArchiveSettings
 
   return (
     <Modal
-      open={open}
+      open
       title={formatMessage(
         { id: "feature.archive.settingsDialog.title", defaultMessage: "S3 storage — {device}" },
         { device: deviceTitle(device) },

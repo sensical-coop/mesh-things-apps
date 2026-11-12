@@ -2,27 +2,23 @@ import {
   boxCorners,
   corners,
   cylinder,
-  dotGrid,
   knurl,
   planOutline,
-  segment,
   sideMatrix,
   sideSeam,
   slabOf,
   type Point3,
   iso,
   type Projection,
-  type SolidPaths,
 } from "@/iso/iso-kit";
 import { airPacket, airRings, wifiArcs } from "../parts/air-waves";
 import { loraRadio } from "../parts/lora-radio";
 import { FIGURE_HEIGHT, FIGURE_WIDTH, stepProjection } from "../view";
 
 export const BASE = { x: -128, y: -44, w: 248, d: 70, r: 8 };
-export const BASE_H = 8;
-export const FOOT = 5;
+const BASE_H = 8;
+const FOOT = 5;
 
-const MAST: Point3 = [-88, 4, 0];
 const FACE_X = 78;
 const FACE_Y = -2;
 const FACE_Z = 46;
@@ -47,40 +43,6 @@ export const PLATE = slabOf({ x: -120, y: -36, w: 42, d: 12, r: 1.5 }, BASE_H, 0
 const boltAt = [[-110, -30], [-110, 12], [108, -30], [108, 12]] as const;
 export const BOLTS = boltAt.map(([x, y]) => cylinder(x, y, 2.2, BASE_H, 1.5, P, 8));
 
-export const FLANGE = cylinder(MAST[0], MAST[1], 16, BASE_H, 3.2, P, 20);
-const boltAngle = [0.4, 2, 3.6, 5.2];
-export const FLANGE_BOLTS = boltAngle.map((angle) =>
-  cylinder(MAST[0] + Math.cos(angle) * 11, MAST[1] + Math.sin(angle) * 11, 1.7, BASE_H + 3.2, 1.3, P, 8),
-);
-export const PEDESTAL = cylinder(MAST[0], MAST[1], 6.5, BASE_H + 3.2, 5, P, 16);
-export const MAST_SHAFT = cylinder(MAST[0], MAST[1], 3.6, BASE_H + 8, 30, P, 16);
-export const COLLAR = cylinder(MAST[0], MAST[1], 5.4, BASE_H + 24, 5, P, 16);
-export const COLLAR_BOLT = cylinder(MAST[0] + 5.2, MAST[1] + 1, 1.3, BASE_H + 25.2, 2.4, P, 8);
-
-const CASE = { x: MAST[0] - 18, y: MAST[1] - 9, w: 36, d: 18, r: 2 };
-const CASE_Z = BASE_H + 32;
-export const RADIO = slabOf(CASE, CASE_Z, 14, P);
-export const RADIO_SEAM = sideSeam(CASE, CASE_Z + 10, P);
-export const LID = slabOf({ x: CASE.x + 1.5, y: CASE.y + 1.5, w: CASE.w - 3, d: CASE.d - 3, r: 1.5 }, CASE_Z + 14, 2, P);
-export const LID_SCREWS = corners(CASE, 5).map(([x, y]) => cylinder(x, y, 1.1, CASE_Z + 16, 0.8, P, 8));
-export const GRILL = dotGrid(CASE.x + 4, CASE.y + 4, 4, 2, 2.4, CASE_Z + 7, P);
-
-export const GLAND = cylinder(MAST[0] + 8, MAST[1], 2.4, CASE_Z - 3.2, 3.2, P, 12);
-export const NUT = cylinder(MAST[0] + 6, CASE.y + CASE.d - 1, 2.6, CASE_Z + 16, 1.6, P, 6);
-export const N_BODY = cylinder(MAST[0] + 6, CASE.y + CASE.d - 1, 1.8, CASE_Z + 17.6, 3.2, P, 10);
-const WHIP_X = MAST[0] + 6;
-const WHIP_Y = CASE.y + CASE.d - 1;
-const COIL_Z = CASE_Z + 20.6;
-export const COIL_FORM = cylinder(WHIP_X, WHIP_Y, 3.1, COIL_Z, 7, P, 12);
-export const WHIP = segment([WHIP_X, WHIP_Y, COIL_Z + 5.5], [WHIP_X, WHIP_Y, COIL_Z + 40], P);
-export const WHIP_TIP = cylinder(WHIP_X, WHIP_Y, 1.05, COIL_Z + 38, 3.4, P, 8);
-
-const TERM = { x: MAST[0] - 6, y: MAST[1] + 10, w: 16, d: 8, r: 1 };
-export const TERMINAL = slabOf(TERM, BASE_H, 3, P);
-export const TERM_SCREWS = [2, 12].map((dx) => cylinder(TERM.x + dx, TERM.y + 5, 1.1, BASE_H + 3, 0.9, P, 8));
-export const CABLE_FROM = iso([MAST[0] + 14, MAST[1] + 2, CASE_Z - 0.4], P);
-export const CABLE_VIA = iso([MAST[0] + 32, MAST[1] - 6, BASE_H + 24], P);
-export const CABLE_TO = iso([TERM.x + 12, TERM.y + 2, BASE_H + 3.6], P);
 export const WATCH_NODES = [
   loraRadio({ x: -116, y: -32, z: BASE_H, scale: 0.42, facing: "y" }, P),
   loraRadio({ x: -72, y: 2, z: BASE_H, scale: 0.44, facing: "x" }, P),
@@ -114,21 +76,6 @@ export const NODE_SPECS = [
   { x: -52, y: -40, w: 15, d: 10, h: 7 },
 ] as const;
 
-export const NODE_FEET = NODE_SPECS.map((node) => slabOf({ x: node.x - 2, y: node.y - 2, w: node.w + 4, d: node.d + 6, r: 1 }, BASE_H, 2, P));
-export const NODE_POSTS = NODE_SPECS.map((node) => cylinder(node.x + node.w / 2, node.y + node.d + 1, 1.6, BASE_H + 2, 4, P, 8));
-export const NODE_BODIES = NODE_SPECS.map((node) => slabOf({ x: node.x, y: node.y, w: node.w, d: node.d, r: 1.4 }, BASE_H + 6, node.h, P));
-export const NODE_LIDS = NODE_SPECS.map((node) =>
-  slabOf({ x: node.x + 1, y: node.y + 1, w: node.w - 2, d: node.d - 2, r: 1 }, BASE_H + 6 + node.h, 1.2, P),
-);
-export const NODE_STUBS = NODE_SPECS.map((node) => cylinder(node.x + node.w - 3, node.y + 2, 1.1, BASE_H + 7 + node.h, 5, P, 8));
-export const NODE_WHIPS = NODE_SPECS.map((node) =>
-  segment(
-    [node.x + node.w - 3, node.y + 2, BASE_H + 11 + node.h],
-    [node.x + node.w - 3, node.y + 2, BASE_H + 16 + node.h],
-    P,
-  ),
-);
-
 const BOX = { x: 62, y: -22, w: 16, d: 44, r: 2 };
 export const PLINTH = slabOf({ x: 58, y: -26, w: 24, d: 50, r: 2 }, BASE_H, 3, P);
 export const HOUSING = slabOf(BOX, BASE_H + 3, 58, P);
@@ -142,7 +89,6 @@ export const CROWN_KNURL = knurl(BOX.x + 8, FACE_Y, 4.35, BASE_H + 62, BASE_H + 
 export const CROWN_CAP = cylinder(BOX.x + 8, FACE_Y, 2.4, BASE_H + 68, 1.2, P, 10);
 
 export const FACE = sideMatrix([FACE_X, FACE_Y], FACE_Z, P, "right");
-export const PIVOT = sideMatrix([BOX.x + BOX.w, BOX.y + BOX.d], BASE_H + 40, P, "left");
 export const PIN = cylinder(BOX.x + BOX.w - 1, BOX.y + BOX.d - 1, 1.5, BASE_H + 38, 4, P, 8);
 
 const SWEEP = (Math.PI * 4) / 3;
@@ -179,7 +125,5 @@ export function needleLocal(fraction: number): string {
   return `M${x0.toFixed(2)} ${y0.toFixed(2)}L${x1.toFixed(2)} ${y1.toFixed(2)}`;
 }
 
-export const PACKET_FROM = WATCH_HOP.at(0);
-export const PACKET_TO = WATCH_HOP.at(1);
 
-export type Solid = SolidPaths;
+

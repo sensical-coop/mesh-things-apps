@@ -1,10 +1,10 @@
-import { canManageSources, isVerifiedOwner, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
+import { isVerifiedOwner } from "@mtt/contracts/authz";
+
+/** Return paths are other apps on this origin (`SITE_PATHS.start`), so the router cannot take them. */
+export function goToReturnPath(path: string): void {
+  window.location.assign(path);
+}
 
 export function isOwnerSession(me: { isSuccess: boolean; data?: { is_active: boolean } }): boolean {
   return me.isSuccess && isVerifiedOwner(me.data);
-}
-
-/** Operator or superuser. Unknown while `me` is missing, so gated UI stays hidden. */
-export function isOperator(me: ProfileFlags | undefined): boolean {
-  return me != null && canManageSources(viewerOf(me));
 }

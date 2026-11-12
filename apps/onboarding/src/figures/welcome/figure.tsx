@@ -1,8 +1,8 @@
 import { type ReactElement, useRef } from "react";
-import { Line } from "@/iso/react/draw";
 import { useInView, useLoop, useStillness } from "@/iso/react/live";
-import { LoraRadio } from "../parts/lora-radio-art";
-import { HALOS, HEIGHT, LINKS, RADIOS, RINGS, ROUTE_START, WIDTH, packetTransform } from "./geometry";
+import { MeshScene } from "../parts/mesh-scene-art";
+import { ROUTE_START } from "../parts/mesh-scene";
+import { packetTransform } from "./geometry";
 import "./welcome.css";
 
 /** Seconds per loop: two hops, at the basics bench's pace (1.5 s a hop). */
@@ -23,22 +23,11 @@ export function WelcomeFigure(): ReactElement {
 
   return (
     <figure ref={stage} className="iso-figure welcome-figure" aria-hidden>
-      <div className="iso-plate">
-        <svg className="iso-svg" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} focusable="false">
-          {HALOS.map((d, index) => (
-            <path key={index} className="iso-halo" d={d} />
-          ))}
-          {RADIOS.map((radio, index) => (
-            <LoraRadio key={index} parts={radio} lit />
-          ))}
-          {[...RINGS.flat(), ...LINKS].map((d, index) => (
-            <Line key={index} d={d} tone="lit" dotted />
-          ))}
-          <g ref={dot} className="iso-dots" data-tone="mid">
-            <circle cx={ROUTE_START[0]} cy={ROUTE_START[1]} r={2.4} />
-          </g>
-        </svg>
-      </div>
+      <MeshScene>
+        <g ref={dot} className="iso-dots" data-tone="mid">
+          <circle cx={ROUTE_START[0]} cy={ROUTE_START[1]} r={2.4} />
+        </g>
+      </MeshScene>
     </figure>
   );
 }

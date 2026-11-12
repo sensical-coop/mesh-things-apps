@@ -1,15 +1,15 @@
-import { Frame, FramePanel } from "@mtt/ui/reui/frame";
+import { safeReturnPath } from "@mtt/contracts/site";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { parseAsString, useQueryState } from "nuqs";
 import { type ReactElement, useEffect } from "react";
 import { useIntl } from "react-intl";
-import { LanguageSwitcher } from "@mtt/ui/components/language-switcher";
 import { AuthPage } from "@/features/auth/ui/auth-page";
+import { AuthCard } from "@/features/auth/ui/auth-card";
+import { authLinkClass } from "@/features/auth/ui/auth-link-class";
 import { StatusCopy } from "@/components/status-copy";
 import { authRepository } from "@/features/auth/repository";
-import { isOwnerSession } from "@/features/auth/session";
-import { safeReturnPath } from "@/lib/return-path";
+import { goToReturnPath, isOwnerSession } from "@/features/auth/session";
 import { routes } from "@/router";
 
 export function VerifyEmailPage(): ReactElement {
@@ -29,76 +29,55 @@ export function VerifyEmailPage(): ReactElement {
   const signedIn = Boolean(dest) && isOwnerSession(me);
 
   useEffect(() => {
-    if (signedIn && dest) window.location.assign(dest);
+    if (signedIn && dest) goToReturnPath(dest);
   }, [signedIn, dest]);
 
+  const goToSignIn = (
+    <Link to={routes.login} search={dest ? { next: dest } : undefined} className={authLinkClass}>
+      {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
+    </Link>
+  );
+
   return (
-    <AuthPage
-      header={
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
-          <LanguageSwitcher />
-        </div>
-      }
-    >
-      <Frame className="w-full shadow-card" spacing="lg">
-        <FramePanel className="flex flex-col gap-6">
-            <h1 className="text-title-2-medium tracking-tight text-text-primary">
-              {formatMessage({ id: "page.verifyEmail.title", defaultMessage: "Email verification" })}
-            </h1>
-            {!token || verify.isPending ? (
-              <StatusCopy>
-                {formatMessage({
-                  id: "page.verifyEmail.confirming",
-                  defaultMessage: "Confirming your email address…",
-                })}
-              </StatusCopy>
-            ) : verify.isSuccess ? (
-              <>
-                <StatusCopy>
-                  {formatMessage({
-                    id: "page.verifyEmail.success",
-                    defaultMessage: "Your email address has been verified. You can now sign in.",
-                  })}
-                </StatusCopy>
-                {dest && signedIn ? (
-                  <a href={dest} className="text-body-medium text-text-primary underline underline-offset-2">
-                    {formatMessage({ id: "page.verifyEmail.continue", defaultMessage: "Continue" })}
-                  </a>
-                ) : dest ? (
-                  <Link
-                    to={routes.login}
-                    search={{ next: dest }}
-                    className="text-body-medium text-text-primary underline underline-offset-2"
-                  >
-                    {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
-                  </Link>
-                ) : (
-                  <Link
-                    to={routes.login}
-                    className="text-body-medium text-text-primary underline underline-offset-2"
-                  >
-                    {formatMessage({ id: "page.verifyEmail.goToSignIn", defaultMessage: "Go to sign in" })}
-                  </Link>
-                )}
-              </>
+    <AuthPage bare>
+      <AuthCard title={formatMessage({ id: "page.verifyEmail.title", defaultMessage: "Email verification" })}>
+        {!token || verify.isPending ? (
+          <StatusCopy>
+            {formatMessage({
+              id: "page.verifyEmail.confirming",
+              defaultMessage: "Confirming your email address…",
+            })}
+          </StatusCopy>
+        ) : verify.isSuccess ? (
+          <>
+            <StatusCopy>
+              {formatMessage({
+                id: "page.verifyEmail.success",
+                defaultMessage: "Your email address has been verified. You can now sign in.",
+              })}
+            </StatusCopy>
+            {dest && signedIn ? (
+              <a href={dest} className={authLinkClass}>
+                {formatMessage({ id: "page.verifyEmail.continue", defaultMessage: "Continue" })}
+              </a>
             ) : (
-              <>
-                <StatusCopy>
-                  {formatMessage({
-                    id: "page.verifyEmail.failure",
-                    defaultMessage: "This verification link is invalid or has expired.",
-                  })}
-                </StatusCopy>
-                <Link
-                  to={routes.verifyPending}
-                  className="text-body-medium text-text-primary underline underline-offset-2"
-                >
-                  {formatMessage({ id: "page.verifyEmail.requestNewLink", defaultMessage: "Request a new link" })}
-                </Link>
-              </>
+              goToSignIn
             )}
-        </FramePanel>
-      </Frame>
+          </>
+        ) : (
+          <>
+            <StatusCopy>
+              {formatMessage({
+                id: "page.verifyEmail.failure",
+                defaultMessage: "This verification link is invalid or has expired.",
+              })}
+            </StatusCopy>
+            <Link to={routes.verifyPending} className={authLinkClass}>
+              {formatMessage({ id: "page.verifyEmail.requestNewLink", defaultMessage: "Request a new link" })}
+            </Link>
+          </>
+        )}
+      </AuthCard>
     </AuthPage>
   );
 }

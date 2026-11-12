@@ -1,21 +1,17 @@
-import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { useQuery } from "@tanstack/react-query";
 import { Link, notFound, useParams } from "@tanstack/react-router";
-import { type ReactElement, useState } from "react";
+import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
-import {
-  DecideOperatorRequestDialog,
-  type OperatorRequestDecision,
-} from "@/features/operator-request/ui/decide-operator-request-dialog";
+import { DecideButtons } from "@/features/operator-request/ui/decide-buttons";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
 import { useFormatters } from "@/hooks/use-formatters";
 import { isNotFoundError } from "@/lib/not-found";
-import { pageHeadingClass } from "@/lib/page-heading";
+import { DetailHeading } from "@/components/detail-heading";
 import { routes } from "@/router";
 
 /** The page the "operator role requested" email links to. Superusers only. */
@@ -26,37 +22,22 @@ export function OperatorRequestView(): ReactElement {
   const { requestId } = useParams({ from: routes.operatorRequest });
   const request = useQuery(operatorRequestRepository.retrieve(requestId));
   if (isNotFoundError(request.error)) throw notFound();
-  const [decision, setDecision] = useState<OperatorRequestDecision | null>(null);
 
   const row = request.data;
   return (
     <>
-      <div className={pageHeadingClass}>
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-caption-1-regular text-text-secondary">
-            <Link to={routes.operatorRequests} className="hover:text-text-primary">
-              {formatMessage({ id: "page.operatorRequest.breadcrumb", defaultMessage: "Operator requests" })}
-            </Link>
-          </p>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 text-title-2-medium tracking-tight wrap-break-word text-text-primary">
-              {row?.owner_name ??
-                formatMessage({ id: "page.operatorRequest.fallbackTitle", defaultMessage: "Operator request" })}
-            </h1>
-            {row ? <OperatorRequestStatusChip status={row.status} /> : null}
-          </div>
-        </div>
-        {row?.status === "pending" ? (
-          <div className="flex gap-2">
-            <Button type="button" size="small" variant="secondary" onClick={() => setDecision("reject")}>
-              {formatMessage({ id: "page.operatorRequest.reject", defaultMessage: "Reject" })}
-            </Button>
-            <Button type="button" size="small" onClick={() => setDecision("approve")}>
-              {formatMessage({ id: "page.operatorRequest.approve", defaultMessage: "Approve" })}
-            </Button>
-          </div>
-        ) : null}
-      </div>
+      <DetailHeading
+        crumb={
+          <Link to={routes.operatorRequests}>
+            {formatMessage({ id: "page.operatorRequest.breadcrumb", defaultMessage: "Operator requests" })}
+          </Link>
+        }
+        title={
+          row?.owner_name ?? formatMessage({ id: "page.operatorRequest.fallbackTitle", defaultMessage: "Operator request" })
+        }
+        badges={row ? <OperatorRequestStatusChip status={row.status} /> : null}
+        actions={row?.status === "pending" ? <DecideButtons request={row} size="small" /> : null}
+      />
       <Frame className="shadow-card">
         <FrameHeader>
           <FrameTitle>{formatMessage({ id: "page.operatorRequest.panel.title", defaultMessage: "Request" })}</FrameTitle>
@@ -114,11 +95,6 @@ export function OperatorRequestView(): ReactElement {
           ) : null}
         </FramePanel>
       </Frame>
-      <DecideOperatorRequestDialog
-        request={decision && row ? row : null}
-        decision={decision ?? "approve"}
-        onClose={() => setDecision(null)}
-      />
     </>
   );
 }

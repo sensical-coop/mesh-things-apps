@@ -1,5 +1,4 @@
 import type { OperatorRequestAdmin } from "@mtt/contracts";
-import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
@@ -7,17 +6,17 @@ import { Link } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { ListScaffold } from "@/components/list-scaffold";
+import { StatusFilter } from "@/components/status-filter";
 import {
   OPERATOR_REQUEST_STATUSES,
   type OperatorRequestStatusFilter,
 } from "@/features/operator-request/model";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
-import {
-  DecideOperatorRequestDialog,
-  type OperatorRequestDecision,
-} from "@/features/operator-request/ui/decide-operator-request-dialog";
+import { useOperatorRequestStatusLabels } from "@/features/operator-request/use-status-labels";
+import { DecideButtons } from "@/features/operator-request/ui/decide-buttons";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
 import { useFormatters } from "@/hooks/use-formatters";
+import { tableLinkClass } from "@/lib/link-class";
 import { routes } from "@/router";
 
 const col = legacyCreateColumnHelper<OperatorRequestAdmin>();
@@ -27,15 +26,7 @@ export function OperatorRequestsView(): ReactElement {
   const { formatWhen } = useFormatters();
   const [status, setStatus] = useState<OperatorRequestStatusFilter>("pending");
   const requests = useQuery(operatorRequestRepository.list({ status }));
-  const [deciding, setDeciding] = useState<{ request: OperatorRequestAdmin; decision: OperatorRequestDecision } | null>(
-    null,
-  );
-  const statusLabels: Record<OperatorRequestStatusFilter, string> = {
-    pending: formatMessage({ id: "page.operatorRequests.filter.pending", defaultMessage: "Pending" }),
-    approved: formatMessage({ id: "page.operatorRequests.filter.approved", defaultMessage: "Approved" }),
-    rejected: formatMessage({ id: "page.operatorRequests.filter.rejected", defaultMessage: "Rejected" }),
-    all: formatMessage({ id: "page.operatorRequests.filter.all", defaultMessage: "All" }),
-  };
+  const statusLabels = useOperatorRequestStatusLabels();
 
   const columns = useMemo(
     () => [
@@ -46,7 +37,7 @@ export function OperatorRequestsView(): ReactElement {
             <Link
               to={routes.operatorRequest}
               params={{ requestId: info.row.original.id }}
-              className="rounded-full text-text-primary outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              className={tableLinkClass}
             >
               {info.getValue()}
             </Link>
@@ -74,21 +65,7 @@ export function OperatorRequestsView(): ReactElement {
         cell: ({ row }) =>
           row.original.status === "pending" ? (
             <div className="flex justify-start gap-2">
-              <Button
-                type="button"
-                size="xs"
-                onClick={() => setDeciding({ request: row.original, decision: "approve" })}
-              >
-                {formatMessage({ id: "page.operatorRequests.approve", defaultMessage: "Approve" })}
-              </Button>
-              <Button
-                type="button"
-                size="xs"
-                variant="secondary"
-                onClick={() => setDeciding({ request: row.original, decision: "reject" })}
-              >
-                {formatMessage({ id: "page.operatorRequests.reject", defaultMessage: "Reject" })}
-              </Button>
+              <DecideButtons request={row.original} size="xs" />
             </div>
           ) : null,
       }),
@@ -113,20 +90,7 @@ export function OperatorRequestsView(): ReactElement {
               })
         }
         toolbar={
-          <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label={formatMessage({ id: "page.operatorRequests.filter.label", defaultMessage: "Status" })}>
-            {OPERATOR_REQUEST_STATUSES.map((value) => (
-              <Button
-                key={value}
-                type="button"
-                size="xs"
-                variant={status === value ? "primary" : "secondary"}
-                aria-pressed={status === value}
-                onClick={() => setStatus(value)}
-              >
-                {statusLabels[value]}
-              </Button>
-            ))}
-          </div>
+          <StatusFilter statuses={OPERATOR_REQUEST_STATUSES} value={status} labels={statusLabels} onChange={setStatus} />
         }
         pending={requests.isPending}
         failed={Boolean(requests.error)}
@@ -142,11 +106,6 @@ export function OperatorRequestsView(): ReactElement {
           }
         />
       </ListScaffold>
-      <DecideOperatorRequestDialog
-        request={deciding?.request ?? null}
-        decision={deciding?.decision ?? "approve"}
-        onClose={() => setDeciding(null)}
-      />
     </>
   );
 }

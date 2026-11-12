@@ -12,22 +12,20 @@ import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { termsFields } from "@mtt/contracts/terms";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
-import { NO_SOURCE, meshTitle } from "@/features/mesh/model";
+import { DEFAULT_BROKER, NO_SOURCE, meshTermsCurrent, meshTitle } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
-import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
-import { termsStanding } from "@/features/terms/model";
-import { termsRepository } from "@/features/terms/repository";
+import { useMeshTerms } from "@/features/terms/use-mesh-terms";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 
 export function EditMeshDialog({
   mesh,
   open,
   onClose,
-  onSaved,
 }: {
   mesh: Pick<
     Mesh,
@@ -43,9 +41,8 @@ export function EditMeshDialog({
   >;
   open: boolean;
   onClose: () => void;
-  onSaved?: () => void | Promise<void>;
 }): ReactElement {
-  const { formatMessage, locale } = useIntl();
+  const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const { isOperator, meId } = useMe();
   // The API shows and accepts a source only from the mesh's owner, and only
@@ -54,10 +51,7 @@ export function EditMeshDialog({
   const sources = useQuery({ ...sourceRepository.list(), enabled: canPickSource });
   const currentSource = mesh.source_id ?? null;
   const sourceItems = [
-    {
-      label: formatMessage({ id: "feature.mesh.editDialog.defaultBroker", defaultMessage: "Default broker" }),
-      value: NO_SOURCE,
-    },
+    { label: formatMessage(DEFAULT_BROKER), value: NO_SOURCE },
     ...(sources.data ?? []).map((source) => ({ label: sourceTitle(source), value: source.id })),
     // Keep a current source the list doesn't include, so resending it stays valid.
     ...(currentSource && sources.data && !sources.data.some((source) => source.id === currentSource)
@@ -77,31 +71,14 @@ export function EditMeshDialog({
       await queryClient.invalidateQueries({
         queryKey: meshRepository.retrieveKey(mesh.id),
       });
-      await onSaved?.();
       onClose();
     },
     onError: (error) => setErrors(readApiError(error).fields),
   });
   const updateStatus = update.error ? readApiError(update.error).status : undefined;
   // Moving onto the default broker needs the mesh terms, unless the mesh holds a current acceptance.
-  // A self-hosted instance asks for no terms; unknown counts as enforced.
-  const enforced = useTermsEnforced();
-  const termsEnforced = enforced !== false;
-  const meshTerms = useQuery({
-    ...termsRepository.mesh({ locale: termsLocale(locale) }),
-    enabled: enforced === true && canPickSource && currentSource !== null,
-  });
-  // Pause is not part of "current": a paused mesh moving back to the default broker
-  // keeps its acceptance when the version still matches. meshTermsStanding would call that lapsed.
-  const termsCurrent = ["ok", "expiring"].includes(
-    termsStanding({
-      acceptedVersion: mesh.terms_accepted_version ?? null,
-      expiresAt: mesh.terms_expires_at ?? null,
-      pausedAt: null,
-      currentVersion: meshTerms.data?.version,
-      now: new Date(),
-    }),
-  );
+  const { enforced: termsEnforced, current: currentTerms } = useMeshTerms();
+  const termsCurrent = meshTermsCurrent(mesh, currentTerms?.version, new Date());
   const [awaitingTerms, setAwaitingTerms] = useState<{ meshId: string; data: MeshUpdate } | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -299,7 +276,7 @@ export function EditMeshDialog({
             acceptance
               ? {
                   meshId: awaitingTerms.meshId,
-                  data: { ...awaitingTerms.data, terms_version: acceptance.version, terms_locale: acceptance.locale },
+                  data: { ...awaitingTerms.data, ...termsFields(acceptance) },
                 }
               : awaitingTerms,
           );

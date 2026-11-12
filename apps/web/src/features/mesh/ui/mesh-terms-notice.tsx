@@ -1,13 +1,12 @@
 import type { Mesh } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
 import { meshTitle } from "@/features/mesh/model";
 import type { TermsStanding } from "@/features/terms/model";
-import { termsRepository } from "@/features/terms/repository";
 import { RenewTermsDialog } from "@/features/terms/ui/renew-terms-dialog";
 import { useFormatters } from "@/hooks/use-formatters";
 
@@ -24,15 +23,6 @@ export function MeshTermsNotice({ mesh, standing, canRenew }: MeshTermsNoticePro
   const { formatWhen } = useFormatters();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const renew = useMutation({
-    ...termsRepository.renewMesh(),
-    onSuccess: async (renewed) => {
-      await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      await queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey(renewed.id) });
-      renew.reset();
-      setOpen(false);
-    },
-  });
   if (standing === "ok") return null;
   const message = {
     lapsed: formatMessage({
@@ -65,21 +55,14 @@ export function MeshTermsNotice({ mesh, standing, canRenew }: MeshTermsNoticePro
         </Button>
       ) : null}
       <RenewTermsDialog
-        open={open}
         kind="mesh"
-        acceptLabel={formatMessage({ id: "feature.mesh.renew.accept", defaultMessage: "Renew {mesh}" }, { mesh: meshTitle(mesh) })}
-        pending={renew.isPending}
-        error={renew.error}
-        onClose={() => {
-          renew.reset();
+        entity={open ? { id: mesh.id, name: meshTitle(mesh) } : null}
+        onClose={() => setOpen(false)}
+        onRenewed={async (renewed) => {
+          await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
+          await queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey(renewed.id) });
           setOpen(false);
         }}
-        onAccepted={(acceptance) =>
-          renew.mutate({
-            meshId: mesh.id,
-            data: { terms_version: acceptance.version, terms_locale: acceptance.locale },
-          })
-        }
       />
     </div>
   );

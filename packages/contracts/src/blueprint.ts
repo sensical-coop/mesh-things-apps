@@ -22,6 +22,17 @@ export function stepRef(key: string, output: string): string {
   return `${STEP_REF}${key}.${output}`;
 }
 
+const DERIVED = "derived.";
+
+/** Postprocessing outputs are filed under one flat namespace: `derived.<field>`. */
+export function derivedChannel(field: string): string {
+  return `${DERIVED}${field}`;
+}
+
+export function isDerivedChannel(channel: string): boolean {
+  return channel.startsWith(DERIVED);
+}
+
 export type BlueprintAlgorithm = {
   name: string;
   mode: string;

@@ -1,8 +1,23 @@
 import { AZIMUTH, ELEVATION, iso, type Point3, type Projection } from "@/iso/iso-kit";
+import { START_STEPS, type StartStep } from "@/start-step";
 
 /** 480×240 for `stepProjection`. Basics and welcome use `hugProjection` and their own viewBox. */
 export const FIGURE_WIDTH = 480;
 export const FIGURE_HEIGHT = 240;
+
+/** Clamped smoothstep: 0 below 0, 1 above 1. */
+export function smoothstep(value: number): number {
+  const t = Math.min(1, Math.max(0, value));
+  return t * t * (3 - 2 * t);
+}
+
+/** Smoothstep of `unit` between `from` and `to`. */
+export const span = (unit: number, from: number, to: number) => smoothstep((unit - from) / (to - from));
+
+/** Plate number of a step's figure: its place in the flow. */
+export function figLabel(step: StartStep): string {
+  return `Fig ${START_STEPS.indexOf(step) + 1}`;
+}
 
 /** This camera stays at scale 1. Connect fits 480×240 with its own scale (`fitBounds`). */
 const SCALE = 1;

@@ -27,7 +27,7 @@ export function useDocsTranslations(): Record<string, string> {
       }),
       "Search failed(search dialog)": formatMessage({
         id: "page.docs.ui.searchFailed",
-        defaultMessage: "The search could not be completed",
+        defaultMessage: "Search didn't finish. Try again.",
       }),
       "On this page(table of contents)": formatMessage({
         id: "page.docs.ui.onThisPage",

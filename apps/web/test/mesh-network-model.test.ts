@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   newDevices,
-  nodeHex,
   pairLinks,
   routeCoordinates,
   snrStrength,
@@ -116,10 +115,6 @@ test("newDevices counts discovery, or registration when not discovered", () => {
     { created_at: "2026-10-01T00:00:00Z", discovered_at: null },
   ] as never[];
   assert.equal(newDevices(devices, 86_400_000, now), 2);
-});
-
-test("nodeHex pads to eight digits", () => {
-  assert.equal(nodeHex(0xabcd), "!0000abcd");
 });
 
 test("hullAreaKm2 measures the hull, ignoring points inside it", async () => {

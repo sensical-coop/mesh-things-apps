@@ -6,19 +6,18 @@ import { Field, FieldGroup, FieldLabel } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
-import { useIntl } from "react-intl";
+import { defineMessages, useIntl } from "react-intl";
 import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { issueErrors, readApiError } from "@mtt/contracts/errors";
-import { brokerDialogError } from "@/lib/broker-dialog-error";
-import { dialogActionsClass } from "@/lib/dialog-actions";
-import { validateSource } from "@mtt/contracts/source";
+import { brokerDialogError } from "@/features/source/broker-dialog-error";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { SOURCE_DEFAULTS, SOURCE_QOS, validateSource } from "@mtt/contracts/source";
 import { sourceTitle } from "@/features/source/model";
-import type { TermsAcceptance } from "@/features/terms/model";
-import { useTermsEnforced } from "@mtt/contracts/terms";
+import { termsFields, useTermsAsked, type TermsAcceptance } from "@mtt/contracts/terms";
 import { sourceRepository } from "@/features/source/repository";
 
 export type SourceDialogProps = {
@@ -30,6 +29,11 @@ export type SourceDialogProps = {
   onClose: () => void;
   onSaved: (source: SourceRead) => void;
 };
+
+const QOS_LABELS = defineMessages({
+  1: { id: "feature.source.createDialog.qos.atLeastOnce", defaultMessage: "1 — at least once" },
+  0: { id: "feature.source.createDialog.qos.atMostOnce", defaultMessage: "0 — at most once" },
+} satisfies Record<(typeof SOURCE_QOS)[number], { id: string; defaultMessage: string }>);
 
 function optional(value: FormDataEntryValue | null): string | null {
   const text = String(value ?? "").trim();
@@ -45,8 +49,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
   // unticked and left blank removes it.
   const [keepPassword, setKeepPassword] = useState(true);
   const editing = source !== undefined;
-  // A self-hosted instance asks for no terms; unknown counts as enforced.
-  const termsEnforced = useTermsEnforced() !== false;
+  const termsAsked = useTermsAsked();
 
   async function onSuccess(saved: SourceRead) {
     await queryClient.invalidateQueries({ queryKey: sourceRepository.listKey() });
@@ -110,7 +113,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editing && termsEnforced && !termsAcceptance) {
+    if (!editing && termsAsked && !termsAcceptance) {
       setFormError(
         formatMessage({
           id: "feature.source.dialog.termsRequired",
@@ -133,9 +136,9 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
       ...passwordField,
       ...(editing || !termsAcceptance
         ? {}
-        : { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }),
+        : termsFields(termsAcceptance)),
       topic: String(form.get("topic") ?? "").trim(),
-      qos: Number(form.get("qos") ?? 1),
+      qos: Number(form.get("qos") ?? SOURCE_DEFAULTS.qos),
     };
     const checks = validateSource(body);
     setFormError(null);
@@ -212,7 +215,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
             id="source-ssl"
             name="ssl"
             label={formatMessage({ id: "feature.source.createDialog.ssl", defaultMessage: "Connect over TLS" })}
-            defaultChecked={source?.ssl ?? true}
+            defaultChecked={source?.ssl ?? SOURCE_DEFAULTS.ssl}
           />
           <FormField
             id="source-username"
@@ -270,17 +273,8 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
             <FormSelect
               id="source-qos"
               name="qos"
-              items={[
-                {
-                  label: formatMessage({ id: "feature.source.createDialog.qos.atLeastOnce", defaultMessage: "1 — at least once" }),
-                  value: "1",
-                },
-                {
-                  label: formatMessage({ id: "feature.source.createDialog.qos.atMostOnce", defaultMessage: "0 — at most once" }),
-                  value: "0",
-                },
-              ]}
-              defaultValue={String(source?.qos ?? 1)}
+              items={SOURCE_QOS.map((qos) => ({ label: formatMessage(QOS_LABELS[qos]), value: String(qos) }))}
+              defaultValue={String(source?.qos ?? SOURCE_DEFAULTS.qos)}
             />
           </FormField>
         </FieldGroup>

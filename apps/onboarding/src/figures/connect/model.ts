@@ -1,15 +1,13 @@
-/** Connect step: MQTT, uplink and encryption must all be on before a packet counts as seen. The page polls every 5s (`connect-step.tsx`). Port is whatever the broker returns; this figure does not invent one. */
-
-export const POLL_MS = 5000;
+/** Connect step: MQTT, uplink and encryption must all be on before a packet counts as seen. Port is whatever the broker returns; this figure does not invent one. */
 
 export const SWITCHES = ["mqtt", "uplink", "encryption"] as const;
 export type SwitchName = (typeof SWITCHES)[number];
 
-export interface Gate {
+export type Gate = {
   mqtt: boolean;
   uplink: boolean;
   encryption: boolean;
-}
+};
 
 export const REST_GATE: Gate = { mqtt: false, uplink: false, encryption: false };
 
@@ -25,7 +23,7 @@ export function withSwitch(gate: Gate, name: SwitchName, on: boolean): Gate {
   return { mqtt: gate.mqtt, uplink: gate.uplink, encryption: gate.encryption, [name]: on };
 }
 
-export interface ReadoutWords {
+export type ReadoutWords = {
   mqtt: string;
   uplink: string;
   encryption: string;
@@ -34,7 +32,7 @@ export interface ReadoutWords {
   of: string;
   waiting: string;
   seen: string;
-}
+};
 
 /** Plate corner. Longest en "3 of 3 on · waiting" (20), es "3 de 3 activos · espera" (23). */
 export function readoutOf(on: number, arrived: boolean, words: ReadoutWords): string {

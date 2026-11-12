@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { request } from "node:http";
+import { DEV_PORTS, SITE_PATHS } from "@mtt/contracts/site";
 import { initScriptsPlugin } from "@mtt/ui/init-scripts";
 import { defineConfig, type Plugin } from "vite";
 
@@ -40,7 +41,7 @@ export default defineConfig({
     serverDir: "server",
   },
   server: {
-    port: 5173,
+    port: DEV_PORTS.web,
   },
   resolve: {
     alias: {
@@ -56,8 +57,8 @@ export default defineConfig({
   // The dev compose overlay runs the docs server in another container.
   plugins: [
     proxyPrefixes([
-      { prefix: "/docs", target: process.env.DOCS_DEV_URL ?? "http://127.0.0.1:5175" },
-      { prefix: "/start", target: process.env.ONBOARDING_DEV_URL ?? "http://127.0.0.1:5176" },
+      { prefix: SITE_PATHS.docs, target: process.env.DOCS_DEV_URL ?? `http://127.0.0.1:${DEV_PORTS.docs}` },
+      { prefix: SITE_PATHS.start, target: process.env.ONBOARDING_DEV_URL ?? `http://127.0.0.1:${DEV_PORTS.onboarding}` },
     ]),
     nitro(),
     react(),

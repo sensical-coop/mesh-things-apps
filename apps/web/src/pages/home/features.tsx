@@ -9,7 +9,8 @@ import {
 import { RiLineChartLine, RiListCheck3, RiRouterLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
+import { SectionHeading } from "./section-heading";
 import { LandingPacketFeed } from "./packet-feed";
 import { LandingReveal } from "./reveal";
 
@@ -54,15 +55,13 @@ export function LandingFeatures(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <section id="features" className="scroll-mt-24">
-      <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-center text-section-title tracking-tight text-balance text-text-primary">
-          <FormattedMessage
-            id="page.home.features.heading"
-            defaultMessage="Control your mesh, your devices, and <secondary>the data they send.</secondary>"
-            values={richTextValues}
-          />
-        </h2>
-      </LandingReveal>
+      <SectionHeading>
+        <FormattedMessage
+          id="page.home.features.heading"
+          defaultMessage="Control your mesh, your devices, and <secondary>the data they send.</secondary>"
+          values={richTextValues}
+        />
+      </SectionHeading>
       <LandingReveal className="mt-12 sm:mt-16">
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           <li>
@@ -79,9 +78,7 @@ export function LandingFeatures(): ReactElement {
                   })}
                 </FrameDescription>
               </FrameHeader>
-              <FramePanel className="h-44 overflow-hidden mask-[linear-gradient(to_bottom,#000_72%,transparent)] p-0">
-                <LandingPacketFeed />
-              </FramePanel>
+              <LandingPacketFeed className="h-44" />
             </Frame>
           </li>
           <li>

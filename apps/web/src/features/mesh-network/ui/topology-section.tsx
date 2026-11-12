@@ -2,7 +2,7 @@ import type { DeviceRead, MeshRelay } from "@mtt/contracts";
 import { EChartsGraphChart } from "@mtt/ui/components/evilcharts/charts/echarts-graph-chart";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { RiCollapseDiagonalLine, RiExpandDiagonalLine, RiMapLine, RiShareLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -21,13 +21,13 @@ import {
   type MeshStatsRange,
   hullAreaKm2,
   linkGraph,
-  nodeHex,
+  nodeLabel,
   nodePositions,
   pairLinks,
   routeCoordinates,
   snrStrength,
 } from "../model";
-import { tokenColor } from "../token-color";
+import { tokenColor } from "@/lib/token-color";
 import { LinksMap } from "./links-map";
 import { RankedBars, type RankedBar } from "./ranked-bars";
 import { RelaysFrame } from "./relays-frame";
@@ -67,10 +67,7 @@ export function TopologySection({
   const byNode = useMemo(() => new Map(devices.map((d) => [d.node_id, d])), [devices]);
   const positions = useMemo(() => nodePositions(devices), [devices]);
   const pairs = useMemo(() => pairLinks(links.data ?? []), [links.data]);
-  const nodeName = (node: number) => {
-    const device = byNode.get(node);
-    return device ? deviceTitle(device) : nodeHex(node);
-  };
+  const nodeName = (node: number) => nodeLabel(node, byNode.get(node), deviceTitle);
   const chosen = traceroutes.data?.find((t) => t.id === selected) ?? null;
   const route = chosen ? routeCoordinates(chosen.towards, positions) : null;
   const drawn = pairs.filter((pair) => positions.has(pair.a) && positions.has(pair.b)).length;
@@ -80,7 +77,7 @@ export function TopologySection({
     return {
       nodes: nodes.map(({ node, onRoute }) => ({
         id: String(node),
-        label: byNode.has(node) ? deviceTitle(byNode.get(node)!) : nodeHex(node),
+        label: nodeName(node),
         emphasis: byNode.get(node)?.is_gateway ?? false,
         muted: !byNode.has(node),
         highlight: onRoute,
@@ -125,9 +122,9 @@ export function TopologySection({
       <EChartsGraphChart
         nodes={graphData.nodes}
         edges={graphData.edges}
-        color={tokenColor("--oa-primary", "#ff495f")}
-        emphasisColor={tokenColor("--color-gateway", "#a5f3fc")}
-        highlightColor={tokenColor("--color-route-selected", "#06b6d4")}
+        color={tokenColor("--oa-primary")}
+        emphasisColor={tokenColor("--color-gateway")}
+        highlightColor={tokenColor("--color-route-selected")}
         onNodeClick={(id) => {
           const device = byNode.get(Number(id));
           if (device) void navigate({ to: routes.device, params: { deviceUuid: device.uuid } });

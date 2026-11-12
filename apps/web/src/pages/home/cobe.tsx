@@ -2,8 +2,8 @@ import { Globe } from "@mtt/ui/components/ui/globe";
 import { type ReactElement, useMemo } from "react";
 import { landingGlobeNodes } from "./mesh";
 import { useTheme } from "@mtt/ui/hooks/use-theme";
+import { tokenColor } from "@/lib/token-color";
 
-const coral: [number, number, number] = [255 / 255, 73 / 255, 95 / 255];
 const inkLight: [number, number, number] = [0.96, 0.96, 0.96];
 const inkDark: [number, number, number] = [0.13, 0.13, 0.14];
 const glowLight: [number, number, number] = [1, 1, 1];
@@ -15,6 +15,7 @@ export function LandingCobe(): ReactElement {
   const config = useMemo(() => {
     const ink = dark ? inkDark : inkLight;
     const glow = dark ? inkDark : glowLight;
+    const [r = 0, g = 0, b = 0] = (tokenColor("--oa-primary").match(/\d+/g) ?? []).map((channel) => Number(channel) / 255);
     return {
       width: 800,
       height: 800,
@@ -27,7 +28,7 @@ export function LandingCobe(): ReactElement {
       mapSamples: 16000,
       mapBrightness: dark ? 6 : 1.4,
       baseColor: ink,
-      markerColor: coral,
+      markerColor: [r, g, b] as [number, number, number],
       glowColor: glow,
       markers: landingGlobeNodes.map((node) => ({
         location: [node.lat, node.lng] as [number, number],

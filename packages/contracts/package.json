@@ -12,14 +12,19 @@
     "./resend-cooldown": "./src/resend-cooldown.ts",
     "./resend-verification": "./src/resend-verification.ts",
     "./terms": "./src/terms.ts",
-    "./signup": "./src/signup.ts",
     "./terms-notice": "./src/terms-notice.ts",
+    "./signup": "./src/signup.ts",
+    "./session": "./src/session.ts",
+    "./register-gateway": "./src/register-gateway.ts",
+    "./mesh": "./src/mesh.ts",
     "./source": "./src/source.ts",
     "./blueprint": "./src/blueprint.ts",
     "./authz": "./src/authz.ts",
     "./export": "./src/export.ts",
     "./sink": "./src/sink.ts",
-    "./query-client": "./src/query-client.ts"
+    "./query-client": "./src/query-client.ts",
+    "./site": "./src/site.ts",
+    "./mock-accounts": "./src/mock-accounts.ts"
   },
   "scripts": {
     "openapi:sync": "node --experimental-strip-types scripts/sync-openapi.ts",

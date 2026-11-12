@@ -2,54 +2,49 @@ import type { Env } from "../http";
 import type { RouteRuntime } from "../runtime";
 import {
   MeshCreateRequest,
+  MeshesLinksListParams,
   MeshTermsAcceptance,
   MeshUpdate,
 } from "@mtt/contracts";
 import {
   canWriteCatalog,
-  canSeeMeshSource,
-  canSeePsk,
   canWriteMesh,
 } from "@mtt/contracts/authz";
-import {
-  TERMS_ENFORCED,
-  TERMS_VERSIONS,
-  termsJson,
-  termsLocale,
-} from "../features/terms/terms";
+import { TERMS_VERSIONS, acceptTerms, termsJson, termsLocale, termsVersionError } from "../features/terms/terms";
+import { canAttachSource } from "../features/source/rules";
 import { nowIso } from "@mtt/domain/shared/ids";
-import { meshFilterValue, meshListFilterFields } from "../features/mesh/filter";
-import { matchesListFilters } from "@mtt/contracts/list-filter";
+import { meshFilters } from "../features/mesh/filter";
 import { Hono } from "hono";
 import {
   meshJson,
+  meshOut,
 } from "../serialize";
 
 import {
-  NO_PERMISSION,
-  queryFilters, parseBody,
+  NO_PERMISSION, isUuid,
+  queryFilters, queryFlag, parseBody, parseQuery, termsEnforced,
   visibleMeshes, meshForRead,
   visibleToReader,
 } from "../http";
 import { meshLinksJson, meshTraceroutesJson } from "../present";
 
 export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
-  const { db, detachFromSinks, deleteDevice, devicesJson, telemetryVariantQuery, reportsVariants, canAttachSource, acceptTerms, scheduleMeshDeletion, cancelMeshDeletions, meshTermsCurrent } = rt;
+  const { db, deleteMesh, devicesJson, telemetryVariantQuery, reportsVariants, scheduleMeshDeletion, cancelMeshDeletions, renewMeshTerms, meshTermsCurrent } = rt;
   app.get("/meshes", async (c) => {
     const actor = c.get("actor");
-    const owned = ["true", "1"].includes((c.req.query("owned") ?? "").toLowerCase());
+    const owned = queryFlag(c, "owned");
     const sourceId = c.req.query("source_id");
-    if (sourceId !== undefined && !/^[0-9a-f-]{36}$/i.test(sourceId)) {
+    if (sourceId !== undefined && !isUuid(sourceId)) {
       return c.json({ source_id: ["Must be a UUID."] }, 400);
     }
-    const filters = queryFilters(c, meshListFilterFields);
+    const filters = queryFilters(c, meshFilters.names);
     const meshes = (await visibleMeshes(db, actor)).filter(
       (mesh) =>
-        matchesListFilters((field) => meshFilterValue(mesh, field), filters) &&
+        meshFilters.matches(filters, mesh) &&
         (!owned || mesh.ownerId === actor.id) &&
         (!sourceId || mesh.sourceId === sourceId),
     );
-    return c.json(meshes.map((m) => meshJson(m, canSeePsk(actor, m), canSeeMeshSource(actor, m))));
+    return c.json(meshes.map((m) => meshOut(actor, m)));
   });
 
   app.post("/meshes", async (c) => {
@@ -60,13 +55,13 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const parsed = await parseBody(c, MeshCreateRequest);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const sourceId = parsed.data.source_id ?? null;
-    if (sourceId !== null && !(await canAttachSource(actor, sourceId, null))) {
+    if (sourceId !== null && !(await canAttachSource(db, actor, sourceId, null))) {
       return c.json({ source_id: [`Invalid pk "${sourceId}" - object does not exist.`] }, 400);
     }
     // On the default broker the mesh's own terms apply; on a source, the source's.
     if (sourceId === null) {
-      const terms = acceptTerms("mesh", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale), null, false);
-      if ("error" in terms) return c.json(terms.error, 400);
+      const termsError = termsVersionError("mesh", parsed.data.terms_version);
+      if (Object.keys(termsError).length) return c.json(termsError, 400);
     }
     const mesh = await db.meshes.insert({
       channelId: parsed.data.channel_id,
@@ -76,17 +71,13 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
       sourceId,
       discoverGateways: parsed.data.discover_gateways ?? false,
     });
-    if (sourceId === null) {
-      mesh.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
-      const renewed = acceptTerms("mesh", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale));
-      mesh.termsExpiresAt = "expiresAt" in renewed ? renewed.expiresAt : null;
-    }
-    return c.json(meshJson(mesh, true), 201);
+    if (sourceId === null) acceptTerms("mesh", mesh);
+    return c.json(meshJson(mesh, true, true), 201);
   });
 
-  app.get("/meshes/terms", (c) => c.json(termsJson("mesh", termsLocale(c.req.query("locale")))));
+  app.get("/meshes/terms", termsEnforced, (c) => c.json(termsJson("mesh", termsLocale(c.req.query("locale")))));
 
-  app.post("/meshes/:mesh_id/terms-acceptance", async (c) => {
+  app.post("/meshes/:mesh_id/terms-acceptance", termsEnforced, async (c) => {
     const actor = c.get("actor");
     const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
     if (!mesh) return c.json({ detail: "Not found" }, 404);
@@ -98,29 +89,25 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     }
     const parsed = await parseBody(c, MeshTermsAcceptance);
     if ("error" in parsed) return c.json(parsed.error, 400);
-    const terms = acceptTerms("mesh", parsed.data.terms_version, actor.id, termsLocale(parsed.data.terms_locale));
-    if ("error" in terms) return c.json(terms.error, 400);
-    // Renewing resumes a paused mesh and cancels the deletion its lapse scheduled.
-    if (mesh.pausedAt) cancelMeshDeletions([mesh.id], "terms_lapsed", null);
-    mesh.termsAcceptedVersion = TERMS_VERSIONS.mesh;
-    mesh.termsExpiresAt = terms.expiresAt;
-    mesh.pausedAt = null;
-    return c.json(meshJson(mesh, true), 201);
+    const termsError = termsVersionError("mesh", parsed.data.terms_version);
+    if (Object.keys(termsError).length) return c.json(termsError, 400);
+    renewMeshTerms(mesh);
+    return c.json(meshJson(mesh, true, true), 201);
   });
 
   app.get("/meshes/:mesh_id", async (c) => {
     const actor = c.get("actor");
     const mesh = await meshForRead(db, actor, c.req.param("mesh_id"));
     if (!mesh) return c.json({ detail: "Not found" }, 404);
-    return c.json(meshJson(mesh, canSeePsk(actor, mesh), canSeeMeshSource(actor, mesh)));
+    return c.json(meshOut(actor, mesh));
   });
 
   app.get("/meshes/:mesh_id/links", async (c) => {
     const mesh = await meshForRead(db, c.get("actor"), c.req.param("mesh_id"));
     if (!mesh) return c.json({ detail: "Mesh not found" }, 404);
-    const since = c.req.query("since") ?? "7d";
-    if (!["24h", "7d", "30d"].includes(since)) return c.json({ since: ["Expected one of 24h, 7d, 30d."] }, 400);
-    const node = c.req.query("node_id");
+    const query = parseQuery(c, MeshesLinksListParams);
+    if ("error" in query) return c.json(query.error, 400);
+    const node = query.data.node_id;
     const links = meshLinksJson((await db.devices.list({ meshId: mesh.id })).filter((d) => d.isAllowed));
     return c.json(node ? links.filter((l) => String(l.from_node) === node || String(l.to_node) === node) : links);
   });
@@ -158,14 +145,14 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const parsed = await parseBody(c, MeshUpdate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const patch = parsed.data;
-    if (patch.source_id && !(await canAttachSource(actor, patch.source_id, mesh.sourceId))) {
+    if (patch.source_id && !(await canAttachSource(db, actor, patch.source_id, mesh.sourceId))) {
       return c.json({ source_id: [`Invalid pk "${patch.source_id}" - object does not exist.`] }, 400);
     }
     // Moving onto the default broker needs the mesh terms, unless it already holds a current acceptance.
     const toDefault = patch.source_id === null && mesh.sourceId !== null;
     if (toDefault && !meshTermsCurrent(mesh)) {
-      const terms = acceptTerms("mesh", patch.terms_version, actor.id, termsLocale(patch.terms_locale), null, false);
-      if ("error" in terms) return c.json(terms.error, 400);
+      const termsError = termsVersionError("mesh", patch.terms_version);
+      if (Object.keys(termsError).length) return c.json(termsError, 400);
     }
     const previousSource = mesh.sourceId;
     const updated = await db.meshes.update(mesh.id, {
@@ -178,12 +165,7 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     });
     if (!updated) return c.json({ detail: "Not found" }, 404);
     if (toDefault && patch.terms_version === TERMS_VERSIONS.mesh) {
-      // As a renewal: resumes a mesh an earlier lapse paused, and cancels that lapse's deletion.
-      if (updated.pausedAt) cancelMeshDeletions([updated.id], "terms_lapsed", null);
-      updated.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
-      const accepted = acceptTerms("mesh", patch.terms_version, actor.id, termsLocale(patch.terms_locale));
-      updated.termsExpiresAt = "expiresAt" in accepted ? accepted.expiresAt : null;
-      updated.pausedAt = null;
+      renewMeshTerms(updated);
     }
     if (patch.source_id !== undefined && patch.source_id !== previousSource) {
       // Readings bridged so far belonged to the old source's service.
@@ -196,7 +178,7 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
       }
       if (updated.sourceId) cancelMeshDeletions([updated.id], "source_detached", updated.sourceId);
     }
-    return c.json(meshJson(updated, canSeePsk(actor, updated), canSeeMeshSource(actor, updated)));
+    return c.json(meshOut(actor, updated));
   });
 
   app.delete("/meshes/:mesh_id", async (c) => {
@@ -206,11 +188,7 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     if (!canWriteMesh(actor, mesh)) {
       return c.json(NO_PERMISSION, 403);
     }
-    const devices = await db.devices.list({ meshId: mesh.id });
-    for (const device of devices) await deleteDevice(device.uuid);
-    detachFromSinks({ meshId: mesh.id });
-    await db.meshes.delete(mesh.id);
-    scheduleMeshDeletion(mesh.id, "mesh_deleted", { sourceId: mesh.sourceId, requestedById: actor.id });
+    await deleteMesh(mesh, actor.id);
     return c.body(null, 204);
   });
 }

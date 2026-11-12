@@ -6,11 +6,6 @@ export function sinkTitle(sink: Pick<SinkRead, "id" | "label">): string {
   return sink.label?.trim() || `Sink ${sink.id.slice(0, 8)}`;
 }
 
-/** Mirrors the API: a sink must send at least one stream. The dialog formats the code. */
-export function sinkStreamsError(streams: readonly string[]): "empty" | undefined {
-  return streams.length === 0 ? "empty" : undefined;
-}
-
 /** Each mesh with its devices, in the meshes' order; devices keep the order they came in. */
 export function devicesByMesh<M extends { id: string }, D extends { mesh_id: string }>(
   meshes: readonly M[],

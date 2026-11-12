@@ -5,7 +5,7 @@ import type {
   DeviceTelemetryVariant,
   MeasurementTypeRead,
 } from "@mtt/contracts";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import {
   Frame,
   FrameDescription,
@@ -18,10 +18,12 @@ import { type ReactElement } from "react";
 import { useIntl, type IntlShape } from "react-intl";
 import { useFormatters, type Formatters } from "@/hooks/use-formatters";
 import { Kpi } from "@/components/kpi/kpi";
-import { isChartableMeasurement, isDerivedMeasurement } from "@/lib/measurement";
+import { isChartableMeasurement, isDerivedMeasurement, measurementLabel } from "@/lib/measurement";
 import { SkeletonRows } from "@/components/skeleton-rows";
+import { Item } from "./item";
 import { StatusCopy } from "@/components/status-copy";
 import { deviceLastSeen, deviceTitle } from "@/features/device/model";
+import { formatGapShort } from "@/features/device/format-gap";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceLocationFrame } from "@/features/device/ui/location-frame";
 import { PostprocessingsPanel } from "@/features/postprocessing/ui/postprocessings-panel";
@@ -241,7 +243,7 @@ export function DeviceStatusTab({
                         {quality.data.channels.map((row) => (
                           <tr key={row.channel}>
                             <td className="py-1.5 pe-2 text-text-primary">
-                              {names.get(row.channel)?.display_name ?? row.channel}
+                              {measurementLabel({ channel: row.channel, display_name: names.get(row.channel)?.display_name })}
                             </td>
                             <td className="px-2 py-1.5 text-text-primary tabular-nums">
                               {formatRatio(row.completeness_ratio)}
@@ -393,29 +395,4 @@ function qualityHeadlineKpis(
         ]
       : []),
   ];
-}
-
-function formatGapShort(seconds: number | null, formatMessage: IntlShape["formatMessage"]): string {
-  if (seconds == null || !Number.isFinite(seconds)) {
-    return formatMessage({ id: "common.format.emDash", defaultMessage: "—" });
-  }
-  if (seconds < 60) {
-    return formatMessage(
-      { id: "page.devices.detail.quality.gapSeconds", defaultMessage: "{count}s" },
-      { count: Math.round(seconds) },
-    );
-  }
-  return formatMessage(
-    { id: "page.devices.detail.quality.gapMinutes", defaultMessage: "{count} min" },
-    { count: Math.round(seconds / 60) },
-  );
-}
-
-function Item({ label, value }: { label: string; value: ReactElement | string }): ReactElement {
-  return (
-    <div className="flex flex-col gap-1">
-      <dt className="text-caption-1-medium text-text-secondary">{label}</dt>
-      <dd className="min-w-0 text-body-medium wrap-break-word text-text-primary">{value}</dd>
-    </div>
-  );
 }

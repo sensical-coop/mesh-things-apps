@@ -1,5 +1,7 @@
 import { useIntl } from "react-intl";
+import { POLL_MS } from "@/timing";
 import { Plate } from "@/iso/react/draw";
+import { figLabel } from "../view";
 import { ConnectArt } from "./art";
 import "./connect.css";
 import { readoutOf, type ReadoutWords } from "./model";
@@ -25,7 +27,7 @@ export function ConnectFigure() {
   };
   return (
     <Plate
-      fig="Fig 7"
+      fig={figLabel("connect")}
       title={formatMessage({ id: "figure.connect.title", defaultMessage: "Connect the gateway" })}
       hint={formatMessage({ id: "figure.connect.hint", defaultMessage: "Flip a toggle" })}
       readout={readoutOf(0, false, words)}
@@ -34,11 +36,14 @@ export function ConnectFigure() {
         { mark: "lit", label: formatMessage({ id: "figure.connect.key.packet", defaultMessage: "Packet to the broker once the gateway is seen" }) },
         { mark: "dotted", label: formatMessage({ id: "figure.connect.key.wait", defaultMessage: "Bluetooth link to the phone" }) },
       ]}
-      caption={formatMessage({
-        id: "figure.connect.caption",
-        defaultMessage:
-          "The phone runs the Meshtastic app and links to the gateway node over Bluetooth LE. On the screen, top to bottom, the toggles are MQTT, uplink and encryption. Only when all three are on does the radio show Wi-Fi arcs and a packet travel over Wi-Fi to the MQTT broker, and the seen lamp on the broker lights. The page checks every 5 seconds.",
-      })}
+      caption={formatMessage(
+        {
+          id: "figure.connect.caption",
+          defaultMessage:
+          "The phone runs the Meshtastic app and links to the gateway node over Bluetooth LE. On the screen, top to bottom, the toggles are MQTT, uplink and encryption. Only when all three are on does the radio show Wi-Fi arcs and a packet travel over Wi-Fi to the MQTT broker, and the seen lamp on the broker lights. The page checks every {seconds} seconds.",
+        },
+        { seconds: POLL_MS / 1000 },
+      )}
     >
       <ConnectArt
         copy={copy}

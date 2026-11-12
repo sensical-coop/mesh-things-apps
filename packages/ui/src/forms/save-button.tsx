@@ -1,6 +1,6 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Spinner } from "@mtt/ui/components/ui/spinner";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { RiCheckLine } from "@remixicon/react";
 import { type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";

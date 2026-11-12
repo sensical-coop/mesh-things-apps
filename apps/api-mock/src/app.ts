@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { TERMS_ENFORCED } from "./features/terms/terms";
 import { createMockAuth, seedStore, type MockAuth } from "./auth";
 import { INACTIVE_ALLOWED_PATHS, openPath, type Env } from "./http";
 import { createRouteRuntime } from "./runtime";
@@ -47,14 +46,6 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       return c.json({ detail: "Your account is not active." }, 403);
     }
     c.set("actor", actor);
-    await next();
-  });
-
-  const TERMS_ROUTE = /^\/(terms|meshes\/terms|sources\/terms|sinks\/terms|owners\/me\/terms-acceptance|(meshes|sources|sinks)\/[^/]+\/terms-acceptance)$/;
-  app.use("*", async (c, next) => {
-    if (!TERMS_ENFORCED && TERMS_ROUTE.test(c.req.path)) {
-      return c.json({ detail: "Terms are not enforced on this instance" }, 404);
-    }
     await next();
   });
 

@@ -1,14 +1,15 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { initScriptsPlugin } from "@mtt/ui/init-scripts";
+import { DEV_PORTS, SITE_PATHS } from "@mtt/contracts/site";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/start/",
+  base: `${SITE_PATHS.start}/`,
   envDir: "../..",
   server: {
     host: "127.0.0.1",
-    port: 5176,
+    port: DEV_PORTS.onboarding,
     strictPort: true,
   },
   resolve: {

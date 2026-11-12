@@ -1,15 +1,10 @@
-import { cx } from "@mtt/ui/utils";
-import { Link } from "@tanstack/react-router";
-import type { ReactElement } from "react";
+import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { AutomationMenu } from "@/automation-menu";
-import { DataMenu } from "@/data-menu";
-import { ManagementMenu } from "@/management-menu";
+import { NavLink } from "@/components/nav-link";
+import { NavMenu } from "@/components/nav-menu";
 import { useMe } from "@/features/auth/use-me";
-import { routes } from "@/router";
-
-export const headerLinkClass =
-  "rounded-full px-3 py-1 text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+import { ManagementMenu } from "@/management-menu";
+import { NAV_GROUPS, NAV_PAGES } from "@/nav-items";
 
 export function NavLinks({
   onNavigate,
@@ -20,46 +15,30 @@ export function NavLinks({
 }): ReactElement {
   const { formatMessage } = useIntl();
   const { isOperator, isSuperuser } = useMe();
-  const linkClass = stacked ? cx(headerLinkClass, "block w-full px-3 py-2") : headerLinkClass;
-  const activeClass = stacked
-    ? cx(headerLinkClass, "block w-full bg-background-secondary-default px-3 py-2 text-text-primary")
-    : cx(headerLinkClass, "bg-background-secondary-default text-text-primary");
 
   return (
     <>
-      <Link
-        to={routes.meshes}
-        activeOptions={{ exact: true }}
-        className={linkClass}
-        activeProps={{ className: activeClass }}
-        onClick={onNavigate}
-      >
-        {formatMessage({ id: "console.nav.meshes", defaultMessage: "Meshes" })}
-      </Link>
-      <Link
-        to={routes.devices}
-        className={linkClass}
-        activeProps={{ className: activeClass }}
-        onClick={onNavigate}
-      >
-        {formatMessage({ id: "console.nav.devices", defaultMessage: "Devices" })}
-      </Link>
-      <AutomationMenu stacked={stacked} onNavigate={onNavigate} linkClass={linkClass} activeClass={activeClass} />
-      <DataMenu
-        stacked={stacked}
-        onNavigate={onNavigate}
-        linkClass={linkClass}
-        activeClass={activeClass}
-        isOperator={isOperator}
-      />
-      {isSuperuser ? (
-        <ManagementMenu
+      {NAV_PAGES.map((page) => (
+        <NavLink key={page.to} to={page.to} exact={page.exact} stacked={stacked} onNavigate={onNavigate}>
+          {formatMessage(page.label)}
+        </NavLink>
+      ))}
+      {NAV_GROUPS.map((group) => (
+        <NavMenu
+          key={group.title.id}
+          title={formatMessage(group.title)}
+          items={group.items
+            .filter((item) => isOperator || !item.operatorOnly)
+            .map((item) => ({
+              to: item.to,
+              label: formatMessage(item.label),
+              description: item.description ? formatMessage(item.description) : undefined,
+            }))}
           stacked={stacked}
           onNavigate={onNavigate}
-          linkClass={linkClass}
-          activeClass={activeClass}
         />
-      ) : null}
+      ))}
+      {isSuperuser ? <ManagementMenu stacked={stacked} onNavigate={onNavigate} /> : null}
     </>
   );
 }

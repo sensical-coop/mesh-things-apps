@@ -1,4 +1,3 @@
-import { OwnerUpdate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import {
   Frame,
@@ -9,20 +8,23 @@ import {
 } from "@mtt/ui/reui/frame";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FormField } from "@mtt/ui/forms/form-field";
 import { SaveButton } from "@mtt/ui/forms/save-button";
-import { pageHeadingClass } from "@/lib/page-heading";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { ListScaffold } from "@/components/list-scaffold";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { OperatorRolePanel } from "@/features/operator-request/ui/operator-role-panel";
 import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
+import { invalidateMe } from "@mtt/contracts/session";
+import { parseProfileForm } from "@/features/auth/model";
 import { authRepository } from "@/features/auth/repository";
+import { useMe } from "@/features/auth/use-me";
 import { ApiKeyPanel } from "@/features/auth/ui/api-key-panel";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
 import { NotificationsPanel } from "@/features/auth/ui/notifications-panel";
@@ -32,25 +34,21 @@ export function ProfilePage(): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const me = useQuery(authRepository.me());
+  const { me, isPending } = useMe();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
   const update = useMutation({
     ...authRepository.update(),
     onSuccess: async () => {
       setErrors({});
-      await queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
+      await invalidateMe(queryClient);
     },
     onError: (error) => setErrors(readApiError(error).fields),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const parsed = OwnerUpdate.safeParse({
-      name: String(form.get("name") ?? "").trim(),
-      email: String(form.get("email") ?? "").trim(),
-    });
+    const parsed = parseProfileForm(new FormData(event.currentTarget));
     if (!parsed.success) {
       setErrors(issueErrors(parsed.error.issues));
       return;
@@ -61,11 +59,7 @@ export function ProfilePage(): ReactElement {
 
   return (
     <>
-      <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
-          {formatMessage({ id: "page.profile.title", defaultMessage: "Profile" })}
-        </h1>
-      </div>
+      <ListScaffold title={formatMessage({ id: "page.profile.title", defaultMessage: "Profile" })} />
       <div className="flex flex-col gap-6">
         <Frame className="shadow-card">
           <FrameHeader>
@@ -78,17 +72,17 @@ export function ProfilePage(): ReactElement {
             </FrameDescription>
           </FrameHeader>
           <FramePanel>
-            {me.isPending ? (
+            {isPending ? (
               <SkeletonRows />
             ) : (
-              <form key={me.data?.id} className="flex flex-col gap-5" onSubmit={onSubmit}>
+              <form key={me?.id} className="flex flex-col gap-5" onSubmit={onSubmit}>
                 <FieldGroup className="grid gap-x-8 gap-y-5 md:grid-cols-2">
                   <FormField
                     id="profile-name"
                     label={formatMessage({ id: "page.profile.name", defaultMessage: "Name" })}
                     error={errors.name}
                   >
-                    <Input id="profile-name" name="name" required autoComplete="name" defaultValue={me.data?.name} />
+                    <Input id="profile-name" name="name" required autoComplete="name" defaultValue={me?.name} />
                   </FormField>
                   <FormField
                     id="profile-email"
@@ -105,7 +99,7 @@ export function ProfilePage(): ReactElement {
                       type="email"
                       required
                       autoComplete="email"
-                      defaultValue={me.data?.email}
+                      defaultValue={me?.email}
                     />
                   </FormField>
                 </FieldGroup>

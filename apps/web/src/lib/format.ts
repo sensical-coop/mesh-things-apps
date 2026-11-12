@@ -26,17 +26,7 @@ export type FormatLabels = {
   secondUnit: string;
 };
 
-export const EN_FORMAT_LABELS: FormatLabels = {
-  neverSeen: "Never seen",
-  yes: "Yes",
-  no: "No",
-  emDash: "—",
-  hourUnit: "h",
-  minuteUnit: "min",
-  secondUnit: "s",
-};
-
-export function formatWhen(iso: string | null, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+export function formatWhen(iso: string | null, locale: string | undefined, labels: FormatLabels): string {
   if (!iso) return labels.neverSeen;
   return toZoned(iso)?.toLocaleString(locale, whenOpts) ?? iso;
 }
@@ -65,7 +55,7 @@ export function toRelative(iso: string, locale?: string): string | null {
   return rtf.format(0, "second");
 }
 
-export function formatLastSeen(iso: string | null, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+export function formatLastSeen(iso: string | null, locale: string | undefined, labels: FormatLabels): string {
   if (!iso) return labels.neverSeen;
   const abs = formatWhen(iso, locale, labels);
   const rel = toRelative(iso, locale);
@@ -76,7 +66,7 @@ export function formatClock(iso: string, locale?: string): string {
   return toZoned(iso)?.toLocaleString(locale, clockOpts) ?? iso;
 }
 
-export function formatValue(value: unknown, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+export function formatValue(value: unknown, locale: string | undefined, labels: FormatLabels): string {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value.toLocaleString(locale, { maximumFractionDigits: 2 });
   }
@@ -93,18 +83,14 @@ export function asNumber(value: unknown): number | null {
 
 export function formatRatio(
   value: number | null | undefined,
-  locale?: string,
-  labels: FormatLabels = EN_FORMAT_LABELS,
+  locale: string | undefined,
+  labels: FormatLabels,
 ): string {
   if (value == null || !Number.isFinite(value)) return labels.emDash;
   return value.toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 });
 }
 
-export function formatSecondsAsHms(
-  seconds: number | null | undefined,
-  locale?: string,
-  labels: FormatLabels = EN_FORMAT_LABELS,
-): string {
+export function formatSecondsAsHms(seconds: number | null | undefined, labels: FormatLabels): string {
   if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return labels.emDash;
   const total = Math.trunc(seconds);
   const h = Math.floor(total / 3600);

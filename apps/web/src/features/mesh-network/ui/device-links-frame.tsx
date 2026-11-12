@@ -10,13 +10,14 @@ import { useFormatters } from "@/hooks/use-formatters";
 import { deviceTitle } from "@/features/device/model";
 import { meshRepository } from "@/features/mesh/repository";
 import { routes } from "@/router";
-import { nodeHex } from "../model";
+import { DEVICE_WINDOW } from "../model";
+import { formatNodeId } from "@mtt/ui/forms/node-id";
 
 export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage, formatNumber } = useIntl();
   const { formatLastSeen } = useFormatters();
   const links = useQuery(
-    meshRepository.links(device.mesh_id, { since: "7d", node_id: String(device.node_id) }),
+    meshRepository.links(device.mesh_id, { since: DEVICE_WINDOW, node_id: String(device.node_id) }),
   );
   const meshDevices = useQuery(meshRepository.devices(device.mesh_id));
   const byNode = useMemo(() => new Map((meshDevices.data ?? []).map((d) => [d.node_id, d])), [meshDevices.data]);
@@ -35,7 +36,7 @@ export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactEleme
         {deviceTitle(known)}
       </Link>
     ) : (
-      nodeHex(node)
+      formatNodeId(node, "hex")
     );
   };
 

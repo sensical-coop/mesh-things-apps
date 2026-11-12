@@ -3,7 +3,7 @@ import { useIntl } from "react-intl";
 import { IsoFigure, Line } from "@/iso/react/draw";
 import { follow, useInView, useLoop, useReadout } from "@/iso/react/live";
 import { BENCH } from "./art";
-import { FACE, HEIGHT, LAMP_AT, TICKS, TRIP_TICK, WATCH_HOP, WIDTH, needleLocal } from "./geometry";
+import { DIAL_R, FACE, HEIGHT, LAMP_AT, TICKS, TRIP_TICK, WATCH_HOP, WIDTH, needleLocal } from "./geometry";
 import { INTERVAL, MISSED_TO_TRIP, TRIP, benchOf, seenSeconds, tourAge } from "./model";
 
 const HOLD_STEP = INTERVAL * 0.35;
@@ -117,7 +117,7 @@ export function DoneLive() {
       <IsoFigure width={WIDTH} height={HEIGHT} label={label}>
         {BENCH}
         <g transform={FACE}>
-          <circle r="20" className="done-face" />
+          <circle r={DIAL_R} className="done-face" />
           <circle r="18.2" className="iso-line done-bezel" data-tone="mid" />
           <circle r="16.4" className="done-glass" />
           <Line d={TICKS.minor} tone="faint" />

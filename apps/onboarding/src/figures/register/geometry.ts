@@ -3,13 +3,13 @@ import { loraRadio, loraRadioBounds, type LoraRadioParts, type LoraRadioSpec } f
 import { stepProjection } from "../view";
 import { WHEEL_COUNT } from "./model";
 
-export interface Piece {
+export type Piece = {
   paths: SolidPaths;
   tone: Tone;
   flat?: boolean;
-}
+};
 
-export interface WheelArt {
+export type WheelArt = {
   index: number;
   face: SolidPaths;
   band: SolidPaths;
@@ -18,7 +18,7 @@ export interface WheelArt {
   clip: string;
   label: string;
   at: [number, number];
-}
+};
 
 const SCALE = 1.02;
 const BENCH = 5.5;

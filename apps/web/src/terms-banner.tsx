@@ -4,8 +4,7 @@ import { useIntl } from "react-intl";
 import { useMe } from "@/features/auth/use-me";
 import { meshTermsStanding } from "@/features/mesh/model";
 import { meshRepository } from "@/features/mesh/repository";
-import { termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
-import { termsRepository } from "@/features/terms/repository";
+import { useMeshTerms } from "@/features/terms/use-mesh-terms";
 import { useAccountTermsStanding } from "@/features/terms/use-account-terms-standing";
 import { routes } from "@/router";
 import { RouterButtonLink } from "@/components/router-button-link";
@@ -15,24 +14,18 @@ import { RouterButtonLink } from "@/components/router-button-link";
  * their terms lapsed (to the meshes list), or account terms that changed (to Profile).
  */
 export function TermsBanner(): ReactElement | null {
-  const { formatMessage, locale } = useIntl();
+  const { formatMessage } = useIntl();
   const { me } = useMe();
   const account = useAccountTermsStanding();
   // Nothing lapses on an instance that asks for no terms.
-  const enforced = useTermsEnforced() === true;
+  const { enforced, current } = useMeshTerms();
   const owned = useQuery({
     ...meshRepository.list({ owned: true }),
     enabled: me !== undefined && enforced,
   });
-  const meshTerms = useQuery({
-    ...termsRepository.mesh({ locale: termsLocale(locale) }),
-    enabled: me !== undefined && enforced,
-    // The current version changes only when the terms are republished.
-    staleTime: 5 * 60_000,
-  });
   const now = new Date();
   const lapsed = (enforced ? (owned.data ?? []) : []).filter(
-    (mesh) => meshTermsStanding(mesh, meshTerms.data?.version, now) === "lapsed",
+    (mesh) => meshTermsStanding(mesh, current?.version, now) === "lapsed",
   ).length;
 
   const shown =

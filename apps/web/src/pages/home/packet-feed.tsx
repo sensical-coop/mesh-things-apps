@@ -1,4 +1,5 @@
 import { Chip } from "@mtt/ui/components/base/badges/chip";
+import { FramePanel } from "@mtt/ui/reui/frame";
 import { cx } from "@mtt/ui/utils";
 import { type ReactElement } from "react";
 
@@ -11,33 +12,36 @@ const packets = [
   { node: "lisbon-2", kind: "telemetry", age: "37s", gateway: false },
 ] as const;
 
-export function LandingPacketFeed(): ReactElement {
+/** The packet list in a frame panel of the given height, faded out at the bottom. */
+export function LandingPacketFeed({ className }: { className: string }): ReactElement {
   return (
-    <ul className="flex flex-col py-1" aria-hidden>
-      {packets.map((packet, index) => (
-        <li key={packet.node} className="flex h-8 items-center justify-between gap-3 px-3">
-          <span className="flex min-w-0 items-center gap-2">
+    <FramePanel className={cx("overflow-hidden mask-[linear-gradient(to_bottom,#000_72%,transparent)] p-0", className)}>
+      <ul className="flex flex-col py-1" aria-hidden>
+        {packets.map((packet, index) => (
+          <li key={packet.node} className="flex h-8 items-center justify-between gap-3 px-3">
+            <span className="flex min-w-0 items-center gap-2">
+              <span
+                className={cx(
+                  "size-1.5 shrink-0 rounded-full",
+                  packet.gateway ? "bg-accent-500" : "bg-text-tertiary",
+                )}
+              />
+              <span className="truncate text-body-medium text-text-primary">{packet.node}</span>
+              <Chip variant="caption" color="soft" className="hidden rounded-full sm:inline-flex">
+                {packet.kind}
+              </Chip>
+            </span>
             <span
               className={cx(
-                "size-1.5 shrink-0 rounded-full",
-                packet.gateway ? "bg-accent-500" : "bg-text-tertiary",
+                "shrink-0 font-mono text-caption-1-regular text-text-tertiary tabular-nums",
+                index === 0 && "text-accent-500",
               )}
-            />
-            <span className="truncate text-body-medium text-text-primary">{packet.node}</span>
-            <Chip variant="caption" color="soft" className="hidden rounded-full sm:inline-flex">
-              {packet.kind}
-            </Chip>
-          </span>
-          <span
-            className={cx(
-              "shrink-0 font-mono text-caption-1-regular text-text-tertiary tabular-nums",
-              index === 0 && "text-accent-500",
-            )}
-          >
-            {packet.age}
-          </span>
-        </li>
-      ))}
-    </ul>
+            >
+              {packet.age}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </FramePanel>
   );
 }

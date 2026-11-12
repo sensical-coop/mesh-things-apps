@@ -1,4 +1,4 @@
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { type ReactElement, type ReactNode } from "react";
 import type { Point } from "@mtt/contracts";
 import { type RemixiconComponentType } from "@remixicon/react";

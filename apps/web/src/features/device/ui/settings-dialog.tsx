@@ -7,52 +7,22 @@ import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
 import { FormField } from "@mtt/ui/forms/form-field";
-import { FormNumber } from "@mtt/ui/forms/form-number";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
-import { deviceRepository } from "@/features/device/repository";
+import { deviceRepository, invalidateDevice } from "@/features/device/repository";
 import { deviceTitle, parseCoordinate } from "@/features/device/model";
-import { dialogActionsClass } from "@/lib/dialog-actions";
-import { useFormatters } from "@/hooks/use-formatters";
-
-type IntervalSecondsFieldProps = {
-  id: string;
-  name: string;
-  label: string;
-  hint: string;
-  defaultValue: number | null;
-  error?: string;
-};
-
-function IntervalSecondsField({ id, name, label, hint, defaultValue, error }: IntervalSecondsFieldProps): ReactElement {
-  const { locale } = useIntl();
-  const { formatSecondsAsHms } = useFormatters();
-  const [seconds, setSeconds] = useState(defaultValue);
-  return (
-    <FormField id={id} label={label} hint={hint} error={error}>
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <FormNumber locale={locale} id={id} name={name} min={0} defaultValue={defaultValue ?? undefined} onValueChange={setSeconds} />
-        </div>
-        <p className="shrink-0 text-caption-1-regular whitespace-nowrap text-text-tertiary tabular-nums" aria-live="polite">
-          {formatSecondsAsHms(seconds)}
-        </p>
-      </div>
-    </FormField>
-  );
-}
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { IntervalSecondsField } from "@/features/device/ui/interval-seconds-field";
 
 export function DeviceSettingsDialog({
   device,
   open,
   onClose,
-  onSaved,
 }: {
   device: DeviceRead;
   open: boolean;
   onClose: () => void;
-  onSaved?: () => void | Promise<void>;
 }): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -61,11 +31,7 @@ export function DeviceSettingsDialog({
   const update = useMutation({
     ...deviceRepository.update(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() });
-      await queryClient.invalidateQueries({
-        queryKey: deviceRepository.retrieveKey(device.uuid),
-      });
-      await onSaved?.();
+      await invalidateDevice(queryClient, device);
       onClose();
     },
     onError: (failure) => setFieldErrors(readApiError(failure).fields),

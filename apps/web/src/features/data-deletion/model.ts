@@ -1,14 +1,8 @@
-import type { DataDeletion } from "@mtt/contracts";
-import { canSeeDataDeletions as maySeeDataDeletions, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
+import { DataDeletionStatusEnum, type DataDeletion } from "@mtt/contracts";
 
-export const DATA_DELETION_STATUSES = ["pending", "done", "cancelled", "all"] as const;
+export const DATA_DELETION_STATUSES = DataDeletionStatusEnum.options;
 
-export type DataDeletionStatusFilter = (typeof DATA_DELETION_STATUSES)[number];
-
-/** Superusers only. Hidden while `me` is still loading. */
-export function canSeeDataDeletions(me: ProfileFlags | undefined): boolean {
-  return me != null && maySeeDataDeletions(viewerOf(me));
-}
+export type DataDeletionStatusFilter = DataDeletionStatusEnum | "all";
 
 /**
  * Still pending past its date: the lifecycle job has tried (see `attempts` and

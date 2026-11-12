@@ -1,4 +1,5 @@
 import type { PostprocessingBlueprint } from "@mtt/contracts";
+import { tableLinkClass } from "@/lib/link-class";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
 import { RiAddLine } from "@remixicon/react";
@@ -19,7 +20,7 @@ const col = legacyCreateColumnHelper<PostprocessingBlueprint>();
 export function BlueprintsPage(): ReactElement {
   const { formatMessage } = useIntl();
   const navigate = useNavigate();
-  const { meId, ownerName } = useOwnerDirectory();
+  const { ownerLabel } = useOwnerDirectory();
   const blueprints = useQuery(blueprintRepository.list());
   const [creating, setCreating] = useState(false);
 
@@ -31,7 +32,7 @@ export function BlueprintsPage(): ReactElement {
           <Link
             to={routes.blueprint}
             params={{ blueprintId: info.row.original.id }}
-            className="rounded-full outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className={tableLinkClass}
           >
             {info.getValue()}
           </Link>
@@ -49,9 +50,7 @@ export function BlueprintsPage(): ReactElement {
             <span className="text-text-secondary">
               {ownerId === null
                 ? formatMessage({ id: "page.blueprints.list.ownerGone", defaultMessage: "Deleted account" })
-                : ownerId === meId
-                  ? formatMessage({ id: "page.blueprints.list.ownerYou", defaultMessage: "You" })
-                  : ownerName(ownerId)}
+                : ownerLabel(ownerId)}
             </span>
           );
         },
@@ -79,7 +78,7 @@ export function BlueprintsPage(): ReactElement {
         cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
       }),
     ],
-    [formatMessage, meId, ownerName],
+    [formatMessage, ownerLabel],
   );
 
   return (

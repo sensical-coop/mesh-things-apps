@@ -1,4 +1,4 @@
-import { FaceText, IsoFigure, Line, Plate, Solid } from "@/iso/react/draw";
+import { FaceText, IsoFigure, Line, Solid } from "@/iso/react/draw";
 import { follow, useInView, useLoop, useReadout } from "@/iso/react/live";
 import { FIGURE_HEIGHT, FIGURE_WIDTH } from "../view";
 import { useIntl } from "react-intl";
@@ -10,11 +10,11 @@ import { glyphOf, hexId, placeOf, readoutOf, shortName, tourAt, WHEEL_COUNT } fr
 
 const DIGIT_DRAG = 16;
 
-interface Drag {
+type Drag = {
   index: number;
   y: number;
   base: number;
-}
+};
 
 function at(values: readonly number[], index: number): number {
   return values[index] ?? 0;
@@ -121,137 +121,125 @@ export function RegisterLive() {
   }
 
   return (
-    <Plate
-      fig="Fig 6"
-      title={formatMessage({ id: "figure.register.title", defaultMessage: "Read the node ID" })}
-      hint={formatMessage({ id: "figure.register.hint", defaultMessage: "Drag or ← →" })}
-      readout="!00000000 = 0"
-      caption={formatMessage({
-        id: "figure.register.caption",
-        defaultMessage:
-          "Eight wheels set the hex node ID. The radio screen shows the short name (the last four digits) and the full ID, the same ID the Meshtastic app shows as hex or decimal.",
-      })}
+    <div
+      className="register-live"
+      ref={(node) => {
+        root.current = node;
+        anchor.current = node;
+      }}
     >
-      <div
-        className="register-live"
-        ref={(node) => {
-          root.current = node;
-          anchor.current = node;
-        }}
+      <IsoFigure
+        width={FIGURE_WIDTH}
+        height={FIGURE_HEIGHT}
+        label={formatMessage({
+          id: "figure.register.label",
+          defaultMessage: "Meshtastic radio showing a node ID beside eight hex wheels",
+        })}
       >
-        <IsoFigure
-          width={FIGURE_WIDTH}
-          height={FIGURE_HEIGHT}
-          label={formatMessage({
-            id: "figure.register.label",
-            defaultMessage: "Meshtastic radio showing a node ID beside eight hex wheels",
-          })}
+        <RegisterArt />
+        <LoraRadio parts={scene.radio} />
+        <FaceText transform={`${scene.radio.screen} translate(${scene.screenType.inset} ${scene.screenType.inset})`} size={scene.screenType.short} tone="hi">
+          <tspan ref={shortLine} x="0" dy="0.8em">
+            0000
+          </tspan>
+        </FaceText>
+        <FaceText
+          transform={`${scene.radio.screen} translate(${scene.screenType.inset} ${scene.screenType.inset + scene.screenType.gap})`}
+          size={scene.screenType.id}
+          tone="hi"
         >
-          <RegisterArt />
-          <LoraRadio parts={scene.radio} />
-          <FaceText transform={`${scene.radio.screen} translate(${scene.screenType.inset} ${scene.screenType.inset})`} size={scene.screenType.short} tone="hi">
-            <tspan ref={shortLine} x="0" dy="0.8em">
-              0000
-            </tspan>
-          </FaceText>
-          <FaceText
-            transform={`${scene.radio.screen} translate(${scene.screenType.inset} ${scene.screenType.inset + scene.screenType.gap})`}
-            size={scene.screenType.id}
-            tone="hi"
+          <tspan ref={idLine} x="0" dy="0.8em">
+            !00000000
+          </tspan>
+        </FaceText>
+        {scene.wheels.map((wheel) => (
+          <g
+            key={wheel.index}
+            ref={(node) => {
+              wheels.current[wheel.index] = node;
+            }}
           >
-            <tspan ref={idLine} x="0" dy="0.8em">
-              !00000000
-            </tspan>
-          </FaceText>
-          {scene.wheels.map((wheel) => (
-            <g
-              key={wheel.index}
-              ref={(node) => {
-                wheels.current[wheel.index] = node;
-              }}
-            >
-              <g className="register-band">
-                <Solid paths={wheel.band} tone="lo" />
-              </g>
-              <g className="register-face" clipPath={`url(#register-wheel-${wheel.index})`}>
-                <Solid paths={wheel.face} tone="mid" />
-                <text
-                  ref={(node) => {
-                    glyphs.current[wheel.index] = node;
-                  }}
-                  className="iso-face-text"
-                  data-tone="hi"
-                  transform={wheel.label}
-                  fontSize={scene.wheelGlyph}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                >
-                  0
-                </text>
-              </g>
-              <Line d={wheel.rings} tone="hi" />
-              <Line d={wheel.ticks} tone="mid" />
+            <g className="register-band">
+              <Solid paths={wheel.band} tone="lo" />
             </g>
+            <g className="register-face" clipPath={`url(#register-wheel-${wheel.index})`}>
+              <Solid paths={wheel.face} tone="mid" />
+              <text
+                ref={(node) => {
+                  glyphs.current[wheel.index] = node;
+                }}
+                className="iso-face-text"
+                data-tone="hi"
+                transform={wheel.label}
+                fontSize={scene.wheelGlyph}
+                textAnchor="middle"
+                dominantBaseline="middle"
+              >
+                0
+              </text>
+            </g>
+            <Line d={wheel.rings} tone="hi" />
+            <Line d={wheel.ticks} tone="mid" />
+          </g>
+        ))}
+        <defs>
+          {scene.wheels.map((wheel) => (
+            <clipPath key={wheel.index} id={`register-wheel-${wheel.index}`}>
+              <path d={wheel.clip} />
+            </clipPath>
           ))}
-          <defs>
-            {scene.wheels.map((wheel) => (
-              <clipPath key={wheel.index} id={`register-wheel-${wheel.index}`}>
-                <path d={wheel.clip} />
-              </clipPath>
-            ))}
-          </defs>
-        </IsoFigure>
-        <div
-          ref={hit}
-          className="register-hit"
-          tabIndex={0}
-          role="slider"
-          aria-label={formatMessage({ id: "figure.register.control", defaultMessage: "Node ID wheels" })}
-          aria-valuemin={0}
-          aria-valuemax={15}
-          aria-valuenow={0}
-          aria-valuetext="!00000000 = 0"
-          onPointerEnter={() => {
-            over.current = true;
-          }}
-          onPointerLeave={() => {
-            over.current = false;
-          }}
-          onPointerDown={(event) => {
-            const point = pointOf(event);
-            if (!point) return;
-            claim();
-            const index = nearest(point[0], point[1]);
-            wheel.current = index;
-            drag.current = { index, y: event.clientY, base: at(goal.current, index) };
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerMove={(event) => {
-            const current = drag.current;
-            if (!current) return;
-            goal.current[current.index] = current.base + (current.y - event.clientY) / DIGIT_DRAG;
-            claim();
-          }}
-          onPointerUp={() => {
-            const current = drag.current;
-            drag.current = null;
-            if (!current) return;
-            goal.current[current.index] = Math.round(at(goal.current, current.index));
-            claim();
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" && event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
-            claim();
-            const index = wheel.current;
-            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-              wheel.current = (index + (event.key === "ArrowRight" ? 1 : WHEEL_COUNT - 1)) % WHEEL_COUNT;
-            } else {
-              goal.current[index] = at(goal.current, index) + (event.key === "ArrowUp" ? 1 : -1);
-            }
-            event.preventDefault();
-          }}
-        />
-      </div>
-    </Plate>
+        </defs>
+      </IsoFigure>
+      <div
+        ref={hit}
+        className="register-hit"
+        tabIndex={0}
+        role="slider"
+        aria-label={formatMessage({ id: "figure.register.control", defaultMessage: "Node ID wheels" })}
+        aria-valuemin={0}
+        aria-valuemax={15}
+        aria-valuenow={0}
+        aria-valuetext="!00000000 = 0"
+        onPointerEnter={() => {
+          over.current = true;
+        }}
+        onPointerLeave={() => {
+          over.current = false;
+        }}
+        onPointerDown={(event) => {
+          const point = pointOf(event);
+          if (!point) return;
+          claim();
+          const index = nearest(point[0], point[1]);
+          wheel.current = index;
+          drag.current = { index, y: event.clientY, base: at(goal.current, index) };
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          const current = drag.current;
+          if (!current) return;
+          goal.current[current.index] = current.base + (current.y - event.clientY) / DIGIT_DRAG;
+          claim();
+        }}
+        onPointerUp={() => {
+          const current = drag.current;
+          drag.current = null;
+          if (!current) return;
+          goal.current[current.index] = Math.round(at(goal.current, current.index));
+          claim();
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" && event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+          claim();
+          const index = wheel.current;
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            wheel.current = (index + (event.key === "ArrowRight" ? 1 : WHEEL_COUNT - 1)) % WHEEL_COUNT;
+          } else {
+            goal.current[index] = at(goal.current, index) + (event.key === "ArrowUp" ? 1 : -1);
+          }
+          event.preventDefault();
+        }}
+      />
+    </div>
   );
 }

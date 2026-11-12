@@ -9,6 +9,7 @@ import { RiArrowDownSLine } from "@remixicon/react";
 import { Link, useMatchRoute } from "@tanstack/react-router";
 import { type ReactElement } from "react";
 import { NavCount } from "@/components/nav-count";
+import { NavLink, navLinkClass } from "@/components/nav-link";
 
 export type NavMenuItem = {
   to: string;
@@ -21,42 +22,26 @@ export type NavMenuItem = {
 export type NavMenuProps = {
   title: string;
   items: readonly NavMenuItem[];
-  totalCountLabel?: (total: number) => string;
+  /** A count on the menu's own button, for menus whose items need attention. */
+  badge?: { count: number; label: string };
   /** The mobile menu: a heading and its links, as a dropdown inside a menu is awkward to use. */
   stacked?: boolean;
   onNavigate?: () => void;
-  linkClass: string;
-  activeClass: string;
 };
 
-export function NavMenu({
-  title,
-  items,
-  totalCountLabel,
-  stacked,
-  onNavigate,
-  linkClass,
-  activeClass,
-}: NavMenuProps): ReactElement {
+export function NavMenu({ title, items, badge, stacked, onNavigate }: NavMenuProps): ReactElement {
   const matchRoute = useMatchRoute();
   const onOneOfItsPages = items.some((item) => matchRoute({ to: item.to, fuzzy: true }) !== false);
-  const total = items.reduce((sum, item) => sum + (item.count ?? 0), 0);
 
   if (stacked) {
     return (
       <div className="flex flex-col">
         <p className="px-3 pt-3 pb-1 text-caption-1-medium text-text-tertiary">{title}</p>
         {items.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={cx(linkClass, "ps-5")}
-            activeProps={{ className: cx(activeClass, "ps-5") }}
-            onClick={onNavigate}
-          >
+          <NavLink key={item.to} to={item.to} stacked className="ps-5" onNavigate={onNavigate}>
             {item.label}
             {item.count !== undefined ? <NavCount count={item.count} label={item.countLabel ?? ""} /> : null}
-          </Link>
+          </NavLink>
         ))}
       </div>
     );
@@ -66,11 +51,11 @@ export function NavMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <button type="button" className={cx(onOneOfItsPages ? activeClass : linkClass, "inline-flex items-center")} />
+          <button type="button" className={cx(navLinkClass({ active: onOneOfItsPages }), "inline-flex items-center")} />
         }
       >
         {title}
-        {totalCountLabel ? <NavCount count={total} label={totalCountLabel(total)} /> : null}
+        {badge ? <NavCount count={badge.count} label={badge.label} /> : null}
         <RiArrowDownSLine aria-hidden className="ms-0.5 size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-auto min-w-(--anchor-width)">

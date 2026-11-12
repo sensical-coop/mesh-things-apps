@@ -1,4 +1,4 @@
-import { canDecideOperatorRequests, canSeeDataDeletions, viewerOf } from "@mtt/contracts/authz";
+import { canDecideOperatorRequests, canSeeDataDeletions } from "@mtt/contracts/authz";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
@@ -11,8 +11,7 @@ import { routes } from "@/router";
 
 /** Operator requests to decide, and deletions past their date. Zero for everyone else. */
 function useSuperuserCounts(): { pendingRequests: number; overdueDeletions: number } {
-  const { me } = useMe();
-  const viewer = me ? viewerOf(me) : undefined;
+  const { viewer } = useMe();
   const requests = useQuery({
     ...operatorRequestRepository.list({ status: "pending" }),
     enabled: viewer != null && canDecideOperatorRequests(viewer),
@@ -28,23 +27,19 @@ function useSuperuserCounts(): { pendingRequests: number; overdueDeletions: numb
   };
 }
 
-export type ManagementMenuProps = {
-  stacked?: boolean;
-  onNavigate?: () => void;
-  linkClass: string;
-  activeClass: string;
-};
-
-export function ManagementMenu(props: ManagementMenuProps): ReactElement {
+export function ManagementMenu({ stacked, onNavigate }: { stacked?: boolean; onNavigate?: () => void }): ReactElement {
   const { formatMessage } = useIntl();
   const { pendingRequests, overdueDeletions } = useSuperuserCounts();
+  const total = pendingRequests + overdueDeletions;
   return (
     <NavMenu
-      {...props}
+      stacked={stacked}
+      onNavigate={onNavigate}
       title={formatMessage({ id: "console.header.management", defaultMessage: "Management" })}
-      totalCountLabel={(total) =>
-        formatMessage({ id: "console.header.managementCount", defaultMessage: "{count} need attention" }, { count: total })
-      }
+      badge={{
+        count: total,
+        label: formatMessage({ id: "console.header.managementCount", defaultMessage: "{count} need attention" }, { count: total }),
+      }}
       items={[
         {
           to: routes.operatorRequests,

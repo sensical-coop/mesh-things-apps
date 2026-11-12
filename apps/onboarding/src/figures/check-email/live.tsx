@@ -3,28 +3,28 @@ import { useIntl } from "react-intl";
 import { IsoFigure } from "@/iso/react/draw";
 import { follow, useInView, useLoop, useReadout } from "@/iso/react/live";
 import { FIGURE_HEIGHT, FIGURE_WIDTH, needleHubAt } from "./geometry";
-import { phaseOf, sceneAt, secondsLeft, tourUnit, type Scene } from "./model";
+import { COOLDOWN_SECONDS, phaseOf, sceneAt, secondsLeft, tourUnit, type Scene } from "./model";
 import { doorPaths, doorRest, envelopeOpacity, envelopeTransform, flagPaths, flagRest, needlePath, needleRest, writeSolid } from "./pose";
 import "./check-email.css";
 
 const REST_MS = 3600;
 
-interface Props {
+type Props = {
   base: ReactNode;
   post: ReactNode;
   box: ReactNode;
   dial: ReactNode;
   letter: ReactNode;
   lamp: ReactNode;
-}
+};
 
-interface Motion {
+type Motion = {
   at: number;
   target: number;
   clock: number;
   touched: number;
   held: boolean;
-}
+};
 
 export function CheckEmailLive({ base, post, box, dial, letter, lamp }: Props) {
   const { formatMessage } = useIntl();
@@ -48,8 +48,8 @@ export function CheckEmailLive({ base, post, box, dial, letter, lamp }: Props) {
   });
   const svgLabel = formatMessage({
     id: "figure.check-email.svg",
-    defaultMessage: "Kerbside mailbox with a red flag and a 60-second resend dial",
-  });
+    defaultMessage: "Kerbside mailbox with a red flag and a {seconds}-second resend dial",
+  }, { seconds: COOLDOWN_SECONDS });
 
   const sent = (seconds: number) =>
     formatMessage({ id: "figure.check-email.readout.sent", defaultMessage: "Sent · resend {seconds}s" }, { seconds });

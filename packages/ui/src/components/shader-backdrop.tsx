@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /**
- * The dithered ribbon behind the sign-in card.
+ * The dithered ribbon behind a centred card.
  *
  * Written by hand rather than pulled from a shader library because the ready
  * made `Dithering` shader has no threshold: its noise field sits at a mid

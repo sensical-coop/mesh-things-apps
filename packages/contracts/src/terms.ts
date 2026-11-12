@@ -1,10 +1,19 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { readApiError } from "./api-errors";
 import { getTermsRetrieveQueryOptions } from "./generated/api";
-import type { OwnerCreate } from "./generated/model.zod";
+import type { OwnerCreate, TermsLocaleEnum } from "./generated/model.zod";
 
-export type TermsLocale = "en" | "es";
+export type TermsLocale = TermsLocaleEnum;
+
+/** What was accepted: sent back as `terms_version` and `terms_locale`. */
+export type TermsAcceptance = { version: string; locale: TermsLocale };
+
+/** The body fields that carry an acceptance. */
+export function termsFields(acceptance: TermsAcceptance): { terms_version: string; terms_locale: TermsLocale } {
+  return { terms_version: acceptance.version, terms_locale: acceptance.locale };
+}
 
 /** The API serves `en` and `es`; any other console language gets English. */
 export function termsLocale(intlLocale: string): TermsLocale {
@@ -26,6 +35,9 @@ export function termsEnforcedFrom(state: { loaded: boolean; errorStatus: number 
   return undefined;
 }
 
+/** The terms version changes only when the terms are republished. */
+export const TERMS_STALE_TIME = 5 * 60_000;
+
 /**
  * The account terms, which also tell whether this instance asks for terms at all
  * (`GET /terms` answers 404 when it doesn't). One shared, long-lived query.
@@ -34,15 +46,11 @@ export function termsEnforcedFrom(state: { loaded: boolean; errorStatus: number 
 export function accountTermsQuery(locale: TermsLocale) {
   return {
     ...getTermsRetrieveQueryOptions({ locale }),
-    staleTime: 5 * 60_000,
+    staleTime: TERMS_STALE_TIME,
   };
 }
 
-/**
- * Whether this instance asks for terms: `true`, `false` (terms off), or `undefined`
- * while unknown, which callers treat as enforced. Readable without an account.
- */
-export function useTermsEnforced(): boolean | undefined {
+function useTermsEnforcedState(): boolean | undefined {
   const { locale } = useIntl();
   const account = useQuery(accountTermsQuery(termsLocale(locale)));
   return termsEnforcedFrom({
@@ -51,11 +59,46 @@ export function useTermsEnforced(): boolean | undefined {
   });
 }
 
+/** Gate an action on terms: unknown (still loading) counts as asked, so nothing slips past. Only a known "terms off" is `false`. */
+export function useTermsAsked(): boolean {
+  return useTermsEnforcedState() !== false;
+}
+
+/** Show a terms standing or fetch the terms: waits for a definite yes, so unknown shows nothing. */
+export function useTermsConfirmed(): boolean {
+  return useTermsEnforcedState() === true;
+}
+
 export type SignupTerms = {
   version: string;
   locale: string;
   statements: readonly { id: string }[];
 };
+
+/**
+ * Ticks and verdict for one terms payload (a `useQuery` result). `notRequired` is a 404:
+ * the instance asks for no terms, so `acceptance` is `null` and `complete` is true.
+ * `acceptance` is otherwise set as soon as the terms loaded; `complete` waits for every tick.
+ */
+export function useTermsAcceptance(query: { data: SignupTerms | undefined; error: unknown }) {
+  const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
+  const notRequired = query.error ? readApiError(query.error).status === 404 : false;
+  const statementIds = (query.data?.statements ?? []).map((statement) => statement.id);
+  const complete = notRequired || (query.data !== undefined && allStatementsAccepted(statementIds, accepted));
+  const acceptance: TermsAcceptance | null =
+    notRequired || !query.data ? null : { version: query.data.version, locale: termsLocale(query.data.locale) };
+
+  function toggle(id: string, checked: boolean) {
+    setAccepted((current) => {
+      const next = new Set(current);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  return { notRequired, accepted, complete, acceptance, toggle, reset: () => setAccepted(new Set()) };
+}
 
 /**
  * Signup body, or `null` when enforced terms are missing or not fully ticked.
@@ -68,7 +111,14 @@ export function signupCreateBody(
   next?: string,
 ): OwnerCreate | null {
   const current = terms.current;
-  if (!terms.off && (!current || !current.statements.every((statement) => values.accepted.includes(statement.id)))) {
+  if (
+    !terms.off &&
+    (!current ||
+      !allStatementsAccepted(
+        current.statements.map((statement) => statement.id),
+        new Set(values.accepted),
+      ))
+  ) {
     return null;
   }
   return {

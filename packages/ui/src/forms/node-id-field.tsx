@@ -1,9 +1,9 @@
 import { Input } from "@mtt/ui/components/ui/input";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@mtt/ui/forms/form-field";
+import { fieldErrorId, fieldHintId, FormField } from "@mtt/ui/forms/form-field";
 import { FormSelect } from "@mtt/ui/forms/form-select";
-import { formatNodeId, looksHex, type NodeIdFormat, parseNodeId } from "@mtt/ui/forms/node-id";
+import { formatNodeId, HEX_PREFIX, looksHex, type NodeIdFormat, parseNodeId, stripHexPrefix } from "@mtt/ui/forms/node-id";
 
 export function NodeIdField({
   id,
@@ -23,13 +23,13 @@ export function NodeIdField({
   const [format, setFormat] = useState<NodeIdFormat>("decimal");
   const [raw, setRaw] = useState("");
   const value = parseNodeId(raw, format);
-  const typed = raw.trim().replace(/^!/, "") !== "";
-  const describedBy = [`${id}-hint`, error ? `${id}-error` : null].filter(Boolean).join(" ") || undefined;
+  const typed = stripHexPrefix(raw) !== "";
+  const describedBy = [fieldHintId(id), error ? fieldErrorId(id) : null].filter(Boolean).join(" ") || undefined;
 
   function onFormatChange(next: string) {
     const nextFormat: NodeIdFormat = next === "hex" ? "hex" : "decimal";
     // Carry a valid id across; otherwise start the hex field with Meshtastic's "!".
-    setRaw(value !== null ? formatNodeId(value, nextFormat) : nextFormat === "hex" ? "!" : "");
+    setRaw(value !== null ? formatNodeId(value, nextFormat) : nextFormat === "hex" ? HEX_PREFIX : "");
     setFormat(nextFormat);
   }
 
@@ -67,7 +67,7 @@ export function NodeIdField({
           autoComplete="off"
           spellCheck={false}
           inputMode={format === "decimal" ? "numeric" : "text"}
-          placeholder={format === "decimal" ? "2130636288" : "!7efeee00"}
+          placeholder={format === "decimal" ? "2130636288" : `${HEX_PREFIX}7efeee00`}
           aria-invalid={error || (typed && value === null) ? true : undefined}
           aria-describedby={describedBy}
           className="min-w-0 flex-1 font-mono tabular-nums"

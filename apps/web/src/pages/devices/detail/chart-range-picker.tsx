@@ -1,7 +1,6 @@
 import { Calendar } from "@mtt/ui/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@mtt/ui/components/ui/popover";
 import { Button } from "@mtt/ui/components/base/buttons/button";
-import { cx } from "@mtt/ui/utils/cx";
 import { RiCalendarLine } from "@remixicon/react";
 import { type ReactElement, useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -12,38 +11,14 @@ import {
   type DeviceChartRange,
   customRangeFromDates,
   customRangeSelection,
+  presetRange,
 } from "./chart-range";
+import { RangeRow } from "./range-row";
 
 type DeviceChartRangePickerProps = {
   value: DeviceChartRange;
   onChange: (range: DeviceChartRange) => void;
 };
-
-function RangeRow({
-  selected,
-  onClick,
-  children,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: string;
-}): ReactElement {
-  return (
-    <button
-      type="button"
-      className={cx(
-        "flex h-8 w-full items-center rounded-lg px-3 text-left text-body-regular text-text-primary outline-hidden",
-        "hover:bg-background-primary-hover",
-        "focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-        selected && "bg-background-secondary-default",
-      )}
-      aria-current={selected || undefined}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePickerProps): ReactElement {
   const { formatMessage } = useIntl();
@@ -56,12 +31,7 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
   }, [open, value]);
 
   function applyPreset(preset: (typeof CHART_RANGE_PRESETS)[number]) {
-    onChange({
-      kind: "preset",
-      label: preset.label,
-      start: preset.start,
-      spanMs: preset.spanMs,
-    });
+    onChange(presetRange(preset));
     setOpen(false);
   }
 
@@ -73,9 +43,10 @@ export function DeviceChartRangePicker({ value, onChange }: DeviceChartRangePick
 
   const presetMatch =
     value.kind === "preset" ? CHART_RANGE_PRESETS.find((preset) => preset.start === value.start) : undefined;
-  const displayLabel = presetMatch
-    ? formatMessage({ id: presetMatch.messageId, defaultMessage: presetMatch.label })
-    : value.label;
+  const displayLabel =
+    value.kind === "custom"
+      ? value.label
+      : presetMatch && formatMessage({ id: presetMatch.messageId, defaultMessage: presetMatch.label });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

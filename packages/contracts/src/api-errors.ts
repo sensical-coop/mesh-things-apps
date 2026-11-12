@@ -8,6 +8,10 @@ export type ApiError = {
   fields: Record<string, string>;
 };
 
+export function isThrottled(status: number | undefined): boolean {
+  return status === 429;
+}
+
 // DRF's throttle body is English: "Request was throttled. Expected available in N seconds."
 const THROTTLE_SECONDS_PATTERN = /available in (\d+) seconds?/i;
 
@@ -21,7 +25,7 @@ export function readApiError(error: unknown): ApiError {
     else if (typeof value === "string") result.fields[key] = value;
   }
   const seconds = Number(THROTTLE_SECONDS_PATTERN.exec(result.detail ?? "")?.[1]);
-  if (result.status === 429 && seconds > 0) result.retryAfter = seconds;
+  if (isThrottled(result.status) && seconds > 0) result.retryAfter = seconds;
   return result;
 }
 
@@ -52,14 +56,14 @@ export type LoginFailure = { kind: "unauthorized" } | { kind: "throttled" } | { 
 export function classifyLoginFailure(error: unknown): LoginFailure {
   const { status } = readApiError(error);
   if (status === 401) return { kind: "unauthorized" };
-  if (status === 429) return { kind: "throttled" };
+  if (isThrottled(status)) return { kind: "throttled" };
   return { kind: "generic" };
 }
 
 /** Signup failure, in the order the forms show it: throttle, then a taken email, then field text. */
 export function classifySignupFailure(error: unknown): SignupFailure {
   const { status, retryAfter, fields } = readApiError(error);
-  if (status === 429) return { kind: "throttled", retryAfter };
+  if (isThrottled(status)) return { kind: "throttled", retryAfter };
   const email = fields.email;
   if (status === 409 || (email !== undefined && EMAIL_EXISTS.test(email))) return { kind: "duplicateEmail" };
   const message = SIGNUP_FIELDS.map((key) => fields[key])
@@ -81,4 +85,14 @@ export function errorMessages(error: unknown): string[] {
   if (Array.isArray(error)) return error.flatMap(errorMessages);
   if (typeof error !== "object" || error === null) return [];
   return Object.entries(error).flatMap(([key, value]) => (key === "status" ? [] : errorMessages(value)));
+}
+
+/** A query function's result, or `null` when the API answers 404: "not there" is a value, not a failure. */
+export async function nullOn404<T>(request: () => Promise<T>): Promise<T | null> {
+  try {
+    return await request();
+  } catch (error) {
+    if (readApiError(error).status === 404) return null;
+    throw error;
+  }
 }

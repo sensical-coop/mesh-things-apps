@@ -4,7 +4,7 @@ import { useInView, useLoop, useStillness } from "@/iso/react/live";
 import { HEIGHT, ROUTE_START, WIDTH, packetTransform } from "./geometry";
 import { type BasicsConcept, ROUTE_SECONDS } from "./model";
 
-interface Props {
+type Props = {
   selected: BasicsConcept;
   label: string;
   base: ReactNode;
@@ -14,7 +14,7 @@ interface Props {
   uplink: ReactNode;
   sort: ReactNode;
   store: ReactNode;
-}
+};
 
 function paint(node: SVGGElement | null, on: boolean): void {
   node?.querySelectorAll(".iso-solid").forEach((solid) => {

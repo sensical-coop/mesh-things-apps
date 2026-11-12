@@ -1,11 +1,11 @@
-import { canManageSources } from "@mtt/contracts/authz";
+import { canOperate } from "@mtt/contracts/authz";
 import { type ReactElement } from "react";
-import { RequireRole } from "@/components/require-role";
+import { RequireRole } from "@/features/auth/require-role";
 import { SourcesView } from "./view";
 
 export function SourcesPage(): ReactElement {
   return (
-    <RequireRole allow={canManageSources}>
+    <RequireRole allow={canOperate}>
       <SourcesView />
     </RequireRole>
   );

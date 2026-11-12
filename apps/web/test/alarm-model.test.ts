@@ -29,18 +29,14 @@ test("derived channels share one group after the variants the device reports", (
       measurement("m3", "env", "environment_metrics.humidity"),
       measurement("x", "missing", "environment_metrics.iaq"),
     ],
-    [
-      { id: "env", name: "Environment", payload_kind: "telemetry:environment_metrics" },
-      { id: "dev", name: null, payload_kind: "telemetry:device_metrics" },
-    ],
   );
   assert.deepEqual(
-    groups.map((group) => [group.key, group.title, group.channels.map((channel) => channel.channel)]),
+    groups.map((group) => [group.key, group.channels.map((channel) => channel.channel)]),
     [
-      ["env", "Environment", ["environment_metrics.temperature", "environment_metrics.humidity"]],
-      ["dev", "telemetry:device_metrics", ["device_metrics.battery_level"]],
-      ["missing", undefined, ["environment_metrics.iaq"]],
-      [COMPUTED_VARIANT_GROUP, undefined, ["derived.dew_point", "derived.heat_index"]],
+      ["env", ["environment_metrics.temperature", "environment_metrics.humidity"]],
+      ["dev", ["device_metrics.battery_level"]],
+      ["missing", ["environment_metrics.iaq"]],
+      [COMPUTED_VARIANT_GROUP, ["derived.dew_point", "derived.heat_index"]],
     ],
   );
   assert.deepEqual(groups[0]?.channels[0]?.detectors, ["range"]);

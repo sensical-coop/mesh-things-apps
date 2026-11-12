@@ -40,7 +40,8 @@ export function CodeBlock({ code, label }: CodeBlockProps): ReactElement {
             : formatMessage({ id: "common.codeBlock.copy", defaultMessage: "Copy {label}" }, { label })
         }
         onClick={() => {
-          void navigator.clipboard.writeText(code).then(() => setCopied(true));
+          // A denied clipboard leaves nothing to confirm: the button just doesn't switch to "Copied".
+          void navigator.clipboard.writeText(code).then(() => setCopied(true), () => undefined);
         }}
       />
     </div>

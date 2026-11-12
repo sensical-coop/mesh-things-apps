@@ -1,3 +1,4 @@
+import { SITE_PATHS } from "@mtt/contracts/site";
 import { cx } from "@mtt/ui/utils";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/spacious";
@@ -9,7 +10,7 @@ import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { DocumentationHeader } from "@/components/header";
 import { useDocsTranslations } from "@/hooks/use-docs-translations";
 import { useLocale } from "@mtt/ui/hooks/use-locale";
-import { docsSource } from "@/lib/source";
+import { docsI18n, docsSource } from "@/lib/source";
 import { webAppUrl } from "@/lib/web-app-url";
 
 export const Route = createFileRoute("/_docs")({
@@ -73,7 +74,7 @@ function DocumentationLayout() {
   const { formatMessage } = useIntl();
 
   return (
-    <RootProvider components={{ Link: DocsLink }} theme={{ enabled: false }} search={{ options: { api: "/docs/api/search" } }} i18n={{ locale, defaultLanguage: "en", hideLocale: "always", translations }}>
+    <RootProvider components={{ Link: DocsLink }} theme={{ enabled: false }} search={{ options: { api: `${SITE_PATHS.docs}/api/search` } }} i18n={{ ...docsI18n, locale, translations }}>
       <div className="docs-portal">
         <DocsLayout
           tree={docsSource.getPageTree(locale)}

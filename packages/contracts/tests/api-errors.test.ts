@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyLoginFailure, classifySignupFailure, errorMessages, formLevelMessage, issueErrors, readApiError } from "../src/api-errors";
+import { classifyLoginFailure, classifySignupFailure, errorMessages, formLevelMessage, issueErrors, nullOn404, readApiError } from "../src/api-errors";
 
 describe("readApiError", () => {
   it("maps DRF field errors to their first message", () => {
@@ -99,5 +99,13 @@ describe("formLevelMessage", () => {
     expect(formLevelMessage({ non_field_errors: ["Pair them"], detail: "x" })).toBe("Pair them");
     expect(formLevelMessage({ detail: "Not allowed", status: 403 })).toBe("Not allowed");
     expect(formLevelMessage({ server: ["bad"] })).toBeUndefined();
+  });
+});
+
+describe("nullOn404", () => {
+  it("turns a 404 into null and lets every other failure through", async () => {
+    await expect(nullOn404(() => Promise.resolve(7))).resolves.toBe(7);
+    await expect(nullOn404(() => Promise.reject({ status: 404 }))).resolves.toBeNull();
+    await expect(nullOn404(() => Promise.reject({ status: 500 }))).rejects.toEqual({ status: 500 });
   });
 });

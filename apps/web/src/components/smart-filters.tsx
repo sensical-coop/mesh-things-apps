@@ -6,15 +6,28 @@ import { Filters } from "@mtt/ui/components/reui/filters/filters";
 import { resolveFilterLabels } from "@mtt/ui/components/reui/filters/filters-i18n";
 import { createFilterQuery, flattenFilterConditions } from "@mtt/ui/components/reui/filters/filters-query";
 import type { FilterField, FilterQuery } from "@mtt/ui/components/reui/filters/filters-types";
-import { serializeListFilterValue, toWireOperator, valuelessFilterOperators } from "@mtt/contracts/list-filter";
-import { useTranslatedFilterLabels } from "@/hooks/use-translated-filter-labels";
-import { useTranslatedFilterOperatorLabels } from "@/hooks/use-translated-filter-operator-labels";
+import { serializeListFilterValue, valuelessFilterOperators } from "@mtt/contracts/list-filter";
+import { useTranslatedFilterLabels, useTranslatedFilterOperatorLabels } from "./smart-filter-labels";
 import {
   filterUrlPatchEquals,
   parseAsFilterValue,
   queryToUrlPatch,
   urlStateToQuery,
 } from "./filter-url";
+
+/** ReUI operator ids that are not the wire name. */
+function toWireOperator(operator: string): string {
+  switch (operator) {
+    case "eq":
+      return "equals";
+    case "gt":
+      return "greater_than";
+    case "lt":
+      return "less_than";
+    default:
+      return operator;
+  }
+}
 
 function isActiveCondition(operator: string, values: unknown[]): boolean {
   if (valuelessFilterOperators.has(operator)) return true;

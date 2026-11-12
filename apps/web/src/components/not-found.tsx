@@ -1,6 +1,7 @@
 import { RiArrowLeftLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { NoticePanel } from "@/components/notice-panel";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
 
@@ -61,13 +62,13 @@ export function NotFound({ kind = "page" }: NotFoundProps): ReactElement {
   }[kind];
 
   return (
-    <section className="flex oa-arrive flex-col items-start gap-3 oa-squircle bg-background-secondary-default p-6 shadow-card sm:p-10">
+    <NoticePanel>
       <p className="font-mono text-caption-1-regular text-text-tertiary">404</p>
       <h1 className="text-title-2-medium tracking-tight text-text-primary">{copy.title}</h1>
       <p className="max-w-prose text-body-regular text-text-secondary">{copy.description}</p>
       <RouterButtonLink to={copy.to} size="small" variant="secondary" leadingIcon={RiArrowLeftLine} className="mt-2">
         {copy.back}
       </RouterButtonLink>
-    </section>
+    </NoticePanel>
   );
 }
