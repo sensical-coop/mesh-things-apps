@@ -56,12 +56,8 @@ export function NotificationsPanel(): ReactElement {
     const seconds = raw === "" ? null : Math.round(Number(raw) * SECONDS_PER_HOUR);
     const parsed = OwnerUpdate.safeParse({
       alarm_email_cooldown_seconds: seconds,
-      ...(isOperator
-        ? {
-            status_alerts_enabled: form.get("status_alerts_enabled") === "on",
-            source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
-          }
-        : {}),
+      status_alerts_enabled: form.get("status_alerts_enabled") === "on",
+      ...(isOperator ? { source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on" } : {}),
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? null);
@@ -112,33 +108,46 @@ export function NotificationsPanel(): ReactElement {
                   />
                 </FormField>
               </section>
-              {isOperator ? (
-                <section className="flex flex-col gap-3">
-                  <h3 className={sectionTitleClass}>
-                    {formatMessage({ id: "page.profile.statusAlerts.title", defaultMessage: "Status alerts" })}
-                  </h3>
-                  <Field orientation="horizontal">
-                    <Checkbox
-                      id="profile-status-alerts"
-                      name="status_alerts_enabled"
-                      defaultChecked={me.status_alerts_enabled}
-                    />
-                    <FieldContent>
-                      <FieldLabel htmlFor="profile-status-alerts" className="text-body-regular text-text-primary">
-                        {formatMessage({
-                          id: "page.profile.statusAlerts.label",
-                          defaultMessage: "Email me when a source or sink stops working",
-                        })}
-                      </FieldLabel>
-                      <FieldDescription className="text-caption-1-regular text-text-tertiary">
-                        {formatMessage({
-                          id: "page.profile.statusAlerts.hint",
-                          defaultMessage:
-                            "Sent once when a source you created stays disconnected, or a sink with meshes or devices attached has nobody connected.",
-                        })}
-                      </FieldDescription>
-                    </FieldContent>
-                  </Field>
+              {/* Every owner is told about devices outgrowing their mesh's protocol; only operators have sources and sinks. */}
+              <section className="flex flex-col gap-3">
+                <h3 className={sectionTitleClass}>
+                  {formatMessage({ id: "page.profile.statusAlerts.title", defaultMessage: "Status alerts" })}
+                </h3>
+                <Field orientation="horizontal">
+                  <Checkbox
+                    id="profile-status-alerts"
+                    name="status_alerts_enabled"
+                    defaultChecked={me.status_alerts_enabled}
+                  />
+                  <FieldContent>
+                    <FieldLabel htmlFor="profile-status-alerts" className="text-body-regular text-text-primary">
+                      {isOperator
+                        ? formatMessage({
+                            id: "page.profile.statusAlerts.label",
+                            defaultMessage:
+                              "Email me when a source or sink stops working, or a device outgrows its mesh's protocol",
+                          })
+                        : formatMessage({
+                            id: "page.profile.statusAlerts.protocolLabel",
+                            defaultMessage: "Email me when a device outgrows its mesh's protocol",
+                          })}
+                    </FieldLabel>
+                    <FieldDescription className="text-caption-1-regular text-text-tertiary">
+                      {isOperator
+                        ? formatMessage({
+                            id: "page.profile.statusAlerts.hint",
+                            defaultMessage:
+                              "Sent once when a source you created stays disconnected, a sink with meshes or devices attached has nobody connected, or a device on a mesh you own runs a newer protocol than the mesh declares.",
+                          })
+                        : formatMessage({
+                            id: "page.profile.statusAlerts.protocolHint",
+                            defaultMessage:
+                              "Sent once when a device on a mesh you own runs a newer protocol than the mesh declares, so some of its readings are lost or misread.",
+                          })}
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+                {isOperator ? (
                   <Field orientation="horizontal">
                     <Checkbox
                       id="profile-source-rate-alerts"
@@ -161,8 +170,8 @@ export function NotificationsPanel(): ReactElement {
                       </FieldDescription>
                     </FieldContent>
                   </Field>
-                </section>
-              ) : null}
+                ) : null}
+              </section>
             </div>
             {error ? <StatusCopy>{error}</StatusCopy> : null}
             {update.error && !error ? (

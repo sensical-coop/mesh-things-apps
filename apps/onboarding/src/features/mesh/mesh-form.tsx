@@ -3,6 +3,7 @@ import type { Mesh } from "@mtt/contracts";
 import { MeshCreateRequest } from "@mtt/contracts";
 import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
 import { MeshFormAlert, useMeshSubmitLabel, MeshForm as UiMeshForm, type MeshFormValues } from "@mtt/ui/forms/mesh-form";
+import { ProtocolField } from "@mtt/ui/forms/protocol-field";
 import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
 import { allStatementsAccepted, termsLocale, useTermsEnforced } from "@mtt/contracts/terms";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -26,6 +27,8 @@ export function MeshForm({
     enabled: !termsOff,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const protocols = useQuery(meshRepository.protocols());
+  const [protocol, setProtocol] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
   const [termsMissing, setTermsMissing] = useState(false);
   const create = useMutation({
@@ -45,6 +48,7 @@ export function MeshForm({
       psk_b64: values.psk_b64,
       label: values.label === "" ? null : values.label,
       discover_gateways: false,
+      ...(protocol !== null ? { protocol } : {}),
       ...(acceptance ? { terms_version: acceptance.version, terms_locale: acceptance.locale } : {}),
     });
     if (!parsed.success) {
@@ -73,6 +77,16 @@ export function MeshForm({
         pending={create.isPending}
         onSubmit={onSubmit}
         formId={formId}
+        extraFields={
+          <ProtocolField
+            id="start-mesh-protocol"
+            protocols={protocols.data}
+            current={null}
+            value={protocol}
+            onValueChange={setProtocol}
+            error={errors.protocol}
+          />
+        }
       />,
       <>
           {terms.data && !termsOff && !termsNotRequired ? (

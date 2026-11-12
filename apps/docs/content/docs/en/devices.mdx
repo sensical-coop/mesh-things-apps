@@ -38,6 +38,12 @@ NodeInfo packets update `name`, `short_name`, `hardware_type`, and `role` until 
 
 `last_seen` is the last time the decoder received a packet from the device. `discovered_at` is set when gateway discovery created the record.
 
+## Protocol and firmware
+
+`protocol` is the Meshtastic version the device's packets are decoded with, which is always its mesh's. A device with its own MQTT uplink and map reports turned on also sends `firmware_version`, `region`, and `modem_preset`, and `firmware_protocol` is the version that firmware speaks. Other devices leave those fields empty.
+
+`protocol_mismatch` is set when some readings from the device are lost or misread under its mesh's version. Either the device sends fields that version does not know, and `observed_protocol` names the version that decodes them, or its firmware is older than the mesh's version. The device page explains which one applies. Update the device's firmware, or move the mesh to the version its devices run. Owners who turn on status alerts get an email when a device runs a newer version than its mesh.
+
 ## Intervals
 
 `reading_interval_seconds` is how often you expect the sensor to sample. Detectors and blueprint alignment use it. `publish_interval_seconds` is how often you expect the radio to transmit. The absence detector compares silence against it.

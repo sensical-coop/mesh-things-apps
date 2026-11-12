@@ -64,7 +64,7 @@ El staff puede leer el catálogo, pero no puede ver las PSK. Un operador solo ve
 
 `alarm_email_cooldown_seconds` en `PUT /owners/me` sustituye el valor por defecto de la instancia: el tiempo que se retienen las alarmas de un dispositivo antes de enviar un correo de resumen. Null usa el valor de la instancia. Véase [Calidad y alarmas](/quality).
 
-Otros dos ajustes se refieren a la infraestructura que ha creado el propietario, no a las alarmas de los sensores:
+Otros dos ajustes se refieren a la infraestructura, no a las alarmas de los sensores:
 
-- `status_alerts_enabled` envía un correo cuando una fuente o un destino creados por el propietario siguen desconectados o sin uso.
+- `status_alerts_enabled` envía un correo cuando una fuente o un destino creados por el propietario siguen desconectados o sin uso, o cuando un dispositivo de una malla suya usa un protocolo más reciente que el que declara la malla. Cualquier propietario puede activarlo.
 - `source_rate_alerts_enabled` envía un correo cuando una fuente creada por el propietario se mantiene por encima de la tasa de mensajes que permite la instancia.

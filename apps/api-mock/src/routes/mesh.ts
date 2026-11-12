@@ -18,6 +18,7 @@ import {
   termsLocale,
 } from "../features/terms/terms";
 import { nowIso } from "@mtt/domain/shared/ids";
+import { PROTOCOLS, protocolError } from "../protocols";
 import { meshFilterValue, meshListFilterFields } from "../features/mesh/filter";
 import { matchesListFilters } from "@mtt/contracts/list-filter";
 import { Hono } from "hono";
@@ -60,6 +61,8 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const parsed = await parseBody(c, MeshCreateRequest);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const sourceId = parsed.data.source_id ?? null;
+    const protocolInvalid = protocolError(parsed.data.protocol, null);
+    if (protocolInvalid) return c.json(protocolInvalid, 400);
     if (sourceId !== null && !(await canAttachSource(actor, sourceId, null))) {
       return c.json({ source_id: [`Invalid pk "${sourceId}" - object does not exist.`] }, 400);
     }
@@ -75,6 +78,7 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
       ownerId: actor.id,
       sourceId,
       discoverGateways: parsed.data.discover_gateways ?? false,
+      protocol: parsed.data.protocol,
     });
     if (sourceId === null) {
       mesh.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
@@ -83,6 +87,8 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     }
     return c.json(meshJson(mesh, true), 201);
   });
+
+  app.get("/protocols", (c) => c.json(PROTOCOLS));
 
   app.get("/meshes/terms", (c) => c.json(termsJson("mesh", termsLocale(c.req.query("locale")))));
 
@@ -158,6 +164,8 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
     const parsed = await parseBody(c, MeshUpdate);
     if ("error" in parsed) return c.json(parsed.error, 400);
     const patch = parsed.data;
+    const protocolInvalid = protocolError(patch.protocol, mesh.protocol);
+    if (protocolInvalid) return c.json(protocolInvalid, 400);
     if (patch.source_id && !(await canAttachSource(actor, patch.source_id, mesh.sourceId))) {
       return c.json({ source_id: [`Invalid pk "${patch.source_id}" - object does not exist.`] }, 400);
     }
@@ -175,6 +183,7 @@ export function registerMeshRoutes(app: Hono<Env>, rt: RouteRuntime) {
       isPublic: patch.is_public,
       sourceId: patch.source_id,
       discoverGateways: patch.discover_gateways,
+      protocol: patch.protocol,
     });
     if (!updated) return c.json({ detail: "Not found" }, 404);
     if (toDefault && patch.terms_version === TERMS_VERSIONS.mesh) {
