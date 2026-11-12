@@ -1,4 +1,6 @@
 import { type ReactElement } from "react";
+import { RiRefreshLine } from "@remixicon/react";
+import { Button } from "@mtt/ui/components/base/buttons/button";
 import { useIntl } from "react-intl";
 import { FormField } from "./form-field";
 import { FormSelect } from "./form-select";
@@ -31,10 +33,22 @@ export type ProtocolFieldProps = {
   value: string | null;
   onValueChange: (version: string) => void;
   error?: string;
+  /** The list failed to load: shows the failure and `onRetry` instead of the loading copy. */
+  failed?: boolean;
+  onRetry?: () => void;
 };
 
 /** The Meshtastic protocol select for a mesh. */
-export function ProtocolField({ id, protocols, current, value, onValueChange, error }: ProtocolFieldProps): ReactElement {
+export function ProtocolField({
+  id,
+  protocols,
+  current,
+  value,
+  onValueChange,
+  error,
+  failed = false,
+  onRetry,
+}: ProtocolFieldProps): ReactElement {
   const { formatMessage } = useIntl();
   const statusLabel = {
     current: formatMessage({ id: "feature.mesh.protocolStatus.current", defaultMessage: "Current" }),
@@ -60,6 +74,17 @@ export function ProtocolField({ id, protocols, current, value, onValueChange, er
     >
       {protocols ? (
         <FormSelect id={id} name="protocol" items={items} value={value ?? fallback} onValueChange={onValueChange} />
+      ) : failed ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-body-regular text-text-error-primary" role="alert">
+            {formatMessage({ id: "feature.mesh.protocolField.failed", defaultMessage: "Couldn't load the protocols." })}
+          </p>
+          {onRetry ? (
+            <Button type="button" size="xs" variant="secondary" leadingIcon={RiRefreshLine} onClick={onRetry}>
+              {formatMessage({ id: "feature.mesh.protocolField.retry", defaultMessage: "Try again" })}
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <p className="text-body-regular text-text-secondary" role="status">
           {formatMessage({ id: "feature.mesh.protocolField.loading", defaultMessage: "Loading protocols" })}

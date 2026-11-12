@@ -106,6 +106,8 @@ export function MeshForm({
             <ProtocolField
               id="mesh-protocol"
               protocols={protocols.data}
+              failed={protocols.isError}
+              onRetry={() => void protocols.refetch()}
               current={null}
               value={protocol}
               onValueChange={setProtocol}

@@ -66,5 +66,7 @@
   "page.verifyPending.resend.button": "Resend email",
   "page.verifyPending.resend.countdown": "Resend available in {seconds}s",
   "page.verifyPending.resend.error": "We couldn't resend the email. Check back in a moment.",
-  "page.verifyPending.resend.sending": "Sending"
+  "page.verifyPending.resend.sending": "Sending",
+  "feature.mesh.protocolField.failed": "Couldn't load the protocols.",
+  "feature.mesh.protocolField.retry": "Try again"
 }

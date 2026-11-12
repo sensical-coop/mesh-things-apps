@@ -25,7 +25,7 @@ export function MeshProtocolNotice({ mesh, mismatched, onChange }: MeshProtocolN
               defaultMessage:
                 "Meshtastic {version} is deprecated and can no longer be chosen after {date}. Move this mesh to a newer protocol once its devices are updated.",
             },
-            { version: mesh.protocol, date: formatDate(mesh.protocol_sunset, { dateStyle: "long" }) },
+            { version: mesh.protocol, date: formatDate(mesh.protocol_sunset, { dateStyle: "long", timeZone: "UTC" }) },
           )
         : formatMessage(
             {

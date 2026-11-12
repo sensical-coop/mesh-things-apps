@@ -75,11 +75,18 @@ export function EditMeshDialog({
   };
   const update = useMutation({
     ...meshRepository.update(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      await queryClient.invalidateQueries({
-        queryKey: meshRepository.retrieveKey(mesh.id),
-      });
+    onSuccess: async (_saved, { data }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: meshRepository.listKey() }),
+        queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey(mesh.id) }),
+        // The mesh's protocol decides every device's `protocol_mismatch`.
+        ...(data?.protocol === undefined
+          ? []
+          : [
+              queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey(mesh.id) }),
+              queryClient.invalidateQueries({ predicate: (query) => String(query.queryKey[0]).startsWith("/devices") }),
+            ]),
+      ]);
       close();
     },
     onError: (error) => setErrors(readApiError(error).fields),
@@ -219,6 +226,8 @@ export function EditMeshDialog({
           <ProtocolField
             id="mesh-edit-protocol"
             protocols={protocols.data}
+            failed={protocols.isError}
+            onRetry={() => void protocols.refetch()}
             current={mesh.protocol ?? null}
             value={protocol}
             onValueChange={setProtocol}

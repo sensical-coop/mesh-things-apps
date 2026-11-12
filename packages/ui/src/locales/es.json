@@ -66,5 +66,7 @@
   "page.verifyPending.resend.button": "Reenviar correo",
   "page.verifyPending.resend.countdown": "Podrás reenviar en {seconds}s",
   "page.verifyPending.resend.error": "No hemos podido reenviar el correo. Vuelve a intentarlo en un momento.",
-  "page.verifyPending.resend.sending": "Enviando"
+  "page.verifyPending.resend.sending": "Enviando",
+  "feature.mesh.protocolField.failed": "No se pudieron cargar los protocolos.",
+  "feature.mesh.protocolField.retry": "Reintentar"
 }
