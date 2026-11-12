@@ -11,17 +11,13 @@ import { FitToPoints } from "@/features/device/ui/map-fit";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { deviceTitle } from "@/features/device/model";
 import { readingsRepository } from "@/features/readings/repository";
-import { positionTrack } from "../model";
-import { tokenColor } from "../token-color";
+import { DEVICE_WINDOW, positionTrack } from "../model";
+import { tokenColor } from "@/lib/token-color";
 
-/** Where a device reported itself over the last week, as a track ending at its latest position. */
 export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactElement {
   const { formatMessage } = useIntl();
   const positions = useQuery(
-    readingsRepository.series({
-      path: { device_uuid: device.uuid },
-      query: { payload_kind: "device:position", start: "-7d" },
-    }),
+    readingsRepository.series(device.uuid, { payload_kind: "device:position", start: `-${DEVICE_WINDOW}` }),
   );
   const track = useMemo(() => {
     const series = positions.data?.series ?? [];
@@ -58,11 +54,11 @@ export function DeviceTrackFrame({ device }: { device: DeviceRead }): ReactEleme
           </StatusCopy>
         ) : null}
         {track.length >= 2 && last ? (
-          <div className="oa-arrive oa-squircle-inset relative h-80 overflow-hidden">
-            <Map center={last} zoom={12} unsupported={<MapUnsupported />} className="h-full w-full">
+          <div className="relative h-80 oa-arrive overflow-hidden oa-squircle-inset">
+            <Map center={last} zoom={12} unsupported={<MapUnsupported />} className="size-full ">
               <MapControls />
               <FitToPoints points={track.map(([lng, lat]) => ({ lng, lat }))} />
-              <MapRoute id="track" coordinates={track} color={tokenColor("--oa-primary", "#ff495f")} width={3} interactive={false} />
+              <MapRoute id="track" coordinates={track} color={tokenColor("--oa-primary")} width={3} interactive={false} />
               <MapMarker longitude={last[0]} latitude={last[1]}>
                 <MarkerContent>
                   <DeviceMapPin isGateway={device.is_gateway} label={deviceTitle(device)} />

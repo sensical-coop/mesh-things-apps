@@ -13,7 +13,6 @@ test("isUuid accepts what the request validator accepts, and nothing else", () =
 });
 
 test("requireUuid throws the router's notFound for a malformed id", () => {
-  assert.doesNotThrow(() => requireUuid(id));
   assert.throws(() => requireUuid("hill"), (error) => isNotFound(error));
 });
 

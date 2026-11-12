@@ -4,15 +4,11 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
-import {
-  calibrationParams,
-  configParams,
-  refChoices,
-  type BlueprintDraft,
-  type StepDraft,
-} from "@/features/blueprint/model";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
+import { algorithmOf, calibrationParams, configParams } from "@/lib/algorithm-params";
+import { refChoices, type BlueprintDraft, type StepDraft } from "@/features/blueprint/model";
+import { ParamField } from "@/features/blueprint/ui/param-field";
 
 export type StepEditorProps = {
   draft: BlueprintDraft;
@@ -23,12 +19,11 @@ export type StepEditorProps = {
   onRemove: () => void;
 };
 
-/** One step: its key, what feeds each algorithm input, its configuration, and the derived fields it writes. */
 export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemove }: StepEditorProps): ReactElement {
   const { formatMessage } = useIntl();
   const step = draft.steps[index];
   if (!step) throw new Error(`No step ${index}`);
-  const algorithm = algorithms.find((candidate) => candidate.name === step.functionName);
+  const algorithm = algorithmOf(algorithms, step.functionName);
   const choices = refChoices(draft, index).map((choice) => ({
     value: choice.value,
     label: choice.slot
@@ -83,7 +78,7 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
         </div>
       </div>
       {algorithm?.doc ? (
-        <p className="line-clamp-3 whitespace-pre-line text-caption-1-regular text-text-tertiary">{algorithm.doc.trim()}</p>
+        <p className="line-clamp-3 text-caption-1-regular whitespace-pre-line text-text-tertiary">{algorithm.doc.trim()}</p>
       ) : null}
       <FormField
         id={`${id}-key`}
@@ -129,28 +124,14 @@ export function StepEditor({ draft, index, algorithms, onChange, onMove, onRemov
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {configParams(algorithm).map((param) => (
-              <FormField
+              <ParamField
                 key={param.name}
                 id={`${id}-param-${param.name}`}
-                label={param.unit ? `${param.name} (${param.unit})` : param.name}
-                hint={param.doc || undefined}
-              >
-                <Input
-                  id={`${id}-param-${param.name}`}
-                  value={step.params[param.name] ?? ""}
-                  autoComplete="off"
-                  inputMode="decimal"
-                  placeholder={
-                    param.required
-                      ? formatMessage({ id: "feature.blueprint.step.paramRequired", defaultMessage: "Required" })
-                      : formatMessage(
-                          { id: "feature.blueprint.step.paramDefault", defaultMessage: "Default {value}" },
-                          { value: JSON.stringify(param.default) },
-                        )
-                  }
-                  onChange={(event) => onChange({ ...step, params: { ...step.params, [param.name]: event.target.value } })}
-                />
-              </FormField>
+                param={param}
+                value={step.params[param.name] ?? ""}
+                inputMode="decimal"
+                onChange={(event) => onChange({ ...step, params: { ...step.params, [param.name]: event.target.value } })}
+              />
             ))}
           </div>
         </fieldset>

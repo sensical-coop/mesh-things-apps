@@ -1,5 +1,7 @@
+import { spanMs } from "../../../lib/duration.ts";
+
 export type DeviceChartRange =
-  | { kind: "preset"; label: string; start: string; spanMs: number }
+  | { kind: "preset"; start: string; spanMs: number }
   | { kind: "custom"; label: string; start: string; stop: string; spanMs: number };
 
 export const CHART_RANGE_PRESETS = [
@@ -7,25 +9,28 @@ export const CHART_RANGE_PRESETS = [
     label: "Last 24 hours",
     messageId: "page.devices.detail.chartRange.last24h",
     start: "-24h",
-    spanMs: 86_400_000,
+    spanMs: spanMs("24h"),
   },
   {
     label: "Last 7 days",
     messageId: "page.devices.detail.chartRange.last7d",
     start: "-7d",
-    spanMs: 7 * 86_400_000,
+    spanMs: spanMs("7d"),
   },
   {
     label: "Last 30 days",
     messageId: "page.devices.detail.chartRange.last30d",
     start: "-30d",
-    spanMs: 30 * 86_400_000,
+    spanMs: spanMs("30d"),
   },
 ] as const;
 
+export function presetRange(preset: (typeof CHART_RANGE_PRESETS)[number]): DeviceChartRange {
+  return { kind: "preset", start: preset.start, spanMs: preset.spanMs };
+}
+
 export function defaultChartRange(): DeviceChartRange {
-  const preset = CHART_RANGE_PRESETS[0];
-  return { kind: "preset", label: preset.label, start: preset.start, spanMs: preset.spanMs };
+  return presetRange(CHART_RANGE_PRESETS[0]);
 }
 
 export function chartRangeQuery(range: DeviceChartRange): {
@@ -41,14 +46,14 @@ export function chartRangeQuery(range: DeviceChartRange): {
 // Same "1h" default up to 2 days, "6h" up to 14, else "1d" the range picker used
 // to bake into each preset — now the starting point for the resolution picker,
 // which the user may then widen or narrow.
-export function windowForSpanMs(spanMs: number): string {
-  const days = spanMs / 86_400_000;
+export function windowForSpanMs(span: number): string {
+  const days = span / spanMs("1d");
   if (days <= 2) return "1h";
   if (days <= 14) return "6h";
   return "1d";
 }
 
-export function formatCustomRangeLabel(start: Date, end: Date, locale?: string): string {
+function formatCustomRangeLabel(start: Date, end: Date, locale?: string): string {
   const sameDay = start.toDateString() === end.toDateString();
   const sameYear = start.getFullYear() === end.getFullYear();
   const startFmt = new Intl.DateTimeFormat(locale, {

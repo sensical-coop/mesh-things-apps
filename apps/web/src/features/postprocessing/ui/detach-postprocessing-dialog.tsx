@@ -5,11 +5,9 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { errorMessages } from "@/features/blueprint/model";
-import { deviceRepository } from "@/features/device/repository";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { blueprintRepository } from "@/features/blueprint/repository";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { errorMessages } from "@mtt/contracts/errors";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type DetachPostprocessingDialogProps = {
   deviceUuid: string;
@@ -23,10 +21,7 @@ export function DetachPostprocessingDialog({ deviceUuid, postprocessing, onClose
   const detach = useMutation({
     ...postprocessingRepository.detach(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: deviceUuid } }) });
-      await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+      await invalidatePostprocessing(queryClient, deviceUuid);
       onClose();
     },
   });
@@ -67,7 +62,8 @@ export function DetachPostprocessingDialog({ deviceUuid, postprocessing, onClose
             size="small"
             disabled={detach.isPending || !postprocessing}
             onClick={() =>
-              postprocessing && detach.mutate({ path: { device_uuid: deviceUuid, postprocessing_id: postprocessing.id } })
+              postprocessing &&
+              detach.mutate({ deviceUuid, postprocessingId: postprocessing.id })
             }
           >
             {formatMessage({ id: "feature.postprocessing.detach.confirm", defaultMessage: "Detach" })}

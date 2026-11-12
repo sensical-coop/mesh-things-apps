@@ -67,5 +67,55 @@ export function draftProblemMessage(problem: DraftProblem, formatMessage: IntlSh
         { id: "feature.blueprint.problem.fieldTwice", defaultMessage: "Output “{field}” is written by two steps." },
         { field: problem.field },
       );
+    case "pointwise":
+      return formatMessage(
+        {
+          id: "feature.blueprint.problem.pointwise",
+          defaultMessage: "Step “{key}”: “{name}” is {mode}. Only pointwise algorithms can run.",
+        },
+        { key: problem.key, name: problem.name, mode: problem.mode },
+      );
+    case "duplicateOrder":
+      return formatMessage({
+        id: "feature.blueprint.problem.duplicateOrder",
+        defaultMessage: "Each step needs its own order.",
+      });
+    case "unknownAlgorithm":
+      return formatMessage(
+        { id: "feature.blueprint.problem.unknownAlgorithm", defaultMessage: "Step “{key}”: “{name}” is not an algorithm." },
+        { key: problem.key, name: problem.name },
+      );
+    case "extraInput":
+      return formatMessage(
+        {
+          id: "feature.blueprint.problem.extraInput",
+          defaultMessage: "Step “{key}”: “{input}” is not an input of this algorithm.",
+        },
+        { key: problem.key, input: problem.input },
+      );
+    case "calibrationParam":
+      return formatMessage(
+        {
+          id: "feature.blueprint.problem.calibrationParam",
+          defaultMessage: "Step “{key}”: “{param}” is set on each device, not on the blueprint.",
+        },
+        { key: problem.key, param: problem.param },
+      );
+    case "extraParam":
+      return formatMessage(
+        {
+          id: "feature.blueprint.problem.extraParam",
+          defaultMessage: "Step “{key}”: “{param}” is not a parameter of this algorithm.",
+        },
+        { key: problem.key, param: problem.param },
+      );
+    case "extraOutput":
+      return formatMessage(
+        {
+          id: "feature.blueprint.problem.extraOutput",
+          defaultMessage: "Step “{key}”: “{output}” is not an output of this algorithm.",
+        },
+        { key: problem.key, output: problem.output },
+      );
   }
 }

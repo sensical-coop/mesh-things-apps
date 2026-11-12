@@ -1,5 +1,5 @@
 import type { HTMLAttributes, Ref } from "react";
-import { cx, sortCx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 
 /**
  * Figma source: Board UI → dashboard 1 "Chip" layers (status chips, delta
@@ -37,7 +37,7 @@ export interface ChipProps extends HTMLAttributes<HTMLSpanElement> {
   ref?: Ref<HTMLSpanElement>;
 }
 
-const styles = sortCx({
+const styles = {
   base: "inline-flex items-center justify-center rounded-md px-1.5 whitespace-nowrap transition-[padding,font-size] duration-200 ease",
   variant: {
     bold: "py-0.5 text-body-medium",
@@ -57,7 +57,7 @@ const styles = sortCx({
     gray: "bg-background-secondary-default text-text-primary",
     soft: "bg-background-secondary-default text-text-secondary",
   },
-});
+};
 
 export function Chip({
   variant = "bold",

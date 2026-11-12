@@ -5,10 +5,9 @@ import { useIntl } from "react-intl";
 import { CodeBlock } from "@/components/code-block";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { authRepository } from "@/features/auth/repository";
 
-/** Issues a new API key and shows it once. The previous key stops working straight away. */
 export function RotateApiKeyDialog({ open, onClose }: { open: boolean; onClose: () => void }): ReactElement {
   const { formatMessage } = useIntl();
   const rotate = useMutation({ ...authRepository.rotateKey() });
@@ -68,7 +67,7 @@ export function RotateApiKeyDialog({ open, onClose }: { open: boolean; onClose: 
             <Button type="button" variant="secondary" size="small" onClick={close}>
               {formatMessage({ id: "feature.auth.rotateKey.cancel", defaultMessage: "Cancel" })}
             </Button>
-            <Button type="button" size="small" disabled={rotate.isPending} onClick={() => rotate.mutate({})}>
+            <Button type="button" size="small" disabled={rotate.isPending} onClick={() => rotate.mutate()}>
               {rotate.isPending
                 ? formatMessage({ id: "feature.auth.rotateKey.generating", defaultMessage: "Generating" })
                 : formatMessage({ id: "feature.auth.rotateKey.confirm", defaultMessage: "Generate new key" })}

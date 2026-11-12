@@ -1,13 +1,8 @@
-import type { DataDeletion, OwnerProfile } from "@mtt/contracts";
+import { DataDeletionStatusEnum, type DataDeletion } from "@mtt/contracts";
 
-export const DATA_DELETION_STATUSES = ["pending", "done", "cancelled", "all"] as const;
+export const DATA_DELETION_STATUSES = DataDeletionStatusEnum.options;
 
-export type DataDeletionStatusFilter = (typeof DATA_DELETION_STATUSES)[number];
-
-/** Mirrors the API: superusers only. */
-export function canSeeDataDeletions(me: Pick<OwnerProfile, "is_superuser"> | undefined): boolean {
-  return me?.is_superuser === true;
-}
+export type DataDeletionStatusFilter = DataDeletionStatusEnum | "all";
 
 /**
  * Still pending past its date: the lifecycle job has tried (see `attempts` and

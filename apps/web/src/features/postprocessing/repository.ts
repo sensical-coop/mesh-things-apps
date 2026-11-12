@@ -1,30 +1,40 @@
+import { deviceRepository } from "@/features/device/repository";
+import { blueprintRepository } from "@/features/blueprint/repository";
+import type { QueryClient } from "@tanstack/react-query";
 import {
-  devicesPostprocessingsBackfillsCreateMutation,
-  devicesPostprocessingsBackfillsListOptions,
-  devicesPostprocessingsBackfillsListQueryKey,
-  devicesPostprocessingsCalibrationsCreateMutation,
-  devicesPostprocessingsCalibrationsDestroyMutation,
-  devicesPostprocessingsCalibrationsListOptions,
-  devicesPostprocessingsCalibrationsListQueryKey,
-  devicesPostprocessingsCreateMutation,
-  devicesPostprocessingsDestroyMutation,
-  devicesPostprocessingsListOptions,
-  devicesPostprocessingsListQueryKey,
-  devicesPostprocessingsUpdateMutation,
-} from "@mtt/contracts/query";
+  getDevicesPostprocessingsBackfillsCreateMutationOptions,
+  getDevicesPostprocessingsBackfillsListQueryKey,
+  getDevicesPostprocessingsBackfillsListQueryOptions,
+  getDevicesPostprocessingsCalibrationsCreateMutationOptions,
+  getDevicesPostprocessingsCalibrationsDestroyMutationOptions,
+  getDevicesPostprocessingsCalibrationsListQueryKey,
+  getDevicesPostprocessingsCalibrationsListQueryOptions,
+  getDevicesPostprocessingsCreateMutationOptions,
+  getDevicesPostprocessingsDestroyMutationOptions,
+  getDevicesPostprocessingsListQueryKey,
+  getDevicesPostprocessingsListQueryOptions,
+  getDevicesPostprocessingsUpdateMutationOptions,
+} from "@mtt/contracts/api";
 
-/** Blueprints attached to one device: wiring, calibration history and backfills. */
 export const postprocessingRepository = {
-  list: devicesPostprocessingsListOptions,
-  listKey: devicesPostprocessingsListQueryKey,
-  attach: devicesPostprocessingsCreateMutation,
-  update: devicesPostprocessingsUpdateMutation,
-  detach: devicesPostprocessingsDestroyMutation,
-  calibrations: devicesPostprocessingsCalibrationsListOptions,
-  calibrationsKey: devicesPostprocessingsCalibrationsListQueryKey,
-  calibrate: devicesPostprocessingsCalibrationsCreateMutation,
-  removeCalibration: devicesPostprocessingsCalibrationsDestroyMutation,
-  backfills: devicesPostprocessingsBackfillsListOptions,
-  backfillsKey: devicesPostprocessingsBackfillsListQueryKey,
-  backfill: devicesPostprocessingsBackfillsCreateMutation,
+  list: getDevicesPostprocessingsListQueryOptions,
+  listKey: getDevicesPostprocessingsListQueryKey,
+  attach: getDevicesPostprocessingsCreateMutationOptions,
+  update: getDevicesPostprocessingsUpdateMutationOptions,
+  detach: getDevicesPostprocessingsDestroyMutationOptions,
+  calibrations: getDevicesPostprocessingsCalibrationsListQueryOptions,
+  calibrationsKey: getDevicesPostprocessingsCalibrationsListQueryKey,
+  calibrate: getDevicesPostprocessingsCalibrationsCreateMutationOptions,
+  removeCalibration: getDevicesPostprocessingsCalibrationsDestroyMutationOptions,
+  backfills: getDevicesPostprocessingsBackfillsListQueryOptions,
+  backfillsKey: getDevicesPostprocessingsBackfillsListQueryKey,
+  backfill: getDevicesPostprocessingsBackfillsCreateMutationOptions,
 };
+
+/** A device's postprocessing changed: refresh what it feeds (its list, outputs, device row, blueprint counts). */
+export async function invalidatePostprocessing(queryClient: QueryClient, deviceUuid: string): Promise<void> {
+  await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey(deviceUuid) });
+  await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
+  await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey(deviceUuid) });
+  await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+}

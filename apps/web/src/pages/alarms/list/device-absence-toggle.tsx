@@ -4,10 +4,9 @@ import { RiNotificationLine, RiNotificationOffLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { deviceRepository } from "@/features/device/repository";
-import { meshRepository } from "@/features/mesh/repository";
+import { deviceRepository, invalidateDevice } from "@/features/device/repository";
 
-export type DeviceAbsenceToggleProps = {
+type DeviceAbsenceToggleProps = {
   device: DeviceRead;
 };
 
@@ -23,15 +22,11 @@ export function DeviceAbsenceToggle({ device }: DeviceAbsenceToggleProps): React
   function onClick() {
     update.mutate(
       {
-        path: { device_uuid: device.uuid },
-        body: { absence_detection_enabled: !device.absence_detection_enabled },
+        deviceUuid: device.uuid,
+        data: { absence_detection_enabled: !device.absence_detection_enabled },
       },
       {
-        onSuccess: () =>
-          Promise.all([
-            queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: device.mesh_id } }) }),
-            queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-          ]),
+        onSuccess: () => invalidateDevice(queryClient, device),
       },
     );
   }

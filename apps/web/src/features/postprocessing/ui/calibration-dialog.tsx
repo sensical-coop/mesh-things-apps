@@ -6,16 +6,17 @@ import { RiDeleteBinLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { calibrationParams, errorMessages, formatParam, parseParam, valueMap } from "@/features/blueprint/model";
+import { errorMessages, readApiError } from "@mtt/contracts/errors";
+import { calibrationParams, formatParam, formatParams, parseParam, valueMap } from "@/lib/algorithm-params";
+import { ParamField } from "@/features/blueprint/ui/param-field";
 import { calibratedSteps, calibrationInForce, localInputToIso } from "@/features/postprocessing/model";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
 import { useFormatters } from "@/hooks/use-formatters";
-import { readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type CalibrationDialogProps = {
   deviceUuid: string;
@@ -41,8 +42,7 @@ export function CalibrationDialog({
   const { formatMessage } = useIntl();
   const { formatWhen } = useFormatters();
   const queryClient = useQueryClient();
-  const path = { device_uuid: deviceUuid, postprocessing_id: postprocessing.id };
-  const history = useQuery(postprocessingRepository.calibrations({ path }));
+  const history = useQuery(postprocessingRepository.calibrations(deviceUuid, postprocessing.id));
   const steps = calibratedSteps(version, algorithms);
   const [stepKey, setStepKey] = useState(steps[0]?.key ?? "");
   const step = steps.find((row) => row.key === stepKey);
@@ -50,8 +50,8 @@ export function CalibrationDialog({
   const [messages, setMessages] = useState<string[]>([]);
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.calibrationsKey({ path }) });
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
+    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.calibrationsKey(deviceUuid, postprocessing.id) });
+    await invalidatePostprocessing(queryClient, deviceUuid);
   }
 
   const calibrate = useMutation({
@@ -88,8 +88,9 @@ export function CalibrationDialog({
       if (text) params[param.name] = parseParam(text);
     }
     calibrate.mutate({
-      path,
-      body: { step_key: step.key, params, valid_from: localInputToIso(String(form.get("valid_from") ?? "")) },
+      deviceUuid,
+      postprocessingId: postprocessing.id,
+      data: { step_key: step.key, params, valid_from: localInputToIso(String(form.get("valid_from") ?? "")) },
     });
   }
 
@@ -123,30 +124,16 @@ export function CalibrationDialog({
                 </FormField>
               ) : null}
               {calibrationParams(step.algorithm).map((param) => (
-                <FormField
+                <ParamField
                   key={param.name}
                   id={`calibration-${param.name}`}
-                  label={param.unit ? `${param.name} (${param.unit})` : param.name}
-                  hint={param.doc || undefined}
-                >
-                  <Input
-                    id={`calibration-${param.name}`}
-                    name={param.name}
-                    required={param.required}
-                    autoComplete="off"
-                    inputMode={param.default === null || typeof param.default === "number" ? "decimal" : undefined}
-                    // Start from the calibration in force, so recalibrating one constant keeps the others.
-                    defaultValue={inForce && param.name in valueMap(inForce.params) ? formatParam(valueMap(inForce.params)[param.name]) : ""}
-                    placeholder={
-                      param.required
-                        ? formatMessage({ id: "feature.blueprint.step.paramRequired", defaultMessage: "Required" })
-                        : formatMessage(
-                            { id: "feature.blueprint.step.paramDefault", defaultMessage: "Default {value}" },
-                            { value: JSON.stringify(param.default) },
-                          )
-                    }
-                  />
-                </FormField>
+                  param={param}
+                  name={param.name}
+                  required={param.required}
+                  inputMode={param.default === null || typeof param.default === "number" ? "decimal" : undefined}
+                  // Start from the calibration in force, so recalibrating one constant keeps the others.
+                  defaultValue={inForce && param.name in valueMap(inForce.params) ? formatParam(valueMap(inForce.params)[param.name]) : ""}
+                />
               ))}
               <FormField
                 id="calibration-valid-from"
@@ -196,7 +183,7 @@ export function CalibrationDialog({
                 return (
                   <li key={row.id} className="flex min-w-0 items-start justify-between gap-3">
                     <div className="flex min-w-0 flex-col gap-0.5">
-                      <p className="min-w-0 break-words text-body-regular text-text-primary">
+                      <p className="min-w-0 text-body-regular wrap-break-word text-text-primary">
                         <span className="font-mono">{row.step_key}</span>
                         <span className="text-text-tertiary"> · </span>
                         {formatMessage(
@@ -210,10 +197,8 @@ export function CalibrationDialog({
                           </span>
                         ) : null}
                       </p>
-                      <p className="min-w-0 break-words font-mono text-caption-1-regular text-text-tertiary">
-                        {Object.entries(valueMap(row.params))
-                          .map(([name, value]) => `${name}=${formatParam(value)}`)
-                          .join("  ")}
+                      <p className="min-w-0 font-mono text-caption-1-regular wrap-break-word text-text-tertiary">
+                        {formatParams(valueMap(row.params))}
                       </p>
                     </div>
                     {canEdit ? (
@@ -228,7 +213,13 @@ export function CalibrationDialog({
                           id: "feature.postprocessing.calibration.remove",
                           defaultMessage: "Remove this calibration",
                         })}
-                        onClick={() => remove.mutate({ path: { ...path, calibration_id: row.id } })}
+                        onClick={() =>
+                          remove.mutate({
+                            deviceUuid,
+                            postprocessingId: postprocessing.id,
+                            calibrationId: row.id,
+                          })
+                        }
                       />
                     ) : null}
                   </li>

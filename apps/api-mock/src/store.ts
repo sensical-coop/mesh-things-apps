@@ -1,13 +1,12 @@
-import type { Actor } from "@mtt/domain/authz/authz";
+import type { Actor } from "./auth";
 import { Device } from "@mtt/domain/device/Device";
 import { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
-import { newId, nowIso } from "@mtt/domain/shared/ids";
+import { nowIso } from "@mtt/domain/shared/ids";
 import type { BlueprintRow, BlueprintVersionRow } from "./features/blueprint/repository";
 import type { BackfillRow, CalibrationRow, PostprocessingRow } from "./features/postprocessing/repository";
 import { MemoryDevices } from "./features/device/repository";
 import { MemoryMeshes } from "./features/mesh/repository";
-import { MemoryMeasurements } from "./features/measurement/repository";
 import { MemoryReadings } from "./features/readings/repository";
 import { MemorySources } from "./features/source/repository";
 import { MemorySinks } from "./features/sink/repository";
@@ -17,7 +16,6 @@ import {
   DATA_RETENTION_DAYS,
   TERMS_ENFORCED,
   TERMS_VERSIONS,
-  type TermsAcceptance,
 } from "./features/terms/terms";
 import type { OperatorRequestRow } from "./features/operator-request/repository";
 import type { DataDeletionRow } from "./features/data-deletion/repository";
@@ -72,18 +70,8 @@ export const POSTPROCESSING_DEW_ID = "25252525-2525-4252-8252-252525252525";
 /** The dew point channel the seeded postprocessing registers on the Porch node. */
 export const DEVICE_DEW_MEAS_ID = "26262626-2626-4262-8262-262626262626";
 export const VARIANT_LINK_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
-export const OWNER_EMAIL = "owner@sensical.test";
-export const OWNER_PASSWORD = "mesh-owner-12";
-export const OWNER_BO_EMAIL = "river@sensical.test";
-export const OWNER_BO_PASSWORD = "mesh-owner-12";
-export const OWNER_ADMIN_EMAIL = "admin@sensical.test";
-export const OWNER_ADMIN_PASSWORD = "mesh-admin-12";
-export const OWNER_STAFF_EMAIL = "staff@sensical.test";
-export const OWNER_STAFF_PASSWORD = "mesh-staff-12";
-export const OWNER_OPERATOR_EMAIL = "operator@sensical.test";
-export const OWNER_OPERATOR_PASSWORD = "mesh-operator-12";
 
-const t0 = "2026-01-01T00:00:00.000Z";
+export const SEED_EPOCH = "2026-01-01T00:00:00.000Z";
 
 function inDays(days: number): string {
   return new Date(Date.now() + days * 86_400_000).toISOString();
@@ -115,12 +103,12 @@ function deletion(
   };
 }
 
-/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
 /** Always a time, unlike daysFromNow, which follows the retention setting. */
 function hoursAgo(hours: number): string {
   return new Date(Date.now() - hours * 3_600_000).toISOString();
 }
 
+/** A seed date relative to now, or null when no retention period is set (nothing lapses). */
 function daysFromNow(days: number): string | null {
   return DATA_RETENTION_DAYS ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
 }
@@ -132,51 +120,12 @@ export type OwnerVerification = {
   emailVerificationSentAt: string | null;
 };
 
-// Mirrors meshtastic-things' common/detectors.py DETECTOR_SPECS exactly — a
-// fixed catalog. "measurement" scoped kinds go in a
-// channel's enabled_detectors; the one "device" scoped kind (absence) hangs
-// off Device.absence_detection_enabled instead and is deliberately excluded from the
-// settable list below.
-export type DetectorSpec = {
-  name: string;
-  scope: "measurement" | "device";
-  requires: string[];
-  description: string;
-};
-
-export const DETECTOR_CATALOG: DetectorSpec[] = [
-  {
-    name: "flat_value",
-    scope: "measurement",
-    requires: [],
-    description: "Fires when a channel reports the same value for a whole window.",
-  },
-  {
-    name: "range",
-    scope: "measurement",
-    requires: ["valid_min", "valid_max"],
-    description: "Fires when a reading falls outside the range configured for this device.",
-  },
-  {
-    name: "completeness",
-    scope: "measurement",
-    requires: ["reading_interval_seconds"],
-    description: "Fires when a channel's history has gaps against its expected reading interval.",
-  },
-  {
-    name: "absence",
-    scope: "device",
-    requires: ["publish_interval_seconds"],
-    description: "Fires when a device stops publishing for several of its publish intervals.",
-  },
-];
-
-export const MEASUREMENT_DETECTORS = ["completeness", "flat_value", "range"];
-
 // Catalog-wide state: only a default detector list. valid_min/valid_max are
 // purely per-device (see Store.deviceMeasurementRanges below) — there is no
 // catalog default to fall back to.
 export type TelemetryVariantMeasurementLink = {
+  variantId: string;
+  measurementTypeId: string;
   defaultEnabledDetectors: string[];
 };
 
@@ -189,7 +138,6 @@ export type Store = {
   meshes: MemoryMeshes;
   sources: MemorySources;
   sinks: MemorySinks;
-  termsAcceptances: TermsAcceptance[];
   dataDeletions: DataDeletionRow[];
   /** Account terms version per owner; none for accounts made outside signup (admin, staff). */
   accountTerms: Map<string, string>;
@@ -197,7 +145,7 @@ export type Store = {
   devices: MemoryDevices;
   archive: MemoryArchive;
   exports: MemoryExports;
-  measurements: MemoryMeasurements;
+  measurements: MeasurementType[];
   readings: MemoryReadings;
   blueprints: BlueprintRow[];
   postprocessings: PostprocessingRow[];
@@ -211,7 +159,7 @@ export type Store = {
   deviceTelemetryVariants: Map<string, string[]>;
   // Per-device-measurement override: null = inherit the catalog default below.
   detectorOverrides: Map<string, string[] | null>;
-  // Catalog-wide default per telemetry-variant/measurement link (VARIANT_LINK_ID).
+  /** Catalog link rows: variant, measurement type, and the default detectors. */
   telemetryVariantMeasurements: Map<string, TelemetryVariantMeasurementLink>;
   // Per-device-measurement range for the "range" detector — purely per-device,
   // no catalog fallback. Keyed by the same id as detectorOverrides.
@@ -251,8 +199,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       nativeUnit: "Cel",
       quantityKind: "physical_property",
       vocabularyUri: "https://vocab.nerc.ac.uk/collection/P07/current/CFSN0023/",
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     },
     {
       id: MEAS_DEW_ID,
@@ -266,8 +214,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       nativeUnit: "Cel",
       quantityKind: "physical_property",
       vocabularyUri: null,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     },
     {
       id: MEAS_GAP_ID,
@@ -280,8 +228,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       nativeUnit: "ratio",
       quantityKind: "ratio",
       vocabularyUri: null,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     },
     {
       id: MEAS_RH_ID,
@@ -294,8 +242,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       nativeUnit: "%",
       quantityKind: "ratio",
       vocabularyUri: null,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     },
   ];
   const meshes = new MemoryMeshes();
@@ -309,8 +257,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       ownerId: adaId,
       termsAcceptedVersion: TERMS_VERSIONS.mesh,
       termsExpiresAt: daysFromNow(300),
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     }),
   );
   meshes.items.set(
@@ -327,8 +275,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       pausedAt: daysFromNow(-5),
       // Public so the read-only view of someone else's mesh shows up locally.
       isPublic: true,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     }),
   );
   const sources = new MemorySources();
@@ -346,8 +294,8 @@ export function createStore(owners: StoreOwners = {}): Store {
     // Lapses soon, so the Sources tab offers renewal.
     termsExpiresAt: daysFromNow(10),
     pausedAt: null,
-    createdAt: t0,
-    updatedAt: t0,
+    createdAt: SEED_EPOCH,
+    updatedAt: SEED_EPOCH,
   });
   meshes.items.set(
     MESH_BRIDGED_ID,
@@ -358,8 +306,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       label: "Valley",
       ownerId: operatorId,
       sourceId: SOURCE_PUBLIC_ID,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     }),
   );
   // Status states: two more sources for the operator (disconnected, lapsed) and a mesh on each,
@@ -381,8 +329,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       termsAcceptedVersion: TERMS_VERSIONS.source,
       termsExpiresAt: pausedAt ? daysFromNow(-3) : daysFromNow(200),
       pausedAt,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     });
   }
   const statusMeshes: [string, string, string, Partial<ConstructorParameters<typeof Mesh>[0]>][] = [
@@ -395,7 +343,7 @@ export function createStore(owners: StoreOwners = {}): Store {
   for (const [id, label, ownerId, extra] of statusMeshes) {
     meshes.items.set(
       id,
-      new Mesh({ id, channelId: label, pskB64: "c2VjcmV0", label, ownerId, createdAt: t0, updatedAt: t0, ...extra }),
+      new Mesh({ id, channelId: label, pskB64: "c2VjcmV0", label, ownerId, createdAt: SEED_EPOCH, updatedAt: SEED_EPOCH, ...extra }),
     );
   }
   const devices = new MemoryDevices();
@@ -418,12 +366,11 @@ export function createStore(owners: StoreOwners = {}): Store {
       hardwareType: "tbeam",
       role: "ROUTER",
       nodeinfoOverridden: false,
-      postprocessingCount: 0,
       readingIntervalSeconds: 300,
       publishIntervalSeconds: 300,
       lastSeen: nowIso(),
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     }),
   );
   devices.items.set(
@@ -445,12 +392,11 @@ export function createStore(owners: StoreOwners = {}): Store {
       hardwareType: "heltec",
       role: "CLIENT",
       nodeinfoOverridden: false,
-      postprocessingCount: 1,
       readingIntervalSeconds: 300,
       publishIntervalSeconds: 300,
       lastSeen: nowIso(),
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     }),
   );
   devices.items.set(
@@ -472,12 +418,11 @@ export function createStore(owners: StoreOwners = {}): Store {
       hardwareType: "tbeam",
       role: "ROUTER",
       nodeinfoOverridden: false,
-      postprocessingCount: 0,
       readingIntervalSeconds: 300,
       publishIntervalSeconds: 300,
       lastSeen: nowIso(),
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     }),
   );
   const archive = new MemoryArchive();
@@ -523,21 +468,20 @@ export function createStore(owners: StoreOwners = {}): Store {
         hardwareType,
         role: isGateway ? "ROUTER" : "SENSOR",
         nodeinfoOverridden: false,
-        postprocessingCount: 0,
         readingIntervalSeconds: 300,
         publishIntervalSeconds: 300,
         archiveEnabled,
         archiveEnabledAt: archiveEnabled ? hoursAgo(-since * 24) : null,
         archiveEnabledBy: archiveEnabled ? operatorId : null,
         lastSeen: nowIso(),
-        createdAt: t0,
-        updatedAt: t0,
+        createdAt: SEED_EPOCH,
+        updatedAt: SEED_EPOCH,
       }),
     );
     if (since !== null) archive.start(MESH_BROOK_ID, nodeId, hoursAgo(-since * 24));
     if (until !== null) archive.stop(MESH_BROOK_ID, nodeId, hoursAgo(-until * 24));
   }
-  const measurements = new MemoryMeasurements(meas);
+  const measurements = meas;
   // The operator's sinks: one sending Valley and Brook's buoy with a consumer connected,
   // one paused because its terms lapsed.
   const sinks = new MemorySinks();
@@ -556,8 +500,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       termsAcceptedVersion: TERMS_VERSIONS.sink,
       termsExpiresAt: pausedAt ? daysFromNow(-4) : daysFromNow(200),
       pausedAt,
-      createdAt: t0,
-      updatedAt: t0,
+      createdAt: SEED_EPOCH,
+      updatedAt: SEED_EPOCH,
     });
     sinks.connections.set(id, connections);
   }
@@ -565,7 +509,6 @@ export function createStore(owners: StoreOwners = {}): Store {
     meshes,
     sources,
     sinks,
-    termsAcceptances: [],
     // One of each state for the superuser's Deletions page. River's matches Bo's lapsed terms.
     dataDeletions: [
       // With terms off the API resumes River and cancels its lapse on the next lifecycle pass.
@@ -598,14 +541,14 @@ export function createStore(owners: StoreOwners = {}): Store {
         decidedById: null,
         decisionNote: "",
         decidedAt: null,
-        createdAt: t0,
+        createdAt: SEED_EPOCH,
       },
     ],
     devices,
     archive,
     exports,
     measurements,
-    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID, DEVICE_BROOK_GW_ID, DEVICE_BROOK_BUOY_ID]), t0),
+    readings: new MemoryReadings(devices, meas, new Set([DEVICE_NODE_ID, DEVICE_GW_ID, DEVICE_BROOK_GW_ID, DEVICE_BROOK_BUOY_ID]), SEED_EPOCH),
     actors,
     verifications,
     verificationTokens: new Map<string, string>(),
@@ -619,7 +562,10 @@ export function createStore(owners: StoreOwners = {}): Store {
     ]),
     detectorOverrides: new Map<string, string[] | null>(),
     telemetryVariantMeasurements: new Map<string, TelemetryVariantMeasurementLink>([
-      [VARIANT_LINK_ID, { defaultEnabledDetectors: ["range"] }],
+      [
+        VARIANT_LINK_ID,
+        { variantId: VARIANT_ENV_ID, measurementTypeId: MEAS_TEMP_ID, defaultEnabledDetectors: ["range"] },
+      ],
     ]),
     deviceMeasurementRanges: new Map<string, DeviceMeasurementRange>([
       [DEVICE_MEAS_ID, { validMin: -40, validMax: 85 }],
@@ -649,11 +595,11 @@ export function createStore(owners: StoreOwners = {}): Store {
               },
             ],
             notes: null,
-            createdAt: t0,
+            createdAt: SEED_EPOCH,
           },
         ],
-        createdAt: t0,
-        updatedAt: t0,
+        createdAt: SEED_EPOCH,
+        updatedAt: SEED_EPOCH,
       },
       {
         id: BLUEPRINT_NO2_ID,
@@ -691,10 +637,10 @@ export function createStore(owners: StoreOwners = {}): Store {
               : []),
           ],
           notes: number === 2 ? "Adds the mass concentration." : null,
-          createdAt: t0,
+          createdAt: SEED_EPOCH,
         })),
-        createdAt: t0,
-        updatedAt: t0,
+        createdAt: SEED_EPOCH,
+        updatedAt: SEED_EPOCH,
       },
     ],
     postprocessings: [
@@ -708,8 +654,8 @@ export function createStore(owners: StoreOwners = {}): Store {
         toleranceSeconds: null,
         isEnabled: true,
         outputs: [{ fieldName: "dew_point", measurementId: DEVICE_DEW_MEAS_ID, measurementTypeId: MEAS_DEW_ID, unit: "Cel" }],
-        createdAt: t0,
-        updatedAt: t0,
+        createdAt: SEED_EPOCH,
+        updatedAt: SEED_EPOCH,
       },
     ],
     calibrations: [],

@@ -6,8 +6,8 @@ import { Textarea } from "@mtt/ui/components/ui/textarea";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
 import { draftProblemMessage } from "@/features/blueprint/draft-problem-message";
@@ -15,14 +15,14 @@ import {
   draftFromVersion,
   draftProblems,
   emptyDraft,
-  errorMessages,
   versionBody,
   type BlueprintDraft,
 } from "@/features/blueprint/model";
-import { blueprintRepository } from "@/features/blueprint/repository";
+import { nameErrorMessage } from "@/features/blueprint/name-error-message";
+import { blueprintRepository, invalidateBlueprint } from "@/features/blueprint/repository";
 import { VersionEditor } from "@/features/blueprint/ui/version-editor";
-import { readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { errorMessages, readApiError } from "@mtt/contracts/errors";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type BlueprintDialogProps = {
   /** Given: add a version to it, starting from its latest. Absent: create a blueprint. */
@@ -31,7 +31,6 @@ export type BlueprintDialogProps = {
   onSaved?: (blueprintId: string) => void;
 };
 
-/** Mount only while open: the draft starts afresh each time. */
 export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const queryClient = useQueryClient();
@@ -43,24 +42,19 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
   const [nameError, setNameError] = useState<string | undefined>();
 
   async function saved(blueprintId: string) {
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.retrieveKey({ path: { blueprint_id: blueprintId } }) });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.versionsKey({ path: { blueprint_id: blueprintId } }) });
+    await invalidateBlueprint(queryClient, blueprintId);
     onSaved?.(blueprintId);
     onClose();
   }
 
   function failed(error: unknown) {
-    const { status, fields } = readApiError(error);
-    if (status === 409) {
-      setNameError(
-        formatMessage({ id: "feature.blueprint.dialog.nameTaken", defaultMessage: "You already have a blueprint with this name." }),
-      );
+    const name = nameErrorMessage(error, formatMessage);
+    setNameError(name);
+    if (readApiError(error).status === 409) {
       setShown([]);
       return;
     }
-    setNameError(fields.name);
-    const messages = errorMessages(error).filter((message) => message !== fields.name);
+    const messages = errorMessages(error).filter((message) => message !== name);
     setShown(
       messages.length
         ? messages
@@ -87,12 +81,12 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
     setNameError(undefined);
     const body = versionBody(draft);
     if (blueprint) {
-      addVersion.mutate({ path: { blueprint_id: blueprint.id }, body });
+      addVersion.mutate({ blueprintId: blueprint.id, data: body });
       return;
     }
     const form = new FormData(event.currentTarget);
     create.mutate({
-      body: {
+      data: {
         name: String(form.get("name") ?? "").trim(),
         description: String(form.get("description") ?? "").trim() || null,
         is_public: form.get("is_public") === "on",

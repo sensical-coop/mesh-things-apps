@@ -5,21 +5,19 @@ import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
-import { FormSelect } from "@/components/form/form-select";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormNumber } from "@mtt/ui/forms/form-number";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { errorMessages, PREFIX_PATTERN, versionOutputFields } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
-import { deviceRepository } from "@/features/device/repository";
-import { bindableChannels, channelLabel } from "@/features/postprocessing/model";
-import { postprocessingRepository } from "@/features/postprocessing/repository";
-import { readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { derivedChannel, PREFIX_PATTERN } from "@mtt/contracts/blueprint";
+import { channelLabel, versionOutputFields } from "@/features/postprocessing/model";
+import { invalidatePostprocessing, postprocessingRepository } from "@/features/postprocessing/repository";
+import { errorMessages, readApiError } from "@mtt/contracts/errors";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 const AUTO = "__auto__";
-/** Fields this form shows errors under. */
 const FIELDS = ["blueprint_id", "blueprint_version", "output_prefix", "tolerance_seconds"];
 const UNBOUND = "__none__";
 
@@ -33,7 +31,6 @@ export type PostprocessingDialogProps = {
   onClose: () => void;
 };
 
-/** Mount only while open. Which blueprint and version, how its inputs bind to this device's channels, and how outputs are named. */
 export function PostprocessingDialog({
   deviceUuid,
   measurements,
@@ -41,7 +38,7 @@ export function PostprocessingDialog({
   postprocessing,
   onClose,
 }: PostprocessingDialogProps): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
   const [blueprintId, setBlueprintId] = useState(postprocessing?.blueprint_id ?? "");
   const [versionNumber, setVersionNumber] = useState<number | null>(postprocessing?.blueprint_version ?? null);
@@ -50,18 +47,15 @@ export function PostprocessingDialog({
   const [messages, setMessages] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const versions = useQuery({
-    ...blueprintRepository.versions({ path: { blueprint_id: blueprintId } }),
+    ...blueprintRepository.versions(blueprintId),
     enabled: blueprintId !== "",
   });
   const newest = [...(versions.data ?? [])].sort((a, b) => b.number - a.number);
   const version = newest.find((row) => row.number === versionNumber) ?? newest[0];
-  const channels = bindableChannels(measurements, postprocessing?.id);
+  const channels = measurements.filter((row) => !postprocessing || row.produced_by !== postprocessing.id);
 
   async function saved() {
-    await queryClient.invalidateQueries({ queryKey: postprocessingRepository.listKey({ path: { device_uuid: deviceUuid } }) });
-    await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
-    await queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: deviceUuid } }) });
-    await queryClient.invalidateQueries({ queryKey: blueprintRepository.listKey() });
+    await invalidatePostprocessing(queryClient, deviceUuid);
     onClose();
   }
 
@@ -127,9 +121,9 @@ export function PostprocessingDialog({
       tolerance_seconds: tolerance,
     };
     if (postprocessing) {
-      update.mutate({ path: { device_uuid: deviceUuid, postprocessing_id: postprocessing.id }, body });
+      update.mutate({ deviceUuid, postprocessingId: postprocessing.id, data: body });
     } else {
-      attach.mutate({ path: { device_uuid: deviceUuid }, body: { ...body, blueprint_id: blueprintId } });
+      attach.mutate({ deviceUuid, data: { ...body, blueprint_id: blueprintId } });
     }
   }
 
@@ -248,7 +242,7 @@ export function PostprocessingDialog({
                   id: "feature.postprocessing.dialog.prefixHint",
                   defaultMessage: "Needed to attach a blueprint twice. Output: {channels}.",
                 },
-                { channels: outputFields.map((field) => `derived.${prefix}${field}`).join(", ") },
+                { channels: outputFields.map((field) => derivedChannel(`${prefix}${field}`)).join(", ") },
               )}
               error={fieldErrors.output_prefix}
             >
@@ -271,7 +265,7 @@ export function PostprocessingDialog({
               })}
               error={fieldErrors.tolerance_seconds}
             >
-              <FormNumber
+              <FormNumber locale={locale}
                 id="postprocessing-tolerance"
                 name="tolerance_seconds"
                 min={1}

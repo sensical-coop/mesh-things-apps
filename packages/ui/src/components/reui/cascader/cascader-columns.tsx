@@ -83,7 +83,7 @@ function CascaderColumns({
           ...(height != null
             ? { "--cascader-max-height": toCss(height) }
             : null),
-        } as React.CSSProperties
+        }
       }
       className={cn(
         /* `max-h-full` with `min-h-0`: the trail is the panel's shrinking
@@ -151,7 +151,7 @@ function CascaderColumnPanel({
           type="button"
           data-slot="cascader-retry"
           onClick={() => retryLevel(columnKey)}
-          className="text-foreground hover:bg-accent focus-visible:ring-ring/50 rounded-md px-1 font-medium outline-hidden transition-colors focus-visible:ring-2"
+          className="rounded-md px-1 font-medium text-foreground outline-hidden transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           {labels.retry}
         </button>
@@ -173,7 +173,7 @@ function CascaderColumnPanel({
         data-state={
           loadState?.error ? "error" : loadState?.loading ? "loading" : "empty"
         }
-        className="text-muted-foreground px-2 py-1.5 text-sm"
+        className="px-2 py-1.5 text-sm text-muted-foreground"
       >
         {emptyBody}
       </p>

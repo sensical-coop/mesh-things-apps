@@ -5,9 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
 import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
+import { DetailHeading } from "@/components/detail-heading";
 import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
+import { useMe } from "@/features/auth/use-me";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { canEditBlueprint } from "@/features/blueprint/model";
 import { blueprintRepository } from "@/features/blueprint/repository";
@@ -17,7 +19,6 @@ import { BlueprintDialog } from "@/features/blueprint/ui/blueprint-dialog";
 import { DeleteBlueprintDialog } from "@/features/blueprint/ui/delete-blueprint-dialog";
 import { VersionSummary } from "@/features/blueprint/ui/version-summary";
 import { useFormatters } from "@/hooks/use-formatters";
-import { pageHeadingClass } from "@/lib/page-heading";
 import { isNotFoundError } from "@/lib/not-found";
 import { routes } from "@/router";
 
@@ -27,10 +28,11 @@ export function BlueprintPage(): ReactElement {
   const { formatWhen } = useFormatters();
   const navigate = useNavigate();
   const { blueprintId } = useParams({ from: routes.blueprint });
-  const { me, meId, ownerName } = useOwnerDirectory();
-  const blueprint = useQuery(blueprintRepository.retrieve({ path: { blueprint_id: blueprintId } }));
+  const { me, meId } = useMe();
+  const { ownerName } = useOwnerDirectory();
+  const blueprint = useQuery(blueprintRepository.retrieve(blueprintId));
   if (isNotFoundError(blueprint.error)) throw notFound();
-  const versions = useQuery(blueprintRepository.versions({ path: { blueprint_id: blueprintId } }));
+  const versions = useQuery(blueprintRepository.versions(blueprintId));
   const [editing, setEditing] = useState(false);
   const [addingVersion, setAddingVersion] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -40,43 +42,39 @@ export function BlueprintPage(): ReactElement {
 
   return (
     <>
-      <div className={pageHeadingClass}>
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-caption-1-regular text-text-secondary">
-            <Link to={routes.blueprints} className="hover:text-text-primary">
-              {formatMessage({ id: "page.blueprint.breadcrumb", defaultMessage: "Blueprints" })}
-            </Link>
-          </p>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="min-w-0 break-words text-title-2-medium tracking-tight text-text-primary">
-              {row?.name ?? formatMessage({ id: "page.blueprint.fallbackTitle", defaultMessage: "Blueprint" })}
-            </h1>
-            {row ? <BlueprintAccessChip blueprint={row} /> : null}
-          </div>
-        </div>
-        {row && editable ? (
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" size="small" onClick={() => setAddingVersion(true)}>
-              {formatMessage({ id: "page.blueprint.newVersion", defaultMessage: "New version" })}
-            </Button>
-            <SettingsButton
-              size="small"
-              label={formatMessage({ id: "page.blueprint.edit", defaultMessage: "Edit blueprint" })}
-              onClick={() => setEditing(true)}
-            />
-            <Button
-              type="button"
-              size="small"
-              variant="danger"
-              iconOnly
-              leadingIcon={RiDeleteBinLine}
-              aria-label={formatMessage({ id: "page.blueprint.delete", defaultMessage: "Delete blueprint" })}
-              title={formatMessage({ id: "page.blueprint.delete", defaultMessage: "Delete blueprint" })}
-              onClick={() => setDeleting(true)}
-            />
-          </div>
-        ) : null}
-      </div>
+      <DetailHeading
+        crumb={
+          <Link to={routes.blueprints}>
+            {formatMessage({ id: "page.blueprint.breadcrumb", defaultMessage: "Blueprints" })}
+          </Link>
+        }
+        title={row?.name ?? formatMessage({ id: "page.blueprint.fallbackTitle", defaultMessage: "Blueprint" })}
+        badges={row ? <BlueprintAccessChip blueprint={row} /> : null}
+        actions={
+          row && editable ? (
+            <>
+              <Button type="button" size="small" onClick={() => setAddingVersion(true)}>
+                {formatMessage({ id: "page.blueprint.newVersion", defaultMessage: "New version" })}
+              </Button>
+              <SettingsButton
+                size="small"
+                label={formatMessage({ id: "page.blueprint.edit", defaultMessage: "Edit blueprint" })}
+                onClick={() => setEditing(true)}
+              />
+              <Button
+                type="button"
+                size="small"
+                variant="danger"
+                iconOnly
+                leadingIcon={RiDeleteBinLine}
+                aria-label={formatMessage({ id: "page.blueprint.delete", defaultMessage: "Delete blueprint" })}
+                title={formatMessage({ id: "page.blueprint.delete", defaultMessage: "Delete blueprint" })}
+                onClick={() => setDeleting(true)}
+              />
+            </>
+          ) : null
+        }
+      />
       {blueprint.error ? (
         <StatusCopy>
           {formatMessage({

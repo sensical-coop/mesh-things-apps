@@ -1,7 +1,7 @@
-import { dataDeletionsListOptions, dataDeletionsListQueryKey } from "@mtt/contracts/query";
+import { getDataDeletionsListQueryKey, getDataDeletionsListQueryOptions } from "@mtt/contracts/api";
 
 /** Scheduled deletions of stored readings. Superusers only. */
 export const dataDeletionRepository = {
-  list: dataDeletionsListOptions,
-  listKey: dataDeletionsListQueryKey,
+  list: getDataDeletionsListQueryOptions,
+  listKey: getDataDeletionsListQueryKey,
 };

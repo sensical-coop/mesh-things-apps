@@ -1,78 +1,29 @@
-import type {
-  Algorithm,
-  AlgorithmParam,
-  BlueprintVersion,
-  OwnerProfile,
-  PostprocessingBlueprint,
-  PostprocessingStep,
-} from "@mtt/contracts";
-
-// The registry's naming rules for slots, step keys and derived fields (api/registry/postprocessing.py).
-export const NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
-export const PREFIX_PATTERN = /^[a-z0-9_]*$/;
-const SLOT_REF = "slot:";
-const STEP_REF = "step:";
+import type { Algorithm, BlueprintVersion, PostprocessingBlueprint, PostprocessingStep } from "@mtt/contracts";
+import {
+  canAttachBlueprint as mayAttachBlueprint,
+  canWriteBlueprint,
+  viewerOf,
+  type ProfileFlags,
+} from "@mtt/contracts/authz";
+import { slotRef, stepRef, validateBlueprintStep, validateBlueprintVersion, type BlueprintProblem } from "@mtt/contracts/blueprint";
+import { algorithmOf, formatParam, parseParam, stringMap, valueMap } from "../../lib/algorithm-params.ts";
 
 export function canEditBlueprint(
   blueprint: Pick<PostprocessingBlueprint, "owner_id">,
-  me: Pick<OwnerProfile, "id" | "is_superuser"> | undefined,
+  me: ProfileFlags | undefined,
 ): boolean {
   if (!me) return false;
-  return me.is_superuser === true || (blueprint.owner_id !== null && blueprint.owner_id === me.id);
+  return canWriteBlueprint(viewerOf(me), { ownerId: blueprint.owner_id });
 }
 
 /** The registry's attach rule: the device's mesh owner's own blueprints, and public ones. */
 export function canAttachBlueprint(
   blueprint: Pick<PostprocessingBlueprint, "owner_id" | "is_public">,
   meshOwnerId: string,
-  me: Pick<OwnerProfile, "is_superuser"> | undefined,
+  me: ProfileFlags | undefined,
 ): boolean {
-  return me?.is_superuser === true || blueprint.is_public || blueprint.owner_id === meshOwnerId;
-}
-
-/** A step's `inputs` / `outputs`: `{ name: string }`, which the schema leaves untyped. */
-export function stringMap(value: unknown): Record<string, string> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
-}
-
-/** A step's `params` or a calibration's. */
-export function valueMap(value: unknown): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
-  return { ...value };
-}
-
-export type StepRef = { kind: "slot"; slot: string } | { kind: "step"; key: string; output: string };
-
-/** `slot:<slot>` or `step:<key>.<output>`; null for anything else. */
-export function parseRef(ref: string): StepRef | null {
-  if (ref.startsWith(SLOT_REF)) return { kind: "slot", slot: ref.slice(SLOT_REF.length) };
-  if (!ref.startsWith(STEP_REF)) return null;
-  const [key, output] = ref.slice(STEP_REF.length).split(".");
-  return key && output ? { kind: "step", key, output } : null;
-}
-
-export function slotRef(slot: string): string {
-  return `${SLOT_REF}${slot}`;
-}
-
-export function stepRef(key: string, output: string): string {
-  return `${STEP_REF}${key}.${output}`;
-}
-
-export function configParams(algorithm: Pick<Algorithm, "params"> | undefined): AlgorithmParam[] {
-  return (algorithm?.params ?? []).filter((param) => !param.calibration);
-}
-
-export function calibrationParams(algorithm: Pick<Algorithm, "params"> | undefined): AlgorithmParam[] {
-  return (algorithm?.params ?? []).filter((param) => param.calibration);
-}
-
-/** The derived fields a version writes, in step order. */
-export function versionOutputFields(version: Pick<BlueprintVersion, "steps">): string[] {
-  return [...version.steps]
-    .sort((a, b) => a.order - b.order)
-    .flatMap((step) => Object.values(stringMap(step.outputs)));
+  if (!me) return false;
+  return mayAttachBlueprint(viewerOf(me), { ownerId: blueprint.owner_id, isPublic: blueprint.is_public }, meshOwnerId);
 }
 
 /** One slot of a version being edited. `id` only keys the row in the form. */
@@ -145,19 +96,6 @@ export function refChoices(draft: BlueprintDraft, stepIndex: number): { value: s
   return [...slots, ...earlier];
 }
 
-export function formatParam(value: unknown): string {
-  return typeof value === "string" ? value : JSON.stringify(value);
-}
-
-/** Typed param text as a value: JSON when it parses (numbers, lists), otherwise the text itself. */
-export function parseParam(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-}
-
 /** Only params that were typed; blank ones fall back to the algorithm default. */
 export function paramValues(params: Record<string, string>): Record<string, unknown> {
   return Object.fromEntries(
@@ -167,7 +105,6 @@ export function paramValues(params: Record<string, string>): Record<string, unkn
   );
 }
 
-/** The `inputs` + `steps` of a version body. */
 export function versionBody(draft: BlueprintDraft): { inputs: { slot: string; default_channel: string | null }[]; steps: PostprocessingStep[]; notes: string | null } {
   return {
     inputs: draft.slots.map((slot) => ({ slot: slot.slot.trim(), default_channel: slot.defaultChannel.trim() || null })),
@@ -185,63 +122,85 @@ export function versionBody(draft: BlueprintDraft): { inputs: { slot: string; de
 
 export type DraftProblem =
   | { kind: "noSteps" }
+  | { kind: "duplicateOrder" }
   | { kind: "slotName"; slot: string }
   | { kind: "slotTwice"; slot: string }
   | { kind: "slotUnused"; slot: string }
   | { kind: "stepKey"; key: string }
   | { kind: "stepKeyTwice"; key: string }
   | { kind: "inputUnset"; key: string; input: string }
+  | { kind: "extraInput"; key: string; input: string }
   | { kind: "paramRequired"; key: string; param: string }
+  | { kind: "calibrationParam"; key: string; param: string }
+  | { kind: "extraParam"; key: string; param: string }
   | { kind: "noOutput"; key: string }
+  | { kind: "extraOutput"; key: string; output: string }
   | { kind: "fieldName"; key: string; field: string }
-  | { kind: "fieldTwice"; field: string };
+  | { kind: "fieldTwice"; field: string }
+  | { kind: "pointwise"; key: string; name: string; mode: string }
+  | { kind: "unknownAlgorithm"; key: string; name: string };
+
+function listed(problem: BlueprintProblem, key: "inputs" | "params" | "outputs" | "slots"): string[] {
+  return [...(problem[key] ?? [])];
+}
+
+/** One validator code as the editor's problems. Step codes carry the step `key`. */
+function fromProblem(problem: BlueprintProblem): DraftProblem[] {
+  const key = problem.key ?? "";
+  switch (problem.code) {
+    case "no_steps":
+      return [{ kind: "noSteps" }];
+    case "duplicate_order":
+      return [{ kind: "duplicateOrder" }];
+    case "slot_name":
+      return [{ kind: "slotName", slot: problem.slot ?? "" }];
+    case "duplicate_slots":
+      return listed(problem, "slots").map((slot) => ({ kind: "slotTwice", slot }));
+    case "unused_slots":
+      return listed(problem, "slots").map((slot) => ({ kind: "slotUnused", slot }));
+    case "step_key":
+      return [{ kind: "stepKey", key }];
+    case "step_key_twice":
+      return [{ kind: "stepKeyTwice", key }];
+    case "bad_ref":
+      return [{ kind: "inputUnset", key, input: problem.input ?? "" }];
+    case "missing_inputs":
+      return listed(problem, "inputs").map((input) => ({ kind: "inputUnset", key, input }));
+    case "extra_inputs":
+      return listed(problem, "inputs").map((input) => ({ kind: "extraInput", key, input }));
+    case "missing_params":
+      return listed(problem, "params").map((param) => ({ kind: "paramRequired", key, param }));
+    case "calibration_params":
+      return listed(problem, "params").map((param) => ({ kind: "calibrationParam", key, param }));
+    case "unknown_params":
+      return listed(problem, "params").map((param) => ({ kind: "extraParam", key, param }));
+    case "missing_output":
+      return [{ kind: "noOutput", key }];
+    case "extra_outputs":
+      return listed(problem, "outputs").map((output) => ({ kind: "extraOutput", key, output }));
+    case "field_name":
+      return [{ kind: "fieldName", key, field: problem.field ?? "" }];
+    case "field_twice":
+      return [{ kind: "fieldTwice", field: problem.field ?? "" }];
+    case "not_pointwise":
+      return [{ kind: "pointwise", key, name: problem.name ?? "", mode: problem.mode ?? "" }];
+    case "unknown_algorithm":
+      return [{ kind: "unknownAlgorithm", key, name: problem.name ?? "" }];
+  }
+}
 
 /** What the registry would refuse, found before sending. The API stays the judge. */
 export function draftProblems(draft: BlueprintDraft, algorithms: readonly Algorithm[]): DraftProblem[] {
-  const found: DraftProblem[] = [];
-  if (!draft.steps.length) found.push({ kind: "noSteps" });
-  const slots = draft.slots.map((slot) => slot.slot.trim());
-  for (const [i, slot] of slots.entries()) {
-    if (!NAME_PATTERN.test(slot)) found.push({ kind: "slotName", slot });
-    else if (slots.indexOf(slot) !== i) found.push({ kind: "slotTwice", slot });
-  }
-  const used = new Set<string>();
-  const keys: string[] = [];
-  const fields: string[] = [];
-  for (const [index, step] of draft.steps.entries()) {
-    const key = step.key.trim();
-    if (!NAME_PATTERN.test(key)) found.push({ kind: "stepKey", key });
-    else if (keys.includes(key)) found.push({ kind: "stepKeyTwice", key });
-    keys.push(key);
-    const algorithm = algorithms.find((candidate) => candidate.name === step.functionName);
-    const choices = refChoices(draft, index).map((choice) => choice.value);
-    for (const input of algorithm?.inputs ?? []) {
-      const ref = step.inputs[input] ?? "";
-      if (!choices.includes(ref)) found.push({ kind: "inputUnset", key, input });
-      const parsed = parseRef(ref);
-      if (parsed?.kind === "slot") used.add(parsed.slot);
-    }
-    for (const param of configParams(algorithm)) {
-      if (param.required && !step.params[param.name]?.trim()) found.push({ kind: "paramRequired", key, param: param.name });
-    }
-    const outputs = Object.values(step.outputs).map((field) => field.trim()).filter(Boolean);
-    if (!outputs.length) found.push({ kind: "noOutput", key });
-    for (const field of outputs) {
-      if (!NAME_PATTERN.test(field)) found.push({ kind: "fieldName", key, field });
-      else if (fields.includes(field)) found.push({ kind: "fieldTwice", field });
-      fields.push(field);
-    }
-  }
-  for (const slot of slots) {
-    if (NAME_PATTERN.test(slot) && !used.has(slot)) found.push({ kind: "slotUnused", slot });
-  }
-  return found;
-}
-
-/** Every message in an error body, however DRF nested it (`{steps: [{function_name: [...]}]}`, or a bare list). */
-export function errorMessages(error: unknown): string[] {
-  if (typeof error === "string") return [error];
-  if (Array.isArray(error)) return error.flatMap(errorMessages);
-  if (typeof error !== "object" || error === null) return [];
-  return Object.entries(error).flatMap(([key, value]) => (key === "status" ? [] : errorMessages(value)));
+  const body = versionBody(draft);
+  const steps = body.steps.map((step) => ({
+    key: step.key,
+    order: step.order,
+    function_name: step.function_name,
+    inputs: stringMap(step.inputs),
+    params: valueMap(step.params),
+    outputs: stringMap(step.outputs),
+  }));
+  const version = validateBlueprintVersion(body.inputs, steps, (name) => algorithmOf(algorithms, name));
+  const perStep = steps.flatMap((step) => validateBlueprintStep(step, algorithmOf(algorithms, step.function_name)));
+  return [...version, ...perStep].flatMap(fromProblem);
 }

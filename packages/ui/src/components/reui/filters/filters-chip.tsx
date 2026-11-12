@@ -144,7 +144,7 @@ function valueWithIcon<V>(
  *  `formatFilterPath` joins for the chip's accessible name and `title`. */
 function FilterPathSeparator() {
   return (
-    <ChevronRightIcon aria-hidden="true" data-slot="filter-path-separator" className="text-muted-foreground mx-[3px] inline-block size-3 shrink-0 self-center align-[calc(0.3635em_-_0.375rem)]" />
+    <ChevronRightIcon aria-hidden="true" data-slot="filter-path-separator" className="mx-[3px] inline-block size-3 shrink-0 self-center align-[calc(0.3635em-0.375rem)] text-muted-foreground" />
   )
 }
 
@@ -165,7 +165,7 @@ function FilterPathEllipsis({ full }: { full: string }) {
                  is all that parts a name from the next, and this used to STACK
                  an `mx` on it. Plain inline, no `vertical-align`: `middle` sat
                  the dots 1.7px low and inline-block grew the run to 21.17px. */
-              className="text-muted-foreground shrink-0 self-center"
+              className="shrink-0 self-center text-muted-foreground"
             >
               ...
             </span>
@@ -901,13 +901,13 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
             focusStore.set({ id: rule.id, segment: null, autoOpen: false })
         }}
       >
-        <ButtonGroupText className="bg-background dark:bg-input/30 text-muted-foreground">
+        <ButtonGroupText className="bg-field-solid text-muted-foreground">
           {rule.path.join(actions.labels.pathSeparator)}
         </ButtonGroupText>
         <Button
           variant="outline"
           size={sizes.icon}
-          className="bg-background dark:bg-input/30"
+          className="bg-field-solid"
           aria-label={actions.labels.remove}
           /* It had no gate at all, so the one chip whose whole purpose is to be
              removed could be removed from a bar that refuses every other edit. */
@@ -970,7 +970,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
         /* Dropped while the path is collapsed: the ellipsis inside carries the
            same sentence as a tooltip, and the two would stack. */
         title={pathCollapsed ? undefined : pathText}
-        className="bg-background dark:bg-input/30 cursor-default gap-1.5"
+        className="cursor-default gap-1.5 bg-field-solid"
       >
         {field.icon}
         {/* Zero gap INSIDE the path, so the separator's own margin is the only
@@ -985,7 +985,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
           <ButtonGroupText
             render={<button type="button" />}
             className={cn(
-              "hover:bg-accent bg-background dark:bg-input/30 cursor-default",
+              "cursor-default bg-field-solid hover:bg-accent",
               /* The operator is connective tissue between the field and the
                  value, so it reads quieter than either - unless it is still
                  the prompt "Select condition", the one thing to act on. */
@@ -1017,7 +1017,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
                  more to say than the segment already says. */
               title={valueFullText === valueText ? undefined : valueFullText}
               className={cn(
-                "hover:bg-accent bg-background dark:bg-input/30 cursor-default",
+                "cursor-default bg-field-solid hover:bg-accent",
                 valueEmpty && "text-muted-foreground"
               )}
               onPointerDown={() => focusSegment("value")}
@@ -1045,7 +1045,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
               /* The same surface the three text segments force. Styles whose
                  outline button is transparent in dark (sera, luma, rhea) left
                  the kebab as a notch in an otherwise filled pill. */
-              className="bg-background dark:bg-input/30"
+              className="bg-field-solid"
               aria-label={actions.labels.chipMenu(field.label)}
               onPointerDown={() => focusSegment("menu")}
             />

@@ -40,7 +40,7 @@ const next = readFileSync(source);
 if (existsSync(destination)) {
   const current = readFileSync(destination);
   const text = current.toString("utf8");
-  const ours = current.equals(next) || text.includes(marker) || text.includes("xargs -0 pnpm exec stylelint");
+  const ours = current.equals(next) || text.includes(marker);
   if (!ours) {
     console.warn("Skipping pre-commit install: an existing pre-commit hook was left in place.");
     process.exit(0);

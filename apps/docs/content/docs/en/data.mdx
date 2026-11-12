@@ -23,9 +23,9 @@ Mesh keys are stored only in the registry. The readings API cannot read them.
 
 PostgreSQL holds the registry: accounts, meshes, devices, the telemetry catalogue, blueprints, sources, and sinks. It also records accepted terms and scheduled data deletions.
 
-The main relationships are as follows. An owner has any number of meshes and blueprints. A mesh has any number of devices. A device has any number of measurement channels and postprocessings. A public blueprint can be assigned by an owner who does not own it, but only its owner can edit it.
+An owner has any number of meshes and blueprints. A mesh has any number of devices. A device has any number of measurement channels and postprocessings. An owner who does not own a public blueprint can still assign it. Only its owner can edit it.
 
-Each measurement type in the catalogue has a quantity kind: `physical_property`, `concentration`, `count`, `ratio`, or `other`. An optional `vocabulary_uri` refers to a QUDT or EIONET concept.
+Each measurement type in the catalogue has a quantity kind: `physical_property`, `concentration`, `count`, `ratio`, or `other`. An optional `vocabulary_uri` points at a QUDT or EIONET concept.
 
 ## InfluxDB
 
@@ -46,6 +46,6 @@ Text messages and routing packets are not stored.
 
 ## Parquet
 
-The archive contains one object per mesh and UTC hour. The columns include `node_id`, `packet_id`, `portnum`, `rx_time`, `hop_start`, `channel_id`, `gateway_id`, `payload_kind`, and `payload_json`. When a partition is rewritten, rows are deduplicated on `(node_id, packet_id, rx_time, payload_kind)`.
+The archive has one object per mesh and UTC hour. The columns include `node_id`, `packet_id`, `portnum`, `rx_time`, `hop_start`, `channel_id`, `gateway_id`, `payload_kind`, and `payload_json`. When a partition is rewritten, rows are deduplicated on `(node_id, packet_id, rx_time, payload_kind)`.
 
 Only devices with `archive_enabled` are archived. See [Archive](/archive).

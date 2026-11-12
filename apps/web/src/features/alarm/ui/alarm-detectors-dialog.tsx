@@ -1,17 +1,17 @@
-import { zDetectorEnum } from "@mtt/contracts/zod";
+import { DetectorEnum } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormNumber } from "@/components/form/form-number";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormNumber } from "@mtt/ui/forms/form-number";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formLevelMessage, readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { formLevelMessage, readApiError } from "@mtt/contracts/errors";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { alarmRepository } from "@/features/alarm/repository";
 import { deviceRepository } from "@/features/device/repository";
 
@@ -22,31 +22,29 @@ const DETECTOR_LABEL_IDS: Record<string, { id: string; defaultMessage: string }>
 };
 
 export function AlarmDetectorsDialog({
-  open,
   onClose,
   deviceUuid,
   channel,
   label,
 }: {
-  open: boolean;
   onClose: () => void;
   deviceUuid: string;
   channel: string;
   label: string;
 }): ReactElement {
-  const { formatMessage } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const updateMeasurement = useMutation(deviceRepository.measurementUpdate());
 
-  const device = useQuery({ ...deviceRepository.retrieve({ path: { device_uuid: deviceUuid } }), enabled: open });
-  const measurements = useQuery({ ...deviceRepository.measurements({ path: { device_uuid: deviceUuid } }), enabled: open });
+  const device = useQuery(deviceRepository.retrieve(deviceUuid));
+  const measurements = useQuery(deviceRepository.measurements(deviceUuid));
   const row = measurements.data?.find((m) => m.measurement_type.channel === channel);
-  const variants = useQuery({ ...deviceRepository.telemetryVariants({ path: { device_uuid: deviceUuid } }), enabled: open });
+  const variants = useQuery(deviceRepository.telemetryVariants(deviceUuid));
   const variant = variants.data?.find((v) => v.telemetry_variant.id === row?.telemetry_variant_id);
-  const detectorsQuery = useQuery({ ...alarmRepository.detectors(), enabled: open });
+  const detectorsQuery = useQuery(alarmRepository.detectors());
   const measurementDetectors = (detectorsQuery.data ?? []).filter((d) => d.scope === "measurement");
 
   const loading = measurements.isPending || detectorsQuery.isPending || device.isPending;
@@ -58,7 +56,7 @@ export function AlarmDetectorsDialog({
     if (!row) return;
     const form = new FormData(event.currentTarget);
     const enabledDetectors = measurementDetectors.flatMap((d) => {
-      const name = zDetectorEnum.safeParse(d.name);
+      const name = DetectorEnum.safeParse(d.name);
       return name.success && form.get(`detector-${d.name}`) === "on" ? [name.data] : [];
     });
     const min = String(form.get("valid_min") ?? "").trim();
@@ -75,15 +73,12 @@ export function AlarmDetectorsDialog({
     setError(null);
     setFieldErrors({});
     try {
-      await updateMeasurement.mutateAsync({
-        path: { device_uuid: deviceUuid, measurement_id: row.id },
-        body: {
+      await updateMeasurement.mutateAsync({ deviceUuid, measurementId: row.id, data: {
           enabled_detectors: enabledDetectors,
           valid_min: min === "" ? null : Number(min),
           valid_max: max === "" ? null : Number(max),
-        },
-      });
-      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey({ path: { device_uuid: deviceUuid } }) });
+        } });
+      await queryClient.invalidateQueries({ queryKey: deviceRepository.measurementsKey(deviceUuid) });
       onClose();
     } catch (failure) {
       const { fields } = readApiError(failure);
@@ -100,7 +95,7 @@ export function AlarmDetectorsDialog({
 
   return (
     <Modal
-      open={open}
+      open
       title={formatMessage(
         { id: "feature.alarm.detectorsDialog.title", defaultMessage: "Alarms — {label}" },
         { label },
@@ -151,7 +146,7 @@ export function AlarmDetectorsDialog({
                         })}
                         error={fieldErrors.valid_min}
                       >
-                        <FormNumber
+                        <FormNumber locale={locale}
                           id="detector-valid-min"
                           name="valid_min"
                           step="any"
@@ -166,7 +161,7 @@ export function AlarmDetectorsDialog({
                         })}
                         error={fieldErrors.valid_max}
                       >
-                        <FormNumber
+                        <FormNumber locale={locale}
                           id="detector-valid-max"
                           name="valid_max"
                           step="any"

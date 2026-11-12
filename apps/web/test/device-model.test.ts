@@ -1,15 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
+import { formatNodeId, looksHex, parseNodeId } from "@mtt/ui/forms/node-id";
 import {
   deviceLastSeen,
   devicePosition,
   deviceRoleLabel,
   deviceSilent,
   deviceTitle,
-  formatNodeId,
   parseCoordinate,
-  parseNodeId,
   roundCoordinate,
 } from "../src/features/device/model.ts";
 
@@ -43,10 +42,28 @@ test("deviceTitle prefers the node name over a role-like label", () => {
   assert.equal(deviceTitle(device), "Hill GW");
 });
 
-test("deviceRoleLabel sentence-cases the mesh role", () => {
-  assert.equal(deviceRoleLabel(device), "Router");
-  assert.equal(deviceRoleLabel({ role: "CLIENT_MUTE", is_gateway: false }), "Client mute");
-  assert.equal(deviceRoleLabel({ role: null, is_gateway: true }), "Gateway");
+const roleLabels = {
+  client: "Client",
+  client_mute: "Client mute",
+  client_hidden: "Client hidden",
+  router: "Router",
+  router_client: "Router client",
+  router_late: "Router late",
+  repeater: "Repeater",
+  tracker: "Tracker",
+  sensor: "Sensor",
+  tak: "TAK",
+  tak_tracker: "TAK tracker",
+  lost_and_found: "Lost and found",
+  gateway: "Gateway",
+  node: "Node",
+};
+
+test("deviceRoleLabel uses the catalog name, else a sentence, and gateway only when there is no role", () => {
+  assert.equal(deviceRoleLabel({ role: "TAK_TRACKER", is_gateway: false }, roleLabels), "TAK tracker");
+  assert.equal(deviceRoleLabel({ role: "CUSTOM_ROLE", is_gateway: true }, roleLabels), "Custom role");
+  assert.equal(deviceRoleLabel({ role: null, is_gateway: true }, roleLabels), "Gateway");
+  assert.equal(deviceRoleLabel({ role: null, is_gateway: false }, roleLabels), "Node");
 });
 
 test("parseCoordinate keeps decimals whatever the separator", () => {
@@ -118,4 +135,13 @@ test("devicePosition drops missing and out-of-range coordinates", () => {
   assert.equal(devicePosition({ latitude: 413_851_000, longitude: 21_734_000 }), null);
   assert.equal(devicePosition({ latitude: 41.38, longitude: 190 }), null);
   assert.equal(devicePosition({ latitude: Number.NaN, longitude: 2.17 }), null);
+});
+
+test("looksHex spots an id that can only be hex", () => {
+  assert.equal(looksHex("!7efeee00"), true);
+  assert.equal(looksHex("0x7efeee00"), true);
+  assert.equal(looksHex("7efeee00"), true);
+  assert.equal(looksHex(" !1"), true);
+  assert.equal(looksHex("2130636288"), false);
+  assert.equal(looksHex(""), false);
 });

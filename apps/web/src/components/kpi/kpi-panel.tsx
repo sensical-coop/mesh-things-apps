@@ -1,4 +1,4 @@
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { type ReactElement, type ReactNode } from "react";
 import { type RemixiconComponentType } from "@remixicon/react";
 import { kpiIconFor } from "@/components/kpi/kpi-icon";
@@ -20,7 +20,6 @@ export function KpiPanel({
   children: ReactNode;
   icon?: RemixiconComponentType;
   action?: ReactNode;
-  /** Shown after the label, e.g. a flag for a computed channel. */
   badge?: ReactNode;
   "aria-hidden"?: boolean;
 }): ReactElement {
@@ -33,7 +32,7 @@ export function KpiPanel({
             <p className="text-caption-1-medium text-text-secondary">{label}</p>
             {badge}
           </div>
-          {hint ? <p className="text-pretty text-caption-1-regular text-text-tertiary">{hint}</p> : null}
+          {hint ? <p className="text-caption-1-regular text-pretty text-text-tertiary">{hint}</p> : null}
         </div>
         {action}
       </div>

@@ -12,7 +12,6 @@ export type ArchiveButtonProps = {
   className?: string;
 };
 
-/** Opens the device's archive setting. Filled, in the accent, while the device is archived. */
 export function ArchiveButton({ device, className }: ArchiveButtonProps): ReactElement {
   const { formatMessage } = useIntl();
   const [open, setOpen] = useState(false);
@@ -39,7 +38,7 @@ export function ArchiveButton({ device, className }: ArchiveButtonProps): ReactE
         title={label}
         onClick={() => setOpen(true)}
       />
-      {open ? <ArchiveSettingsDialog device={device} open onClose={() => setOpen(false)} /> : null}
+      {open ? <ArchiveSettingsDialog device={device} onClose={() => setOpen(false)} /> : null}
     </>
   );
 }

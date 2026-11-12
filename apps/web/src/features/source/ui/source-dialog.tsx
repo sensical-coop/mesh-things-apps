@@ -1,22 +1,23 @@
 import type { SourceRead } from "@mtt/contracts";
-import { zSourcesCreateData, zSourcesUpdateData } from "@mtt/contracts/zod";
+import { SourceCreateRequest, SourceUpdateRequest } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { Checkbox } from "@mtt/ui/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "@mtt/ui/components/ui/field";
 import { Input } from "@mtt/ui/components/ui/input";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useState } from "react";
-import { useIntl } from "react-intl";
-import { FormCheckbox } from "@/components/form/form-checkbox";
-import { FormField } from "@/components/form/form-field";
-import { FormSelect } from "@/components/form/form-select";
+import { defineMessages, useIntl } from "react-intl";
+import { FormCheckbox } from "@mtt/ui/forms/form-checkbox";
+import { FormField } from "@mtt/ui/forms/form-field";
+import { FormSelect } from "@mtt/ui/forms/form-select";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { issueErrors, readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
-import { sourceTitle, validateSourceFields } from "@/features/source/model";
-import type { TermsAcceptance } from "@/features/terms/model";
-import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { issueErrors, readApiError } from "@mtt/contracts/errors";
+import { brokerDialogError } from "@/features/source/broker-dialog-error";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { SOURCE_DEFAULTS, SOURCE_QOS, validateSource } from "@mtt/contracts/source";
+import { sourceTitle } from "@/features/source/model";
+import { termsFields, useTermsAsked, type TermsAcceptance } from "@mtt/contracts/terms";
 import { sourceRepository } from "@/features/source/repository";
 
 export type SourceDialogProps = {
@@ -29,10 +30,10 @@ export type SourceDialogProps = {
   onSaved: (source: SourceRead) => void;
 };
 
-const QOS_ITEMS = [
-  { label: "1 — at least once", value: "1" },
-  { label: "0 — at most once", value: "0" },
-] as const;
+const QOS_LABELS = defineMessages({
+  1: { id: "feature.source.createDialog.qos.atLeastOnce", defaultMessage: "1 — at least once" },
+  0: { id: "feature.source.createDialog.qos.atMostOnce", defaultMessage: "0 — at most once" },
+} satisfies Record<(typeof SOURCE_QOS)[number], { id: string; defaultMessage: string }>);
 
 function optional(value: FormDataEntryValue | null): string | null {
   const text = String(value ?? "").trim();
@@ -48,8 +49,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
   // unticked and left blank removes it.
   const [keepPassword, setKeepPassword] = useState(true);
   const editing = source !== undefined;
-  // A self-hosted instance asks for no terms; unknown counts as enforced.
-  const termsEnforced = useTermsEnforced() !== false;
+  const termsAsked = useTermsAsked();
 
   async function onSuccess(saved: SourceRead) {
     await queryClient.invalidateQueries({ queryKey: sourceRepository.listKey() });
@@ -60,61 +60,42 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
   // Nothing changes on any failure: the API drops a new row, or rolls an edit back,
   // when the bridge can't be set up.
   function onError(error: unknown) {
-    const { status, detail, fields } = readApiError(error);
-    const { non_field_errors: nonField, terms_version: termsError, ...byField } = fields;
-    setErrors(byField);
-    if (termsError) {
-      // The terms changed between the step and the save: start again from the new text.
-      setFormError(
-        formatMessage({
-          id: "feature.source.dialog.termsChanged",
-          defaultMessage: "The source terms have changed. Close this dialog and accept the current terms to add the source.",
-        }),
-      );
-    } else if (status === 502) {
-      setFormError(
-        editing
-          ? formatMessage(
-              {
-                id: "feature.source.dialog.bridgeFailedEdit",
-                defaultMessage: "The bridge could not be reconfigured. No changes were applied. {detail}",
-              },
-              { detail: detail ?? "" },
-            )
-          : formatMessage(
-              {
-                id: "feature.source.createDialog.bridgeFailed",
-                defaultMessage: "The bridge could not be set up. The source was not saved. {detail}",
-              },
-              { detail: detail ?? "" },
-            ),
-      );
-    } else if (status === 403) {
-      setFormError(
-        formatMessage({
-          id: "feature.source.createDialog.forbidden",
-          defaultMessage: "Only operators can add sources.",
-        }),
-      );
-    } else if (status === 404) {
-      setFormError(
-        formatMessage({
-          id: "feature.source.dialog.notFound",
-          defaultMessage: "This source no longer exists. Close this dialog and refresh the list.",
-        }),
-      );
-    } else if (Object.keys(byField).length > 0) {
-      setFormError(null);
-    } else {
-      setFormError(
-        nonField ??
-          detail ??
-          formatMessage({
-            id: "feature.source.createDialog.error",
-            defaultMessage: "The source was not added. Check the fields and try again.",
-          }),
-      );
-    }
+    const detail = readApiError(error).detail ?? "";
+    // A terms_version field means the text changed between the step and the save.
+    const result = brokerDialogError(error, editing, {
+      termsChanged: formatMessage({
+        id: "feature.source.dialog.termsChanged",
+        defaultMessage: "The source terms have changed. Close this dialog and accept the current terms to add the source.",
+      }),
+      failedEdit: formatMessage(
+        {
+          id: "feature.source.dialog.bridgeFailedEdit",
+          defaultMessage: "The bridge could not be reconfigured. No changes were applied. {detail}",
+        },
+        { detail },
+      ),
+      failedCreate: formatMessage(
+        {
+          id: "feature.source.createDialog.bridgeFailed",
+          defaultMessage: "The bridge could not be set up. The source was not saved. {detail}",
+        },
+        { detail },
+      ),
+      forbidden: formatMessage({
+        id: "feature.source.createDialog.forbidden",
+        defaultMessage: "Only operators can add sources.",
+      }),
+      notFound: formatMessage({
+        id: "feature.source.dialog.notFound",
+        defaultMessage: "This source no longer exists. Close this dialog and refresh the list.",
+      }),
+      generic: formatMessage({
+        id: "feature.source.createDialog.error",
+        defaultMessage: "The source was not added. Check the fields and try again.",
+      }),
+    });
+    setErrors(result.fields);
+    setFormError(result.formError);
   }
 
   const create = useMutation({ ...sourceRepository.create(), onSuccess, onError });
@@ -132,7 +113,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editing && termsEnforced && !termsAcceptance) {
+    if (!editing && termsAsked && !termsAcceptance) {
       setFormError(
         formatMessage({
           id: "feature.source.dialog.termsRequired",
@@ -155,23 +136,23 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
       ...passwordField,
       ...(editing || !termsAcceptance
         ? {}
-        : { terms_version: termsAcceptance.version, terms_locale: termsAcceptance.locale }),
+        : termsFields(termsAcceptance)),
       topic: String(form.get("topic") ?? "").trim(),
-      qos: Number(form.get("qos") ?? 1),
+      qos: Number(form.get("qos") ?? SOURCE_DEFAULTS.qos),
     };
-    const checks = validateSourceFields(body);
+    const checks = validateSource(body);
     setFormError(null);
     if (editing) {
-      const parsed = zSourcesUpdateData.safeParse({ path: { source_id: source.id }, body });
+      const parsed = SourceUpdateRequest.safeParse(body);
       const next = { ...checks, ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
       setErrors(next);
-      if (parsed.success && Object.keys(next).length === 0) update.mutate(parsed.data);
+      if (parsed.success && Object.keys(next).length === 0) update.mutate({ sourceId: source.id, data: parsed.data });
       return;
     }
-    const parsed = zSourcesCreateData.safeParse({ body });
+    const parsed = SourceCreateRequest.safeParse(body);
     const next = { ...checks, ...(parsed.success ? {} : issueErrors(parsed.error.issues)) };
     setErrors(next);
-    if (parsed.success && Object.keys(next).length === 0) create.mutate({ body: parsed.data.body });
+    if (parsed.success && Object.keys(next).length === 0) create.mutate({ data: parsed.data });
   }
 
   return (
@@ -234,7 +215,7 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
             id="source-ssl"
             name="ssl"
             label={formatMessage({ id: "feature.source.createDialog.ssl", defaultMessage: "Connect over TLS" })}
-            defaultChecked={source?.ssl ?? true}
+            defaultChecked={source?.ssl ?? SOURCE_DEFAULTS.ssl}
           />
           <FormField
             id="source-username"
@@ -289,7 +270,12 @@ export function SourceDialog({ open, source, termsAcceptance, onClose, onSaved }
             label={formatMessage({ id: "feature.source.createDialog.qos", defaultMessage: "QoS" })}
             error={errors.qos}
           >
-            <FormSelect id="source-qos" name="qos" items={QOS_ITEMS} defaultValue={String(source?.qos ?? 1)} />
+            <FormSelect
+              id="source-qos"
+              name="qos"
+              items={SOURCE_QOS.map((qos) => ({ label: formatMessage(QOS_LABELS[qos]), value: String(qos) }))}
+              defaultValue={String(source?.qos ?? SOURCE_DEFAULTS.qos)}
+            />
           </FormField>
         </FieldGroup>
         {formError ? <StatusCopy>{formError}</StatusCopy> : null}

@@ -4,7 +4,6 @@ import { type ReactElement, useState } from "react";
 import { useIntl } from "react-intl";
 import { RotateApiKeyDialog } from "@/features/auth/ui/rotate-api-key-dialog";
 
-/** The console signs in with a session; the API key is only for scripts and gateways, so it's generated here on demand. */
 export function ApiKeyPanel(): ReactElement {
   const { formatMessage } = useIntl();
   const [open, setOpen] = useState(false);
