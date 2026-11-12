@@ -328,6 +328,8 @@ export function createStore(owners: StoreOwners = {}): Store {
       pausedAt: daysFromNow(-5),
       // Public so the read-only view of someone else's mesh shows up locally.
       isPublic: true,
+      // On the older protocol, so the mesh page shows a version other than the default.
+      protocol: "2.7",
       createdAt: t0,
       updatedAt: t0,
     }),

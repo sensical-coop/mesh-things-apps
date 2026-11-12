@@ -3,6 +3,7 @@ import type { Mesh } from "@mtt/domain/mesh/Mesh";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
 import type { LatestReading } from "@mtt/domain/readings/Readings";
 import type { Source } from "@mtt/domain/source/Source";
+import { protocolOf } from "./protocols";
 import type { Sink } from "@mtt/domain/sink/Sink";
 import { SINKS_BROKER, sinkTopicFilter, sinkUsername } from "./features/sink/repository";
 import type { OperatorRequestRow } from "./features/operator-request/repository";
@@ -22,6 +23,9 @@ export function meshJson(mesh: Mesh, includePsk: boolean, includeSource = includ
     owner_id: mesh.ownerId,
     is_public: mesh.isPublic,
     discover_gateways: mesh.discoverGateways,
+    protocol: mesh.protocol,
+    protocol_status: protocolOf(mesh.protocol)?.status ?? "supported",
+    protocol_sunset: protocolOf(mesh.protocol)?.sunset ?? null,
     created_at: mesh.createdAt,
     updated_at: mesh.updatedAt,
   };
@@ -128,6 +132,15 @@ export type DeviceJson = {
   archive_enabled_by?: string | null;
   archive_enabled_at?: string | null;
   discovered_at: null;
+  protocol: string;
+  observed_protocol: null;
+  observed_protocol_at: null;
+  firmware_version: null;
+  firmware_protocol: null;
+  firmware_seen_at: null;
+  region: null;
+  modem_preset: null;
+  protocol_mismatch: boolean;
   last_seen: string | null;
   created_at: string;
   updated_at: string;
@@ -135,7 +148,11 @@ export type DeviceJson = {
 
 export function deviceJson(
   device: Device,
-  { archive, telemetryVariantIds }: { archive: boolean; telemetryVariantIds: readonly string[] },
+  {
+    archive,
+    telemetryVariantIds,
+    protocol,
+  }: { archive: boolean; telemetryVariantIds: readonly string[]; protocol: string },
 ): DeviceJson {
   return {
     uuid: device.uuid,
@@ -167,6 +184,16 @@ export function deviceJson(
     last_seen: device.lastSeen,
     // The mock registers every gateway by hand.
     discovered_at: null,
+    // The mock receives no packets or map reports, so nothing is ever observed.
+    protocol,
+    observed_protocol: null,
+    observed_protocol_at: null,
+    firmware_version: null,
+    firmware_protocol: null,
+    firmware_seen_at: null,
+    region: null,
+    modem_preset: null,
+    protocol_mismatch: false,
     created_at: device.createdAt,
     updated_at: device.updatedAt,
   };

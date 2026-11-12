@@ -3,7 +3,9 @@ import test from "node:test";
 import type { DeviceRead } from "@mtt/contracts";
 import { formatNodeId, looksHex, parseNodeId } from "@mtt/ui/forms/node-id";
 import {
+  compareProtocols,
   deviceLastSeen,
+  deviceProtocolMismatch,
   devicePosition,
   deviceRoleLabel,
   deviceSilent,
@@ -34,6 +36,15 @@ const device = {
   telemetry_variant_ids: [],
   last_seen: null,
   discovered_at: null,
+  protocol: "2.8",
+  observed_protocol: null,
+  observed_protocol_at: null,
+  firmware_version: null,
+  firmware_protocol: null,
+  firmware_seen_at: null,
+  region: null,
+  modem_preset: null,
+  protocol_mismatch: false,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
 } satisfies DeviceRead;
@@ -127,4 +138,22 @@ test("looksHex spots an id that can only be hex", () => {
   assert.equal(looksHex(" !1"), true);
   assert.equal(looksHex("2130636288"), false);
   assert.equal(looksHex(""), false);
+});
+
+test("compareProtocols orders versions by their numbers", () => {
+  assert.ok(compareProtocols("2.10", "2.8") > 0);
+  assert.ok(compareProtocols("2.7", "2.8") < 0);
+  assert.equal(compareProtocols("2.8", "2.8"), 0);
+});
+
+test("deviceProtocolMismatch tells a newer device from an older firmware", () => {
+  const base = { protocol: "2.7", observed_protocol: null, firmware_protocol: null, protocol_mismatch: true } as const;
+  assert.equal(deviceProtocolMismatch({ ...base, protocol_mismatch: false }), null);
+  assert.deepEqual(deviceProtocolMismatch({ ...base, observed_protocol: "2.8" }), { kind: "ahead", version: "2.8" });
+  assert.deepEqual(deviceProtocolMismatch({ ...base, firmware_protocol: "2.8" }), { kind: "ahead", version: "2.8" });
+  assert.deepEqual(deviceProtocolMismatch({ ...base, observed_protocol: "unsupported" }), { kind: "unsupported" });
+  assert.deepEqual(deviceProtocolMismatch({ ...base, protocol: "2.8", firmware_protocol: "2.7" }), {
+    kind: "behind",
+    version: "2.7",
+  });
 });

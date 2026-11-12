@@ -117,6 +117,41 @@ export function DeviceStatusTab({
                   }
                 />
                 <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.protocol", defaultMessage: "Protocol" })}
+                  value={formatMessage(
+                    { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version}, its mesh's" },
+                    { version: device.data.protocol },
+                  )}
+                />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.firmware", defaultMessage: "Firmware" })}
+                  value={
+                    device.data.firmware_version
+                      ? device.data.firmware_seen_at
+                        ? formatMessage(
+                            {
+                              id: "page.devices.detail.identity.firmwareSeen",
+                              defaultMessage: "{version}, reported {when}",
+                            },
+                            { version: device.data.firmware_version, when: formatWhen(device.data.firmware_seen_at) },
+                          )
+                        : device.data.firmware_version
+                      : formatMessage({
+                          id: "page.devices.detail.identity.noFirmware",
+                          defaultMessage: "Not reported. Only a device with its own MQTT uplink and map reports sends it.",
+                        })
+                  }
+                />
+                {device.data.region || device.data.modem_preset ? (
+                  <Item
+                    label={formatMessage({
+                      id: "page.devices.detail.identity.radio",
+                      defaultMessage: "Region / preset",
+                    })}
+                    value={`${device.data.region ?? "—"} / ${device.data.modem_preset ?? "—"}`}
+                  />
+                ) : null}
+                <Item
                   label={formatMessage({
                     id: "page.devices.detail.identity.readPublish",
                     defaultMessage: "Read / publish",

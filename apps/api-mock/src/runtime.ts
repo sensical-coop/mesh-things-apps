@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import type { Device } from "@mtt/domain/device/Device";
-import type { Mesh } from "@mtt/domain/mesh/Mesh";
+import { DEFAULT_PROTOCOL, type Mesh } from "@mtt/domain/mesh/Mesh";
 import { archivesFor, canSeeArchiveSetting, canWriteMesh, visibleSinks, visibleSources } from "@mtt/contracts/authz";
 import { parseListFilterValue } from "@mtt/contracts/list-filter";
 import { matchesTelemetryVariantFilter, type TelemetryVariantFilter } from "@mtt/domain/device/TelemetryVariantFilter";
@@ -82,11 +82,12 @@ export function createRouteRuntime(db: Store, auth: MockAuth): RouteRuntime {
 
   /** Devices as the API returns them, with the archive setting where the viewer may see it. */
   async function devicesJson(actor: Actor, devices: Device[]) {
-    const owners = new Map((await db.meshes.list()).map((mesh) => [mesh.id, mesh.ownerId]));
+    const meshes = new Map((await db.meshes.list()).map((mesh) => [mesh.id, mesh]));
     return devices.map((device) =>
       deviceJson(device, {
-        archive: canSeeArchiveSetting(actor, { ownerId: owners.get(device.meshId) ?? "" }),
+        archive: canSeeArchiveSetting(actor, { ownerId: meshes.get(device.meshId)?.ownerId ?? "" }),
         telemetryVariantIds: db.deviceTelemetryVariants.get(device.uuid) ?? [],
+        protocol: meshes.get(device.meshId)?.protocol ?? DEFAULT_PROTOCOL,
       }),
     );
   }
