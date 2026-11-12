@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "[ -f .env ] && . ./.env; F=\"--filter=web --filter=docs\"; [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ] || F=\"$F --filter=api-mock\"; turbo run dev $F",
+    "dev": "[ -f .env ] && . ./.env; F=\"--filter=web --filter=docs --filter=onboarding\"; [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ] || F=\"$F --filter=api-mock\"; turbo run dev $F",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "pnpm lint:css && pnpm lint:classes",

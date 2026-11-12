@@ -1537,5 +1537,7 @@
   "notFound.blueprint.back": "Volver a blueprints",
   "notFound.operatorRequest.title": "Solicitud no encontrada",
   "notFound.operatorRequest.description": "Esta solicitud de operador no existe.",
-  "notFound.operatorRequest.back": "Volver a solicitudes de operador"
+  "notFound.operatorRequest.back": "Volver a solicitudes de operador",
+  "page.home.hero.start": "Configura tu primera malla",
+  "page.meshes.list.setupFirst": "Configura tu primera malla"
 }

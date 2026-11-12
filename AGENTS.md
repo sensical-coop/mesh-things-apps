@@ -43,6 +43,7 @@ pnpm + Turborepo. Scope npm `@mtt/*`.
 | `packages/tsconfig` | TS compartido |
 | `packages/ui` | BoardUI + shadcn + ReUI + EvilCharts + mapcn, el selector de idioma (`components/language-switcher.tsx`) y el de tema (`components/theme-toggle.tsx`). Destino de `pnpm shadcn`. Los forms de `src/forms` llevan su copy en `src/locales`; `AppProviders` lo mezcla bajo el catálogo de cada app. Árbol en architecture. |
 | `apps/web` | Vite + React 19. Landing y consola. Ver tabla siguiente. |
+| `apps/onboarding` | Vite + React 19. Alta guiada en `/start` (`base: /start/`, dev `:5176`). Mismo origen que web: Caddy en prod, proxy de Vite en dev. |
 | `apps/docs` | TanStack Start + Fumadocs. Docs de producto en `apps/docs/content/docs`. La app se construye con base `/docs` (`/docs/overview`) y Caddy le pasa el `/docs` del sitio. El logo del header enlaza a `VITE_WEB_URL`. |
 | `packages/contracts` | Cliente HTTP generado (Orval + Zod 4.6) y hechos HTTP a mano: `errors`, `runtime`, `list-filter`, `resend-cooldown`, `resend-verification`, `signup`, `session`, `terms`, `terms-notice`, `register-gateway`, `mesh`, `source`, `blueprint`, `authz`, `export`, `sink`, `site`, `mock-accounts`, `query-client`. |
 | `packages/domain` | Vertical slices (sin Zod) |

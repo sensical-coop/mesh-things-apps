@@ -58,6 +58,7 @@ export default defineConfig({
   plugins: [
     proxyPrefixes([
       { prefix: SITE_PATHS.docs, target: process.env.DOCS_DEV_URL ?? `http://127.0.0.1:${DEV_PORTS.docs}` },
+      { prefix: SITE_PATHS.start, target: process.env.ONBOARDING_DEV_URL ?? `http://127.0.0.1:${DEV_PORTS.onboarding}` },
     ]),
     nitro(),
     react(),
