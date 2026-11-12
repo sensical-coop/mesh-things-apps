@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types test/*.test.ts",
     "extract-messages": "formatjs extract 'src/**/*.{ts,tsx}' --out-file src/locales/en.extracted.json --flatten",
-    "check-messages": "formatjs extract 'src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts src/locales/en.json ../../packages/ui/src/locales/en.json && formatjs extract '../../packages/ui/src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts ../../packages/ui/src/locales/en.json && formatjs extract '../docs/src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts ../docs/src/locales/en.json ../../packages/ui/src/locales/en.json"
+    "check-messages": "formatjs extract 'src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts src/locales/en.json ../../packages/ui/src/locales/en.json && formatjs extract '../../packages/ui/src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts ../../packages/ui/src/locales/en.json && formatjs extract '../onboarding/src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts ../onboarding/src/locales/en.json ../../packages/ui/src/locales/en.json && formatjs extract '../docs/src/**/*.{ts,tsx}' --flatten | node --experimental-strip-types scripts/check-messages.ts ../docs/src/locales/en.json ../../packages/ui/src/locales/en.json"
   },
   "dependencies": {
     "@fontsource-variable/inter-tight": "^5.2.8",

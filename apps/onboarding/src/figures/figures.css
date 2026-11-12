@@ -1,0 +1,32 @@
+/* Anatomy plates in OA shape: an inset squircle on the stage grey, no hairline ring, Geist Mono corners. */
+.iso-figure {
+  margin: 0;
+}
+
+.iso-plate {
+  @apply oa-squircle-inset;
+
+  --anatomy-card: var(--color-background-secondary-default);
+  --anatomy-mono: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+
+  padding: 40px 16px;
+  box-shadow: none;
+}
+
+.iso-plate-corners {
+  inset: 14px 16px;
+}
+
+.iso-legend {
+  font-size: 12px;
+}
+
+@media (width <= 560px) {
+  .iso-plate {
+    padding: 36px 8px 56px;
+  }
+
+  .iso-plate-corner[data-corner="hint"] {
+    bottom: 14px;
+  }
+}

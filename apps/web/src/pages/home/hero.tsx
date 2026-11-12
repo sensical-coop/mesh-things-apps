@@ -30,7 +30,10 @@ export function LandingHero(): ReactElement {
             />
           </p>
           <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-            <RouterButtonLink to={routes.login} size="medium">
+            <ButtonLink href={routes.start} size="medium">
+              {formatMessage({ id: "page.home.hero.start", defaultMessage: "Set up your first mesh" })}
+            </ButtonLink>
+            <RouterButtonLink to={routes.login} variant="secondary" size="medium">
               {formatMessage({ id: "page.home.hero.signIn", defaultMessage: "Sign in" })}
             </RouterButtonLink>
             <ButtonLink href="#proof" variant="secondary" size="medium">

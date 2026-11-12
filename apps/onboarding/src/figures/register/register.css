@@ -1,0 +1,32 @@
+.register-live {
+  position: relative;
+}
+
+.register-live .register-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+
+.register-live .register-hit:active {
+  cursor: grabbing;
+}
+
+.register-live .register-hit:focus-visible {
+  outline: 2px solid var(--anatomy-lit);
+  outline-offset: 3px;
+}
+
+.register-band .iso-fill {
+  fill: var(--anatomy-shade-0);
+  fill-rule: evenodd;
+}
+
+.register-face .iso-fill {
+  fill: var(--anatomy-shade-2);
+}

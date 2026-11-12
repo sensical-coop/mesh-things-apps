@@ -1,6 +1,6 @@
 import type { DeviceRead, Mesh } from "@mtt/contracts";
 import { tableLinkClass } from "@/lib/link-class";
-import { Button } from "@mtt/ui/components/base/buttons/button";
+import { Button, ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
@@ -288,16 +288,22 @@ export function MeshesPage(): ReactElement {
     [formatMessage, me, ownerLabel, showOwner, showSource, sources.data, statusOf],
   );
 
+  const showSetup = rows.length === 0 && !meshes.isPending && !filters.active;
   return (
     <>
       <ListScaffold
         title={formatMessage({ id: "page.meshes.list.title", defaultMessage: "Meshes" })}
         actions={
           <>
+            {showSetup ? (
+              <ButtonLink href={routes.start} size="small">
+                {formatMessage({ id: "page.meshes.list.setupFirst", defaultMessage: "Set up your first mesh" })}
+              </ButtonLink>
+            ) : null}
             <Button
               type="button"
               size="small"
-              variant="primary"
+              variant={showSetup ? "secondary" : "primary"}
               leadingIcon={RiAddLine}
               onClick={startCreate}
             >
