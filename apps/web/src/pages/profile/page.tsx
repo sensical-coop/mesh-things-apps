@@ -24,6 +24,7 @@ import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
 import { ApiKeyPanel } from "@/features/auth/ui/api-key-panel";
+import { ChangePasswordPanel } from "@/features/auth/ui/change-password-panel";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
 import { NotificationsPanel } from "@/features/auth/ui/notifications-panel";
 import { routes } from "@/router";
@@ -121,6 +122,7 @@ export function ProfilePage(): ReactElement {
             )}
           </FramePanel>
         </Frame>
+        <ChangePasswordPanel />
         <ApiKeyPanel />
         <AccountTermsPanel />
         <OperatorRolePanel />

@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
-import { hashPassword } from "better-auth/crypto";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import type { Actor, Role } from "@mtt/domain/authz/authz";
 import { nowIso } from "@mtt/domain/shared/ids";
 import { createStore, type Store } from "./store";
@@ -110,4 +110,11 @@ export async function setOwnerPassword(auth: MockAuth, ownerId: string, newPassw
   const account = accounts.find((row) => row.providerId === "credential" && row.userId === ownerId);
   if (!account) return;
   account.password = await hashPassword(newPassword);
+}
+
+/** Whether `password` is the owner's current credential password. */
+export async function ownerPasswordMatches(auth: MockAuth, ownerId: string, password: string): Promise<boolean> {
+  const accounts = auth._memory.account as Array<Record<string, unknown>>;
+  const account = accounts.find((row) => row.providerId === "credential" && row.userId === ownerId);
+  return typeof account?.password === "string" && verifyPassword({ hash: account.password, password });
 }

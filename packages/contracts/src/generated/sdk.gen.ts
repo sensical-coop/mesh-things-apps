@@ -1218,6 +1218,9 @@ export const ownersMeUpdate = <ThrowOnError extends boolean = false>(options?: O
 
 /**
  * Change the authenticated owner's password, confirming the current one first.
+ *
+ * The new password must differ from the current one. The session that made the change
+ * stays signed in. Other sessions of the owner are signed out.
  */
 export const ownersMeChangePasswordCreate = <ThrowOnError extends boolean = false>(options: Options<OwnersMeChangePasswordCreateData, ThrowOnError>): RequestResult<OwnersMeChangePasswordCreateResponses, unknown, ThrowOnError> => (options.client ?? client).post<OwnersMeChangePasswordCreateResponses, unknown, ThrowOnError>({
     requestValidator: async (data) => await zOwnersMeChangePasswordCreateData.parseAsync(data),

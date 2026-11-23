@@ -6,6 +6,7 @@ import {
   zMeshesTermsAcceptanceCreateData,
   zMeshesUpdateData,
   zOwnersCreateData,
+  zOwnersMeChangePasswordCreateData,
   zOwnersMeResendVerificationCreateData,
   zOwnersLoginCreateData,
   zOwnersMeUpdateData,
@@ -130,7 +131,7 @@ import {
   toleranceFor,
   type PostprocessingRow,
 } from "./features/postprocessing/repository";
-import { createMockAuth, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
+import { createMockAuth, ownerPasswordMatches, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
 import {
   backfillJson,
   blueprintJson,
@@ -740,6 +741,19 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${newId()}`, ownerTerms(actor.id)));
+  });
+
+  app.post("/owners/me/change-password", async (c) => {
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersMeChangePasswordCreateData.safeParse({ body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const actor = c.get("actor");
+    const { current_password: currentPassword, new_password: newPassword } = parsed.data.body;
+    if (!(await ownerPasswordMatches(auth, actor.id, currentPassword))) {
+      return c.json({ current_password: ["Incorrect password"] }, 400);
+    }
+    await setOwnerPassword(auth, actor.id, newPassword);
+    return c.json({ detail: "Password changed" });
   });
 
   app.post("/owners/me/resend-verification", async (c) => {
