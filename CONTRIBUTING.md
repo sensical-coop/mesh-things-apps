@@ -42,6 +42,10 @@ Keep the description short. Say what changes and why, as a few bullet points if 
 
 Request a CodeRabbit review by commenting `@coderabbitai review`. Address its notes, or reply on the thread when a note does not apply.
 
+### Drafts
+
+A draft pull request, or an issue labeled `draft` (its title starts with `[Draft]`), is not ready to ship. AI agents do not merge a draft pull request, and do not mark one ready for review. They also do not merge a pull request that closes or implements an issue labeled `draft`. Only a person takes work out of draft: they mark the pull request ready for review, or remove the `draft` label and the `[Draft]` prefix from the issue.
+
 ### Deploy comment
 
 Production `.env` is not in the repository, and deploys are run by hand, so every pull request gets a comment with what the operator needs. Post it when you open the pull request, and update it if the pull request changes.
