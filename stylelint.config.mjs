@@ -9,6 +9,8 @@ export default {
     "**/.output/**",
     "**/.agents/**",
     "**/.cursor/**",
+    /* Vendored isometric kit CSS. */
+    "apps/onboarding/src/iso/iso.css",
   ],
   rules: {
     "at-rule-no-unknown": [

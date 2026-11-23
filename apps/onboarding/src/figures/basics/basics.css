@@ -1,0 +1,12 @@
+.basics-figure {
+  --anatomy-lit: var(--color-accent-500);
+}
+
+.basics-figure .iso-plate {
+  padding: 12px;
+}
+
+/* Caps the height on wide screens; the tight viewBox still draws the bench larger than the shared 480×240 box did. */
+.basics-figure .iso-svg {
+  max-height: 360px;
+}

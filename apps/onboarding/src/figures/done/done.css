@@ -1,0 +1,22 @@
+.done-stage { touch-action: pan-y; }
+.done-stage:focus { outline: none; }
+
+.done-stage:focus-visible {
+  outline: 1px solid var(--anatomy-muted);
+  outline-offset: 6px;
+}
+
+.done-face { fill: var(--anatomy-face); }
+
+.done-glass {
+  fill: var(--anatomy-paper);
+  opacity: 0.55;
+}
+
+.done-bezel { fill: none; }
+.done-flag { fill: var(--anatomy-red); }
+.done-pin { fill: var(--anatomy-hi); }
+.done-lamp circle { fill: var(--anatomy-shade-1, var(--anatomy-shade-0)); }
+.done-lamp[data-seen] circle { fill: var(--anatomy-lit); }
+.done-packet { fill: var(--anatomy-blue); }
+.done-cable .iso-line { stroke-width: 1.35px; }

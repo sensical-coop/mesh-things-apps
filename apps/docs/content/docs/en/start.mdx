@@ -1,0 +1,16 @@
+---
+title: Set up your first mesh
+description: The guided setup at /start, from an account to a gateway that is sending.
+---
+
+`/start` takes a new owner from an account to a mesh, a gateway, and the console. It takes about 10 minutes. You need the Meshtastic app and a radio with Wi-Fi or Ethernet.
+
+The address keeps the mesh and the step (`/start?mesh=<id>&step=<key>`). Reload the page and setup continues from the account, mesh, and gateway the server already has. Progress is not stored anywhere else.
+
+## What you enter
+
+Use the channel name and key from the Meshtastic app for the mesh, and pick the Meshtastic protocol your radios run. The newest version is preselected. Register the gateway by its node ID, in hex or decimal. On the connect step, in the Meshtastic app, turn MQTT and uplink on for that channel, leave encryption on, and leave the root topic at its default. When this instance has a gateway broker, the page shows the host, port, TLS setting, username, and password from your account. If it does not, ask your Mesh Things administrator. You do not type those values into `/start`.
+
+## If the gateway goes quiet
+
+The last step can email this account when the gateway stops sending. The message goes out after several missed intervals. It does not send after a single gap.

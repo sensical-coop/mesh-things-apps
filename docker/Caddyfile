@@ -6,6 +6,11 @@
 		reverse_proxy docs:80
 	}
 
+	@start path /start /start/*
+	handle @start {
+		reverse_proxy onboarding:80
+	}
+
 	reverse_proxy web:80
 
 	header {

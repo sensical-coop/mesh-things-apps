@@ -1537,5 +1537,7 @@
   "notFound.blueprint.back": "Back to blueprints",
   "notFound.operatorRequest.title": "Request not found",
   "notFound.operatorRequest.description": "This operator request doesn't exist.",
-  "notFound.operatorRequest.back": "Back to operator requests"
+  "notFound.operatorRequest.back": "Back to operator requests",
+  "page.home.hero.start": "Set up your first mesh",
+  "page.meshes.list.setupFirst": "Set up your first mesh"
 }

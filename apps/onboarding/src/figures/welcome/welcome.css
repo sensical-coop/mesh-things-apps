@@ -1,0 +1,19 @@
+.welcome-figure {
+  --anatomy-lit: var(--color-accent-500);
+}
+
+.welcome-figure .iso-plate {
+  padding: 16px;
+}
+
+@media (width >= 64rem) {
+  .welcome-figure,
+  .welcome-figure .iso-plate {
+    height: 100%;
+  }
+
+  .welcome-figure .iso-plate {
+    display: flex;
+    align-items: center;
+  }
+}

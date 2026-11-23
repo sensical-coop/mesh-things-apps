@@ -87,4 +87,21 @@ export default [
       "better-tailwindcss/no-unknown-classes": ["error", { ignore: ["^docs-portal$", "^docs-diagram$", "^not-prose$"] }],
     },
   },
+  {
+    files: ["apps/onboarding/**/*.{ts,tsx}"],
+    settings: tailwind("apps/onboarding/src/styles.css"),
+    rules: {
+      // Plain-CSS hooks from the vendored iso kit and the figure stylesheets, not Tailwind utilities.
+      "better-tailwindcss/no-unknown-classes": [
+        "error",
+        {
+          ignore: [
+            "^iso(?:-|$)",
+            "^(?:basics|check-email|connect|done|mesh|next-steps|register|welcome)(?:-|$)",
+            "^(?:flag|lamp-glow|pill|pill-knob|wifi-arc)$",
+          ],
+        },
+      ],
+    },
+  },
 ];

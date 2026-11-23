@@ -1,0 +1,11 @@
+@layer theme, base, components, utilities;
+
+@import "tailwindcss";
+@import "@mtt/ui/boardui.css";
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+@import "./iso/iso.css";
+@import "./figures/figures.css";
+
+@source "../../../packages/ui/src";

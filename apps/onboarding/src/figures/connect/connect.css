@@ -1,0 +1,41 @@
+.connect-fig {
+  touch-action: pan-y;
+}
+
+.connect-fig:focus-visible {
+  outline: 1px solid var(--anatomy-muted);
+  outline-offset: 6px;
+}
+
+.connect-fig [data-switch] {
+  cursor: pointer;
+}
+
+.connect-fig .iso-hit {
+  opacity: 0;
+}
+
+.connect-fig .wifi-arc {
+  stroke-width: 1.35;
+}
+
+.connect-fig .pill {
+  fill: var(--anatomy-lo);
+  stroke: var(--anatomy-mid);
+  stroke-width: 0.6;
+}
+
+.connect-fig .pill[data-lit] {
+  fill: var(--anatomy-lit);
+  stroke: var(--anatomy-lit);
+}
+
+.connect-fig .pill-knob {
+  fill: var(--anatomy-face);
+  stroke: var(--anatomy-hi);
+  stroke-width: 0.55;
+}
+
+.connect-fig .lamp-glow {
+  opacity: 0;
+}

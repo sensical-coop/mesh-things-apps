@@ -11,15 +11,17 @@ Esto **anula** el “no generar Zod al inicio” del briefing frontend: web y mo
 ```
 mesh-things (snapshot) --> docs/openapi.json --> packages/contracts (Orval)
 apps/web --> packages/ui + packages/contracts
+apps/onboarding --> packages/ui + packages/contracts
 apps/api-mock --> packages/domain + packages/contracts
 ```
 
 | Package / app | Qué es | Qué no es |
 |---|---|---|
-| `packages/contracts` | Output de Orval (fetch, query options, Zod) **y** hechos HTTP escritos a mano que comparten web y api-mock: filtros de lista, cooldown de reenvío, términos, reglas de source y de blueprint, permisos (`authz`), streams de sink, límites de export y el puerto MQTT TLS. | Lógica de UI ni el modelo de dominio. `src/generated/` no se edita; se regenera con `pnpm openapi:sync`. |
+| `packages/contracts` | Output de Orval (fetch, query options, Zod) **y** hechos HTTP escritos a mano que comparten web, onboarding y api-mock: filtros de lista, cooldown de reenvío, términos, reglas de source y de blueprint, permisos (`authz`), streams de sink, límites de export y el puerto MQTT TLS. | Lógica de UI ni el modelo de dominio. `src/generated/` no se edita; se regenera con `pnpm openapi:sync`. |
 | `packages/domain` | Vertical slices (`mesh`, `device`, `readings`, `measurement`, `source`, `sink`). Entidades e invariantes. Como `@taller/domain`. | Tipos generados. No fetch. No React. No permisos (viven en contracts). No interfaces de repositorio con un solo implementador. |
 | `apps/api-mock` | Servidor HTTP que implementa las rutas de fase 1. Datos en memoria. Sesión Better Auth + cookie. Parsea bodies con Zod de contracts; mapea domain → JSON del OpenAPI. | Backend real. Persistencia. |
 | `apps/web` | Vite + React + TanStack. Chrome de consola (`layout`/`header`/`footer`), `router/`, `pages/`, `features/`, `components/` de app, `lib/`. Tests en `test/`. | Primitivas shadcn/BoardUI/ReUI/EvilCharts. Reglas de malla/device. |
+| `apps/onboarding` | Vite + React 19. Alta guiada en `/start` (`base: /start/`, dev `:5176`). Mismo origen que web: Caddy en prod, proxy de Vite en dev. | Consola ni rutas de web. |
 | `packages/ui` | Tokens OA/BoardUI y **todas** las primitivas instaladas (BoardUI, shadcn, ReUI, EvilCharts, mapcn). Destino del CLI `pnpm shadcn`. | Páginas, fetch, features, chrome de consola. |
 
 `packages/tsconfig` compartido, mismo patrón que taller.
@@ -30,6 +32,7 @@ apps/api-mock --> packages/domain + packages/contracts
 
 ```
 web        -->  ui, contracts
+onboarding -->  ui, contracts
 api-mock   -->  contracts, domain
 domain     -->  (nada de apps ni contracts)
 ui         -->  (React, tokens; no domain)
@@ -125,8 +128,8 @@ Arranque (para no ciclar `layout` ↔ `app-router`):
 
 | Pieza | Dónde | Qué hace |
 |---|---|---|
-| Paths | `src/router/router.ts` | `Object.freeze` de rutas absolutas y `consoleChild`. Las rutas que comparten web y la API (`SITE_PATHS`, `MESH_SEGMENTS`) salen de `@mtt/contracts/site`; `fillPath(path, params)` sustituye `$param`. Nadie pega `"/console/…"` en JSX. Import de paths: `@/router`. |
-| Árbol | `src/router/app-router.tsx` | `createRootRoute` → landing `/`, login `/login`, consola `/console` (`Shell`) + hijos. El fichero se llama `app-router.tsx` **a propósito**: Darwin no admite `router.ts` y `router.tsx` en el mismo directorio. |
+| Paths | `src/router/router.ts` | `Object.freeze` de rutas absolutas y `consoleChild`. Las rutas que comparten web, onboarding y la API (`SITE_PATHS`, `MESH_SEGMENTS`) salen de `@mtt/contracts/site`; `fillPath(path, params)` sustituye `$param`. Nadie pega `"/console/…"` en JSX. Import de paths: `@/router`. |
+| Árbol | `src/router/app-router.tsx` | `createRootRoute` → landing `/`, login `/login`, consola `/console` (`Shell`) + hijos. `/start` lo sirve `apps/onboarding` (Caddy en prod, proxy de Vite en dev). El fichero se llama `app-router.tsx` **a propósito**: Darwin no admite `router.ts` y `router.tsx` en el mismo directorio. |
 | Instance | `export const router` en `app-router.tsx` | Solo `main.tsx` lo monta. `index.ts` no lo reexporta. |
 | Layout | `src/layout.tsx` | `Layout` = `RouterProvider` (prop `router`). `Shell` = auth gate (`authRepository.me`) + `Header` + `<Outlet />` + `Footer`. Única excepción a “un componente por fichero”. |
 | Header / Footer | `src/header.tsx`, `src/footer.tsx` | Mismo nivel que `layout.tsx` / `main.tsx`. No hay carpeta `chrome/`. |
@@ -138,7 +141,7 @@ Arranque (para no ciclar `layout` ↔ `app-router`):
 | Feature HTTP | `src/features/<name>/repository.ts` | Único sitio de esa feature que importa `@mtt/contracts/api`. |
 | Presentación | `src/features/<name>/model.ts` | Títulos, silent, role label. Sin fetch. |
 | UI de feature | `src/features/<name>/ui/` | Piezas de la feature (badges, diálogos, frames): se quedan en la feature aunque solo las use una página. Solo lo que compone piezas de varias features va bajo la página (el menú de acciones de un canal: alarmas + archivo, en `pages/devices/detail/channel-actions-menu.tsx`). Crear malla (`mesh-form.tsx`, `mesh-origin-dialog.tsx`, `create-mesh-dialog.tsx`) vive en `pages/meshes/list/`. El menú de superusuario y su conteo viven en `src/management-menu.tsx`, junto al chrome. |
-| Página | `src/pages/<ruta>/` | `home`, `login`, `signup`, `forgot-password`, `reset-password`, `verify-email`, `verify-pending`, `terms`, `dpa`, `profile`, `meshes`, `devices`, `alarms`, `blueprints`, `sources`, `sinks`, `archive`, `csv-downloads`, `operator-requests`, `data-deletions`. `route.ts` + `page.tsx`. El detalle de device parte la página en `device-dashboard-tab.tsx`, `device-status-tab.tsx` y `telemetry-variant-section.tsx`. |
+| Página | `src/pages/<ruta>/` | `home`, `login`, `signup`, `forgot-password`, `reset-password`, `verify-email`, `verify-pending`, `terms`, `dpa`, `profile`, `meshes`, `devices`, `alarms`, `blueprints`, `sources`, `sinks`, `archive`, `csv-downloads`, `operator-requests`, `data-deletions`. `route.ts` + `page.tsx`. El detalle de device parte la página en `device-dashboard-tab.tsx`, `device-status-tab.tsx` y `telemetry-variant-section.tsx`. La alta guiada es `apps/onboarding`, no una ruta de web. |
 | Tests | `apps/web/test/` | `format`, `router`, `device-model`, `chart-range`. Importan `../src/…`. |
 
 **Un componente por fichero.** Un `.tsx` de app exporta **un** componente React. Tipos y helpers de ese componente pueden ir al mismo fichero; un segundo componente va a otro archivo. Helpers sin JSX → `src/lib/` (o un `.ts` colocalizado si solo lo usa esa carpeta).
@@ -286,7 +289,7 @@ packages/ui/src/
     reui/                  # frame, filters, cascader, number-field
     evilcharts/            # charts/ + ui/
     data-table.tsx
-    language-switcher.tsx  # un selector; web y docs lo importan de aquí
+    language-switcher.tsx  # un selector; web, onboarding y docs lo importan de aquí
     theme-toggle.tsx       # botón de tema; web y docs
 ```
 
@@ -378,7 +381,7 @@ Imagen frontend: `docker build -f docker/Dockerfile .` — `vite build` con plug
 
 Hecho: workspace, `packages/ui`, `packages/contracts` (Orval + Zod), `packages/domain`, `apps/api-mock` y la consola.
 
-Montadas: landing, `/login`, `/signup`, reset y verificación de email, `/terms`, `/dpa`, perfil (rotar la API key) y la consola (`meshes`, `devices`, `alarms`, `blueprints`, `sources`, `sinks`, `archive`, `csv-downloads`, `operator-requests`, `data-deletions`). Historias por ruta: [ui-stories.md](./ui-stories.md).
+Montadas: landing, `/login`, `/signup`, reset y verificación de email, `/terms`, `/dpa`, perfil (rotar la API key) y la consola (`meshes`, `devices`, `alarms`, `blueprints`, `sources`, `sinks`, `archive`, `csv-downloads`, `operator-requests`, `data-deletions`). `/start` lo sirve onboarding. Historias por ruta: [ui-stories.md](./ui-stories.md).
 
 ```bash
 pnpm dev
