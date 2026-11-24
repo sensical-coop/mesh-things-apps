@@ -353,6 +353,46 @@ export type DeviceRead = {
     readonly last_seen: string | null;
     readonly discovered_at: string | null;
     /**
+     * Meshtastic protocol version the device's packets are decoded with: its mesh's.
+     */
+    readonly protocol: string;
+    /**
+     * Oldest protocol version that decodes everything the device has sent, `unsupported` when no supported version does, or null while its mesh's version has always been enough.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     * * `unsupported` - unsupported
+     */
+    observed_protocol: ObservedProtocolEnum | NullEnum | null;
+    /**
+     * When the evidence for observed_protocol last arrived.
+     */
+    readonly observed_protocol_at: string | null;
+    /**
+     * Firmware version from the device's last map report. Only a device with its own MQTT uplink sends one, and only with map reporting enabled.
+     */
+    readonly firmware_version: string | null;
+    /**
+     * Protocol version the reported firmware speaks, `unsupported` when it is newer than every supported version, or null while the device has sent no map report.
+     */
+    readonly firmware_protocol: string | null;
+    /**
+     * When the last map report arrived.
+     */
+    readonly firmware_seen_at: string | null;
+    /**
+     * LoRa region from the device's last map report, for example `EU_868`.
+     */
+    readonly region: string | null;
+    /**
+     * Modem preset from the device's last map report, for example `LONG_FAST`.
+     */
+    readonly modem_preset: string | null;
+    /**
+     * Readings from the device are lost or misread under its mesh's protocol version: it sends fields that version does not know, or its firmware speaks a version that reads some values differently.
+     */
+    readonly protocol_mismatch: boolean;
+    /**
      * Telemetry variants this device has been seen reporting.
      */
     readonly telemetry_variant_ids: Array<string>;
@@ -472,6 +512,29 @@ export type ExportStatusEnum = 'queued' | 'running' | 'ready' | 'failed' | 'expi
  */
 export type FormatEnum = 'csv' | 'parquet';
 
+export type GatewayBroker = {
+    /**
+     * Broker host name, for the gateway's MQTT server address.
+     */
+    host: string;
+    /**
+     * Broker port.
+     */
+    port: number;
+    /**
+     * Whether the gateway must connect with TLS.
+     */
+    tls: boolean;
+    /**
+     * Login shared by every gateway.
+     */
+    username: string;
+    /**
+     * Password of the shared login.
+     */
+    password: string;
+};
+
 export type LatestReading = {
     payload_kind: string;
     field_name: string;
@@ -565,6 +628,26 @@ export type Mesh = {
      * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
      */
     discover_gateways?: boolean;
+    /**
+     * Meshtastic protocol version the mesh's devices run. Its packets are decoded with that version, and readings are stored in the same units and channel names whatever the version. A version past its sunset cannot be chosen.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     */
+    protocol?: ProtocolEnum;
+    /**
+     * Where the mesh's protocol version stands: current, supported, deprecated or sunset.
+     *
+     * * `current` - current
+     * * `supported` - supported
+     * * `deprecated` - deprecated
+     * * `sunset` - sunset
+     */
+    protocol_status: ProtocolStatusEnum;
+    /**
+     * Date the mesh's protocol version stops being offered, or null when none is set.
+     */
+    readonly protocol_sunset: string | null;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -620,6 +703,26 @@ export type MeshCreate = {
      * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
      */
     discover_gateways?: boolean;
+    /**
+     * Meshtastic protocol version the mesh's devices run. Its packets are decoded with that version, and readings are stored in the same units and channel names whatever the version. A version past its sunset cannot be chosen.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     */
+    protocol?: ProtocolEnum;
+    /**
+     * Where the mesh's protocol version stands: current, supported, deprecated or sunset.
+     *
+     * * `current` - current
+     * * `supported` - supported
+     * * `deprecated` - deprecated
+     * * `sunset` - sunset
+     */
+    protocol_status: ProtocolStatusEnum;
+    /**
+     * Date the mesh's protocol version stops being offered, or null when none is set.
+     */
+    readonly protocol_sunset: string | null;
     readonly created_at: string;
     readonly updated_at: string;
 };
@@ -814,7 +917,7 @@ export type MeshTraffic = {
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id, discover_gateways and protocol are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -832,6 +935,13 @@ export type MeshUpdate = {
      * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
      */
     discover_gateways?: boolean;
+    /**
+     * Meshtastic protocol version the mesh's devices run. Its packets are decoded with that version, and readings are stored in the same units and channel names whatever the version. A version past its sunset cannot be chosen.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     */
+    protocol?: ProtocolEnum;
 };
 
 export type MetricsResponse = {
@@ -863,6 +973,13 @@ export type NodeTrafficResponse = {
 };
 
 export type NullEnum = never;
+
+/**
+ * * `2.7` - 2.7
+ * * `2.8` - 2.8
+ * * `unsupported` - unsupported
+ */
+export type ObservedProtocolEnum = '2.7' | '2.8' | 'unsupported';
 
 /**
  * An operator request as its requester sees it.
@@ -1036,7 +1153,7 @@ export type OwnerUpdate = {
     email?: string;
     alarm_email_cooldown_seconds?: number | null;
     /**
-     * Email me when a source I created stays disconnected or stops receiving messages, or a sink I created with meshes or devices attached has nobody connected. Off by default. Superusers are always emailed about silent sources.
+     * Email me when a source I created stays disconnected or stops receiving messages, a sink I created with meshes or devices attached has nobody connected, or a device on a mesh I own runs a newer protocol than the mesh declares. Off by default. Superusers are always emailed about silent sources.
      */
     status_alerts_enabled?: boolean;
     /**
@@ -1140,6 +1257,51 @@ export type PostprocessingStep = {
     params?: unknown;
     outputs?: unknown;
 };
+
+/**
+ * One Meshtastic protocol version this instance decodes.
+ */
+export type Protocol = {
+    /**
+     * The value to give a mesh's protocol, for example `2.8`.
+     */
+    version: string;
+    /**
+     * current: the newest version. supported: decoded with no end date. deprecated: still decoded, but owners are reminded to move. sunset: still decoded for meshes on it, but it can no longer be chosen.
+     *
+     * * `current` - current
+     * * `supported` - supported
+     * * `deprecated` - deprecated
+     * * `sunset` - sunset
+     */
+    status: ProtocolStatusEnum;
+    /**
+     * Date from which the version can no longer be chosen, or null.
+     */
+    sunset: string | null;
+    /**
+     * The Meshtastic protobufs release the version is decoded with.
+     */
+    source_ref: string;
+    /**
+     * Whether a new mesh is declared on this version.
+     */
+    is_default: boolean;
+};
+
+/**
+ * * `2.7` - 2.7
+ * * `2.8` - 2.8
+ */
+export type ProtocolEnum = '2.7' | '2.8';
+
+/**
+ * * `current` - current
+ * * `supported` - supported
+ * * `deprecated` - deprecated
+ * * `sunset` - sunset
+ */
+export type ProtocolStatusEnum = 'current' | 'supported' | 'deprecated' | 'sunset';
 
 /**
  * * `0` - 0
@@ -1682,6 +1844,13 @@ export type MeshWritable = {
      * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
      */
     discover_gateways?: boolean;
+    /**
+     * Meshtastic protocol version the mesh's devices run. Its packets are decoded with that version, and readings are stored in the same units and channel names whatever the version. A version past its sunset cannot be chosen.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     */
+    protocol?: ProtocolEnum;
 };
 
 /**
@@ -1714,10 +1883,17 @@ export type MeshCreateWritable = {
      * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
      */
     discover_gateways?: boolean;
+    /**
+     * Meshtastic protocol version the mesh's devices run. Its packets are decoded with that version, and readings are stored in the same units and channel names whatever the version. A version past its sunset cannot be chosen.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     */
+    protocol?: ProtocolEnum;
 };
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id, discover_gateways and protocol are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -1739,6 +1915,13 @@ export type MeshUpdateWritable = {
      * Register gateways whose packets decode with this mesh's channel and PSK automatically. Only an operator may switch it on for a mesh with a default or blank PSK.
      */
     discover_gateways?: boolean;
+    /**
+     * Meshtastic protocol version the mesh's devices run. Its packets are decoded with that version, and readings are stored in the same units and channel names whatever the version. A version past its sunset cannot be chosen.
+     *
+     * * `2.7` - 2.7
+     * * `2.8` - 2.8
+     */
+    protocol?: ProtocolEnum;
     /**
      * Version of the mesh terms accepted, from /meshes/terms. Required when the mesh uses the default broker (no source) and has no current acceptance; ignored otherwise.
      */
@@ -2827,6 +3010,26 @@ export type OwnersMeDevicesRetrieveResponses = {
 
 export type OwnersMeDevicesRetrieveResponse = OwnersMeDevicesRetrieveResponses[keyof OwnersMeDevicesRetrieveResponses];
 
+export type OwnersMeGatewayBrokerRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/owners/me/gateway-broker';
+};
+
+export type OwnersMeGatewayBrokerRetrieveErrors = {
+    /**
+     * No broker for gateways.
+     */
+    404: unknown;
+};
+
+export type OwnersMeGatewayBrokerRetrieveResponses = {
+    200: GatewayBroker;
+};
+
+export type OwnersMeGatewayBrokerRetrieveResponse = OwnersMeGatewayBrokerRetrieveResponses[keyof OwnersMeGatewayBrokerRetrieveResponses];
+
 export type OwnersMeOperatorRequestRetrieveData = {
     body?: never;
     path?: never;
@@ -3108,6 +3311,19 @@ export type PostprocessingBlueprintsVersionsRetrieveResponses = {
 };
 
 export type PostprocessingBlueprintsVersionsRetrieveResponse = PostprocessingBlueprintsVersionsRetrieveResponses[keyof PostprocessingBlueprintsVersionsRetrieveResponses];
+
+export type ProtocolsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/protocols';
+};
+
+export type ProtocolsListResponses = {
+    200: Array<Protocol>;
+};
+
+export type ProtocolsListResponse = ProtocolsListResponses[keyof ProtocolsListResponses];
 
 export type ReadingsArchiveMeshesRetrieveData = {
     body?: never;

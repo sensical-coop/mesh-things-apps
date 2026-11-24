@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesLinksList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesTraceroutesList, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBackfillsClaimCreate, postprocessingBackfillsList, postprocessingBackfillsUpdate, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsDevicesTrafficRetrieve, readingsExportsList, readingsMeshesExportsCreate, readingsMeshesExportsList, readingsMeshesExportsRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, readingsMeshesNodesTrafficRetrieve, readingsMeshesStatsRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRestartCreate, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, statusEmailRetrieve, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
-import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesLinksListData, MeshesLinksListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesTraceroutesListData, MeshesTraceroutesListResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBackfillsClaimCreateData, PostprocessingBackfillsClaimCreateResponse, PostprocessingBackfillsListData, PostprocessingBackfillsListResponse, PostprocessingBackfillsUpdateData, PostprocessingBackfillsUpdateResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsDevicesTrafficRetrieveData, ReadingsDevicesTrafficRetrieveResponse, ReadingsExportsListData, ReadingsExportsListResponse, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateResponse, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponse, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, ReadingsMeshesNodesTrafficRetrieveData, ReadingsMeshesNodesTrafficRetrieveResponse, ReadingsMeshesStatsRetrieveData, ReadingsMeshesStatsRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRestartCreateData, SourcesRestartCreateResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, StatusEmailRetrieveData, StatusEmailRetrieveResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
+import { algorithmsList, dataDeletionsList, detectorsList, devicesCreate, devicesDestroy, devicesList, devicesMeasurementsList, devicesMeasurementsRetrieve, devicesMeasurementsUpdate, devicesPostprocessingsBackfillsCreate, devicesPostprocessingsBackfillsList, devicesPostprocessingsCalibrationsCreate, devicesPostprocessingsCalibrationsDestroy, devicesPostprocessingsCalibrationsList, devicesPostprocessingsCreate, devicesPostprocessingsDestroy, devicesPostprocessingsList, devicesPostprocessingsRetrieve, devicesPostprocessingsUpdate, devicesRetrieve, devicesTelemetryVariantsList, devicesUpdate, healthRetrieve, measurementsCreate, measurementsDestroy, measurementsList, measurementsRetrieve, measurementsUpdate, meshesCreate, meshesDestroy, meshesDevicesList, meshesLinksList, meshesList, meshesRetrieve, meshesTermsAcceptanceCreate, meshesTermsRetrieve, meshesTraceroutesList, meshesUpdate, metricsRetrieve, operatorRequestsList, operatorRequestsRetrieve, operatorRequestsUpdate, type Options, ownersCreate, ownersCsrfCookieRetrieve, ownersDestroy, ownersList, ownersLoginCreate, ownersLogoutCreate, ownersMeChangePasswordCreate, ownersMeDestroy, ownersMeDevicesRetrieve, ownersMeGatewayBrokerRetrieve, ownersMeOperatorRequestCreate, ownersMeOperatorRequestRetrieve, ownersMeResendVerificationCreate, ownersMeRetrieve, ownersMeRotateKeyCreate, ownersMeTermsAcceptanceCreate, ownersMeUpdate, ownersRequestPasswordResetCreate, ownersResetPasswordCreate, ownersRetrieve, ownersUpdate, ownersVerifyEmailRetrieve, postprocessingBackfillsClaimCreate, postprocessingBackfillsList, postprocessingBackfillsUpdate, postprocessingBlueprintsCreate, postprocessingBlueprintsDestroy, postprocessingBlueprintsList, postprocessingBlueprintsRetrieve, postprocessingBlueprintsUpdate, postprocessingBlueprintsVersionsCreate, postprocessingBlueprintsVersionsList, postprocessingBlueprintsVersionsRetrieve, protocolsList, readingsArchiveMeshesCredentialsCreate, readingsArchiveMeshesPartitionsRetrieve, readingsArchiveMeshesRetrieve, readingsDevicesLatestRetrieve, readingsDevicesQualityRetrieve, readingsDevicesRetrieve, readingsDevicesTrafficRetrieve, readingsExportsList, readingsMeshesExportsCreate, readingsMeshesExportsList, readingsMeshesExportsRetrieve, readingsMeshesNodesLatestRetrieve, readingsMeshesNodesQualityRetrieve, readingsMeshesNodesRetrieve, readingsMeshesNodesTrafficRetrieve, readingsMeshesStatsRetrieve, sinksCreate, sinksCredentialsCreate, sinksDestroy, sinksList, sinksRetrieve, sinksTermsAcceptanceCreate, sinksTermsRetrieve, sinksUpdate, sourcesCreate, sourcesDestroy, sourcesList, sourcesRestartCreate, sourcesRetrieve, sourcesTermsAcceptanceCreate, sourcesTermsRetrieve, sourcesUpdate, statusEmailRetrieve, telemetryVariantsDestroy, telemetryVariantsList, telemetryVariantsMeasurementsList, telemetryVariantsMeasurementsRetrieve, telemetryVariantsMeasurementsUpdate, telemetryVariantsRetrieve, telemetryVariantsUpdate, termsRetrieve } from '../sdk.gen';
+import type { AlgorithmsListData, AlgorithmsListResponse, DataDeletionsListData, DataDeletionsListResponse, DetectorsListData, DetectorsListResponse, DevicesCreateData, DevicesCreateResponse, DevicesDestroyData, DevicesDestroyResponse, DevicesListData, DevicesListResponse, DevicesMeasurementsListData, DevicesMeasurementsListResponse, DevicesMeasurementsRetrieveData, DevicesMeasurementsRetrieveResponse, DevicesMeasurementsUpdateData, DevicesMeasurementsUpdateResponse, DevicesPostprocessingsBackfillsCreateData, DevicesPostprocessingsBackfillsCreateResponse, DevicesPostprocessingsBackfillsListData, DevicesPostprocessingsBackfillsListResponse, DevicesPostprocessingsCalibrationsCreateData, DevicesPostprocessingsCalibrationsCreateResponse, DevicesPostprocessingsCalibrationsDestroyData, DevicesPostprocessingsCalibrationsDestroyResponse, DevicesPostprocessingsCalibrationsListData, DevicesPostprocessingsCalibrationsListResponse, DevicesPostprocessingsCreateData, DevicesPostprocessingsCreateResponse, DevicesPostprocessingsDestroyData, DevicesPostprocessingsDestroyResponse, DevicesPostprocessingsListData, DevicesPostprocessingsListResponse, DevicesPostprocessingsRetrieveData, DevicesPostprocessingsRetrieveResponse, DevicesPostprocessingsUpdateData, DevicesPostprocessingsUpdateResponse, DevicesRetrieveData, DevicesRetrieveResponse, DevicesTelemetryVariantsListData, DevicesTelemetryVariantsListResponse, DevicesUpdateData, DevicesUpdateResponse, HealthRetrieveData, MeasurementsCreateData, MeasurementsCreateResponse, MeasurementsDestroyData, MeasurementsDestroyResponse, MeasurementsListData, MeasurementsListResponse, MeasurementsRetrieveData, MeasurementsRetrieveResponse, MeasurementsUpdateData, MeasurementsUpdateResponse, MeshesCreateData, MeshesCreateResponse, MeshesDestroyData, MeshesDestroyResponse, MeshesDevicesListData, MeshesDevicesListResponse, MeshesLinksListData, MeshesLinksListResponse, MeshesListData, MeshesListResponse, MeshesRetrieveData, MeshesRetrieveResponse, MeshesTermsAcceptanceCreateData, MeshesTermsAcceptanceCreateResponse, MeshesTermsRetrieveData, MeshesTermsRetrieveResponse, MeshesTraceroutesListData, MeshesTraceroutesListResponse, MeshesUpdateData, MeshesUpdateResponse, MetricsRetrieveData, MetricsRetrieveResponse, OperatorRequestsListData, OperatorRequestsListResponse, OperatorRequestsRetrieveData, OperatorRequestsRetrieveResponse, OperatorRequestsUpdateData, OperatorRequestsUpdateResponse, OwnersCreateData, OwnersCreateResponse, OwnersCsrfCookieRetrieveData, OwnersCsrfCookieRetrieveResponse, OwnersDestroyData, OwnersDestroyResponse, OwnersListData, OwnersListResponse, OwnersLoginCreateData, OwnersLoginCreateResponse, OwnersLogoutCreateData, OwnersLogoutCreateResponse, OwnersMeChangePasswordCreateData, OwnersMeChangePasswordCreateResponse, OwnersMeDestroyData, OwnersMeDestroyResponse, OwnersMeDevicesRetrieveData, OwnersMeDevicesRetrieveResponse, OwnersMeGatewayBrokerRetrieveData, OwnersMeGatewayBrokerRetrieveResponse, OwnersMeOperatorRequestCreateData, OwnersMeOperatorRequestCreateResponse, OwnersMeOperatorRequestRetrieveData, OwnersMeOperatorRequestRetrieveResponse, OwnersMeResendVerificationCreateData, OwnersMeResendVerificationCreateResponse, OwnersMeRetrieveData, OwnersMeRetrieveResponse, OwnersMeRotateKeyCreateData, OwnersMeRotateKeyCreateResponse, OwnersMeTermsAcceptanceCreateData, OwnersMeTermsAcceptanceCreateResponse, OwnersMeUpdateData, OwnersMeUpdateResponse, OwnersRequestPasswordResetCreateData, OwnersRequestPasswordResetCreateResponse, OwnersResetPasswordCreateData, OwnersResetPasswordCreateResponse, OwnersRetrieveData, OwnersRetrieveResponse, OwnersUpdateData, OwnersUpdateResponse, OwnersVerifyEmailRetrieveData, OwnersVerifyEmailRetrieveResponse, PostprocessingBackfillsClaimCreateData, PostprocessingBackfillsClaimCreateResponse, PostprocessingBackfillsListData, PostprocessingBackfillsListResponse, PostprocessingBackfillsUpdateData, PostprocessingBackfillsUpdateResponse, PostprocessingBlueprintsCreateData, PostprocessingBlueprintsCreateResponse, PostprocessingBlueprintsDestroyData, PostprocessingBlueprintsDestroyResponse, PostprocessingBlueprintsListData, PostprocessingBlueprintsListResponse, PostprocessingBlueprintsRetrieveData, PostprocessingBlueprintsRetrieveResponse, PostprocessingBlueprintsUpdateData, PostprocessingBlueprintsUpdateResponse, PostprocessingBlueprintsVersionsCreateData, PostprocessingBlueprintsVersionsCreateResponse, PostprocessingBlueprintsVersionsListData, PostprocessingBlueprintsVersionsListResponse, PostprocessingBlueprintsVersionsRetrieveData, PostprocessingBlueprintsVersionsRetrieveResponse, ProtocolsListData, ProtocolsListResponse, ReadingsArchiveMeshesCredentialsCreateData, ReadingsArchiveMeshesCredentialsCreateResponse, ReadingsArchiveMeshesPartitionsRetrieveData, ReadingsArchiveMeshesRetrieveData, ReadingsArchiveMeshesRetrieveResponse, ReadingsDevicesLatestRetrieveData, ReadingsDevicesLatestRetrieveResponse, ReadingsDevicesQualityRetrieveData, ReadingsDevicesQualityRetrieveResponse, ReadingsDevicesRetrieveData, ReadingsDevicesRetrieveResponse, ReadingsDevicesTrafficRetrieveData, ReadingsDevicesTrafficRetrieveResponse, ReadingsExportsListData, ReadingsExportsListResponse, ReadingsMeshesExportsCreateData, ReadingsMeshesExportsCreateResponse, ReadingsMeshesExportsListData, ReadingsMeshesExportsListResponse, ReadingsMeshesExportsRetrieveData, ReadingsMeshesExportsRetrieveResponse, ReadingsMeshesNodesLatestRetrieveData, ReadingsMeshesNodesLatestRetrieveResponse, ReadingsMeshesNodesQualityRetrieveData, ReadingsMeshesNodesQualityRetrieveResponse, ReadingsMeshesNodesRetrieveData, ReadingsMeshesNodesRetrieveResponse, ReadingsMeshesNodesTrafficRetrieveData, ReadingsMeshesNodesTrafficRetrieveResponse, ReadingsMeshesStatsRetrieveData, ReadingsMeshesStatsRetrieveResponse, SinksCreateData, SinksCreateResponse, SinksCredentialsCreateData, SinksCredentialsCreateResponse, SinksDestroyData, SinksDestroyResponse, SinksListData, SinksListResponse, SinksRetrieveData, SinksRetrieveResponse, SinksTermsAcceptanceCreateData, SinksTermsAcceptanceCreateResponse, SinksTermsRetrieveData, SinksTermsRetrieveResponse, SinksUpdateData, SinksUpdateResponse, SourcesCreateData, SourcesCreateResponse, SourcesDestroyData, SourcesDestroyResponse, SourcesListData, SourcesListResponse, SourcesRestartCreateData, SourcesRestartCreateResponse, SourcesRetrieveData, SourcesRetrieveResponse, SourcesTermsAcceptanceCreateData, SourcesTermsAcceptanceCreateResponse, SourcesTermsRetrieveData, SourcesTermsRetrieveResponse, SourcesUpdateData, SourcesUpdateResponse, StatusEmailRetrieveData, StatusEmailRetrieveResponse, TelemetryVariantsDestroyData, TelemetryVariantsDestroyResponse, TelemetryVariantsListData, TelemetryVariantsListResponse, TelemetryVariantsMeasurementsListData, TelemetryVariantsMeasurementsListResponse, TelemetryVariantsMeasurementsRetrieveData, TelemetryVariantsMeasurementsRetrieveResponse, TelemetryVariantsMeasurementsUpdateData, TelemetryVariantsMeasurementsUpdateResponse, TelemetryVariantsRetrieveData, TelemetryVariantsRetrieveResponse, TelemetryVariantsUpdateData, TelemetryVariantsUpdateResponse, TermsRetrieveData, TermsRetrieveResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -723,6 +723,10 @@ export const meshesListOptions = (options?: Options<MeshesListData>) => queryOpt
  * packets decodes with this mesh's channel and pre-shared key.
  * Defaults to `false`. Only an operator may switch it on for a mesh
  * with a default or blank key.
+ * protocol: Meshtastic protocol version the mesh's devices run, which
+ * its packets are decoded with. Defaults to `2.8`. A version past
+ * its sunset is refused. Readings are stored in the same units
+ * whatever the version.
  * terms_version: The `version` of the mesh terms accepted. Required
  * without a source, ignored with one, and ignored on an instance
  * that does not enforce terms.
@@ -788,10 +792,10 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
 /**
  * Update a mesh.
  *
- * Changing the channel_id, the pre-shared key or the source redistributes
- * them to every allowed gateway on the mesh, and the whole update is
- * rolled back if that fails. Once the source changes, the mesh's gateways
- * are only accepted through the new one.
+ * Changing the channel_id, the pre-shared key, the source or the protocol
+ * redistributes them to every allowed gateway on the mesh, and the whole
+ * update is rolled back if that fails. Once the source changes, the mesh's
+ * gateways are only accepted through the new one.
  *
  * Args:
  * source_id: Source to bridge the mesh's traffic from, which must be one
@@ -806,6 +810,10 @@ export const meshesRetrieveOptions = (options: Options<MeshesRetrieveData>) => q
  * rejected on this mesh. Switching it off keeps the gateways
  * already found. Only an operator may switch it on for a mesh with
  * a default or blank key.
+ * protocol: Meshtastic protocol version the mesh's devices run. Packets
+ * received after the change are decoded with it; readings already
+ * stored are left as they are. A version past its sunset is refused,
+ * unless the mesh is already on it.
  * terms_version: The `version` of the mesh terms accepted. Required when
  * moving the mesh onto the default broker unless it already holds a
  * current acceptance, or the instance does not enforce terms;
@@ -1359,9 +1367,11 @@ export const ownersMeRetrieveOptions = (options?: Options<OwnersMeRetrieveData>)
  * alarm, no summaries) up to 2592000 (30 days). Leave unset or
  * null to use the server default.
  * status_alerts_enabled: Email me when a source I created stays
- * disconnected or stops receiving messages, or a sink I created
- * with meshes or devices attached has nobody connected. Defaults
- * to false. Superusers are always emailed about silent sources.
+ * disconnected or stops receiving messages, a sink I created
+ * with meshes or devices attached has nobody connected, or a
+ * device on a mesh I own runs a newer protocol than the mesh
+ * declares. Defaults to false. Superusers are always emailed
+ * about silent sources.
  * source_rate_alerts_enabled: Email me when a source I created
  * averages more messages per second over an hour than this
  * instance allows. Defaults to false. Superusers are always
@@ -1414,6 +1424,29 @@ export const ownersMeDevicesRetrieveOptions = (options?: Options<OwnersMeDevices
         return data;
     },
     queryKey: ownersMeDevicesRetrieveQueryKey(options)
+});
+
+export const ownersMeGatewayBrokerRetrieveQueryKey = (options?: Options<OwnersMeGatewayBrokerRetrieveData>) => createQueryKey('ownersMeGatewayBrokerRetrieve', options);
+
+/**
+ * Return the MQTT broker and login a gateway uses to send its mesh's traffic here.
+ *
+ * Every gateway shares the same login, which may only publish Meshtastic
+ * traffic. A gateway's packets are stored once it is registered on a mesh,
+ * by its owner or by gateway discovery. Answers `404` when this instance has
+ * no broker for gateways, in which case its administrator provides one.
+ */
+export const ownersMeGatewayBrokerRetrieveOptions = (options?: Options<OwnersMeGatewayBrokerRetrieveData>) => queryOptions<OwnersMeGatewayBrokerRetrieveResponse, DefaultError, OwnersMeGatewayBrokerRetrieveResponse, ReturnType<typeof ownersMeGatewayBrokerRetrieveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await ownersMeGatewayBrokerRetrieve({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: ownersMeGatewayBrokerRetrieveQueryKey(options)
 });
 
 export const ownersMeOperatorRequestRetrieveQueryKey = (options?: Options<OwnersMeOperatorRequestRetrieveData>) => createQueryKey('ownersMeOperatorRequestRetrieve', options);
@@ -1823,6 +1856,29 @@ export const postprocessingBlueprintsVersionsRetrieveOptions = (options: Options
     queryKey: postprocessingBlueprintsVersionsRetrieveQueryKey(options)
 });
 
+export const protocolsListQueryKey = (options?: Options<ProtocolsListData>) => createQueryKey('protocolsList', options);
+
+/**
+ * Return the Meshtastic protocol versions a mesh can be declared on, oldest first.
+ *
+ * Each version carries its status and sunset date. A deprecated version is still
+ * decoded, and owners of meshes on it are reminded to move. A version past its sunset
+ * can no longer be chosen for a mesh, but meshes already on it keep decoding.
+ * Readings are stored in the same units and channel names whatever the version.
+ */
+export const protocolsListOptions = (options?: Options<ProtocolsListData>) => queryOptions<ProtocolsListResponse, DefaultError, ProtocolsListResponse, ReturnType<typeof protocolsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await protocolsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: protocolsListQueryKey(options)
+});
+
 export const readingsArchiveMeshesRetrieveQueryKey = (options: Options<ReadingsArchiveMeshesRetrieveData>) => createQueryKey('readingsArchiveMeshesRetrieve', options);
 
 /**
@@ -1940,8 +1996,9 @@ export const readingsDevicesRetrieveQueryKey = (options: Options<ReadingsDevices
 /**
  * Readings over a time range, addressed by the device's registration ID.
  *
- * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
- * readings and are left out unless one is asked for with `channel`.
+ * Each point's bookkeeping fields, `packet_id`, `timestamp_quality`, `rx_time` and
+ * `received_at`, are not readings and are left out unless one is asked for with
+ * `channel`.
  * Downsampling covers numeric fields only, so text fields are also left out
  * whenever `window` is set.
  */
@@ -1963,8 +2020,9 @@ export const readingsDevicesRetrieveInfiniteQueryKey = (options: Options<Reading
 /**
  * Readings over a time range, addressed by the device's registration ID.
  *
- * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
- * readings and are left out unless one is asked for with `channel`.
+ * Each point's bookkeeping fields, `packet_id`, `timestamp_quality`, `rx_time` and
+ * `received_at`, are not readings and are left out unless one is asked for with
+ * `channel`.
  * Downsampling covers numeric fields only, so text fields are also left out
  * whenever `window` is set.
  */
@@ -2181,8 +2239,9 @@ export const readingsMeshesNodesRetrieveQueryKey = (options: Options<ReadingsMes
 /**
  * Return a device's readings for one measurement over a time range.
  *
- * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
- * readings and are left out unless one is asked for with `channel`.
+ * Each point's bookkeeping fields, `packet_id`, `timestamp_quality`, `rx_time` and
+ * `received_at`, are not readings and are left out unless one is asked for with
+ * `channel`.
  * Downsampling covers numeric fields only, so text fields are also left out
  * whenever `window` is set.
  *
@@ -2219,8 +2278,9 @@ export const readingsMeshesNodesRetrieveInfiniteQueryKey = (options: Options<Rea
 /**
  * Return a device's readings for one measurement over a time range.
  *
- * Each point's bookkeeping fields, `packet_id` and `timestamp_quality`, are not
- * readings and are left out unless one is asked for with `channel`.
+ * Each point's bookkeeping fields, `packet_id`, `timestamp_quality`, `rx_time` and
+ * `received_at`, are not readings and are left out unless one is asked for with
+ * `channel`.
  * Downsampling covers numeric fields only, so text fields are also left out
  * whenever `window` is set.
  *
