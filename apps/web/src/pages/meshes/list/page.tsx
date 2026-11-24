@@ -481,6 +481,11 @@ function CreateMeshDialog({
   const sources = useQuery({ ...sourceRepository.list(), enabled: open && isOperator });
   const protocols = useQuery({ ...meshRepository.protocols(), enabled: open });
   const [protocol, setProtocol] = useState<string | null>(null);
+  // The dialog stays mounted between sessions, so a pick from a cancelled one is dropped on close.
+  const close = () => {
+    setProtocol(null);
+    onClose();
+  };
   const sourceItems = [
     {
       label: formatMessage({ id: "page.meshes.list.createDialog.defaultBroker", defaultMessage: "Default broker" }),
@@ -492,7 +497,7 @@ function CreateMeshDialog({
     ...meshRepository.create(),
     onSuccess: async (mesh) => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      onClose();
+      close();
       void navigate({ to: routes.mesh, params: { meshId: mesh.id } });
     },
     onError: (error) => setErrors(readApiError(error).fields),
@@ -539,7 +544,7 @@ function CreateMeshDialog({
         id: "page.meshes.list.createDialog.description",
         defaultMessage: "Gateways join with this channel id and pre-shared key.",
       })}
-      onClose={onClose}
+      onClose={close}
     >
       <form key={start ? `${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}` : "closed"} className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
@@ -638,7 +643,7 @@ function CreateMeshDialog({
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
+          <Button type="button" variant="secondary" size="small" onClick={close}>
             {formatMessage({ id: "page.meshes.list.createDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={create.isPending}>
