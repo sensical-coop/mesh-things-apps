@@ -1,4 +1,4 @@
-import type { Algorithm } from "@mtt/contracts/types";
+import type { Algorithm } from "@mtt/contracts";
 
 // The algorithm registry of meshtastic-things (common/algorithms), as GET /algorithms returns it.
 // Refresh it from a running registry: `curl /algorithms`.

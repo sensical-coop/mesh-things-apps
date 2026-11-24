@@ -3,7 +3,7 @@ title: Almacenes de datos
 description: Contenido de PostgreSQL, InfluxDB y el archivo Parquet.
 ---
 
-La plataforma almacena los datos en tres lugares. PostgreSQL contiene el registro de cuentas y dispositivos. InfluxDB contiene las mediciones. El archivo Parquet contiene una copia a largo plazo de los eventos descifrados de los dispositivos que lo activan.
+La plataforma guarda los datos en tres sitios. PostgreSQL guarda el registro de cuentas y dispositivos. InfluxDB guarda las mediciones. El archivo Parquet guarda una copia a largo plazo de los eventos descifrados de los dispositivos que lo activan.
 
 ```mermaid
 flowchart LR
@@ -16,20 +16,20 @@ flowchart LR
 ```
 
 <Callout type="info" title="Claves de las mallas">
-Las claves de las mallas se almacenan únicamente en el registro. La API de lecturas no puede leerlas.
+Las claves de las mallas se guardan solo en el registro. La API de lecturas no puede leerlas.
 </Callout>
 
 ## PostgreSQL
 
-PostgreSQL contiene el registro: cuentas, mallas, dispositivos, el catálogo de telemetría, plantillas, fuentes y destinos. También registra las condiciones aceptadas y las eliminaciones de datos programadas.
+PostgreSQL guarda el registro: cuentas, mallas, dispositivos, el catálogo de telemetría, plantillas, fuentes y destinos. También registra las condiciones aceptadas y las eliminaciones de datos programadas.
 
-Las relaciones principales son las siguientes. Un propietario tiene cualquier número de mallas y plantillas. Una malla tiene cualquier número de dispositivos. Un dispositivo tiene cualquier número de canales de medida y postprocesados. Una plantilla pública puede asignarla un propietario que no es su autor, pero solo su propietario puede editarla.
+Un propietario tiene cualquier número de mallas y plantillas. Una malla tiene cualquier número de dispositivos. Un dispositivo tiene cualquier número de canales de medida y postprocesados. Un propietario que no es dueño de una plantilla pública puede asignarla. Solo su propietario puede editarla.
 
-Cada tipo de medición del catálogo tiene un tipo de magnitud: `physical_property`, `concentration`, `count`, `ratio` u `other`. Un `vocabulary_uri` opcional hace referencia a un concepto de QUDT o EIONET.
+Cada tipo de medición del catálogo tiene un tipo de magnitud: `physical_property`, `concentration`, `count`, `ratio` u `other`. Un `vocabulary_uri` opcional apunta a un concepto de QUDT o EIONET.
 
 ## InfluxDB
 
-Un canal se denomina `measurement.field`. `payload_kind` tiene siempre la forma `namespace:measurement`, y la parte de la medición es el nombre de la medición en InfluxDB.
+Un canal se llama `measurement.field`. `payload_kind` tiene siempre la forma `namespace:measurement`, y la parte de la medición es el nombre de la medición en InfluxDB.
 
 | Espacio de nombres | Medición | Origen | Campos habituales |
 | --- | --- | --- | --- |
@@ -40,12 +40,12 @@ Un canal se denomina `measurement.field`. `payload_kind` tiene siempre la forma 
 | `computed` | `quality` | Comprobación de completitud | Proporción de datos y métricas de huecos |
 | `computed` | `alarms` | Detectores | `message` y un `value` opcional |
 
-Los puntos de telemetría llevan las etiquetas `mesh_id` y `node_id`, y opcionalmente `channel_id` y `gateway_id`. Todos los puntos llevan además `packet_id` y `timestamp_quality` (`rx_time` o `payload`). Los puntos de alarma se etiquetan con `detector`, `mesh_id`, `node_id`, un `channel` opcional y `source` (`stream` o `batch`).
+Los puntos de telemetría llevan las etiquetas `mesh_id` y `node_id`, y de forma opcional `channel_id` y `gateway_id`. Todos los puntos llevan además `packet_id` y `timestamp_quality` (`rx_time` o `payload`). Los puntos de alarma se etiquetan con `detector`, `mesh_id`, `node_id`, un `channel` opcional y `source` (`stream` o `batch`).
 
-Los mensajes de texto y los paquetes de enrutamiento no se almacenan.
+Los mensajes de texto y los paquetes de enrutamiento no se guardan.
 
 ## Parquet
 
-El archivo contiene un objeto por malla y hora UTC. Las columnas incluyen `node_id`, `packet_id`, `portnum`, `rx_time`, `hop_start`, `channel_id`, `gateway_id`, `payload_kind` y `payload_json`. Cuando se reescribe una partición, las filas se deduplican por `(node_id, packet_id, rx_time, payload_kind)`.
+El archivo tiene un objeto por malla y hora UTC. Las columnas incluyen `node_id`, `packet_id`, `portnum`, `rx_time`, `hop_start`, `channel_id`, `gateway_id`, `payload_kind` y `payload_json`. Cuando se reescribe una partición, las filas se deduplican por `(node_id, packet_id, rx_time, payload_kind)`.
 
 Solo se archivan los dispositivos con `archive_enabled`. Véase [Archivo](/archive).

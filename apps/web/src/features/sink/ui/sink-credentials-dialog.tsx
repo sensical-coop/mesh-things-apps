@@ -4,7 +4,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { CodeBlock } from "@/components/code-block";
 import { Modal } from "@/components/modal";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { consumerCommand, sinkTitle } from "@/features/sink/model";
 
 export type SinkCredentialsDialogProps = {
@@ -15,7 +15,6 @@ export type SinkCredentialsDialogProps = {
   onClose: () => void;
 };
 
-/** The one time the consumer's password is shown. Closing loses it; rotating issues a new one. */
 export function SinkCredentialsDialog({ credentials, rotated, onClose }: SinkCredentialsDialogProps): ReactElement {
   const { formatMessage } = useIntl();
   const details = credentials

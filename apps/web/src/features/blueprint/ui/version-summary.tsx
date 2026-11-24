@@ -1,13 +1,13 @@
 import type { BlueprintVersion } from "@mtt/contracts";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { formatParam, parseRef, stringMap, valueMap } from "@/features/blueprint/model";
+import { derivedChannel, parseRef } from "@mtt/contracts/blueprint";
+import { formatParams, stringMap, valueMap } from "@/lib/algorithm-params";
 
 export type VersionSummaryProps = {
   version: Pick<BlueprintVersion, "inputs" | "steps">;
 };
 
-/** What a version reads, and each step in order with what it reads and writes. */
 export function VersionSummary({ version }: VersionSummaryProps): ReactElement {
   const { formatMessage } = useIntl();
   const steps = [...version.steps].sort((a, b) => a.order - b.order);
@@ -49,28 +49,28 @@ export function VersionSummary({ version }: VersionSummaryProps): ReactElement {
         <ol className="flex flex-col gap-2">
           {steps.map((step, index) => {
             const inputs = Object.entries(stringMap(step.inputs));
-            const params = Object.entries(valueMap(step.params));
+            const params = formatParams(valueMap(step.params));
             const outputs = Object.values(stringMap(step.outputs));
             return (
               <li key={step.key} className="flex min-w-0 flex-col gap-0.5 text-body-regular text-text-primary">
-                <p className="min-w-0 break-words">
-                  <span className="tabular-nums text-text-tertiary">{index + 1}. </span>
+                <p className="min-w-0 wrap-break-word">
+                  <span className="text-text-tertiary tabular-nums">{index + 1}. </span>
                   <span className="font-mono">{step.key}</span>
                   <span className="text-text-tertiary"> · </span>
                   <span className="font-mono text-text-secondary">{step.function_name}</span>
                 </p>
-                <p className="min-w-0 break-words pl-4 text-caption-1-regular text-text-secondary">
+                <p className="min-w-0 pl-4 text-caption-1-regular wrap-break-word text-text-secondary">
                   {formatMessage(
                     { id: "feature.blueprint.summary.flow", defaultMessage: "Inputs: {inputs}. Outputs: {outputs}" },
                     {
                       inputs: inputs.map(([, ref]) => refText(ref)).join(", ") || "—",
-                      outputs: outputs.map((field) => `derived.${field}`).join(", ") || "—",
+                      outputs: outputs.map(derivedChannel).join(", ") || "—",
                     },
                   )}
                 </p>
-                {params.length ? (
-                  <p className="min-w-0 break-words pl-4 font-mono text-caption-1-regular text-text-tertiary">
-                    {params.map(([name, value]) => `${name}=${formatParam(value)}`).join("  ")}
+                {params ? (
+                  <p className="min-w-0 pl-4 font-mono text-caption-1-regular wrap-break-word text-text-tertiary">
+                    {params}
                   </p>
                 ) : null}
               </li>

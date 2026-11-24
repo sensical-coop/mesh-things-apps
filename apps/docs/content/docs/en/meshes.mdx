@@ -3,9 +3,9 @@ title: Meshes
 description: Registration of a network, the origin of its traffic, and read access.
 ---
 
-A mesh is registered with `POST /meshes`, providing a channel identifier, a PSK, and an optional label. The key is distributed to the decoders, so packets are decrypted without querying the API for each one.
+Register a mesh with `POST /meshes`: a channel identifier, a PSK, and an optional label. The key is sent to the decoders, so packets are decrypted without calling the API for each one.
 
-The origin of the traffic determines which terms apply and what happens when those terms expire.
+Where the traffic comes from decides which terms apply, and what happens when those terms expire.
 
 ```mermaid
 flowchart TD
@@ -19,10 +19,10 @@ flowchart TD
 ```
 
 <Callout type="warn" title="Public access is read-only">
-`is_public` allows other owners and unauthenticated API clients to read devices and history. It does not allow them to modify the mesh, view the PSK, or view rejected nodes.
+`is_public` lets other owners and unauthenticated API clients read devices and history. It does not let them change the mesh, view the PSK, or view rejected nodes.
 </Callout>
 
-The console lists the owner's meshes at `/console/meshes`. The detail page of a mesh shows its gateways and nodes together.
+The console lists your meshes at `/console/meshes`. The mesh page shows its gateways and nodes together.
 
 ## Access control
 
@@ -35,25 +35,27 @@ The console lists the owner's meshes at `/console/meshes`. The detail page of a 
 
 ## Traffic origin
 
-`source` is null when packets arrive on the instance's own broker. An operator can assign the mesh to one of their [sources](/sources) instead. Removing a mesh from a source, or deleting the mesh, schedules the deletion of its stored readings after a grace period.
+`source` is null when packets arrive on the instance's own broker. An operator can attach the mesh to one of their [sources](/sources) instead. Removing a mesh from a source, or deleting the mesh, schedules deletion of its stored readings after a grace period.
 
-On the default broker, the mesh terms apply, and the owner acts as data controller for that traffic. On a source, the source terms apply and the mesh form does not request acceptance again. When the terms expire:
+On the default broker, the mesh terms apply, and the owner is the data controller for that traffic. On a source, the source terms apply, and the mesh form does not ask for acceptance again. When the terms expire:
 
-- On the default broker, the mesh is paused and its gateways are deregistered until the owner renews the terms.
-- On a source, the bridge for that source is removed until the operator renews the terms.
+- On the default broker, the mesh is paused, its gateways are deregistered, and its readings are scheduled for deletion, until the owner renews the terms.
+- On a source, the bridge for that source is removed, and readings for its meshes are scheduled for deletion, until the operator renews the terms.
 
-The status column in the console lists the most urgent states first: scheduled for deletion, source paused, source disconnected, terms changed, renewal due, terms not yet accepted, source status unknown, and active. On instances that do not require acceptance of terms, meshes are shown as active unless the bridge itself is unhealthy.
+The status column lists the most urgent state first: Scheduled for deletion, Source paused, Source disconnected, Terms changed, Renew soon, Terms not accepted, Source status unknown, then Active. On an instance that does not require terms, a mesh on the default broker is shown as Active. A mesh on a source follows the bridge: paused, disconnected, unknown, or active.
 
 ## Gateway discovery
 
-`discover_gateways` allows the platform to register gateways whose packets decrypt with the channel and PSK of this mesh, without the owner adding each gateway manually. Discovery is rate-limited to approximately 50 gateways per minute, so that a busy broker cannot overload the registry. Nodes behind a discovered gateway are registered as their packets are decoded.
+`discover_gateways` registers gateways whose packets decrypt with this mesh's channel and PSK, so you do not add each gateway by hand. Discovery is limited to about 50 gateways per minute, so a busy broker cannot overload the registry. Nodes behind a discovered gateway are registered as their packets are decoded.
 
-A device registered in this way has `discovered_at` set, and it can be rejected like any other device.
+A device created this way has `discovered_at` set. You can reject it like any other device.
+
+Only an operator can turn discovery on for a mesh that uses a default or blank PSK. That key matches every gateway on the channel.
 
 ## Public meshes
 
-`is_public` should be enabled when viewers need read access to the fleet and its history. Public readers cannot modify the mesh, view the PSK, or view rejected devices.
+Turn on `is_public` when other people need to read the fleet and its history. Public readers cannot change the mesh, view the PSK, or view rejected devices.
 
 ## Deleting a mesh
 
-Deleting a mesh does not remove its readings in the same request. A data deletion job is scheduled with the reason `mesh_deleted` and runs after `delete_after`. A job is also scheduled when a mesh is removed from its source (`source_detached`) or when the source terms expire (`terms_lapsed`). Renewing the terms, or assigning the mesh to the same source again, can cancel a pending job.
+Deleting a mesh does not remove its readings in the same request. A data deletion job is scheduled with the reason `mesh_deleted` and runs after `delete_after`. A job is also scheduled when a mesh is removed from its source (`source_detached`), when the mesh terms expire on the default broker (`terms_lapsed`), or when the source terms expire (`terms_lapsed`, with that source). Renewing the terms, or attaching the mesh to the same source again, can cancel a pending job.

@@ -28,8 +28,8 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-overlay bg-black/30",
-        "data-closed:animate-[oa-dialog-backdrop-out_0.15s_ease-out_both] data-open:animate-[oa-dialog-backdrop-in_0.15s_ease-out_both]",
+        "fixed inset-0 isolate z-overlay bg-overlay",
+        "data-closed:animate-backdrop-out data-open:animate-backdrop-in",
         className
       )}
       {...props}
@@ -54,9 +54,9 @@ function DialogContent({
         <DialogPrimitive.Popup
           data-slot="dialog-content"
           className={cn(
-            "oa-squircle pointer-events-auto relative grid max-h-[min(92dvh,54rem)] w-full max-w-md gap-4 overflow-y-auto border border-separator-border bg-background-primary-default p-5 text-text-primary shadow-dropdown outline-hidden",
+            "pointer-events-auto relative grid max-h-[min(92dvh,54rem)] w-full max-w-md gap-4 overflow-y-auto oa-squircle border border-separator-border bg-background-primary-default p-5 text-text-primary shadow-dropdown outline-hidden",
             "focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-            "data-closed:animate-[oa-dialog-out_0.28s_cubic-bezier(0.32,0.72,0.4,1)_both] data-open:animate-[oa-dialog-in_0.42s_cubic-bezier(0.22,1.15,0.32,1)_both]",
+            "data-closed:animate-dialog-fade-out data-open:animate-dialog-fade-in motion-safe:data-closed:animate-dialog-out motion-safe:data-open:animate-dialog-in",
             className
           )}
           {...props}

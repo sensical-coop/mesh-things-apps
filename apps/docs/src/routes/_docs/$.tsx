@@ -3,7 +3,7 @@ import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layo
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import { DocumentationNotFound } from "@/components/not-found";
 import { DocsDiagram } from "@/components/diagram";
-import { useLocale } from "@/hooks/use-locale";
+import { useLocale } from "@mtt/ui/hooks/use-locale";
 import { docsSource } from "@/lib/source";
 
 export const Route = createFileRoute("/_docs/$")({

@@ -1,7 +1,10 @@
 import type { DataDeletion } from "@mtt/contracts";
-import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { StatusChip } from "@/components/status-chip";
+import { useDataDeletionStatusLabels } from "@/features/data-deletion/use-status-labels";
+
+const TONE = { pending: "yellow", done: "lime", cancelled: "neutral" } as const;
 
 export type DataDeletionStatusChipProps = {
   status: DataDeletion["status"];
@@ -10,25 +13,9 @@ export type DataDeletionStatusChipProps = {
 
 export function DataDeletionStatusChip({ status, overdue }: DataDeletionStatusChipProps): ReactElement {
   const { formatMessage } = useIntl();
-  const shown = overdue
-    ? {
-        color: "rose" as const,
-        label: formatMessage({ id: "feature.dataDeletion.status.overdue", defaultMessage: "Overdue" }),
-      }
-    : ({
-        pending: {
-          color: "yellow",
-          label: formatMessage({ id: "feature.dataDeletion.status.pending", defaultMessage: "Scheduled" }),
-        },
-        done: { color: "lime", label: formatMessage({ id: "feature.dataDeletion.status.done", defaultMessage: "Deleted" }) },
-        cancelled: {
-          color: "neutral",
-          label: formatMessage({ id: "feature.dataDeletion.status.cancelled", defaultMessage: "Cancelled" }),
-        },
-      } as const)[status];
-  return (
-    <Chip variant="caption" color={shown.color} className="rounded-full">
-      {shown.label}
-    </Chip>
-  );
+  const labels = useDataDeletionStatusLabels();
+  if (overdue) {
+    return <StatusChip tone="rose" label={formatMessage({ id: "feature.dataDeletion.status.overdue", defaultMessage: "Overdue" })} />;
+  }
+  return <StatusChip tone={TONE[status]} label={labels[status]} />;
 }

@@ -12,7 +12,3 @@ export type MeasurementType = {
   createdAt: string;
   updatedAt: string;
 };
-
-export interface IMeasurementRepository {
-  list(): Promise<MeasurementType[]>;
-}

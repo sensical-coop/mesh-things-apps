@@ -9,54 +9,60 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-html,
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-variant-ligatures: contextual;
-  font-kerning: normal;
-  font-family: var(--font-sans);
-}
+/* EvilCharts reads these classes at runtime, so they must exist even where no file names them. */
+@source inline("text-foreground text-muted-foreground text-border text-background");
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-[data-slot="frame-panel-title"],
-[data-slot="dialog-title"],
-[data-slot="sheet-title"],
-[data-slot="card-title"] {
-  font-family: var(--font-heading);
-}
+@layer base {
+  * {
+    @apply border-separator-border outline-border-focus-ring/50;
+  }
 
-html {
-  color-scheme: light;
-}
+  html {
+    @apply overflow-x-clip font-sans antialiased;
 
-html.dark {
-  color-scheme: dark;
-}
+    -moz-osx-font-smoothing: grayscale;
+    color-scheme: light;
+    font-kerning: normal;
+    font-synthesis: none;
+    font-variant-ligatures: contextual;
+  }
 
-code,
-kbd,
-samp,
-pre {
-  font-family: var(--font-mono);
-}
+  html.dark {
+    color-scheme: dark;
+  }
 
-/* 16px on small screens stops iOS from zooming a focused field. From 40rem the field inherits. */
-input,
-select,
-textarea {
-  font-size: 16px;
-}
+  body {
+    @apply m-0 min-h-svh bg-background-full text-text-primary;
+  }
 
-@media (width >= 40rem) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  [data-slot="frame-panel-title"],
+  [data-slot="dialog-title"],
+  [data-slot="sheet-title"],
+  [data-slot="card-title"] {
+    font-family: var(--font-heading);
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  /* 16px on small screens stops iOS from zooming a focused field. From sm the field inherits. */
   input,
   select,
   textarea {
-    font-size: inherit;
+    font-size: 1rem;
+
+    @variant sm {
+      font-size: inherit;
+    }
   }
 }

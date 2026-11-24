@@ -5,11 +5,10 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { devicesToSwitch, meshArchiveState } from "@/features/archive/model";
 import { archiveRepository } from "@/features/archive/repository";
-import { deviceRepository } from "@/features/device/repository";
-import { meshRepository } from "@/features/mesh/repository";
+import { deviceRepository, invalidateDevice } from "@/features/device/repository";
 import { meshTitle } from "@/features/mesh/model";
 
 export type MeshArchiveDialogProps = {
@@ -30,22 +29,19 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
   const apply = useMutation({
     mutationFn: async (enabled: boolean) => {
       const results = await Promise.allSettled(
-        devicesToSwitch(devices, enabled).map((device) => archiveRepository.setDeviceArchive(device.uuid, enabled)),
+        devicesToSwitch(devices, enabled).map((device) => deviceRepository.setDeviceArchive(device.uuid, enabled)),
       );
-      const failed = results.filter((result) => result.status === "rejected").length;
-      if (failed > 0) throw new Error(String(failed));
+      return results.filter((result) => result.status === "rejected").length;
     },
     // Even a partial failure changed some devices, so refresh either way.
     onSettled: () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: deviceRepository.listKey() }),
-        queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: mesh.id } }) }),
-        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey({ path: { mesh_id: mesh.id } }) }),
-        ...devices.map((device) =>
-          queryClient.invalidateQueries({ queryKey: deviceRepository.retrieveKey({ path: { device_uuid: device.uuid } }) }),
-        ),
+        queryClient.invalidateQueries({ queryKey: archiveRepository.manifestKey(mesh.id) }),
+        ...devices.map((device) => invalidateDevice(queryClient, device)),
       ]),
-    onSuccess: onClose,
+    onSuccess: (failed) => {
+      if (failed === 0) onClose();
+    },
   });
 
   return (
@@ -79,7 +75,7 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
             defaultMessage: "Store only the devices you need, and only while you need them.",
           })}
         </p>
-        {apply.error ? (
+        {apply.data ? (
           <StatusCopy>
             {formatMessage(
               {
@@ -87,7 +83,7 @@ export function MeshArchiveDialog({ mesh, devices, open, onClose }: MeshArchiveD
                 defaultMessage:
                   "{failed,plural,one{# device was not saved. Try again.} other{# devices were not saved. Try again.}}",
               },
-              { failed: Number(apply.error.message) || 0 },
+              { failed: apply.data },
             )}
           </StatusCopy>
         ) : null}

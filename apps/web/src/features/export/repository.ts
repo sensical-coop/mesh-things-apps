@@ -1,17 +1,17 @@
 import {
-  readingsExportsListOptions,
-  readingsExportsListQueryKey,
-  readingsMeshesExportsCreateMutation,
-  readingsMeshesExportsListOptions,
-  readingsMeshesExportsListQueryKey,
-  readingsMeshesExportsRetrieveOptions,
-} from "@mtt/contracts/query";
+  getReadingsExportsListQueryKey,
+  getReadingsExportsListQueryOptions,
+  getReadingsMeshesExportsCreateMutationOptions,
+  getReadingsMeshesExportsListQueryKey,
+  getReadingsMeshesExportsListQueryOptions,
+  getReadingsMeshesExportsRetrieveQueryOptions,
+} from "@mtt/contracts/api";
 
 export const exportRepository = {
-  list: readingsExportsListOptions,
-  listKey: readingsExportsListQueryKey,
-  meshList: readingsMeshesExportsListOptions,
-  meshListKey: readingsMeshesExportsListQueryKey,
-  retrieve: readingsMeshesExportsRetrieveOptions,
-  create: readingsMeshesExportsCreateMutation,
+  list: getReadingsExportsListQueryOptions,
+  listKey: getReadingsExportsListQueryKey,
+  meshList: getReadingsMeshesExportsListQueryOptions,
+  meshListKey: getReadingsMeshesExportsListQueryKey,
+  retrieve: getReadingsMeshesExportsRetrieveQueryOptions,
+  create: getReadingsMeshesExportsCreateMutationOptions,
 };

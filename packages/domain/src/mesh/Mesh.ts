@@ -1,4 +1,4 @@
-export type MeshProps = {
+type MeshProps = {
   id: string;
   channelId: string;
   pskB64: string;
@@ -26,9 +26,6 @@ export type MeshCreate = {
   sourceId?: string | null;
   discoverGateways?: boolean;
 };
-
-/** Public list row: PSK stays off this shape. */
-export type MeshListItem = Omit<MeshProps, "pskB64"> & { isPublic: boolean };
 
 export class Mesh implements MeshProps {
   readonly id: string;
@@ -61,28 +58,5 @@ export class Mesh implements MeshProps {
     this.pausedAt = props.pausedAt ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
-  }
-
-  toListItem(): MeshListItem {
-    return {
-      id: this.id,
-      channelId: this.channelId,
-      label: this.label,
-      ownerId: this.ownerId,
-      isPublic: this.isPublic,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
-}
-
-export function meshFilterValue(mesh: Mesh, field: string): string | undefined {
-  switch (field) {
-    case "label":
-      return mesh.label ?? "";
-    case "channel_id":
-      return mesh.channelId;
-    default:
-      return undefined;
   }
 }

@@ -1,9 +1,8 @@
 import { RiInformationLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { EXPORT_FILE_HOURS, EXPORT_HISTORY_DAYS, EXPORT_MAX_DAYS } from "@/features/export/model";
+import { EXPORT_FILE_HOURS, EXPORT_HISTORY_DAYS, EXPORT_MAX_DAYS } from "@mtt/contracts/export";
 
-/** The limits every download form states up front, so a refusal is never a surprise. */
 export function ExportLimits(): ReactElement {
   const { formatMessage } = useIntl();
   const items = [
@@ -26,7 +25,7 @@ export function ExportLimits(): ReactElement {
   ];
   return (
     <section
-      className="oa-squircle-inset flex gap-3 bg-background-secondary-default p-4"
+      className="flex gap-3 oa-squircle-inset bg-background-secondary-default p-4"
       aria-label={formatMessage({ id: "feature.export.limits.title", defaultMessage: "Download limits" })}
     >
       <RiInformationLine className="mt-0.5 size-4 shrink-0 text-text-secondary" aria-hidden />

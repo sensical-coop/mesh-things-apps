@@ -1,13 +1,12 @@
 {
   "extends": "@mtt/tsconfig/base.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "noEmit": true,
-    "rootDir": "src",
-    "skipLibCheck": true
+    "rootDir": "src"
   },
   "include": ["src"]
 }

@@ -13,7 +13,7 @@ pnpm install
 pnpm dev
 ```
 
-The web app runs on `5173`, against a mock API in `8787`.
+The web app runs on `5173`, docs on `5175`, against a mock API in `8787`. Web proxies `/docs` to the docs dev server.
 
 ### Local API
 

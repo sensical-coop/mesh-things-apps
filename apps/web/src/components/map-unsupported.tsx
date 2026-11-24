@@ -1,7 +1,6 @@
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 
-/** Fills a map's frame when the browser can't start WebGL2. */
 export function MapUnsupported(): ReactElement {
   const { formatMessage } = useIntl();
   return (

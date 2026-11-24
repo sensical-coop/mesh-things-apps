@@ -137,7 +137,6 @@
   --z-index-toast: 80;
   --duration-reveal: 0.7s;
   --ease-reveal: ease-out;
-  --ease-morph: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ---------------------------------------------------------------------------
@@ -452,31 +451,6 @@
   --color-docs-code-background:                  var(--color-background-full);
   --color-docs-install-rail:                     color-mix(in oklch, var(--color-neutral-800) 60%, transparent);
 
-  /* Dark surfaces absorb low-alpha shadows more readily than white ones.
-   * Preserve the light-mode geometry and raise only the black alpha: tighter
-   * contact shadows stay crisp, while higher elevations receive a restrained
-   * ambient layer without introducing a grey glow. */
-  --shadow-2xs: 0 1px rgb(0 0 0 / 16%);
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 18%);
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 12%), 0 1px 3px 0 rgb(0 0 0 / 16%);
-  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 12%), 0 4px 6px -1px rgb(0 0 0 / 18%);
-  --shadow-lg: 0 4px 6px -2px rgb(0 0 0 / 10%), 0 10px 15px -3px rgb(0 0 0 / 18%);
-  --shadow-xl: 0 10px 10px -5px rgb(0 0 0 / 8%), 0 20px 25px -5px rgb(0 0 0 / 20%);
-  --shadow-card: 0 1px 1px 0 rgb(0 0 0 / 14%);
-  --shadow-dropdown:
-    0 1px 1px 0 rgb(0 0 0 / 14%),
-    0 4px 4px 0 rgb(0 0 0 / 10%);
-  --shadow-sidebar:
-    0 1px 0 0 rgb(0 0 0 / 10%),
-    0 1px 12px 0 rgb(0 0 0 / 16%),
-    0 0 1px 0 rgb(0 0 0 / 42%);
-  --shadow-waitlist:
-    0 0 6px 0 rgb(0 0 0 / 12%),
-    0 0 64px 0 rgb(0 0 0 / 22%),
-    0 0 1px 0 rgb(0 0 0 / 42%),
-    0 1px 12px 0 rgb(0 0 0 / 14%),
-    0 1px 0 0 rgb(0 0 0 / 8%);
-
   /* Badges */
   --color-badge-neutral-background: var(--color-neutral-800);
   --color-team-menu-count-background: var(--color-neutral-700);
@@ -771,36 +745,36 @@
  * --------------------------------------------------------------------------- */
 @theme {
   --button-transition-ms: 150ms;
-  --input-transition-ms:  150ms;
 }
 
 /* Keep color feedback quick while the physical press motion remains soft.
  * The transform uses a shorter duration on press and the slower duration only
- * when returning to rest, so hover styles never inherit the 700ms timing. */
+ * when returning to rest. Without a motion preference the button only changes colour. */
 @utility button-press-motion {
   transition:
     background-color var(--button-transition-ms) ease,
     border-color var(--button-transition-ms) ease,
     box-shadow var(--button-transition-ms) ease,
-    color var(--button-transition-ms) ease,
-    transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+    color var(--button-transition-ms) ease;
 
-  &:disabled,
-  &[aria-disabled="true"] {
-    transform: none;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    transition-property: background-color, border-color, box-shadow, color, transform;
+    transition-duration:
+      var(--button-transition-ms),
+      var(--button-transition-ms),
+      var(--button-transition-ms),
+      var(--button-transition-ms),
+      var(--duration-press-release);
+    transition-timing-function: ease, ease, ease, ease, var(--ease-press);
 
-  &:active:not(:disabled, [aria-disabled="true"]) {
-    transform: scale(0.98);
-    transition-duration: 150ms, 150ms, 150ms, 150ms, 220ms;
-  }
-
-  /* After the press rule. The active selector matches its specificity, so the scale does not win. */
-  @media (prefers-reduced-motion: reduce) {
-    &,
     &:active:not(:disabled, [aria-disabled="true"]) {
-      transition: none;
-      transform: none;
+      transform: scale(0.98);
+      transition-duration:
+        var(--button-transition-ms),
+        var(--button-transition-ms),
+        var(--button-transition-ms),
+        var(--button-transition-ms),
+        var(--duration-press);
     }
   }
 }
@@ -832,8 +806,10 @@
     display: none;
   }
 
-  &:hover:not(:disabled, [aria-disabled="true"])::before {
-    opacity: 1;
+  @media (hover: hover) {
+    &:hover:not(:disabled, [aria-disabled="true"])::before {
+      opacity: 1;
+    }
   }
 
   &:active:not(:disabled, [aria-disabled="true"]) {
@@ -872,8 +848,10 @@
     display: none;
   }
 
-  &:hover:not(:disabled, [aria-disabled="true"])::before {
-    opacity: 1;
+  @media (hover: hover) {
+    &:hover:not(:disabled, [aria-disabled="true"])::before {
+      opacity: 1;
+    }
   }
 
   &:active:not(:disabled, [aria-disabled="true"]) {

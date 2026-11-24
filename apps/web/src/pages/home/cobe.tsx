@@ -1,9 +1,9 @@
 import { Globe } from "@mtt/ui/components/ui/globe";
 import { type ReactElement, useMemo } from "react";
 import { landingGlobeNodes } from "./mesh";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "@mtt/ui/hooks/use-theme";
+import { tokenColor } from "@/lib/token-color";
 
-const coral: [number, number, number] = [255 / 255, 73 / 255, 95 / 255];
 const inkLight: [number, number, number] = [0.96, 0.96, 0.96];
 const inkDark: [number, number, number] = [0.13, 0.13, 0.14];
 const glowLight: [number, number, number] = [1, 1, 1];
@@ -15,6 +15,7 @@ export function LandingCobe(): ReactElement {
   const config = useMemo(() => {
     const ink = dark ? inkDark : inkLight;
     const glow = dark ? inkDark : glowLight;
+    const [r = 0, g = 0, b = 0] = (tokenColor("--oa-primary").match(/\d+/g) ?? []).map((channel) => Number(channel) / 255);
     return {
       width: 800,
       height: 800,
@@ -27,7 +28,7 @@ export function LandingCobe(): ReactElement {
       mapSamples: 16000,
       mapBrightness: dark ? 6 : 1.4,
       baseColor: ink,
-      markerColor: coral,
+      markerColor: [r, g, b] as [number, number, number],
       glowColor: glow,
       markers: landingGlobeNodes.map((node) => ({
         location: [node.lat, node.lng] as [number, number],
@@ -37,7 +38,7 @@ export function LandingCobe(): ReactElement {
   }, [dark]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[42%] overflow-hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-x-0 top-[42%] bottom-0 overflow-hidden" aria-hidden>
       <div
         className="absolute aspect-square w-[min(120vw,52rem)]"
         style={{
@@ -47,9 +48,9 @@ export function LandingCobe(): ReactElement {
           transformOrigin: "bottom center",
         }}
       >
-        <Globe className="relative inset-auto size-full max-w-none!" config={config} />
+        <Globe className="relative inset-auto size-full max-w-none" config={config} />
       </div>
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background-full to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-background-full to-transparent" />
     </div>
   );
 }

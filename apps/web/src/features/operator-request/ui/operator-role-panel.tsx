@@ -1,4 +1,4 @@
-import { zOwnersMeOperatorRequestCreateData } from "@mtt/contracts/zod";
+import { OperatorRequestCreate } from "@mtt/contracts";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { FieldGroup } from "@mtt/ui/components/ui/field";
 import { Textarea } from "@mtt/ui/components/ui/textarea";
@@ -6,17 +6,17 @@ import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@m
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, type ReactElement, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import { FormField } from "@/components/form/form-field";
+import { FormField } from "@mtt/ui/forms/form-field";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { authRepository } from "@/features/auth/repository";
+import { invalidateMe } from "@mtt/contracts/session";
 import { useMe } from "@/features/auth/use-me";
 import { canRequestOperator } from "@/features/operator-request/model";
 import { operatorRequestRepository } from "@/features/operator-request/repository";
 import { OperatorRequestStatusChip } from "@/features/operator-request/ui/operator-request-status-chip";
 import { useFormatters } from "@/hooks/use-formatters";
-import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { formLevelMessage, issueErrors, readApiError } from "@mtt/contracts/errors";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { routes } from "@/router";
 import { RouterButtonLink } from "@/components/router-button-link";
 
@@ -34,13 +34,12 @@ export function OperatorRolePanel(): ReactElement | null {
   const mine = useQuery({
     ...operatorRequestRepository.mine(),
     enabled: canRequest,
-    retry: false,
     refetchInterval: (query) => (query.state.data?.status === "pending" ? 30_000 : false),
   });
   const approved = mine.data?.status === "approved";
   useEffect(() => {
     // Approved: the role changed, so refresh `me` and the Sources tab appears.
-    if (approved && !isOperator) void queryClient.invalidateQueries({ queryKey: authRepository.meKey() });
+    if (approved && !isOperator) void invalidateMe(queryClient);
   }, [approved, isOperator, queryClient]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const create = useMutation({
@@ -57,10 +56,8 @@ export function OperatorRolePanel(): ReactElement | null {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const parsed = zOwnersMeOperatorRequestCreateData.safeParse({
-      body: { reason: String(form.get("reason") ?? "").trim() },
-    });
-    if (!parsed.success || parsed.data.body.reason === "") {
+    const parsed = OperatorRequestCreate.safeParse({ reason: String(form.get("reason") ?? "").trim() });
+    if (!parsed.success || parsed.data.reason === "") {
       setErrors(
         parsed.success
           ? {
@@ -74,7 +71,7 @@ export function OperatorRolePanel(): ReactElement | null {
       return;
     }
     setErrors({});
-    create.mutate({ body: parsed.data.body });
+    create.mutate({ data: parsed.data });
   }
 
   const request = mine.data;

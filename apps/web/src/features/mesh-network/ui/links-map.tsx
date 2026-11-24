@@ -1,13 +1,14 @@
 import type { DeviceRead } from "@mtt/contracts";
 import { Map, MapArc, MapControls, MapMarker, MapRoute, MarkerContent } from "@mtt/ui/components/ui/map";
-import { cx } from "@mtt/ui/utils/cx";
+import { cx } from "@mtt/ui/utils";
 import { type ReactElement, useMemo } from "react";
 import { MapUnsupported } from "@/components/map-unsupported";
+import { expandedMapClass } from "../expanded-map";
 import { deviceTitle } from "@/features/device/model";
 import { FitToPoints } from "@/features/device/ui/map-fit";
 import { DeviceMapPin } from "@/features/device/ui/map-pin";
 import { type LinkPair, snrStrength } from "../model";
-import { tokenColor } from "../token-color";
+import { tokenColor } from "@/lib/token-color";
 
 /**
  * Every positioned device, the links between them weighted by SNR, and an optional
@@ -27,8 +28,9 @@ export function LinksMap({
   large?: boolean;
 }): ReactElement {
   // Links take the accent; a selected traceroute stands out in cyan over a light casing.
-  const accent = tokenColor("--oa-primary", "#ff495f");
-  const routeColor = tokenColor("--color-cyan-500", "#06b6d4");
+  const accent = tokenColor("--oa-primary");
+  const routeColor = tokenColor("--color-route-selected");
+  const casingColor = tokenColor("--color-text-white");
   const arcs = useMemo(
     () =>
       pairs.flatMap((pair) => {
@@ -47,12 +49,12 @@ export function LinksMap({
   });
 
   return (
-    <div className={cx("oa-arrive oa-squircle-inset relative overflow-hidden", large ? "h-[70vh] min-h-96" : "h-96")}>
+    <div className={cx("relative oa-arrive overflow-hidden oa-squircle-inset", large ? expandedMapClass : "h-96")}>
       <Map
         center={shown.length ? [shown[0]!.lng, shown[0]!.lat] : [0, 0]}
         zoom={11}
         unsupported={<MapUnsupported />}
-        className="h-full w-full"
+        className="size-full "
       >
         <MapControls />
         <FitToPoints points={shown} />
@@ -69,7 +71,7 @@ export function LinksMap({
         />
         {route && route.length > 1 ? (
           <>
-            <MapRoute id="traceroute-casing" coordinates={route} color="#ffffff" width={9} opacity={0.9} interactive={false} />
+            <MapRoute id="traceroute-casing" coordinates={route} color={casingColor} width={9} opacity={0.9} interactive={false} />
             <MapRoute id="traceroute" coordinates={route} color={routeColor} width={5} opacity={1} interactive={false} />
           </>
         ) : null}

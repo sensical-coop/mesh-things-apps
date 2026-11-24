@@ -39,27 +39,27 @@ export type CascaderRowEvent = React.MouseEvent<HTMLElement> & VetoableEvent
 const ROW_INSET_CLASS =
   "[--cascader-row-inset:6px]"
 
-// Both insets equal, for a row with no check. `!` because a consumer may not
-// import the sheets into `layer(base)`, where the class would win on order.
+// Both insets equal, for a row with no check. No `!` — the row no longer repaints
+// descendants, so padding classes win on their own.
 const ROW_FLUSH_CLASS =
-  "ps-[var(--cascader-row-inset,8px)]! pe-[var(--cascader-row-inset,8px)]!"
+  "ps-[var(--cascader-row-inset,8px)] pe-[var(--cascader-row-inset,8px)]"
 
 // The same start inset plus room for the check. A flat `pr-8` is wrong in five
 // of the eight styles: 4px of slack in nova, 8px short in maia, luma and sera,
 // and no gutter at all in mira, whose check then overlaps its own label.
 const ROW_GUTTER_CLASS =
-  "ps-[var(--cascader-row-inset,8px)]! pe-[calc(var(--cascader-row-inset,8px)*2_+_16px)]!"
+  "ps-[var(--cascader-row-inset,8px)] pe-[calc(var(--cascader-row-inset,8px)*2_+_16px)]"
 
 // The check's box, inset to match the row's. A physical `right-2` neither
 // mirrors under RTL nor tracks the style's inset; `right-auto` comes with the
 // logical `end-*`, because width + `left` + `right` is over-constrained.
 const INDICATOR_CLASS =
-  "pointer-events-none absolute flex items-center justify-center size-4 end-[var(--cascader-row-inset,8px)]! rtl:right-auto!"
+  "pointer-events-none absolute flex items-center justify-center size-4 end-[var(--cascader-row-inset,8px)] rtl:right-auto"
 
 // The row's type, gap, radius and icon size per style. No horizontal padding:
 // every row pairs this with `ROW_FLUSH_CLASS` or `ROW_GUTTER_CLASS`.
 const ROW_THEME_CLASS =
-  "data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground [&_svg:not([class*='size-'])]:size-4 rounded-md py-1"
+  "data-highlighted:bg-accent data-highlighted:text-accent-foreground [&_svg:not([class*='size-'])]:size-4 rounded-md py-1"
 
 /**
  * The row's gap and type, per style, held apart from the rest of the theme.
@@ -67,7 +67,7 @@ const ROW_THEME_CLASS =
  * A row that pins its own gap or text size takes `ROW_SHELL_CLASS` and leaves
  * these out, because a `style-<name>:` utility is emitted AFTER the plain one
  * it would have to lose to. Not receiving the token beats overriding it with
- * `!`, which a consumer then has to fight in turn.
+ * important, which a consumer then has to fight in turn.
  */
 const ROW_GAP_CLASS =
   "gap-2"
@@ -97,9 +97,10 @@ const AFFORDANCE_BOX_CLASS =
 
 // What makes an affordance read as pressable on an already highlighted row. Not
 // `hover:bg-accent`: the row is `bg-accent` under the pointer, so the chip would
-// be invisible. `!` and `**:` for the `CHECKBOX_MARK_CLASS` reason.
+// be invisible. No `!` — the row no longer repaints descendants, so the mark
+// and padding classes win on their own.
 const AFFORDANCE_HOVER_CLASS =
-  "transition-[background-color,box-shadow,color] hover:bg-background hover:text-foreground! hover:**:text-foreground! hover:shadow-xs"
+  "transition-[background-color,box-shadow,color] hover:bg-background hover:text-foreground hover:**:text-foreground hover:shadow-xs"
 
 // The selection MARK's colour, pinned so nothing can repaint it: every row
 // carries a DESCENDANT highlight rule, and a mark is STATE. Pinned TWICE
@@ -107,8 +108,8 @@ const AFFORDANCE_HOVER_CLASS =
 // `<path>` inherits and resolves against the PATH's own `color`. Both halves
 // are asserted in `cascader-behavior.test.tsx`.
 const CHECKBOX_MARK_CLASS =
-  "text-primary-foreground! **:text-primary-foreground!"
-const INDICATOR_MARK_CLASS = "text-foreground! **:text-foreground!"
+  "text-primary-foreground **:text-primary-foreground"
+const INDICATOR_MARK_CLASS = "text-foreground **:text-foreground"
 
 // Milliseconds the pointer must rest on a branch row before
 // `expandTrigger="hover"` drills in: long enough that a pointer crossing the
@@ -402,10 +403,10 @@ const CascaderItem = React.memo(function CascaderItem({
 
     const moreStyle =
       mode === "tree" && nodeDepth > 0
-        ? ({
+        ? {
             ...style,
             "--cascader-indent": `${nodeDepth * indent}px`,
-          } as React.CSSProperties)
+          }
         : style
 
     const moreShared = {
@@ -417,10 +418,10 @@ const CascaderItem = React.memo(function CascaderItem({
       className: cn(
         ROW_SHELL_CLASS,
         ROW_FLUSH_CLASS,
-        "text-muted-foreground justify-center gap-1.5 text-xs",
+        "justify-center gap-1.5 text-xs text-muted-foreground",
         !error && !loading && "hover:text-foreground",
         mode === "tree" &&
-          "ps-[calc(var(--cascader-row-inset,8px)_+_var(--cascader-indent,0px))]!",
+          "ps-[calc(var(--cascader-row-inset,8px)+var(--cascader-indent,0px))]",
         className
       ),
     }
@@ -434,7 +435,7 @@ const CascaderItem = React.memo(function CascaderItem({
         {/* TEXT, not a button: a focusable element inside a `role="option"`
             row is a `nested-interactive` violation. */}
         {error ? (
-          <span className="text-foreground font-medium">{labels.retry}</span>
+          <span className="font-medium text-foreground">{labels.retry}</span>
         ) : null}
       </>
     )
@@ -507,15 +508,15 @@ const CascaderItem = React.memo(function CascaderItem({
   const checkbox = (
     <span
       data-slot="cascader-item-checkbox"
-      className="border-input in-data-[selected]:bg-primary in-data-[selected]:border-primary in-data-[selected]:text-primary-foreground in-data-[indeterminate]:bg-primary in-data-[indeterminate]:border-primary in-data-[indeterminate]:text-primary-foreground flex size-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors"
+      className="flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input transition-colors in-data-indeterminate:border-primary in-data-indeterminate:bg-primary in-data-indeterminate:text-primary-foreground in-data-selected:border-primary in-data-selected:bg-primary in-data-selected:text-primary-foreground"
     >
-      {/* Colour declared ON THE ICON with `!`; see `CHECKBOX_MARK_CLASS`. */}
+      {/* Colour declared ON THE ICON; see `CHECKBOX_MARK_CLASS`. */}
       {indeterminate ? (
         <MinusIcon data-slot="cascader-item-dash" className={cn(CHECKBOX_MARK_CLASS, "size-3")} />
       ) : (
         <CheckIcon data-slot="cascader-item-tick" className={cn(
                               CHECKBOX_MARK_CLASS,
-                              "size-3 opacity-0 in-data-[selected]:opacity-100"
+                              "size-3 opacity-0 in-data-selected:opacity-100"
                             )} />
       )}
     </span>
@@ -595,7 +596,7 @@ const CascaderItem = React.memo(function CascaderItem({
       {node.icon ? (
         <span
           data-slot="cascader-item-icon"
-          className="text-muted-foreground flex shrink-0 items-center justify-center"
+          className="flex shrink-0 items-center justify-center text-muted-foreground"
         >
           {node.icon}
         </span>
@@ -610,7 +611,7 @@ const CascaderItem = React.memo(function CascaderItem({
             {node.description ? (
               <span
                 data-slot="cascader-item-description"
-                className="text-muted-foreground w-full truncate text-start text-xs"
+                className="w-full truncate text-start text-xs text-muted-foreground"
               >
                 {node.description}
               </span>
@@ -632,7 +633,7 @@ const CascaderItem = React.memo(function CascaderItem({
         <span
           data-slot="cascader-item-trailing"
           aria-hidden="true"
-          className="text-muted-foreground ms-auto flex shrink-0 items-center gap-1 text-xs tabular-nums"
+          className="ms-auto flex shrink-0 items-center gap-1 text-xs text-muted-foreground tabular-nums"
         >
           {showCount ? (
             <span
@@ -640,7 +641,7 @@ const CascaderItem = React.memo(function CascaderItem({
               /* The marker a consumer (and a test) reads to tell the two
                  numbers apart without matching on a colour class. */
               {...(showsSelectedCount ? { "data-selected-count": "" } : null)}
-              className={cn(showsSelectedCount && "text-primary!")}
+              className={cn(showsSelectedCount && "text-primary")}
             >
               {trailingCount}
             </span>
@@ -682,8 +683,8 @@ const CascaderItem = React.memo(function CascaderItem({
           /* The count is spoken by the sr-only details span instead. */
           aria-hidden="true"
           className={cn(
-            "text-muted-foreground ms-auto shrink-0 text-xs tabular-nums",
-            showsSelectedCount && "text-primary!"
+            "ms-auto shrink-0 text-xs text-muted-foreground tabular-nums",
+            showsSelectedCount && "text-primary"
           )}
         >
           {trailingCount}
@@ -724,10 +725,10 @@ const CascaderItem = React.memo(function CascaderItem({
 
   const rowStyle =
     mode === "tree" && nodeDepth > 0
-      ? ({
+      ? {
           ...style,
           "--cascader-indent": `${nodeDepth * indent}px`,
-        } as React.CSSProperties)
+        }
       : style
 
   const shared = {
@@ -759,7 +760,7 @@ const CascaderItem = React.memo(function CascaderItem({
          depth 0 at 12px and depth 1 at 16px in maia, luma and sera, a 4px step.
          `_+_` because Tailwind's parser splits on whitespace. */
       mode === "tree" &&
-        "ps-[calc(var(--cascader-row-inset,8px)_+_var(--cascader-indent,0px))]!",
+        "ps-[calc(var(--cascader-row-inset,8px)+var(--cascader-indent,0px))]",
       className
     ),
   }
@@ -835,7 +836,7 @@ function CascaderItemPath({ node }: { node: CascaderNode }) {
   return (
     <span
       data-slot="cascader-item-path"
-      className="text-muted-foreground flex w-full items-center gap-0.5 truncate text-start text-xs"
+      className="flex w-full items-center gap-0.5 truncate text-start text-xs text-muted-foreground"
     >
       {ancestors.map((ancestor, i) => (
         <React.Fragment key={ancestor.value}>
@@ -965,7 +966,7 @@ const CASCADER_LABEL_CLASS = `text-muted-foreground text-xs py-1.5 ${CASCADER_AC
 // that cancels the container's padding with a per-style number, wrong in a
 // footer and 4px too much in lyra. `--cascader-list-pad` reaches the edge.
 const CASCADER_SEPARATOR_CLASS =
-  "h-px bg-border my-1 mx-[calc(var(--cascader-list-pad,4px)*-1)]! shrink-0"
+  "h-px bg-border my-1 mx-[calc(var(--cascader-list-pad,4px)*-1)] shrink-0"
 
 export interface CascaderGroupProps extends Omit<
   ComboboxPrimitive.Group.Props,

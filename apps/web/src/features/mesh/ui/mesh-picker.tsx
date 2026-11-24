@@ -17,7 +17,6 @@ export type MeshPickerProps = {
   onChange: (meshId: string) => void;
 };
 
-/** Which mesh a page shows, for pages that work on one mesh at a time. */
 export function MeshPicker({ meshes, value, onChange }: MeshPickerProps): ReactElement {
   const { formatMessage } = useIntl();
   const items = meshes.map((mesh) => ({ value: mesh.id, label: meshTitle(mesh) }));

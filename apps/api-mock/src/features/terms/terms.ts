@@ -1,12 +1,14 @@
+import type { TermsLocaleEnum as TermsLocale } from "@mtt/contracts";
+import { DEV_PORTS, SITE_PATHS } from "@mtt/contracts/site";
+
 /**
  * The terms owners accept, as the API serves them: the account terms at signup, the mesh
  * terms per mesh on the default broker, the source terms per source and the sink terms per
- * sink (copied, not served yet: the mock has no sinks). A copy of
+ * sink. A copy of
  * meshtastic-things `registry/terms.py`, word for word, and kept in step with it. The
  * console shows what these routes return and keeps no copy of its own.
  */
 export type TermsKind = "account" | "mesh" | "source" | "sink";
-export type TermsLocale = "en" | "es";
 
 export const TERMS_VERSIONS: Record<TermsKind, string> = {
   account: "account-2026-09",
@@ -15,8 +17,6 @@ export const TERMS_VERSIONS: Record<TermsKind, string> = {
   sink: "sinks-2026-09",
 };
 
-// Mirrors REGISTRY__DATA_RETENTION_DAYS (blank for none), REGISTRY__DATA_DELETION_GRACE_DAYS
-// and REGISTRY__TERMS_RENEWAL_NOTICE_DAYS. Set here so the mock exercises renewals.
 /**
  * Mirrors REGISTRY__TERMS_ENFORCED (on unless "false"). Off, as on a self-hosted lite
  * install: every terms route answers 404, no terms are needed or recorded, and the
@@ -29,28 +29,21 @@ export const DATA_RETENTION_DAYS: number | null =
     ? null
     : Number(process.env.MOCK_DATA_RETENTION_DAYS ?? 365);
 export const DATA_DELETION_GRACE_DAYS = 30;
-export const TERMS_RENEWAL_NOTICE_DAYS = 30;
 
 /** Mirrors `dpa_url()`: the Data Processing Agreement page, under REGISTRY__PUBLIC_FRONTEND_URL. */
-const DPA_URL = `${(process.env.MOCK_PUBLIC_FRONTEND_URL ?? "http://localhost:5173").replace(/\/$/, "")}/dpa`;
+const DPA_URL = `${(process.env.MOCK_PUBLIC_FRONTEND_URL ?? `http://localhost:${DEV_PORTS.web}`).replace(/\/$/, "")}${SITE_PATHS.dpa}`;
 
 type Copy = {
   title: string;
   description: string;
   statements: { id: string; text: string }[];
   footnote: string;
+  /** Absent on account terms, which store no readings. */
+  retention_limited?: string;
+  retention_unlimited?: string;
 };
 
-/** Data terms also state how long data is kept; the account terms store none. */
-type DataCopy = Copy & {
-  retention_limited: string;
-  retention_unlimited: string;
-};
-
-const COPY: { account: Record<TermsLocale, Copy> } & Record<
-  "mesh" | "source" | "sink",
-  Record<TermsLocale, DataCopy>
-> = {
+const COPY: Record<TermsKind, Record<TermsLocale, Copy>> = {
   account: {
     en: {
       title: "Before you create your account",
@@ -292,20 +285,14 @@ export function termsJson(kind: TermsKind, locale: TermsLocale) {
     statements: base.statements.map((s) => ({ ...s, text: s.text.replace("{dpa_url}", DPA_URL) })),
     footnote: base.footnote,
   };
-  if (kind === "account") return served;
-  const text = COPY[kind][locale];
-  const retention = DATA_RETENTION_DAYS
-    ? text.retention_limited
-        .replace("{days}", String(DATA_RETENTION_DAYS))
-        .replace("{grace}", String(DATA_DELETION_GRACE_DAYS))
-    : text.retention_unlimited.replace(
-        "{grace}",
-        String(DATA_DELETION_GRACE_DAYS),
-      );
+  const retentionText = DATA_RETENTION_DAYS ? base.retention_limited : base.retention_unlimited;
+  if (!retentionText) return served;
+  const retention = retentionText
+    .replace("{days}", String(DATA_RETENTION_DAYS))
+    .replace("{grace}", String(DATA_DELETION_GRACE_DAYS));
   return { ...served, footnote: `${served.footnote} ${retention}` };
 }
 
-/** When an acceptance made at `from` lapses, or null with no retention period. */
 export function acceptanceExpiry(from: Date): string | null {
   if (!DATA_RETENTION_DAYS) return null;
   return new Date(
@@ -313,20 +300,31 @@ export function acceptanceExpiry(from: Date): string | null {
   ).toISOString();
 }
 
-/** One row per acceptance, platform or source; kept after the owner or source is deleted. */
-export type TermsAcceptance = {
-  kind: TermsKind;
-  ownerId: string | null;
-  sourceId: string | null;
-  termsVersion: string;
-  locale: TermsLocale;
-  acceptedAt: string;
-  expiresAt: string | null;
-};
+/** The API's check on `terms_version`: only the current version counts. */
+export function termsVersionError(kind: TermsKind, version: string | undefined): Record<string, string[]> {
+  // Terms off: `terms_version` is optional and ignored, even a stale one.
+  if (!TERMS_ENFORCED) return {};
+  if (version === TERMS_VERSIONS[kind]) return {};
+  return {
+    terms_version: [
+      version === undefined
+        ? "This field is required."
+        : "These terms are out of date. Load the current terms and accept them again.",
+    ],
+  };
+}
 
-/** A mesh's or a source's standing with its terms, as the API reports it. */
-export type TermsStanding = {
-  acceptedVersion: string | null;
-  expiresAt: string | null;
-  pausedAt: string | null;
-};
+/** What a mesh, source or sink carries of the terms it was accepted under, and whether a lapse paused it. */
+export type TermsStamp = { termsAcceptedVersion: string | null; termsExpiresAt: string | null; pausedAt: string | null };
+
+/** Stamps `target` with the current terms of `kind` and resumes it. Terms off: the stamp is null, as nothing lapses. */
+export function acceptTerms(kind: Exclude<TermsKind, "account">, target: TermsStamp): void {
+  target.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS[kind] : null;
+  target.termsExpiresAt = TERMS_ENFORCED ? acceptanceExpiry(new Date()) : null;
+  target.pausedAt = null;
+}
+
+/** Accepting the account terms never lapses or pauses anything. Terms off: nothing recorded. */
+export function acceptAccountTerms(accountTerms: Map<string, string>, ownerId: string): void {
+  if (TERMS_ENFORCED) accountTerms.set(ownerId, TERMS_VERSIONS.account);
+}

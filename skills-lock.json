@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "documentation-writer": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/documentation-writer/SKILL.md",
+      "computedHash": "ee53d65b163cd7eb953a930c95841cfe398cc2c0bd24c06508bbaa07c432be35"
+    },
+    "untangle-codebase": {
+      "source": "caldoai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/untangle-codebase/SKILL.md",
+      "computedHash": "d5e9e1c4a1f30f34c0120dea773d0170004d6c19ef5e8f236c35773bd6c5bdbc"
+    }
+  }
+}

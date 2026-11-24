@@ -2,6 +2,7 @@ import type { Mesh, SourceRead } from "@mtt/contracts";
 import { Chip } from "@mtt/ui/components/base/badges/chip";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { DEFAULT_BROKER } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 
 export type MeshSourceLabelProps = {
@@ -20,7 +21,7 @@ export function MeshSourceLabel({ mesh, sources }: MeshSourceLabelProps): ReactE
   if (mesh.source_id === null) {
     return (
       <span className="text-text-secondary">
-        {formatMessage({ id: "feature.mesh.sourceLabel.default", defaultMessage: "Default broker" })}
+        {formatMessage(DEFAULT_BROKER)}
       </span>
     );
   }

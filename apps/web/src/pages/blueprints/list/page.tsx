@@ -1,19 +1,18 @@
 import type { PostprocessingBlueprint } from "@mtt/contracts";
+import { tableLinkClass } from "@/lib/link-class";
 import { Button } from "@mtt/ui/components/base/buttons/button";
 import { DataTable } from "@mtt/ui/components/data-table";
-import { Frame, FrameDescription, FrameHeader, FramePanel, FrameTitle } from "@mtt/ui/reui/frame";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactElement, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { SkeletonRows } from "@/components/skeleton-rows";
+import { ListScaffold } from "@/components/list-scaffold";
 import { useOwnerDirectory } from "@/features/auth/use-owner-directory";
 import { blueprintRepository } from "@/features/blueprint/repository";
 import { BlueprintAccessChip } from "@/features/blueprint/ui/blueprint-access-chip";
 import { BlueprintDialog } from "@/features/blueprint/ui/blueprint-dialog";
-import { pageHeadingClass } from "@/lib/page-heading";
 import { routes } from "@/router";
 
 const col = legacyCreateColumnHelper<PostprocessingBlueprint>();
@@ -21,7 +20,7 @@ const col = legacyCreateColumnHelper<PostprocessingBlueprint>();
 export function BlueprintsPage(): ReactElement {
   const { formatMessage } = useIntl();
   const navigate = useNavigate();
-  const { meId, ownerName } = useOwnerDirectory();
+  const { ownerLabel } = useOwnerDirectory();
   const blueprints = useQuery(blueprintRepository.list());
   const [creating, setCreating] = useState(false);
 
@@ -33,7 +32,7 @@ export function BlueprintsPage(): ReactElement {
           <Link
             to={routes.blueprint}
             params={{ blueprintId: info.row.original.id }}
-            className="rounded-full outline-hidden hover:text-accent-500 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            className={tableLinkClass}
           >
             {info.getValue()}
           </Link>
@@ -51,9 +50,7 @@ export function BlueprintsPage(): ReactElement {
             <span className="text-text-secondary">
               {ownerId === null
                 ? formatMessage({ id: "page.blueprints.list.ownerGone", defaultMessage: "Deleted account" })
-                : ownerId === meId
-                  ? formatMessage({ id: "page.blueprints.list.ownerYou", defaultMessage: "You" })
-                  : ownerName(ownerId)}
+                : ownerLabel(ownerId)}
             </span>
           );
         },
@@ -81,53 +78,44 @@ export function BlueprintsPage(): ReactElement {
         cell: (info) => <span className="text-text-secondary tabular-nums">{info.getValue()}</span>,
       }),
     ],
-    [formatMessage, meId, ownerName],
+    [formatMessage, ownerLabel],
   );
 
   return (
     <>
-      <div className={pageHeadingClass}>
-        <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
-          {formatMessage({ id: "page.blueprints.list.title", defaultMessage: "Blueprints" })}
-        </h1>
-        <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setCreating(true)}>
-          {formatMessage({ id: "page.blueprints.list.newBlueprint", defaultMessage: "New blueprint" })}
-        </Button>
-      </div>
-      <Frame className="shadow-card">
-        <FrameHeader>
-          <FrameTitle>{formatMessage({ id: "page.blueprints.list.panel.title", defaultMessage: "Recipes" })}</FrameTitle>
-          <FrameDescription>
-            {blueprints.error
-              ? formatMessage({
-                  id: "page.blueprints.list.panel.error",
-                  defaultMessage: "Blueprints didn't load. Check your connection and try again.",
-                })
-              : formatMessage({
-                  id: "page.blueprints.list.panel.description",
-                  defaultMessage:
-                    "List of your blueprints and the public ones. Attach one to a device from the device page, where you wire its inputs and calibrate it.",
-                })}
-          </FrameDescription>
-        </FrameHeader>
-        <FramePanel>
-          {blueprints.isPending ? <SkeletonRows /> : null}
-          {blueprints.error || blueprints.isPending ? null : (
-            <DataTable
-              data={blueprints.data}
-              columns={columns}
-              getRowId={(row) => row.id}
-              previousPageLabel={formatMessage({ id: "common.dataTable.previousPage", defaultMessage: "Previous page" })}
-              nextPageLabel={formatMessage({ id: "common.dataTable.nextPage", defaultMessage: "Next page" })}
-              pageRangeOfLabel={formatMessage({ id: "common.dataTable.of", defaultMessage: "of" })}
-              empty={formatMessage({
-                id: "page.blueprints.list.none",
-                defaultMessage: "No blueprints yet. Create one to compute new channels from your devices' readings.",
-              })}
-            />
-          )}
-        </FramePanel>
-      </Frame>
+      <ListScaffold
+        title={formatMessage({ id: "page.blueprints.list.title", defaultMessage: "Blueprints" })}
+        actions={
+          <Button type="button" size="small" leadingIcon={RiAddLine} onClick={() => setCreating(true)}>
+            {formatMessage({ id: "page.blueprints.list.newBlueprint", defaultMessage: "New blueprint" })}
+          </Button>
+        }
+        panelTitle={formatMessage({ id: "page.blueprints.list.panel.title", defaultMessage: "Recipes" })}
+        panelDescription={
+          blueprints.error
+            ? formatMessage({
+                id: "page.blueprints.list.panel.error",
+                defaultMessage: "Blueprints didn't load. Check your connection and try again.",
+              })
+            : formatMessage({
+                id: "page.blueprints.list.panel.description",
+                defaultMessage:
+                  "List of your blueprints and the public ones. Attach one to a device from the device page, where you wire its inputs and calibrate it.",
+              })
+        }
+        pending={blueprints.isPending}
+        failed={Boolean(blueprints.error)}
+      >
+        <DataTable
+          data={blueprints.data ?? []}
+          columns={columns}
+          getRowId={(row) => row.id}
+          empty={formatMessage({
+            id: "page.blueprints.list.none",
+            defaultMessage: "No blueprints yet. Create one to compute new channels from your devices' readings.",
+          })}
+        />
+      </ListScaffold>
       {creating ? (
         <BlueprintDialog
           onClose={() => setCreating(false)}

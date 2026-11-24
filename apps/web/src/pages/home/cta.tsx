@@ -1,4 +1,4 @@
-import { SITE } from "@/components/brand";
+import { CONTACT_URL } from "@/components/brand";
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
@@ -9,11 +9,11 @@ export function LandingCta(): ReactElement {
   return (
     <section
       id="get-started"
-      className="oa-squircle scroll-mt-24 overflow-hidden border border-separator-border bg-text-primary p-2 sm:p-3"
+      className="scroll-mt-24 overflow-hidden oa-squircle border border-separator-border bg-text-primary p-2 sm:p-3"
     >
       <div className="flex flex-col items-center px-4 py-16 text-center sm:px-6 sm:py-14">
         <LandingReveal>
-          <h2 className="max-w-4xl text-balance text-title-1-medium tracking-tight text-background-full sm:text-display-3-medium">
+          <h2 className="max-w-4xl text-section-title tracking-tight text-balance text-background-full">
             {formatMessage({ id: "page.home.cta.title", defaultMessage: "Contact us for deployment options" })}
           </h2>
         </LandingReveal>
@@ -26,7 +26,7 @@ export function LandingCta(): ReactElement {
           </p>
         </LandingReveal>
         <LandingReveal className="mt-8">
-          <ButtonLink href={`${SITE}/contact`} size="medium">
+          <ButtonLink href={CONTACT_URL} size="medium">
             {formatMessage({ id: "page.home.cta.contactUs", defaultMessage: "Contact us" })}
           </ButtonLink>
         </LandingReveal>

@@ -7,17 +7,20 @@ import { useIntl } from "react-intl";
 import { Kpi } from "@/components/kpi/kpi";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { formatBytes, groupByDay, summarizeArchive } from "@/features/archive/model";
-import type { RequestExportState } from "@/features/export/use-request-export";
+import { groupByDay, summarizeArchive } from "@/features/archive/model";
 import { ArchiveDayRow } from "@/features/archive/ui/archive-day-row";
-import { cn } from "@mtt/ui/utils";
+import { cx } from "@mtt/ui/utils";
+import { formatBytes } from "@/lib/format";
 
 export type ArchiveFilesFrameProps = {
   meshId: string;
   manifest: ArchiveManifest | undefined;
   pending: boolean;
   failed: boolean;
-  requested: RequestExportState;
+  /** While a day's export is on its way. */
+  exporting: boolean;
+  /** Asks for the zip of one UTC day (`YYYY-MM-DD`). */
+  onExportDay: (dt: string) => void;
 };
 
 /** Two weeks at first; the rest on request. */
@@ -25,8 +28,7 @@ const DAYS_SHOWN = 14;
 
 const headClass = "h-8 px-3.5 text-left align-middle text-caption-1-medium whitespace-nowrap text-text-secondary";
 
-/** What's stored for the mesh, a row per UTC day, newest first; each opens into its hours. */
-export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested }: ArchiveFilesFrameProps): ReactElement {
+export function ArchiveFilesFrame({ meshId, manifest, pending, failed, exporting, onExportDay }: ArchiveFilesFrameProps): ReactElement {
   const { formatMessage, locale } = useIntl();
   const partitions = manifest?.partitions ?? [];
   const summary = summarizeArchive(partitions);
@@ -77,7 +79,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
         ) : null}
         {manifest ? (
           <>
-            <div className="oa-arrive grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Archive summary">
+            <div className="grid oa-arrive gap-3 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Archive summary">
               <Kpi
                 icon={RiArchiveStackLine}
                 label={formatMessage({ id: "feature.archive.files.kpi.files", defaultMessage: "Files" })}
@@ -106,7 +108,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
             {days.length ? (
               <div className="flex flex-col gap-3">
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[40rem] text-left text-body-2-regular">
+                  <table className="w-full min-w-160 text-left text-body-2-regular">
                     <thead>
                       <tr>
                         <th className={headClass}>
@@ -121,7 +123,7 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
                         <th className={headClass}>
                           {formatMessage({ id: "feature.archive.files.columns.updated", defaultMessage: "Last written" })}
                         </th>
-                        <th className={cn(headClass, "text-right")}>
+                        <th className={cx(headClass, "text-right")}>
                           {formatMessage({ id: "feature.archive.files.columns.export", defaultMessage: "Export" })}
                         </th>
                       </tr>
@@ -134,11 +136,8 @@ export function ArchiveFilesFrame({ meshId, manifest, pending, failed, requested
                           day={day}
                           expanded={expanded.has(day.dt)}
                           onToggle={() => toggle(day.dt)}
-                          exporting={requested.pending}
-                          onExport={() => {
-                            requested.request(meshId, { format: "parquet", start: day.dt, stop: day.dt });
-                            document.getElementById("archive-exports")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }}
+                          exporting={exporting}
+                          onExport={() => onExportDay(day.dt)}
                         />
                       ))}
                     </tbody>

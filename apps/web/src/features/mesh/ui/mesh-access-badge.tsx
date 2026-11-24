@@ -7,7 +7,6 @@ export type MeshAccessBadgeProps = {
   mesh: Pick<Mesh, "is_public">;
 };
 
-/** "Public" for an open mesh; nothing for a private one. */
 export function MeshAccessBadge({ mesh }: MeshAccessBadgeProps): ReactElement | null {
   const { formatMessage } = useIntl();
   if (!mesh.is_public) return null;

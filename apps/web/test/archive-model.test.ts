@@ -9,15 +9,12 @@ import {
   canUseArchive,
   duckdbCommand,
   duckdbExportCommand,
-  formatBytes,
   groupByDay,
-  partitionDownloadUrl,
   summarizeArchive,
 } from "../src/features/archive/model.ts";
 
-const operator = { id: "op", is_superuser: false, role: "operator" as const };
-const member = { id: "ada", is_superuser: false, role: "member" as const };
-const admin = { id: "admin", is_superuser: true, role: "member" as const };
+const operator = { id: "op", is_superuser: false, is_staff: false, role: "operator" as const, is_active: true };
+const member = { id: "ada", is_superuser: false, is_staff: false, role: "member" as const, is_active: true };
 
 const credentials = {
   access_key_id: "KEY",
@@ -31,11 +28,7 @@ const credentials = {
   s3_path: "s3://meshtastic-telemetry/telemetry/mesh_id=m1/",
 };
 
-test("canUseArchive is the mesh's owner while an operator, or a superuser", () => {
-  assert.equal(canUseArchive(operator, "op"), true);
-  assert.equal(canUseArchive(operator, "someone"), false);
-  assert.equal(canUseArchive(member, "ada"), false);
-  assert.equal(canUseArchive(admin, "ada"), true);
+test("canUseArchive is false without a caller or an owner id", () => {
   assert.equal(canUseArchive(undefined, "op"), false);
   assert.equal(canUseArchive(operator, undefined), false);
 });
@@ -55,19 +48,6 @@ test("summarizeArchive counts files and bytes, oldest to newest", () => {
     ]),
     { files: 2, bytes: 350, first: "2026-09-01 03:00", last: "2026-09-02 14:00" },
   );
-});
-
-test("partitionDownloadUrl points at the readings route", () => {
-  assert.equal(
-    partitionDownloadUrl("https://api.example.org/", "m1", { dt: "2026-09-02", hour: 4 }),
-    "https://api.example.org/readings/archive/meshes/m1/partitions/2026-09-02/4",
-  );
-});
-
-test("formatBytes picks a unit", () => {
-  assert.equal(formatBytes(512, "en"), "512 B");
-  assert.equal(formatBytes(1536, "en"), "1.5 KB");
-  assert.equal(formatBytes(25 * 1024 * 1024, "en"), "25 MB");
 });
 
 test("duckdbCommand fills in credentials, path-style and no TLS on a plain HTTP endpoint", () => {

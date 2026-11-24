@@ -26,15 +26,15 @@ The pre-commit hook is installed by `pnpm install`.
 
 ## API contract
 
-The contract is `docs/openapi.json`, a copy of the snapshot the API commits for its mesh-things package. It is never edited by hand. To bring in a new API version, sync it from the release tag on a branch of its own:
+The contract is `docs/openapi.json`, a copy of the schema the API serves at `https://api.sensical.es/schema`. It is never edited by hand. To bring in a new API version, sync it on a branch of its own:
 
 ```sh
 git switch -c chore/openapi-<version>
-OPENAPI_REF=mesh-things-v<version> pnpm openapi:sync
+pnpm openapi:sync
 pnpm typecheck
 ```
 
-`pnpm openapi:sync` copies the snapshot and regenerates `packages/contracts`. Fix any app code the new types break in the same pull request. Syncing from the tag keeps the contract in step with the API in production. When a feature needs an API change that is not released yet, pass the API branch as `OPENAPI_REF` instead, and say so in the pull request.
+`pnpm openapi:sync` downloads the schema and regenerates `packages/contracts`. Fix any app code the new types break in the same pull request. Syncing from `api.sensical.es` keeps the contract in step with the API in production. When a feature needs an API change that is not deployed yet, run that API locally and sync from it with `OPENAPI_URL=http://localhost pnpm openapi:sync`, or sync from the backend's committed snapshot without running it: `OPENAPI_FILE=../meshtastic-things/server/mesh_things/src/mesh_things/client/openapi.json pnpm openapi:sync`. Say which in the pull request.
 
 ## Pull requests
 

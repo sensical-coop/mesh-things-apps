@@ -16,7 +16,7 @@ const NumberFieldContext = createContext<{
 } | null>(null)
 
 const numberFieldGroupVariants = cva(
-  "relative flex w-full justify-between border border-input data-disabled:pointer-events-none data-disabled:opacity-50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive focus-within:has-aria-invalid:border-destructive focus-within:has-aria-invalid:ring-destructive/20 dark:focus-within:has-aria-invalid:ring-destructive/40 rounded-lg bg-transparent dark:bg-input/30 transition-colors focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-3",
+  "relative flex w-full justify-between rounded-lg border border-input bg-field transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 focus-within:has-aria-invalid:border-destructive focus-within:has-aria-invalid:ring-invalid-ring aria-invalid:border-destructive aria-invalid:ring-invalid-ring data-disabled:pointer-events-none data-disabled:opacity-50",
   {
     variants: {
       // Ladders restored from the pre-rename source. Rhea was added after they
@@ -35,7 +35,7 @@ const numberFieldGroupVariants = cva(
 )
 
 const numberFieldButtonVariants = cva(
-  "relative flex shrink-0 cursor-pointer items-center justify-center transition-colors pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:bg-accent",
+  "relative flex shrink-0 cursor-pointer items-center justify-center transition-colors hover:bg-accent pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11",
   {
     variants: {
       size: {
@@ -52,7 +52,7 @@ const numberFieldButtonVariants = cva(
 )
 
 const numberFieldInputVariants = cva(
-  "w-full min-w-0 flex-1 bg-transparent text-center tabular-nums outline-none",
+  "w-full min-w-0 flex-1 bg-transparent text-center tabular-nums outline-hidden",
   {
     variants: {
       size: {

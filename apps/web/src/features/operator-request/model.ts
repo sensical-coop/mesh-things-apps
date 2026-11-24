@@ -1,18 +1,11 @@
-import type { OwnerProfile } from "@mtt/contracts";
+import { OperatorRequestStatusEnum } from "@mtt/contracts";
+import { canRequestOperator as mayRequestOperator, viewerOf, type ProfileFlags } from "@mtt/contracts/authz";
 
-/** Mirrors the API: only a plain member asks; operators, superusers and staff don't. */
-export function canRequestOperator(
-  me: Pick<OwnerProfile, "is_superuser" | "is_staff" | "role"> | undefined,
-): boolean {
-  if (!me) return false;
-  return !me.is_superuser && !me.is_staff && me.role === "member";
+/** Only a plain owner asks; operators, superusers and staff don't. Hidden while `me` loads. */
+export function canRequestOperator(me: ProfileFlags | undefined): boolean {
+  return me != null && mayRequestOperator(viewerOf(me));
 }
 
-/** Superusers approve or reject requests. */
-export function canDecideOperatorRequests(me: Pick<OwnerProfile, "is_superuser"> | undefined): boolean {
-  return me?.is_superuser === true;
-}
+export const OPERATOR_REQUEST_STATUSES = OperatorRequestStatusEnum.options;
 
-export const OPERATOR_REQUEST_STATUSES = ["pending", "approved", "rejected", "all"] as const;
-
-export type OperatorRequestStatusFilter = (typeof OPERATOR_REQUEST_STATUSES)[number];
+export type OperatorRequestStatusFilter = OperatorRequestStatusEnum | "all";

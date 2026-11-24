@@ -1,12 +1,12 @@
-import type { IDeviceRepository } from "@mtt/domain/device/IDeviceRepository";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
-import type { IReadingsRepository, LatestReading, SeriesQuery } from "@mtt/domain/readings/Readings";
+import type { LatestReading, SeriesQuery } from "@mtt/domain/readings/Readings";
+import type { MemoryDevices } from "../device/repository";
 
 const LATEST_VALUES: Record<string, number> = { temperature: 21.4, dew_point: 8.1, relative_humidity: 64 };
 
-export class MemoryReadings implements IReadingsRepository {
+export class MemoryReadings {
   constructor(
-    private readonly devices: IDeviceRepository,
+    private readonly devices: MemoryDevices,
     private readonly measurements: MeasurementType[],
     private readonly latestDeviceUuids: ReadonlySet<string>,
     private readonly originIso: string,

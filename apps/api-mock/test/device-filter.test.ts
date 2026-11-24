@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { Device } from "@mtt/domain/device/Device";
+import { matchesDeviceFilters } from "../src/features/device/filter";
+
+function device(patch: Partial<ConstructorParameters<typeof Device>[0]> = {}) {
+  return new Device({
+    uuid: "44444444-4444-4444-8444-444444444444",
+    nodeId: 1,
+    meshId: "11111111-1111-4111-8111-111111111111",
+    label: "gw",
+    isGateway: true,
+    isAllowed: true,
+    absenceDetectionEnabled: false,
+    adminKeysB64: [],
+    latitude: null,
+    longitude: null,
+    locationOverridden: false,
+    name: null,
+    shortName: null,
+    hardwareType: null,
+    role: null,
+    nodeinfoOverridden: false,
+    readingIntervalSeconds: null,
+    publishIntervalSeconds: null,
+    lastSeen: null,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    ...patch,
+  });
+}
+
+test("list-filter wire matches label, gateway and postprocessing", () => {
+  const gw = device();
+  assert.equal(matchesDeviceFilters(gw, false, [{ field: "label", operator: "contains", values: ["g"] }]), true);
+  assert.equal(matchesDeviceFilters(gw, false, [{ field: "is_gateway", operator: "is", values: ["false"] }]), false);
+  assert.equal(
+    matchesDeviceFilters(device(), true, [{ field: "has_postprocessing", operator: "is", values: ["true"] }]),
+    true,
+  );
+});

@@ -1,5 +1,5 @@
-import { detectorsListOptions } from "@mtt/contracts/query";
+import { getDetectorsListQueryOptions } from "@mtt/contracts/api";
 
 export const alarmRepository = {
-  detectors: detectorsListOptions,
+  detectors: getDetectorsListQueryOptions,
 };

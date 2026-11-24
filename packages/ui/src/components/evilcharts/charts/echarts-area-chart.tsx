@@ -2319,7 +2319,7 @@ export function EChartsAreaChart<TData extends Record<string, unknown>>({
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <div className="relative min-h-0 w-full flex-1">
-        <div ref={mountRef} className="h-full min-h-0 w-full" />
+        <div ref={mountRef} className="size-full min-h-0 " />
       </div>
 
       {legendSlot.present && !isLoading && (
@@ -2343,9 +2343,9 @@ export function EChartsAreaChart<TData extends Record<string, unknown>>({
             initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="text-primary bg-background flex items-center justify-center gap-2 rounded-md border px-2 py-0.5 text-sm"
+            className="flex items-center justify-center gap-2 rounded-md border bg-background px-2 py-0.5 text-sm text-primary"
           >
-            <div className="border-border border-t-primary h-3 w-3 animate-spin rounded-full border" />
+            <div className="size-3  animate-spin rounded-full border border-border border-t-primary" />
             <span>Loading</span>
           </motion.div>
         </div>

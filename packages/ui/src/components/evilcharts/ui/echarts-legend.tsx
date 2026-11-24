@@ -50,20 +50,20 @@ export function LegendIndicator({
 
   switch (variant) {
     case "square":
-      return <div className="h-2 w-2 shrink-0" style={fill} />;
+      return <div className="size-2  shrink-0" style={fill} />;
     case "circle":
-      return <div className="h-2 w-2 shrink-0 rounded-full" style={fill} />;
+      return <div className="size-2  shrink-0 rounded-full" style={fill} />;
     case "circle-outline":
-      return <div className="h-2.5 w-2.5 shrink-0 rounded-full p-[1.5px]" style={outline} />;
+      return <div className="size-2.5  shrink-0 rounded-full p-[1.5px]" style={outline} />;
     case "vertical-bar":
-      return <div className="h-3 w-1 shrink-0 rounded-[2px]" style={fill} />;
+      return <div className="h-3 w-1 shrink-0 rounded-xs" style={fill} />;
     case "horizontal-bar":
-      return <div className="h-1 w-3 shrink-0 rounded-[2px]" style={fill} />;
+      return <div className="h-1 w-3 shrink-0 rounded-xs" style={fill} />;
     case "rounded-square-outline":
-      return <div className="h-2.5 w-2.5 shrink-0 rounded-[3px] p-[1.5px]" style={outline} />;
+      return <div className="size-2.5  shrink-0 rounded-[3px] p-[1.5px]" style={outline} />;
     case "rounded-square":
     default:
-      return <div className="h-2 w-2 shrink-0 rounded-[2px]" style={fill} />;
+      return <div className="size-2  shrink-0 rounded-xs" style={fill} />;
   }
 }
 

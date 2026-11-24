@@ -1,16 +1,17 @@
 import type { DeviceRead, MeshTraffic, Point, RfLink } from "@mtt/contracts";
+import { formatNodeId } from "@mtt/ui/forms/node-id";
+import { spanMs } from "../../lib/duration.ts";
 import { devicePosition, isValidLngLat } from "../device/model.ts";
 
 export const MESH_STATS_RANGES = ["1h", "24h", "7d", "30d"] as const;
 export type MeshStatsRange = (typeof MESH_STATS_RANGES)[number];
+export const DEFAULT_STATS_RANGE: MeshStatsRange = "24h";
 
-const UNIT_MS: Record<string, number> = { m: 60_000, h: 3_600_000, d: 86_400_000 };
+/** The window one device's links, traffic and track cover; each API takes it in its own shape (`since`, `range`, `start: "-…"`). */
+export const DEVICE_WINDOW = "7d" satisfies MeshStatsRange;
 
-/** The API's bucket size (`15m`, `6h`) in milliseconds, or null when it doesn't parse. */
-export function windowMs(window: string): number | null {
-  const match = /^(\d+)([mhd])$/.exec(window);
-  return match ? Number(match[1]) * UNIT_MS[match[2]!]! : null;
-}
+/** How often traffic and topology refetch while their tab is showing. */
+export const MESH_REFRESH_MS = 60_000;
 
 /** Receptions per bucket across every payload kind, oldest first. */
 export function totalTraffic(traffic: MeshTraffic[]): Point[] {
@@ -28,19 +29,18 @@ export function portnumLabel(name: string): string {
   return name.replace(/_APP$/, "").replace(/_/g, " ").toLowerCase();
 }
 
-/** A node number in the `!aabbccdd` form Meshtastic shows. */
-export function nodeHex(nodeId: number): string {
-  return `!${nodeId.toString(16).padStart(8, "0")}`;
+/** A node as the mesh's device list names it, or its node ID in hex. */
+export function nodeLabel(node: number, device: DeviceRead | undefined, title: (device: DeviceRead) => string): string {
+  return device ? title(device) : formatNodeId(node, "hex");
 }
 
-/** A node as the mesh's device list names it, or its node ID in hex. */
+/** A node of a traffic entry, which names its device when it has one. */
 export function trafficNodeLabel(
   entry: { node_id: number; device_uuid: string | null },
   devices: Map<string, DeviceRead>,
   title: (device: DeviceRead) => string,
 ): string {
-  const device = entry.device_uuid ? devices.get(entry.device_uuid) : undefined;
-  return device ? title(device) : nodeHex(entry.node_id);
+  return nodeLabel(entry.node_id, entry.device_uuid ? devices.get(entry.device_uuid) : undefined, title);
 }
 
 /** The links window that matches a stats range; links are only kept by the day. */
@@ -52,10 +52,10 @@ export const LINK_WINDOWS: Record<MeshStatsRange, "24h" | "7d" | "30d"> = {
 };
 
 export const RANGE_MS: Record<MeshStatsRange, number> = {
-  "1h": 3_600_000,
-  "24h": 86_400_000,
-  "7d": 7 * 86_400_000,
-  "30d": 30 * 86_400_000,
+  "1h": spanMs("1h"),
+  "24h": spanMs("24h"),
+  "7d": spanMs("7d"),
+  "30d": spanMs("30d"),
 };
 
 /** Two nodes that hear each other, whichever way and by whatever source. */

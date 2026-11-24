@@ -1,15 +1,16 @@
 import { Button } from "@mtt/ui/components/base/buttons/button";
+import { TermsChecklist } from "@mtt/ui/forms/terms-checklist";
 import { useQuery } from "@tanstack/react-query";
-import { type ReactElement, useState } from "react";
+import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
-import { allStatementsAccepted, termsLocale, type TermsAcceptance, type TermsKind } from "@/features/terms/model";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
+import { termsLocale, useTermsAcceptance, type TermsAcceptance } from "@mtt/contracts/terms";
+import { type TermsKind } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
-import { TermsChecklist } from "@/features/terms/ui/terms-checklist";
+import { TermsFootnote } from "@/features/terms/ui/terms-footnote";
 
 export type TermsDialogProps = {
   open: boolean;
@@ -42,48 +43,28 @@ export function TermsDialog({
   error = null,
 }: TermsDialogProps): ReactElement {
   const { formatMessage, locale } = useIntl();
-  const query = { query: { locale: termsLocale(locale) } };
+  const localeParam = { locale: termsLocale(locale) };
   const options = {
-    account: termsRepository.account(query),
-    mesh: termsRepository.mesh(query),
-    source: termsRepository.source(query),
-    sink: termsRepository.sink(query),
+    account: termsRepository.account(localeParam),
+    mesh: termsRepository.mesh(localeParam),
+    source: termsRepository.source(localeParam),
+    sink: termsRepository.sink(localeParam),
   }[kind];
-  // A 404 means terms are off on this instance: an answer, not worth retrying.
   const terms = useQuery({
     ...options,
     enabled: open,
-    retry: (failures: number, error: unknown) => readApiError(error).status !== 404 && failures < 3,
   });
-  const [accepted, setAccepted] = useState<ReadonlySet<string>>(new Set());
-  const statementIds = (terms.data?.statements ?? []).map((statement) => statement.id);
   // A self-hosted instance with terms switched off answers 404: nothing to accept.
-  const notRequired = terms.error ? readApiError(terms.error).status === 404 : false;
-  const canAccept =
-    (notRequired || (terms.data !== undefined && allStatementsAccepted(statementIds, accepted))) && !pending;
-
-  function toggle(id: string, checked: boolean) {
-    setAccepted((current) => {
-      const next = new Set(current);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }
+  const { notRequired, accepted, complete, acceptance, toggle, reset } = useTermsAcceptance(terms);
+  const canAccept = complete && !pending;
 
   function close() {
-    setAccepted(new Set());
+    reset();
     onClose();
   }
 
   function accept() {
-    if (!canAccept) return;
-    if (notRequired) {
-      onAccepted(null);
-      return;
-    }
-    if (!terms.data) return;
-    onAccepted({ version: terms.data.version, locale: termsLocale(terms.data.locale) });
+    if (canAccept) onAccepted(acceptance);
   }
 
   return (
@@ -109,7 +90,18 @@ export function TermsDialog({
           </StatusCopy>
         ) : null}
         {terms.data ? (
-          <TermsChecklist terms={terms.data} kind={kind} accepted={accepted} onToggle={toggle} idPrefix={`terms-${kind}`} />
+          <TermsChecklist
+            statements={terms.data.statements}
+            accepted={accepted}
+            onToggle={toggle}
+            idPrefix={`terms-${kind}`}
+            footnote={
+              <>
+                {terms.data.footnote}{" "}
+                <TermsFootnote kind={kind} />
+              </>
+            }
+          />
         ) : null}
         {error ? <StatusCopy>{error}</StatusCopy> : null}
         <div className={dialogActionsClass}>
@@ -129,3 +121,4 @@ export function TermsDialog({
     </Modal>
   );
 }
+

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { EXPORT_MAX_DAYS } from "@mtt/contracts/export";
 import {
-  EXPORT_MAX_DAYS,
   daysInRange,
   isActive,
   lastDays,
@@ -56,7 +56,8 @@ test("polling runs only while something is being prepared", () => {
   assert.equal(isActive("failed"), false);
 });
 
-test("progressOf stays within 0 and 1", () => {
+test("progressOf is the share of days done, and stays within 0 and 1", () => {
   assert.equal(progressOf({ days_done: 3, days_total: 4 }), 0.75);
+  assert.equal(progressOf({ days_done: 5, days_total: 4 }), 1);
   assert.equal(progressOf({ days_done: 0, days_total: 0 }), 0);
 });

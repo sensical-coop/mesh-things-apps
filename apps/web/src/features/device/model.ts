@@ -1,7 +1,11 @@
-import type { DeviceRead } from "@mtt/contracts";
+import type { DeviceRead, TelemetryVariantRead } from "@mtt/contracts";
 
 export function deviceTitle(device: DeviceRead): string {
   return device.name?.trim() || device.label?.trim() || `Node ${device.node_id}`;
+}
+
+export function variantTitle(variant: Pick<TelemetryVariantRead, "name" | "payload_kind">): string {
+  return variant.name ?? variant.payload_kind;
 }
 
 const KNOWN_DEVICE_ROLES = [
@@ -24,26 +28,9 @@ export type DeviceRoleLabels = Record<(typeof KNOWN_DEVICE_ROLES)[number], strin
   node: string;
 };
 
-export const EN_DEVICE_ROLE_LABELS: DeviceRoleLabels = {
-  client: "Client",
-  client_mute: "Client mute",
-  client_hidden: "Client hidden",
-  router: "Router",
-  router_client: "Router client",
-  router_late: "Router late",
-  repeater: "Repeater",
-  tracker: "Tracker",
-  sensor: "Sensor",
-  tak: "TAK",
-  tak_tracker: "TAK tracker",
-  lost_and_found: "Lost and found",
-  gateway: "Gateway",
-  node: "Node",
-};
-
 export function deviceRoleLabel(
   device: Pick<DeviceRead, "role" | "is_gateway">,
-  labels: DeviceRoleLabels = EN_DEVICE_ROLE_LABELS,
+  labels: DeviceRoleLabels,
 ): string {
   const role = device.role?.trim();
   if (!role) return device.is_gateway ? labels.gateway : labels.node;
@@ -60,10 +47,11 @@ export function deviceLastSeen(device: Pick<DeviceRead, "last_seen" | "discovere
   return device.last_seen ?? device.discovered_at ?? null;
 }
 
+const MISSED_PUBLISHES = 5;
+
 export function deviceSilent(
   device: Pick<DeviceRead, "last_seen" | "discovered_at" | "publish_interval_seconds">,
   nowMs = Date.now(),
-  missed = 5,
 ): boolean {
   const lastSeen = deviceLastSeen(device);
   if (!lastSeen) return true;
@@ -73,7 +61,7 @@ export function deviceSilent(
       : 300) * 1000;
   const seen = Date.parse(lastSeen);
   if (!Number.isFinite(seen)) return true;
-  return seen + missed * intervalMs < nowMs;
+  return seen + MISSED_PUBLISHES * intervalMs < nowMs;
 }
 
 export type CoordinateParse = { ok: true; value: number | null } | { ok: false };
@@ -88,25 +76,6 @@ export function parseCoordinate(raw: string, limit: 90 | 180): CoordinateParse {
   const value = Number(text);
   if (!Number.isFinite(value) || Math.abs(value) > limit) return { ok: false };
   return { ok: true, value };
-}
-
-export type NodeIdFormat = "decimal" | "hex";
-
-const MAX_NODE_ID = 0xffffffff;
-
-// Meshtastic shows node ids as "!7efeee00"; the API wants the decimal number.
-// Hex accepts the "!" (or "0x") prefix or none. Null when empty or invalid.
-export function parseNodeId(raw: string, format: NodeIdFormat): number | null {
-  const text = raw.trim();
-  const digits = format === "hex" ? text.replace(/^(!|0x)/i, "") : text;
-  const pattern = format === "hex" ? /^[0-9a-f]{1,8}$/i : /^\d{1,10}$/;
-  if (!pattern.test(digits)) return null;
-  const value = format === "hex" ? Number.parseInt(digits, 16) : Number(digits);
-  return value <= MAX_NODE_ID ? value : null;
-}
-
-export function formatNodeId(value: number, format: NodeIdFormat): string {
-  return format === "hex" ? `!${value.toString(16).padStart(8, "0")}` : String(value);
 }
 
 // Six decimals is ~0.1 m, finer than any GPS fix a node reports.

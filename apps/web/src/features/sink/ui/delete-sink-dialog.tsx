@@ -5,8 +5,8 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { readApiError } from "@/lib/api-errors";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { readApiError } from "@mtt/contracts/errors";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { sinkTitle } from "@/features/sink/model";
 import { sinkRepository } from "@/features/sink/repository";
 
@@ -82,7 +82,7 @@ export function DeleteSinkDialog({ sink, onClose, onEdit }: DeleteSinkDialogProp
               variant="danger"
               size="small"
               disabled={destroy.isPending}
-              onClick={() => sink && destroy.mutate({ path: { sink_id: sink.id } })}
+              onClick={() => sink && destroy.mutate({ sinkId: sink.id })}
             >
               {destroy.isPending
                 ? formatMessage({ id: "feature.sink.deleteDialog.deleting", defaultMessage: "Deleting" })

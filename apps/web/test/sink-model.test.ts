@@ -1,12 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  brokerHostPort,
   consumerCommand,
-  orderStreams,
   devicesByMesh,
   singleDeviceIds,
-  sinkStreamsError,
   sinkTitle,
 } from "../src/features/sink/model.ts";
 
@@ -14,17 +11,6 @@ test("sinkTitle falls back to the start of the id", () => {
   assert.equal(sinkTitle({ id: "30303030-3030-4303-8303-303030303030", label: "Partner" }), "Partner");
   assert.equal(sinkTitle({ id: "30303030-3030-4303-8303-303030303030", label: "  " }), "Sink 30303030");
   assert.equal(sinkTitle({ id: "30303030-3030-4303-8303-303030303030", label: null }), "Sink 30303030");
-});
-
-test("orderStreams keeps known streams in the API's order, once each", () => {
-  assert.deepEqual(orderStreams(["alarms", "decoded", "alarms", "bogus"]), ["decoded", "alarms"]);
-  assert.deepEqual(orderStreams(new Set(["derived"])), ["derived"]);
-  assert.deepEqual(orderStreams([]), []);
-});
-
-test("sinkStreamsError asks for at least one stream", () => {
-  assert.equal(sinkStreamsError([]), "Choose at least one stream.");
-  assert.equal(sinkStreamsError(["decoded"]), undefined);
 });
 
 test("devicesByMesh groups devices under their mesh, meshes in order", () => {
@@ -47,11 +33,6 @@ test("singleDeviceIds drops devices whose whole mesh is sent, keeps unknown ones
   const meshOf = (id: string) => ({ a: "m1", b: "m2" })[id];
   assert.deepEqual(singleDeviceIds(["a", "b", "gone"], new Set(["m1"]), meshOf), ["b", "gone"]);
   assert.deepEqual(singleDeviceIds(new Set(["a"]), new Set(), meshOf), ["a"]);
-});
-
-test("brokerHostPort splits host:port and defaults to 8883", () => {
-  assert.deepEqual(brokerHostPort("mqtt.example.org:8883"), { host: "mqtt.example.org", port: "8883" });
-  assert.deepEqual(brokerHostPort("mqtt.example.org"), { host: "mqtt.example.org", port: "8883" });
 });
 
 test("consumerCommand quotes credentials for the shell and keeps a persistent session", () => {

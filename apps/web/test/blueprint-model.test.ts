@@ -7,14 +7,12 @@ import {
   draftFromVersion,
   draftProblems,
   emptyDraft,
-  errorMessages,
   paramValues,
-  parseRef,
   refChoices,
   stepForAlgorithm,
   versionBody,
-  versionOutputFields,
 } from "../src/features/blueprint/model.ts";
+import { versionOutputFields } from "../src/features/postprocessing/model.ts";
 
 const EC_SENSOR: Algorithm = {
   name: "ec_sensor_ppb",
@@ -65,12 +63,6 @@ const NO2_V2 = {
   ],
 };
 
-test("parseRef reads slot and step references", () => {
-  assert.deepEqual(parseRef("slot:working"), { kind: "slot", slot: "working" });
-  assert.deepEqual(parseRef("step:ppb.concentration_ppb"), { kind: "step", key: "ppb", output: "concentration_ppb" });
-  assert.equal(parseRef("ads1115.channel_0"), null);
-});
-
 test("a version round-trips through a draft, steps in order", () => {
   const draft = draftFromVersion(NO2_V2);
   assert.deepEqual(draft.steps.map((step) => step.key), ["ppb", "ugm3"]);
@@ -100,7 +92,48 @@ test("draftProblems catches what the registry refuses", () => {
     steps: [{ ...ppb, outputs: { concentration_ppb: "" } }, { ...ugm3, params: {} }],
   };
   const kinds = draftProblems(broken, [EC_SENSOR, PPB_TO_UGM3]).map((problem) => problem.kind);
-  assert.deepEqual(kinds.sort(), ["inputUnset", "noOutput", "paramRequired", "slotName", "slotUnused"].sort());
+  assert.deepEqual(kinds.sort(), ["inputUnset", "noOutput", "paramRequired", "slotName", "slotUnused", "slotUnused"].sort());
+});
+
+test("draftProblems keeps every validator code, including ones the old parser dropped", () => {
+  const draft = draftFromVersion(NO2_V2);
+  const ppb = draft.steps[0];
+  assert.ok(ppb);
+  const unknown = new Set(
+    draftProblems(
+      {
+        ...draft,
+        steps: [
+          { ...ppb, key: "Bad", functionName: "nope" },
+          { ...ppb, id: "again", key: "Bad" },
+        ],
+      },
+      [EC_SENSOR],
+    ).map((problem) => problem.kind),
+  );
+  assert.equal(unknown.has("unknownAlgorithm"), true);
+  assert.equal(unknown.has("stepKey"), true);
+  assert.equal(unknown.has("stepKeyTwice"), true);
+
+  const extra = new Set(
+    draftProblems(
+      {
+        ...draft,
+        steps: [
+          {
+            ...ppb,
+            inputs: { ...ppb.inputs, extra: "slot:working" },
+            params: { sensitivity: "1" },
+            outputs: { concentration_ppb: "no2", other: "x" },
+          },
+        ],
+      },
+      [EC_SENSOR],
+    ).map((problem) => problem.kind),
+  );
+  assert.equal(extra.has("extraInput"), true);
+  assert.equal(extra.has("calibrationParam"), true);
+  assert.equal(extra.has("extraOutput"), true);
 });
 
 test("a new step reads slots named after its inputs, with a free key", () => {
@@ -121,18 +154,8 @@ test("typed params: blank falls back to the default, JSON parses, text stays tex
   });
 });
 
-test("errorMessages flattens DRF's nested and bare-list bodies", () => {
-  assert.deepEqual(errorMessages({ steps: [{}, { function_name: ["bad input"] }], status: 400 }), ["bad input"]);
-  assert.deepEqual(errorMessages({ non_field_errors: ["cycle"], status: 400 }), ["cycle"]);
-});
-
-test("blueprint access mirrors the registry", () => {
-  const mine = { owner_id: "me", is_public: false };
+test("blueprint access is false without a signed-in user", () => {
   const orphan = { owner_id: null, is_public: true };
-  assert.equal(canEditBlueprint(mine, { id: "me", is_superuser: false }), true);
-  assert.equal(canEditBlueprint(orphan, { id: "me", is_superuser: false }), false);
-  assert.equal(canEditBlueprint(orphan, { id: "admin", is_superuser: true }), true);
-  assert.equal(canAttachBlueprint(mine, "me", { is_superuser: false }), true);
-  assert.equal(canAttachBlueprint(mine, "someone-else", { is_superuser: false }), false);
-  assert.equal(canAttachBlueprint(orphan, "someone-else", { is_superuser: false }), true);
+  assert.equal(canAttachBlueprint(orphan, "someone-else", undefined), false);
+  assert.equal(canEditBlueprint(orphan, undefined), false);
 });

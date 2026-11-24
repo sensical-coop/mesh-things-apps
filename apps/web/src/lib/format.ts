@@ -26,24 +26,13 @@ export type FormatLabels = {
   secondUnit: string;
 };
 
-export const EN_FORMAT_LABELS: FormatLabels = {
-  neverSeen: "Never seen",
-  yes: "Yes",
-  no: "No",
-  emDash: "—",
-  hourUnit: "h",
-  minuteUnit: "min",
-  secondUnit: "s",
-};
-
-export function formatWhen(iso: string | null, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+export function formatWhen(iso: string | null, locale: string | undefined, labels: FormatLabels): string {
   if (!iso) return labels.neverSeen;
   return toZoned(iso)?.toLocaleString(locale, whenOpts) ?? iso;
 }
 
 const relativeUnits = ["year", "month", "week", "day", "hour", "minute", "second"] as const;
 
-/** Temporal has no toRelative; Instant.until + RelativeTimeFormat is the MDN path. */
 export function toRelative(iso: string, locale?: string): string | null {
   const zoned = toZoned(iso);
   if (!zoned) return null;
@@ -66,7 +55,7 @@ export function toRelative(iso: string, locale?: string): string | null {
   return rtf.format(0, "second");
 }
 
-export function formatLastSeen(iso: string | null, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+export function formatLastSeen(iso: string | null, locale: string | undefined, labels: FormatLabels): string {
   if (!iso) return labels.neverSeen;
   const abs = formatWhen(iso, locale, labels);
   const rel = toRelative(iso, locale);
@@ -77,7 +66,7 @@ export function formatClock(iso: string, locale?: string): string {
   return toZoned(iso)?.toLocaleString(locale, clockOpts) ?? iso;
 }
 
-export function formatValue(value: unknown, locale?: string, labels: FormatLabels = EN_FORMAT_LABELS): string {
+export function formatValue(value: unknown, locale: string | undefined, labels: FormatLabels): string {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value.toLocaleString(locale, { maximumFractionDigits: 2 });
   }
@@ -94,19 +83,14 @@ export function asNumber(value: unknown): number | null {
 
 export function formatRatio(
   value: number | null | undefined,
-  locale?: string,
-  labels: FormatLabels = EN_FORMAT_LABELS,
+  locale: string | undefined,
+  labels: FormatLabels,
 ): string {
   if (value == null || !Number.isFinite(value)) return labels.emDash;
   return value.toLocaleString(locale, { style: "percent", maximumFractionDigits: 0 });
 }
 
-/** Seconds as hours, minutes, seconds. Empty or invalid → em dash. */
-export function formatSecondsAsHms(
-  seconds: number | null | undefined,
-  locale?: string,
-  labels: FormatLabels = EN_FORMAT_LABELS,
-): string {
+export function formatSecondsAsHms(seconds: number | null | undefined, labels: FormatLabels): string {
   if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return labels.emDash;
   const total = Math.trunc(seconds);
   const h = Math.floor(total / 3600);
@@ -119,8 +103,15 @@ export function formatSecondsAsHms(
   return parts.join(" ");
 }
 
-export function triBool(value: string | null): boolean | undefined {
-  if (value === "true") return true;
-  if (value === "false") return false;
-  return undefined;
+const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
+
+export function formatBytes(bytes: number, locale?: string): string {
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < BYTE_UNITS.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  const digits = unit === 0 || value >= 10 ? 0 : 1;
+  return `${value.toLocaleString(locale, { maximumFractionDigits: digits })} ${BYTE_UNITS[unit]}`;
 }

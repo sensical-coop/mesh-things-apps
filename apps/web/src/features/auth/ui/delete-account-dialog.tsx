@@ -4,7 +4,7 @@ import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
 import { StatusCopy } from "@/components/status-copy";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 import { authRepository } from "@/features/auth/repository";
 
 export function DeleteAccountDialog({
@@ -55,7 +55,7 @@ export function DeleteAccountDialog({
             variant="danger"
             size="small"
             disabled={destroy.isPending}
-            onClick={() => destroy.mutate({})}
+            onClick={() => destroy.mutate()}
           >
             {destroy.isPending
               ? formatMessage({ id: "feature.auth.deleteAccountDialog.deleting", defaultMessage: "Deleting" })

@@ -1,15 +1,16 @@
 import { useMap } from "@mtt/ui/components/ui/map";
 import { useEffect, useRef } from "react";
 
+/** Zoom used for a single point, and the cap when points sit close together. */
+const MAX_ZOOM = 15;
+
 export type FitToPointsProps = {
   points: { lng: number; lat: number }[];
-  /** Zoom used for a single point, and the cap when points sit close together. */
-  maxZoom?: number;
 };
 
 // Frames every point, not just the first. Snaps on the first fit so the map
 // never visibly jumps on arrival; later changes ease.
-export function FitToPoints({ points, maxZoom = 15 }: FitToPointsProps): null {
+export function FitToPoints({ points }: FitToPointsProps): null {
   const { map } = useMap();
   const fitted = useRef(false);
   const key = points.map((p) => `${p.lng},${p.lat}`).join(";");
@@ -25,10 +26,10 @@ export function FitToPoints({ points, maxZoom = 15 }: FitToPointsProps): null {
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)],
       ],
-      { padding: 48, maxZoom, duration },
+      { padding: 48, maxZoom: MAX_ZOOM, duration },
     );
     // `key` stands in for `points`, whose identity changes every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, key, maxZoom]);
+  }, [map, key]);
   return null;
 }

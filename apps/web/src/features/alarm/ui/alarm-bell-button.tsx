@@ -31,7 +31,6 @@ export function AlarmBellButton({
       />
       {open ? (
         <AlarmDetectorsDialog
-          open={open}
           onClose={() => setOpen(false)}
           deviceUuid={deviceUuid}
           channel={channel}

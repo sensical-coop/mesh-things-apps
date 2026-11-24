@@ -7,7 +7,6 @@ import { useAccountTermsStanding } from "@/features/terms/use-account-terms-stan
 import { AcceptAccountTermsDialog } from "@/features/terms/ui/accept-account-terms-dialog";
 import { TermsStandingChip } from "@/features/terms/ui/terms-standing-chip";
 
-/** Profile: the account terms accepted at signup. Mesh and source terms live on each mesh and source. */
 export function AccountTermsPanel(): ReactElement | null {
   const { formatMessage } = useIntl();
   const standing = useAccountTermsStanding();

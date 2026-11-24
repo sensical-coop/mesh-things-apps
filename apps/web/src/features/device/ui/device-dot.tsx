@@ -14,7 +14,7 @@ export type DeviceDotProps = {
 // token turns near-black and the dot vanishes on dark tiles. The plate keeps
 // translucent fills opaque; the outline lifts pale ones off tiles.
 export function DeviceDot({ isGateway, size = "sm", pulse = false, className }: DeviceDotProps): ReactElement {
-  const fill = isGateway ? "bg-cyan-200" : "bg-accent-500";
+  const fill = isGateway ? "bg-gateway" : "bg-accent-500";
   return (
     <span className={cx("relative flex items-center justify-center", size === "sm" ? "size-3" : "size-4", className)} aria-hidden>
       {pulse ? (

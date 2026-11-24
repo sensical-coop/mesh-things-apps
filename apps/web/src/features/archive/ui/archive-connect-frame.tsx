@@ -166,11 +166,11 @@ export function ArchiveConnectFrame({ access, prefix, meshTitle }: ArchiveConnec
         </p>
         {error ? <StatusCopy>{error}</StatusCopy> : null}
         {credentials ? (
-          <dl className="oa-arrive grid gap-3 sm:grid-cols-2">
+          <dl className="grid oa-arrive gap-3 sm:grid-cols-2">
             {rows.map(([label, value]) => (
               <div key={label} className="flex min-w-0 flex-col gap-1">
                 <dt className="text-caption-1-medium text-text-secondary">{label}</dt>
-                <dd className="min-w-0 break-all font-mono text-caption-1-regular text-text-primary">{value}</dd>
+                <dd className="min-w-0 font-mono text-caption-1-regular break-all text-text-primary">{value}</dd>
               </div>
             ))}
           </dl>

@@ -10,6 +10,10 @@ export const ARCHIVE_ENABLED = process.env.MOCK_ARCHIVE !== "false";
 /** Mirrors READINGS__ARCHIVE_STS: off, a provider without STS, the credentials route answers 404. */
 export const ARCHIVE_ISSUES_CREDENTIALS = ARCHIVE_ENABLED && process.env.MOCK_ARCHIVE_STS !== "false";
 
+/** Where the mock's presigned links point, standing in for the S3 endpoint. */
+export const MOCK_S3_PATH = "/mock-s3/";
+/** The presigned links carry this as `X-Amz-Signature`; the mock checks none. */
+export const MOCK_S3_SIGNATURE = "mock";
 export const ARCHIVE_BUCKET = "meshtastic-telemetry";
 export const ARCHIVE_PREFIX = "telemetry";
 /** READINGS__ARCHIVE_PUBLIC_ENDPOINT_URL as the dev overlay publishes MinIO. */

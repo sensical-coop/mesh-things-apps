@@ -54,17 +54,18 @@
   color: var(--color-fd-foreground);
 }
 
-.docs-portal #nd-sidebar a,
+/* Fumadocs renders the sidebar only inside the portal; an attribute selector keeps the ID weight out. */
+[id="nd-sidebar"] a,
 .docs-portal button {
   border-radius: calc(infinity * 1px);
 }
 
-.docs-portal :is(h1, h2, h3, h4, strong, b) {
+.docs-portal :where(h1, h2, h3, h4, strong, b) {
   font-weight: 500;
 }
 
-@media (width >= 48rem) {
-  .docs-portal #nd-page-panel {
+.docs-portal :where([id="nd-page-panel"]) {
+  @variant md {
     border-radius: 24px;
     corner-shape: squircle;
     box-shadow: var(--shadow-card);
@@ -100,20 +101,19 @@
   display: block;
   height: auto;
   margin-inline: auto;
+
+  /* Phones scroll a wide diagram sideways instead of shrinking its text. */
+  @variant sm {
+    max-width: 100%;
+  }
 }
 
 .docs-diagram text {
   font-family: inherit;
 }
 
-.docs-diagram .node rect {
+/* Mermaid's node boxes. This sheet only loads in the docs app, where nothing else uses .node. */
+.node rect {
   rx: 8px;
   ry: 8px;
-}
-
-/* Phones scroll a wide diagram sideways instead of shrinking its text. */
-@media (width >= 40rem) {
-  .docs-diagram svg {
-    max-width: 100%;
-  }
 }

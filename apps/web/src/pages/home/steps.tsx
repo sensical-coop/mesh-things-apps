@@ -7,7 +7,8 @@ import {
 } from "@mtt/ui/reui/frame";
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
+import { SectionHeading } from "./section-heading";
 import { LandingPacketFeed } from "./packet-feed";
 import { LandingReveal } from "./reveal";
 
@@ -22,15 +23,13 @@ export function LandingSteps(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <section id="why" className="scroll-mt-24">
-      <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
-          <FormattedMessage
-            id="page.home.steps.heading"
-            defaultMessage="Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>"
-            values={richTextValues}
-          />
-        </h2>
-      </LandingReveal>
+      <SectionHeading>
+        <FormattedMessage
+          id="page.home.steps.heading"
+          defaultMessage="Get started in just three steps: <secondary>name your network, add your devices, and visualize your data. It's that simple.</secondary>"
+          values={richTextValues}
+        />
+      </SectionHeading>
       <LandingReveal className="mt-12 sm:mt-16">
         <ul className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           <li>
@@ -92,9 +91,7 @@ export function LandingSteps(): ReactElement {
                   })}
                 </FrameDescription>
               </FrameHeader>
-              <FramePanel className="h-44 overflow-hidden p-0 [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]">
-                <LandingPacketFeed />
-              </FramePanel>
+              <LandingPacketFeed className="h-44" />
             </Frame>
           </li>
           <li>
@@ -121,7 +118,7 @@ export function LandingSteps(): ReactElement {
                     <div className="h-1.5 min-w-0 flex-1 rounded-full bg-background-tertiary-default">
                       <div className="h-full rounded-full bg-accent-500" style={{ width: channel.fill }} />
                     </div>
-                    <p className="w-8 shrink-0 text-right font-mono text-caption-1-regular tabular-nums text-text-tertiary">
+                    <p className="w-8 shrink-0 text-right font-mono text-caption-1-regular text-text-tertiary tabular-nums">
                       {channel.value}
                     </p>
                   </div>

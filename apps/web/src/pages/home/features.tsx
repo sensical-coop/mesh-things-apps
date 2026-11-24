@@ -9,7 +9,8 @@ import {
 import { RiLineChartLine, RiListCheck3, RiRouterLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { richTextValues } from "@/lib/intl-tags";
+import { richTextValues } from "./intl-tags";
+import { SectionHeading } from "./section-heading";
 import { LandingPacketFeed } from "./packet-feed";
 import { LandingReveal } from "./reveal";
 
@@ -54,15 +55,13 @@ export function LandingFeatures(): ReactElement {
   const { formatMessage } = useIntl();
   return (
     <section id="features" className="scroll-mt-24">
-      <LandingReveal>
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-title-1-medium tracking-tight text-text-primary sm:text-display-3-medium">
-          <FormattedMessage
-            id="page.home.features.heading"
-            defaultMessage="Control your mesh, your devices, and <secondary>the data they send.</secondary>"
-            values={richTextValues}
-          />
-        </h2>
-      </LandingReveal>
+      <SectionHeading>
+        <FormattedMessage
+          id="page.home.features.heading"
+          defaultMessage="Control your mesh, your devices, and <secondary>the data they send.</secondary>"
+          values={richTextValues}
+        />
+      </SectionHeading>
       <LandingReveal className="mt-12 sm:mt-16">
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           <li>
@@ -79,9 +78,7 @@ export function LandingFeatures(): ReactElement {
                   })}
                 </FrameDescription>
               </FrameHeader>
-              <FramePanel className="h-44 overflow-hidden p-0 [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]">
-                <LandingPacketFeed />
-              </FramePanel>
+              <LandingPacketFeed className="h-44" />
             </Frame>
           </li>
           <li>
@@ -129,7 +126,7 @@ export function LandingFeatures(): ReactElement {
                 </FrameDescription>
               </FrameHeader>
               <FramePanel className="flex h-44 flex-col justify-end gap-3">
-                <p className="font-mono text-title-1-medium tabular-nums tracking-tight text-text-primary">22.4 °C</p>
+                <p className="font-mono text-title-1-medium tracking-tight text-text-primary tabular-nums">22.4 °C</p>
                 <p className="text-caption-1-regular text-text-tertiary">
                   {formatMessage({
                     id: "page.home.features.channels.sample",

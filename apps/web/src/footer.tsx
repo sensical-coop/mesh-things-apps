@@ -1,12 +1,14 @@
 import { ButtonLink } from "@mtt/ui/components/base/buttons/button";
+import { BrandMark } from "@mtt/ui/components/brand-mark";
 import { cx } from "@mtt/ui/utils";
 import { RiGithubLine, RiLinkedinLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
-import { type ReactElement, type ReactNode } from "react";
+import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
-import { routes } from "@/router";
-import { API_URL } from "@/lib/api-url";
-import { BrandMark, SITE, pageWidth } from "@/components/brand";
+import { API_URL } from "@mtt/contracts/runtime";
+import { FooterColumn } from "@/footer-column";
+import { CONTACT_URL, COPYRIGHT, SITE, pageWidth, siteLinkClass } from "@/components/brand";
+import { NAV_PRODUCT } from "@/nav-items";
 
 const socials = [
   { href: "https://github.com/sensical-coop/", label: "GitHub", icon: RiGithubLine },
@@ -16,18 +18,6 @@ const socials = [
     icon: RiLinkedinLine,
   },
 ] as const;
-
-const footerLinkClass =
-  "rounded-full text-body-medium text-text-secondary outline-hidden hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring";
-
-function FooterColumn({ title, children }: { title: string; children: ReactNode }): ReactElement {
-  return (
-    <div className="flex flex-col gap-3">
-      <p className="text-caption-1-medium tracking-[0.12em] text-text-tertiary uppercase">{title}</p>
-      {children}
-    </div>
-  );
-}
 
 export function Footer(): ReactElement {
   const { formatMessage } = useIntl();
@@ -57,29 +47,22 @@ export function Footer(): ReactElement {
         <div className="flex flex-wrap gap-10">
           <FooterColumn title={formatMessage({ id: "console.footer.product", defaultMessage: "Product" })}>
             <nav aria-label="Product" className="flex flex-col gap-2">
-              <Link to={routes.meshes} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.meshes", defaultMessage: "Meshes" })}
-              </Link>
-              <Link to={routes.devices} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.devices", defaultMessage: "Devices" })}
-              </Link>
-              <Link to={routes.alarms} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" })}
-              </Link>
-              <Link to={routes.blueprints} className={footerLinkClass}>
-                {formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" })}
-              </Link>
+              {NAV_PRODUCT.map((item) => (
+                <Link key={item.to} to={item.to} className={siteLinkClass}>
+                  {formatMessage(item.label)}
+                </Link>
+              ))}
             </nav>
           </FooterColumn>
           <FooterColumn title="Sensical">
             <nav aria-label="Sensical" className="flex flex-col gap-2">
-              <a href={SITE} className={footerLinkClass}>
+              <a href={SITE} className={siteLinkClass}>
                 {formatMessage({ id: "console.footer.website", defaultMessage: "Website" })}
               </a>
-              <a href={`${SITE}/contact`} className={footerLinkClass}>
+              <a href={CONTACT_URL} className={siteLinkClass}>
                 {formatMessage({ id: "console.footer.contact", defaultMessage: "Contact" })}
               </a>
-              <a href={API_URL} className={footerLinkClass}>
+              <a href={API_URL} className={siteLinkClass}>
                 {formatMessage({ id: "console.footer.api", defaultMessage: "API" })}
               </a>
             </nav>
@@ -87,7 +70,7 @@ export function Footer(): ReactElement {
         </div>
       </div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-caption-1-medium text-text-tertiary">© 2026 Sensical SCCL</p>
+        <p className="text-caption-1-medium text-text-tertiary">{COPYRIGHT}</p>
         <ul className="flex gap-2">
           {socials.map((social) => (
             <li key={social.href}>

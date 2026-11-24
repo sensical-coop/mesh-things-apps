@@ -1,15 +1,24 @@
-import { devicesUpdate } from "@mtt/contracts";
 import {
-  readingsArchiveMeshesCredentialsCreateMutation,
-  readingsArchiveMeshesRetrieveOptions,
-  readingsArchiveMeshesRetrieveQueryKey,
-} from "@mtt/contracts/query";
+  getReadingsArchiveMeshesCredentialsCreateMutationOptions,
+  getReadingsArchiveMeshesPartitionsRetrieveUrl,
+  getReadingsArchiveMeshesRetrieveQueryKey,
+  getReadingsArchiveMeshesRetrieveQueryOptions,
+} from "@mtt/contracts/api";
+import { readApiError } from "@mtt/contracts/errors";
+import { API_URL } from "@mtt/contracts/runtime";
+import { whenId } from "@/lib/query-when-id";
+
+/** A 404 on one's own mesh means the instance runs no archive; asking again won't help. */
+export function isArchiveUnavailable(error: unknown): boolean {
+  return readApiError(error).status === 404;
+}
 
 export const archiveRepository = {
-  manifest: readingsArchiveMeshesRetrieveOptions,
-  manifestKey: readingsArchiveMeshesRetrieveQueryKey,
-  credentials: readingsArchiveMeshesCredentialsCreateMutation,
-  /** One device's setting; a mesh-wide switch calls it per device, as the API has no bulk route. */
-  setDeviceArchive: (deviceUuid: string, enabled: boolean) =>
-    devicesUpdate({ path: { device_uuid: deviceUuid }, body: { archive_enabled: enabled }, throwOnError: true }),
+  manifest: (meshId: string | null | undefined) =>
+    whenId(meshId, ["archive", "manifest", "none"], getReadingsArchiveMeshesRetrieveQueryOptions),
+  manifestKey: getReadingsArchiveMeshesRetrieveQueryKey,
+  credentials: getReadingsArchiveMeshesCredentialsCreateMutationOptions,
+  /** Where one hour downloads from: a redirect to a temporary link, followed by the browser. */
+  partitionUrl: (meshId: string, partition: { dt: string; hour: number }) =>
+    `${API_URL.replace(/\/+$/, "")}${getReadingsArchiveMeshesPartitionsRetrieveUrl(meshId, partition.dt, partition.hour)}`,
 };

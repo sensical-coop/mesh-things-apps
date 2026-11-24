@@ -2,7 +2,7 @@ import { Button } from "@mtt/ui/components/base/buttons/button";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
 import { Modal } from "@/components/modal";
-import { dialogActionsClass } from "@/lib/dialog-actions";
+import { dialogActionsClass } from "@mtt/ui/forms/dialog-actions";
 
 export type StartRefusedDialogProps = {
   /** Why the API refused to start; empty keeps the dialog closed. */

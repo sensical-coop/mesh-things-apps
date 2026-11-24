@@ -1,17 +1,16 @@
 import { RiArrowLeftLine } from "@remixicon/react";
 import { type ReactElement } from "react";
 import { useIntl } from "react-intl";
+import { NoticePanel } from "@/components/notice-panel";
 import { RouterButtonLink } from "@/components/router-button-link";
 import { routes } from "@/router";
 
 export type NotFoundKind = "page" | "mesh" | "device" | "blueprint" | "operatorRequest";
 
 export type NotFoundProps = {
-  /** What was missing: picks the copy and where the way back leads. */
   kind?: NotFoundKind;
 };
 
-/** The console's 404: an unknown path, a malformed id, or an id the API doesn't know. */
 export function NotFound({ kind = "page" }: NotFoundProps): ReactElement {
   const { formatMessage } = useIntl();
   const copy = {
@@ -63,13 +62,13 @@ export function NotFound({ kind = "page" }: NotFoundProps): ReactElement {
   }[kind];
 
   return (
-    <section className="oa-squircle oa-arrive flex flex-col items-start gap-3 bg-background-secondary-default p-6 shadow-card sm:p-10">
+    <NoticePanel>
       <p className="font-mono text-caption-1-regular text-text-tertiary">404</p>
       <h1 className="text-title-2-medium tracking-tight text-text-primary">{copy.title}</h1>
       <p className="max-w-prose text-body-regular text-text-secondary">{copy.description}</p>
       <RouterButtonLink to={copy.to} size="small" variant="secondary" leadingIcon={RiArrowLeftLine} className="mt-2">
         {copy.back}
       </RouterButtonLink>
-    </section>
+    </NoticePanel>
   );
 }
