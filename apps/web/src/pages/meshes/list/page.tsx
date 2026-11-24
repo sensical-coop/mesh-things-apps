@@ -44,6 +44,7 @@ import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
+import { ProtocolField } from "@/features/mesh/ui/protocol-field";
 import { MeshOriginDialog } from "@/features/mesh/ui/mesh-origin-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
@@ -478,6 +479,8 @@ function CreateMeshDialog({
   // Only operators have sources to offer; everyone else's meshes use the default broker.
   const { isOperator } = useOwnerDirectory();
   const sources = useQuery({ ...sourceRepository.list(), enabled: open && isOperator });
+  const protocols = useQuery({ ...meshRepository.protocols(), enabled: open });
+  const [protocol, setProtocol] = useState<string | null>(null);
   const sourceItems = [
     {
       label: formatMessage({ id: "page.meshes.list.createDialog.defaultBroker", defaultMessage: "Default broker" }),
@@ -508,6 +511,7 @@ function CreateMeshDialog({
         psk_b64: String(form.get("psk_b64") ?? ""),
         label: label === "" ? null : label,
         discover_gateways: form.get("discover_gateways") === "on",
+        ...(protocol !== null ? { protocol } : {}),
         ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
         // Required on the default broker; a mesh on a source is covered by the source's terms.
         ...(picked === DEFAULT_BROKER && termsAcceptance
@@ -589,6 +593,16 @@ function CreateMeshDialog({
               })}
             </p>
           </div>
+          <ProtocolField
+            id="mesh-protocol"
+            protocols={protocols.data}
+            failed={protocols.isError}
+            onRetry={() => void protocols.refetch()}
+            current={null}
+            value={protocol}
+            onValueChange={setProtocol}
+            error={errors.protocol}
+          />
           {isOperator ? (
             <FormField
               id="mesh-source"

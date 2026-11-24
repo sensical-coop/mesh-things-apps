@@ -50,6 +50,14 @@ La columna de estado de la consola muestra primero los estados más urgentes: el
 
 Un dispositivo registrado de este modo tiene `discovered_at` informado, y puede rechazarse como cualquier otro dispositivo.
 
+## Protocolo
+
+`protocol` es la versión de Meshtastic que usan los dispositivos de la malla, `2.7` o `2.8`. Los paquetes se decodifican con esa versión, y las lecturas mantienen las mismas unidades y nombres de canal sea cual sea la versión. Una malla nueva se declara con la versión por defecto, `2.8`. `GET /protocols` lista cada versión con su estado: actual, compatible, obsoleta o retirada.
+
+La página de la malla muestra la versión junto a su nombre. Te avisa cuando la versión está obsoleta o retirada, y cuando algunos dispositivos de la malla usan una versión que no coincide. Esos dispositivos tienen `protocol_mismatch` activado, y parte de sus lecturas se pierden o se leen mal hasta que actualices su firmware o cambies el protocolo de la malla. Una versión retirada ya no se puede elegir, pero una malla que ya la usa sigue decodificándose.
+
+Cambiar el protocolo afecta a los paquetes que llegan después. Las lecturas ya guardadas se quedan como están.
+
 ## Mallas públicas
 
 Conviene activar `is_public` cuando otros usuarios necesitan acceso de lectura a la flota y a su histórico. Los lectores públicos no pueden modificar la malla, consultar la PSK ni consultar los dispositivos rechazados.

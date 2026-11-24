@@ -22,6 +22,7 @@ import { termsLocale, termsStanding } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
+import { ProtocolField } from "@/features/mesh/ui/protocol-field";
 
 /** Select value for "no source": the instance's own broker. */
 const DEFAULT_BROKER = "default";
@@ -41,6 +42,7 @@ export function EditMeshDialog({
     | "owner_id"
     | "source_id"
     | "discover_gateways"
+    | "protocol"
     | "terms_accepted_version"
     | "terms_expires_at"
   >;
@@ -73,15 +75,31 @@ export function EditMeshDialog({
       : []),
   ];
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const protocols = useQuery(meshRepository.protocols());
+  const [protocol, setProtocol] = useState<string | null>(null);
+  // The dialog stays mounted on the mesh page, so an unsaved pick is dropped on close.
+  const close = () => {
+    setProtocol(null);
+    onClose();
+  };
   const update = useMutation({
     ...meshRepository.update(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      await queryClient.invalidateQueries({
-        queryKey: meshRepository.retrieveKey({ path: { mesh_id: mesh.id } }),
-      });
+    onSuccess: async (_saved, { body }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: meshRepository.listKey() }),
+        queryClient.invalidateQueries({ queryKey: meshRepository.retrieveKey({ path: { mesh_id: mesh.id } }) }),
+        // The mesh's protocol decides every device's `protocol_mismatch`.
+        ...(body?.protocol === undefined
+          ? []
+          : [
+              queryClient.invalidateQueries({ queryKey: meshRepository.devicesKey({ path: { mesh_id: mesh.id } }) }),
+              queryClient.invalidateQueries({
+                predicate: (query) => String((query.queryKey[0] as { _id?: unknown })?._id ?? "").startsWith("devices"),
+              }),
+            ]),
+      ]);
       await onSaved?.();
-      onClose();
+      close();
     },
     onError: (error) => setErrors(readApiError(error).fields),
   });
@@ -121,6 +139,7 @@ export function EditMeshDialog({
       psk_b64?: string;
       source_id?: string | null;
       discover_gateways?: boolean;
+      protocol?: string;
     } = {
       label: label === "" ? null : label,
       channel_id: channelId,
@@ -130,6 +149,8 @@ export function EditMeshDialog({
     // Sent only on a change, so saving other fields isn't refused over a default PSK.
     const discover = form.get("discover_gateways") === "on";
     if (discover !== (mesh.discover_gateways ?? false)) body.discover_gateways = discover;
+    // Only a change redistributes the mesh to its gateways.
+    if (protocol !== null && protocol !== mesh.protocol) body.protocol = protocol;
     if (canPickSource) {
       const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
       const sourceId = picked === DEFAULT_BROKER ? null : picked;
@@ -158,9 +179,9 @@ export function EditMeshDialog({
       )}
       description={formatMessage({
         id: "feature.mesh.editDialog.description",
-        defaultMessage: "Label, channel ID, pre-shared key, and its authorised viewers.",
+        defaultMessage: "Label, channel ID, pre-shared key, protocol, and its authorised viewers.",
       })}
-      onClose={onClose}
+      onClose={close}
     >
       <form key={mesh.id} className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
@@ -228,6 +249,16 @@ export function EditMeshDialog({
               })}
             </p>
           </div>
+          <ProtocolField
+            id="mesh-edit-protocol"
+            protocols={protocols.data}
+            failed={protocols.isError}
+            onRetry={() => void protocols.refetch()}
+            current={mesh.protocol ?? null}
+            value={protocol}
+            onValueChange={setProtocol}
+            error={errors.protocol}
+          />
           {canPickSource ? (
             <FormField
               id="mesh-edit-source"
@@ -276,7 +307,7 @@ export function EditMeshDialog({
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
+          <Button type="button" variant="secondary" size="small" onClick={close}>
             {formatMessage({ id: "feature.mesh.editDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={update.isPending}>

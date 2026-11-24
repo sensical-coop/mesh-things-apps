@@ -59,6 +59,9 @@ import { DeviceLinksFrame } from "@/features/mesh-network/ui/device-links-frame"
 import { DeviceTrackFrame } from "@/features/mesh-network/ui/device-track-frame";
 import { DeviceTrafficFrame } from "@/features/mesh-network/ui/device-traffic-frame";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
+import { DeviceProtocolBadge } from "@/features/device/ui/protocol-badge";
+import { DeviceProtocolNotice } from "@/features/device/ui/protocol-notice";
+import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
 
@@ -99,6 +102,7 @@ export function DeviceDetailPage(): ReactElement {
   // Only on an operator's mesh, and only for its owner or a superuser.
   const canArchive = device.data != null && canEdit && canArchiveDevice(device.data, me, mesh.data?.owner_id);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [meshEditOpen, setMeshEditOpen] = useState(false);
   const [scrollToChannel, setScrollToChannel] = useState<string | null>(null);
 
   function handleViewChart(channel: string) {
@@ -193,6 +197,9 @@ export function DeviceDetailPage(): ReactElement {
           onClose={() => setSettingsOpen(false)}
         />
       ) : null}
+      {mesh.data && canEdit ? (
+        <EditMeshDialog mesh={mesh.data} open={meshEditOpen} onClose={() => setMeshEditOpen(false)} />
+      ) : null}
       <Tabs
         className="flex flex-col gap-0"
         value={tab}
@@ -231,6 +238,7 @@ export function DeviceDetailPage(): ReactElement {
                 </h1>
                 {device.data ? <DeviceRoleBadge device={device.data} /> : null}
                 {device.data ? <DeviceSilentBadge device={device.data} /> : null}
+                {device.data ? <DeviceProtocolBadge device={device.data} /> : null}
               </div>
             </div>
           </div>
@@ -246,6 +254,14 @@ export function DeviceDetailPage(): ReactElement {
             </div>
           ) : null}
         </div>
+        {device.data ? (
+          <div className="mt-6">
+            <DeviceProtocolNotice
+              device={device.data}
+              onChangeMesh={canEdit ? () => setMeshEditOpen(true) : undefined}
+            />
+          </div>
+        ) : null}
         <TabsList className="mt-3 p-1">
           <TabsTrigger value="status" className="px-4 py-1.5 text-body-medium">
             {formatMessage({ id: "page.devices.detail.tabs.status", defaultMessage: "Status" })}
@@ -380,6 +396,41 @@ function DeviceStatusTab({
                     formatMessage({ id: "page.devices.detail.identity.unknownHardware", defaultMessage: "Unknown" })
                   }
                 />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.protocol", defaultMessage: "Protocol" })}
+                  value={formatMessage(
+                    { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version}, its mesh's" },
+                    { version: device.data.protocol },
+                  )}
+                />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.firmware", defaultMessage: "Firmware" })}
+                  value={
+                    device.data.firmware_version
+                      ? device.data.firmware_seen_at
+                        ? formatMessage(
+                            {
+                              id: "page.devices.detail.identity.firmwareSeen",
+                              defaultMessage: "{version}, reported {when}",
+                            },
+                            { version: device.data.firmware_version, when: formatWhen(device.data.firmware_seen_at) },
+                          )
+                        : device.data.firmware_version
+                      : formatMessage({
+                          id: "page.devices.detail.identity.noFirmware",
+                          defaultMessage: "Not reported. Only a device with its own MQTT uplink and map reports sends it.",
+                        })
+                  }
+                />
+                {device.data.region || device.data.modem_preset ? (
+                  <Item
+                    label={formatMessage({
+                      id: "page.devices.detail.identity.radio",
+                      defaultMessage: "Region / preset",
+                    })}
+                    value={`${device.data.region ?? "—"} / ${device.data.modem_preset ?? "—"}`}
+                  />
+                ) : null}
                 <Item
                   label={formatMessage({
                     id: "page.devices.detail.identity.readPublish",
