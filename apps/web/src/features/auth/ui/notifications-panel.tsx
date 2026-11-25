@@ -123,28 +123,19 @@ export function NotificationsPanel(): ReactElement {
                   />
                   <FieldContent>
                     <FieldLabel htmlFor="profile-status-alerts" className="text-body-regular text-text-primary">
-                      {isOperator
-                        ? formatMessage({
-                            id: "page.profile.statusAlerts.label",
-                            defaultMessage:
-                              "Email me when a source or sink stops working, or a device outgrows its mesh's protocol",
-                          })
-                        : formatMessage({
-                            id: "page.profile.statusAlerts.protocolLabel",
-                            defaultMessage: "Email me when a device outgrows its mesh's protocol",
-                          })}
+                      {formatMessage({ id: "page.profile.statusAlerts.label", defaultMessage: "Send status alerts" })}
                     </FieldLabel>
                     <FieldDescription className="text-caption-1-regular text-text-tertiary">
                       {isOperator
                         ? formatMessage({
                             id: "page.profile.statusAlerts.hint",
                             defaultMessage:
-                              "Sent once when a source you created stays disconnected, a sink with meshes or devices attached has nobody connected, or a device on a mesh you own runs a newer protocol than the mesh declares.",
+                              "Status alerts are sent once when any of the following happens: a source you created was disconnected, a sink with meshes or devices attached has nobody connected, or a device on a mesh you own runs a newer protocol than the one its mesh declares.",
                           })
                         : formatMessage({
                             id: "page.profile.statusAlerts.protocolHint",
                             defaultMessage:
-                              "Sent once when a device on a mesh you own runs a newer protocol than the mesh declares, so some of its readings are lost or misread.",
+                              "Status alerts are sent once when a device on a mesh you own runs a newer protocol than the one its mesh declares.",
                           })}
                     </FieldDescription>
                   </FieldContent>
@@ -167,7 +158,7 @@ export function NotificationsPanel(): ReactElement {
                         {formatMessage({
                           id: "page.profile.sourceRateAlerts.hint",
                           defaultMessage:
-                            "Sent once when a source you created averages more messages per second over an hour than this instance allows. Administrators are always told.",
+                            "This alert is sent once a source you created sends more messages per second than normal. Platform administrators are always notified of these events.",
                         })}
                       </FieldDescription>
                     </FieldContent>

@@ -36,7 +36,7 @@ import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
-import { MESH_STATUS_RANK, canEditMesh, meshStatus, meshTitle } from "@/features/mesh/model";
+import { MESH_STATUS_RANK, canEditMesh, discoveryNeedsOperator, meshStatus, meshTitle } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
 import { termsLocale, type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
@@ -45,6 +45,7 @@ import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { ProtocolField } from "@/features/mesh/ui/protocol-field";
+import { DiscoveryOperatorWarning } from "@/features/mesh/ui/discovery-operator-warning";
 import { MeshOriginDialog } from "@/features/mesh/ui/mesh-origin-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
@@ -481,9 +482,14 @@ function CreateMeshDialog({
   const sources = useQuery({ ...sourceRepository.list(), enabled: open && isOperator });
   const protocols = useQuery({ ...meshRepository.protocols(), enabled: open });
   const [protocol, setProtocol] = useState<string | null>(null);
+  const [discover, setDiscover] = useState(false);
+  const [typedPsk, setTypedPsk] = useState("");
+  const discoveryBlocked = !isOperator && discoveryNeedsOperator(discover, typedPsk, null);
   // The dialog stays mounted between sessions, so a pick from a cancelled one is dropped on close.
   const close = () => {
     setProtocol(null);
+    setDiscover(false);
+    setTypedPsk("");
     onClose();
   };
   const sourceItems = [
@@ -510,6 +516,7 @@ function CreateMeshDialog({
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
     const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
+    if (discoveryBlocked) return;
     const parsed = zMeshesCreateData.safeParse({
       body: {
         channel_id: String(form.get("channel_id") ?? "").trim(),
@@ -579,7 +586,14 @@ function CreateMeshDialog({
             })}
             error={errors.psk_b64}
           >
-            <Input id="mesh-psk" name="psk_b64" type="password" required autoComplete="new-password" />
+            <Input
+              id="mesh-psk"
+              name="psk_b64"
+              type="password"
+              required
+              autoComplete="new-password"
+              onChange={(event) => setTypedPsk(event.target.value)}
+            />
           </FormField>
           <div className="flex flex-col gap-1">
             <FormCheckbox
@@ -589,14 +603,16 @@ function CreateMeshDialog({
                 id: "page.meshes.list.createDialog.discoverGateways",
                 defaultMessage: "Add gateways automatically",
               })}
+              onCheckedChange={setDiscover}
             />
             <p className="pl-7 text-caption-1-regular text-text-tertiary">
               {formatMessage({
                 id: "page.meshes.list.createDialog.discoverGatewaysHint",
                 defaultMessage:
-                  "Registers any gateway whose packets decode with this channel and PSK, so you don't add them one by one. Only an operator can use it with a default or blank PSK.",
+                  "Register gateways automatically. Already discovered gateways are not removed if disabled.",
               })}
             </p>
+            {discoveryBlocked ? <DiscoveryOperatorWarning /> : null}
           </div>
           <ProtocolField
             id="mesh-protocol"
@@ -646,7 +662,7 @@ function CreateMeshDialog({
           <Button type="button" variant="secondary" size="small" onClick={close}>
             {formatMessage({ id: "page.meshes.list.createDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
-          <Button type="submit" size="small" disabled={create.isPending}>
+          <Button type="submit" size="small" disabled={create.isPending || discoveryBlocked}>
             {create.isPending
               ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
               : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}

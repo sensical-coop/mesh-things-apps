@@ -15,7 +15,7 @@ import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { dialogActionsClass } from "@/lib/dialog-actions";
 import { useMe } from "@/features/auth/use-me";
 import { meshRepository } from "@/features/mesh/repository";
-import { meshTitle } from "@/features/mesh/model";
+import { discoveryNeedsOperator, meshTitle } from "@/features/mesh/model";
 import { sourceTitle } from "@/features/source/model";
 import { sourceRepository } from "@/features/source/repository";
 import { termsLocale, termsStanding } from "@/features/terms/model";
@@ -23,6 +23,7 @@ import { termsRepository } from "@/features/terms/repository";
 import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { ProtocolField } from "@/features/mesh/ui/protocol-field";
+import { DiscoveryOperatorWarning } from "@/features/mesh/ui/discovery-operator-warning";
 
 /** Select value for "no source": the instance's own broker. */
 const DEFAULT_BROKER = "default";
@@ -43,6 +44,7 @@ export function EditMeshDialog({
     | "source_id"
     | "discover_gateways"
     | "protocol"
+    | "psk_b64"
     | "terms_accepted_version"
     | "terms_expires_at"
   >;
@@ -77,9 +79,18 @@ export function EditMeshDialog({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const protocols = useQuery(meshRepository.protocols());
   const [protocol, setProtocol] = useState<string | null>(null);
+  const [discover, setDiscover] = useState(mesh.discover_gateways ?? false);
+  const [typedPsk, setTypedPsk] = useState("");
+  // The API checks discovery only when it or the PSK changes, so an unchanged mesh stays savable.
+  const discoveryBlocked =
+    !isOperator &&
+    (discover !== (mesh.discover_gateways ?? false) || typedPsk !== "") &&
+    discoveryNeedsOperator(discover, typedPsk, mesh.psk_b64);
   // The dialog stays mounted on the mesh page, so an unsaved pick is dropped on close.
   const close = () => {
     setProtocol(null);
+    setDiscover(mesh.discover_gateways ?? false);
+    setTypedPsk("");
     onClose();
   };
   const update = useMutation({
@@ -146,6 +157,7 @@ export function EditMeshDialog({
       is_public: form.get("is_public") === "on",
     };
     if (psk !== "") body.psk_b64 = psk;
+    if (discoveryBlocked) return;
     // Sent only on a change, so saving other fields isn't refused over a default PSK.
     const discover = form.get("discover_gateways") === "on";
     if (discover !== (mesh.discover_gateways ?? false)) body.discover_gateways = discover;
@@ -177,10 +189,6 @@ export function EditMeshDialog({
         { id: "feature.mesh.editDialog.title", defaultMessage: "Edit mesh — {mesh}" },
         { mesh: meshTitle(mesh) },
       )}
-      description={formatMessage({
-        id: "feature.mesh.editDialog.description",
-        defaultMessage: "Label, channel ID, pre-shared key, protocol, and its authorised viewers.",
-      })}
       onClose={close}
     >
       <form key={mesh.id} className="flex flex-col gap-5" onSubmit={onSubmit}>
@@ -214,7 +222,13 @@ export function EditMeshDialog({
             })}
             error={errors.psk_b64}
           >
-            <Input id="mesh-edit-psk" name="psk_b64" type="password" autoComplete="new-password" />
+            <Input
+              id="mesh-edit-psk"
+              name="psk_b64"
+              type="password"
+              autoComplete="new-password"
+              onChange={(event) => setTypedPsk(event.target.value)}
+            />
           </FormField>
           <div className="flex flex-col gap-1">
             <FormCheckbox
@@ -226,8 +240,13 @@ export function EditMeshDialog({
             <p className="pl-7 text-caption-1-regular text-text-tertiary">
               {formatMessage({
                 id: "feature.mesh.editDialog.publicHint",
-                defaultMessage:
-                  "Anyone signed in can view its devices and readings. The PSK is private, and only you can change the mesh.",
+                defaultMessage: "Public meshes have public devices and readings.",
+              })}
+            </p>
+            <p className="pl-7 text-caption-1-regular text-text-tertiary">
+              {formatMessage({
+                id: "feature.mesh.editDialog.publicNote",
+                defaultMessage: "Note: the PSK remains private, and only the owner can make changes to the mesh.",
               })}
             </p>
           </div>
@@ -240,14 +259,16 @@ export function EditMeshDialog({
                 defaultMessage: "Add gateways automatically",
               })}
               defaultChecked={mesh.discover_gateways ?? false}
+              onCheckedChange={setDiscover}
             />
             <p className="pl-7 text-caption-1-regular text-text-tertiary">
               {formatMessage({
                 id: "feature.mesh.editDialog.discoverGatewaysHint",
                 defaultMessage:
-                  "Registers any gateway whose packets decode with this channel and PSK. Switching it off keeps the gateways already added. Only an operator can use it with a default or blank PSK.",
+                  "Register gateways automatically. Already discovered gateways are not removed if disabled.",
               })}
             </p>
+            {discoveryBlocked ? <DiscoveryOperatorWarning /> : null}
           </div>
           <ProtocolField
             id="mesh-edit-protocol"
@@ -270,10 +291,7 @@ export function EditMeshDialog({
                       defaultMessage:
                         "Gateways are read only through the chosen broker. Moving this mesh off its source deletes the readings it stored from there after a grace period, so export them first if you need them.",
                     })
-                  : formatMessage({
-                      id: "feature.mesh.editDialog.sourceHint",
-                      defaultMessage: "Gateways on this mesh are read only through the chosen broker.",
-                    })
+                  : undefined
               }
               error={errors.source_id}
             >
@@ -310,7 +328,7 @@ export function EditMeshDialog({
           <Button type="button" variant="secondary" size="small" onClick={close}>
             {formatMessage({ id: "feature.mesh.editDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
-          <Button type="submit" size="small" disabled={update.isPending}>
+          <Button type="submit" size="small" disabled={update.isPending || discoveryBlocked}>
             {update.isPending
               ? formatMessage({ id: "feature.mesh.editDialog.saving", defaultMessage: "Saving" })
               : formatMessage({ id: "feature.mesh.editDialog.save", defaultMessage: "Save mesh" })}

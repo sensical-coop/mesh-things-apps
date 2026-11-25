@@ -105,3 +105,27 @@ export const MESH_STATUS_RANK: Record<MeshStatus["kind"], number> = {
   active: 7,
   hidden: 8,
 };
+
+/**
+ * Whether a PSK is blank or a one-byte index key such as `AQ==`, which anyone can decrypt.
+ * Mirrors the API, which allows gateway discovery on such a key only for operators.
+ */
+export function isWellKnownPsk(pskB64: string | null | undefined): boolean {
+  if (!pskB64) return true;
+  try {
+    return atob(pskB64).length <= 1;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether turning on gateway discovery would be refused for someone who is not an operator.
+ * `typedPsk` is the PSK field ("" keeps the current key); `currentPsk` is undefined when not loaded,
+ * in which case the API decides.
+ */
+export function discoveryNeedsOperator(discover: boolean, typedPsk: string, currentPsk: string | null | undefined): boolean {
+  if (!discover) return false;
+  if (typedPsk !== "") return isWellKnownPsk(typedPsk);
+  return currentPsk !== undefined && isWellKnownPsk(currentPsk);
+}

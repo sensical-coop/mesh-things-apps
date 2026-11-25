@@ -67,8 +67,7 @@ export function ProtocolField({
       label={formatMessage({ id: "feature.mesh.protocolField.label", defaultMessage: "Meshtastic protocol" })}
       hint={formatMessage({
         id: "feature.mesh.protocolField.hint",
-        defaultMessage:
-          "The firmware version this mesh's devices run. Packets are decoded with it, and readings keep the same units whatever the version.",
+        defaultMessage: "The firmware version for the devices in this mesh.",
       })}
       error={error}
     >

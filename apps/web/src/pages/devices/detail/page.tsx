@@ -16,7 +16,9 @@ import {
   FrameTitle,
 } from "@mtt/ui/reui/frame";
 import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactElement, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Chip } from "@mtt/ui/components/base/badges/chip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { Link, notFound, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -373,7 +375,7 @@ function DeviceStatusTab({
               <dl className="oa-arrive grid gap-3 sm:grid-cols-2">
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.nodeId", defaultMessage: "Node ID" })}
-                  value={String(device.data.node_id)}
+                  value={<span className="font-mono">{device.data.node_id}</span>}
                 />
                 {device.data.label && device.data.label.trim() !== deviceTitle(device.data) ? (
                   <Item
@@ -399,27 +401,38 @@ function DeviceStatusTab({
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.protocol", defaultMessage: "Protocol" })}
                   value={formatMessage(
-                    { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version}, its mesh's" },
+                    { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version} (same as mesh)" },
                     { version: device.data.protocol },
                   )}
                 />
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.firmware", defaultMessage: "Firmware" })}
                   value={
-                    device.data.firmware_version
-                      ? device.data.firmware_seen_at
-                        ? formatMessage(
-                            {
-                              id: "page.devices.detail.identity.firmwareSeen",
-                              defaultMessage: "{version}, reported {when}",
-                            },
-                            { version: device.data.firmware_version, when: formatWhen(device.data.firmware_seen_at) },
-                          )
-                        : device.data.firmware_version
-                      : formatMessage({
-                          id: "page.devices.detail.identity.noFirmware",
-                          defaultMessage: "Not reported. Only a device with its own MQTT uplink and map reports sends it.",
-                        })
+                    device.data.firmware_version ? (
+                      <HintTooltip
+                        hint={
+                          device.data.firmware_seen_at
+                            ? formatMessage(
+                                { id: "page.devices.detail.identity.firmwareSeen", defaultMessage: "Reported {when}" },
+                                { when: formatWhen(device.data.firmware_seen_at) },
+                              )
+                            : undefined
+                        }
+                      >
+                        <Chip variant="subtle" color="neutral" className="font-mono">
+                          {device.data.firmware_version}
+                        </Chip>
+                      </HintTooltip>
+                    ) : (
+                      <HintTooltip
+                        hint={formatMessage({
+                          id: "page.devices.detail.identity.noFirmwareHint",
+                          defaultMessage: "Only a device with its own MQTT uplink and map reports sends it.",
+                        })}
+                      >
+                        {formatMessage({ id: "page.devices.detail.identity.noFirmware", defaultMessage: "Not reported" })}
+                      </HintTooltip>
+                    )
                   }
                 />
                 {device.data.region || device.data.modem_preset ? (
@@ -428,7 +441,11 @@ function DeviceStatusTab({
                       id: "page.devices.detail.identity.radio",
                       defaultMessage: "Region / preset",
                     })}
-                    value={`${device.data.region ?? "—"} / ${device.data.modem_preset ?? "—"}`}
+                    value={
+                      <span className="font-mono">
+                        {device.data.region ?? "—"} / {device.data.modem_preset ?? "—"}
+                      </span>
+                    }
                   />
                 ) : null}
                 <Item
@@ -1163,6 +1180,19 @@ function formatGapShort(seconds: number | null, formatMessage: IntlShape["format
   return formatMessage(
     { id: "page.devices.detail.quality.gapMinutes", defaultMessage: "{count} min" },
     { count: Math.round(seconds / 60) },
+  );
+}
+
+/** Shows `hint` on hover or focus; renders the children alone when there is none. */
+function HintTooltip({ hint, children }: { hint?: string; children: ReactNode }): ReactElement {
+  if (!hint) return <>{children}</>;
+  return (
+    <Tooltip>
+      <TooltipTrigger delay={200} className="cursor-help text-left">
+        {children}
+      </TooltipTrigger>
+      <TooltipContent sideOffset={6}>{hint}</TooltipContent>
+    </Tooltip>
   );
 }
 
