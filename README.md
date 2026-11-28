@@ -43,7 +43,7 @@ It is a pnpm + Turborepo monorepo:
 
 The web app runs against [mesh-things](https://github.com/sensical-coop/mesh-things), started on the same machine or reachable over the network.
 
-Copy `.env.example` to `.env` at the repo root and set:
+Copy `apps/web/.env.example` to `apps/web/.env` and set:
 
 ```bash
 VITE_API_URL=http://localhost      # or wherever your API is
@@ -56,9 +56,20 @@ pnpm install
 pnpm dev
 ```
 
-The web app runs on `5173`. `pnpm dev` reads `.env` automatically and Vite picks up
+The web app runs on `5173`. `pnpm dev` reads `apps/web/.env` automatically and Vite picks up
 `VITE_API_URL` for the browser build. `VITE_API_URL` is baked in at build time, so changing
 it later needs a restart of `pnpm dev` (or a rebuild, for Docker).
+
+### Remote API
+
+```bash
+pnpm dev:remote
+```
+
+Runs web and docs in Vite mode `remote`, so each app also reads its `.env.remote`.
+`apps/web/.env.remote` points the web app at https://api.sensical.es through a
+`/remote-api` proxy on the dev server: the deployed API neither allows `localhost` in CORS
+nor sends its cookies to it. Personal overrides go in `.env.remote.local` (gitignored).
 
 ### Running via Docker locally
 
@@ -77,7 +88,7 @@ docker compose logs -f web        # wait for "ready"
 ```
 
 It uses the host's `node_modules`, so run `pnpm install` on the host first. Restart it
-(`docker compose restart web`) only after changing `.env` or dependencies.
+(`docker compose restart web`) only after changing `apps/web/.env` or dependencies.
 Without `COMPOSE_FILE`, the same command builds and runs the production image; add
 `--build` to pick up changes.
 
@@ -91,6 +102,7 @@ else) locally. `web` itself only publishes to `127.0.0.1`, on the port set in
 | Command | What it does |
 | --- | --- |
 | `pnpm dev` | Web app and docs site |
+| `pnpm dev:remote` | Same, against the deployed API (see [Remote API](#remote-api)) |
 | `pnpm build` | Build every app and package |
 | `pnpm typecheck` | Type-check the workspace |
 | `pnpm lint` | Stylelint and ESLint |

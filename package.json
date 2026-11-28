@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "[ -f .env ] && . ./.env; if [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ]; then turbo run dev --filter=web --filter=docs; else turbo run dev --filter=web --filter=docs --filter=api-mock; fi",
+    "dev": "[ -f apps/web/.env ] && . apps/web/.env; if [ \"$VITE_DISABLE_MOCK_API\" = \"true\" ]; then turbo run dev --filter=web --filter=docs; else turbo run dev --filter=web --filter=docs --filter=api-mock; fi",
+    "dev:remote": "turbo run dev:remote --filter=web --filter=docs",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "pnpm lint:css && pnpm lint:classes",

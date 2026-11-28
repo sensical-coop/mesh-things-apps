@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "vite --port 5173",
+    "dev:remote": "vite --port 5173 --mode remote",
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",

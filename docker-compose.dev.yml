@@ -19,7 +19,7 @@ services:
     # different store and reinstall node_modules from scratch. After changing
     # dependencies, run `pnpm install` on the host and `docker compose restart web`.
     # Same port inside and out, so Vite's HMR websocket finds its way back without extra
-    # config. VITE_* come from the mounted .env (vite.config.ts reads it from the repo root).
+    # config. VITE_* come from the mounted apps/web/.env.
     command: ["node_modules/.bin/vite", "--host", "0.0.0.0", "--port", "5174", "--strictPort"]
     ports: !override
       - "127.0.0.1:5174:5174"
