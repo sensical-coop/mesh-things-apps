@@ -99,4 +99,4 @@ else) locally. `web` itself only publishes to `127.0.0.1`, on the port set in
 
 ## License
 
-[LGPL-2.1](LICENSE).
+[AGPL-3.0](LICENSE).
