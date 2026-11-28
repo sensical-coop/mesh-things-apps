@@ -21,10 +21,6 @@ export function DataMenu({ isOperator, ...props }: DataMenuProps): ReactElement 
   const csvDownloads = {
     to: routes.csvDownloads,
     label: formatMessage({ id: "console.header.data.csvDownloads", defaultMessage: "CSV downloads" }),
-    description: formatMessage({
-      id: "console.header.data.csvDownloadsDescription",
-      defaultMessage: "Download meshes' data as CSV files",
-    }),
   };
   if (!isOperator) {
     return (
@@ -40,26 +36,14 @@ export function DataMenu({ isOperator, ...props }: DataMenuProps): ReactElement 
         {
           to: routes.archive,
           label: formatMessage({ id: "console.header.data.archive", defaultMessage: "Archive" }),
-          description: formatMessage({
-            id: "console.header.data.archiveDescription",
-            defaultMessage: "Parquet files of the devices you store in S3",
-          }),
         },
         {
           to: routes.sources,
           label: formatMessage({ id: "console.footer.sources", defaultMessage: "Sources" }),
-          description: formatMessage({
-            id: "console.header.data.sourcesDescription",
-            defaultMessage: "Remote MQTT brokers bridged into this instance",
-          }),
         },
         {
           to: routes.sinks,
           label: formatMessage({ id: "console.header.data.sinks", defaultMessage: "Sinks" }),
-          description: formatMessage({
-            id: "console.header.data.sinksDescription",
-            defaultMessage: "Readings published via MQTT",
-          }),
         },
       ]}
     />

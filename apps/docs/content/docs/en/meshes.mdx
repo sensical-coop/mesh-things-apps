@@ -50,6 +50,14 @@ The status column in the console lists the most urgent states first: scheduled f
 
 A device registered in this way has `discovered_at` set, and it can be rejected like any other device.
 
+## Protocol
+
+`protocol` is the Meshtastic version the mesh's devices run, `2.7` or `2.8`. Packets are decoded with that version, and readings keep the same units and channel names whatever the version. A new mesh is declared on the default version, `2.8`. `GET /protocols` lists every version with its status: current, supported, deprecated or sunset.
+
+The mesh page shows the version next to the mesh name. It tells you when the version is deprecated or past its sunset, and when some devices on the mesh send packets or run firmware that its version decodes differently. Those devices have `protocol_mismatch` set, and some of their readings are lost or misread until you update their firmware or change the mesh's protocol. A device on another version is not flagged when all of its readings decode the same way. A version past its sunset can no longer be chosen, but a mesh already on it keeps decoding.
+
+Changing the protocol applies to packets received afterwards. Readings already stored stay as they are.
+
 ## Public meshes
 
 `is_public` should be enabled when viewers need read access to the fleet and its history. Public readers cannot modify the mesh, view the PSK, or view rejected devices.

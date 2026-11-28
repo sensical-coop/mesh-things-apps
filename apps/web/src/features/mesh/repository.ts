@@ -10,6 +10,7 @@ import {
   meshesRetrieveQueryKey,
   meshesTraceroutesListOptions,
   meshesUpdateMutation,
+  protocolsListOptions,
 } from "@mtt/contracts/query";
 
 export const meshRepository = {
@@ -24,4 +25,5 @@ export const meshRepository = {
   devicesKey: meshesDevicesListQueryKey,
   links: meshesLinksListOptions,
   traceroutes: meshesTraceroutesListOptions,
+  protocols: protocolsListOptions,
 };

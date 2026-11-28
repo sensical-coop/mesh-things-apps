@@ -308,6 +308,10 @@
   --color-status-orange-text:       var(--color-orange-800);
   --color-status-yellow-background: var(--color-yellow-200);
   --color-status-yellow-text:       var(--color-yellow-800);
+
+  /* Warning banners: a pale fill with a darker outline, quieter than a status chip. */
+  --color-warning-background:       var(--color-yellow-50);
+  --color-warning-border:           var(--color-yellow-400);
   --color-status-rose-background:   var(--color-rose-200);
   --color-status-rose-text:         var(--color-rose-800);
   --color-status-cyan-background:   var(--color-cyan-200);
@@ -519,6 +523,8 @@
   --color-status-orange-text:       var(--color-orange-400);
   --color-status-yellow-background: color-mix(in oklch, var(--color-yellow-950) 60%, transparent);
   --color-status-yellow-text:       var(--color-yellow-500);
+  --color-warning-background:       color-mix(in oklch, var(--color-yellow-950) 35%, transparent);
+  --color-warning-border:           color-mix(in oklch, var(--color-yellow-500) 55%, transparent);
   --color-status-rose-background:   color-mix(in oklch, var(--color-rose-950) 60%, transparent);
   --color-status-rose-text:         var(--color-rose-500);
   --color-status-cyan-background:   color-mix(in oklch, var(--color-cyan-950) 60%, transparent);
@@ -696,6 +702,8 @@
   --color-status-orange-text:       var(--color-status-orange-text);
   --color-status-yellow-background: var(--color-status-yellow-background);
   --color-status-yellow-text:       var(--color-status-yellow-text);
+  --color-warning-background:       var(--color-warning-background);
+  --color-warning-border:           var(--color-warning-border);
   --color-status-rose-background:   var(--color-status-rose-background);
   --color-status-rose-text:         var(--color-status-rose-text);
   --color-status-cyan-background:   var(--color-status-cyan-background);

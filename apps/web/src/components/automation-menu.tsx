@@ -21,18 +21,10 @@ export function AutomationMenu(props: AutomationMenuProps): ReactElement {
         {
           to: routes.alarms,
           label: formatMessage({ id: "console.footer.alarms", defaultMessage: "Alarms" }),
-          description: formatMessage({
-            id: "console.header.automation.alarmsDescription",
-            defaultMessage: "Alarms for each measurement",
-          }),
         },
         {
           to: routes.blueprints,
           label: formatMessage({ id: "console.footer.blueprints", defaultMessage: "Blueprints" }),
-          description: formatMessage({
-            id: "console.header.automation.blueprintsDescription",
-            defaultMessage: "Computations on incoming readings",
-          }),
         },
       ]}
     />

@@ -17,7 +17,7 @@ export function ApiKeyPanel(): ReactElement {
           {formatMessage({
             id: "feature.auth.apiKey.description",
             defaultMessage:
-              "Generating an API here will replace your current one.",
+              "Your API key can be used to access the REST API. Note: generating a new key will replace the current one.",
           })}
         </FrameDescription>
       </FrameHeader>

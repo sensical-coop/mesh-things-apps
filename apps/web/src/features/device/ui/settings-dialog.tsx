@@ -123,7 +123,7 @@ export function DeviceSettingsDialog({
       )}
       description={formatMessage({
         id: "feature.device.settingsDialog.description",
-        defaultMessage: "Allowed, gateway, alarms, intervals, and coordinates. Blueprints are attached from the Postprocessing panel.",
+        defaultMessage: "Blueprints are attached from the Postprocessing panel.",
       })}
       onClose={onClose}
     >
@@ -146,10 +146,6 @@ export function DeviceSettingsDialog({
               id: "feature.device.settingsDialog.gateway",
               defaultMessage: "This device is a gateway",
             })}
-            hint={formatMessage({
-              id: "feature.device.settingsDialog.gatewayHint",
-              defaultMessage: "Gateways relay the mesh's traffic to the broker. Plain nodes only report through a gateway.",
-            })}
             defaultChecked={device.is_gateway}
           />
           <FormCheckbox
@@ -162,7 +158,7 @@ export function DeviceSettingsDialog({
             hint={formatMessage({
               id: "feature.device.settingsDialog.alarmsHint",
               defaultMessage:
-                "Detects when this device stops publishing. Per-channel detectors can be configured independently.",
+                "Per-channel detectors are configured separately.",
             })}
             defaultChecked={device.absence_detection_enabled}
           />
@@ -175,7 +171,7 @@ export function DeviceSettingsDialog({
             })}
             hint={formatMessage({
               id: "feature.device.settingsDialog.readingIntervalHint",
-              defaultMessage: "How often the device samples its sensors. Used to spot gaps in a channel's history.",
+              defaultMessage: "Used to spot gaps in a channel's history.",
             })}
             defaultValue={device.reading_interval_seconds}
             error={fieldErrors.reading_interval_seconds}
@@ -189,7 +185,7 @@ export function DeviceSettingsDialog({
             })}
             hint={formatMessage({
               id: "feature.device.settingsDialog.publishIntervalHint",
-              defaultMessage: "How often the device sends data to the mesh. Absence detection fires after several missed intervals.",
+              defaultMessage: "Absence detection fires after several missed intervals.",
             })}
             defaultValue={device.publish_interval_seconds}
             error={fieldErrors.publish_interval_seconds}

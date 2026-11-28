@@ -8,16 +8,23 @@ export function FormCheckbox({
   label,
   hint,
   defaultChecked,
+  onCheckedChange,
 }: {
   id: string;
   name: string;
   label: string;
   hint?: string;
   defaultChecked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }): ReactElement {
   const field = (
     <Field orientation="horizontal">
-      <Checkbox id={id} name={name} defaultChecked={defaultChecked} />
+      <Checkbox
+        id={id}
+        name={name}
+        defaultChecked={defaultChecked}
+        onCheckedChange={onCheckedChange ? (checked) => onCheckedChange(checked === true) : undefined}
+      />
       <FieldLabel htmlFor={id} className="text-body-regular text-text-primary">
         {label}
       </FieldLabel>

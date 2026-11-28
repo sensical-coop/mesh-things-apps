@@ -36,7 +36,7 @@ import { SettingsButton } from "@/components/settings-button";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { meshRepository } from "@/features/mesh/repository";
-import { MESH_STATUS_RANK, canEditMesh, meshStatus, meshTitle } from "@/features/mesh/model";
+import { MESH_STATUS_RANK, canEditMesh, discoveryNeedsOperator, meshStatus, meshTitle } from "@/features/mesh/model";
 import { MeshStatusChip } from "@/features/mesh/ui/mesh-status-chip";
 import { termsLocale, type TermsAcceptance } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
@@ -44,6 +44,8 @@ import { TermsDialog } from "@/features/terms/ui/terms-dialog";
 import { useTermsEnforced } from "@/features/terms/use-terms-enforced";
 import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
+import { ProtocolField } from "@/features/mesh/ui/protocol-field";
+import { DiscoveryOperatorWarning } from "@/features/mesh/ui/discovery-operator-warning";
 import { MeshOriginDialog } from "@/features/mesh/ui/mesh-origin-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
@@ -376,22 +378,19 @@ export function MeshesPage(): ReactElement {
             <FrameTitle>
               {formatMessage({ id: "page.meshes.list.panel.title", defaultMessage: "Your meshes" })}
             </FrameTitle>
-            <FrameDescription>
-              {meshes.isPending
-                ? formatMessage({
-                    id: "page.meshes.list.panel.loading",
-                    defaultMessage: "Loading meshes. This usually takes a few seconds.",
-                  })
-                : meshes.error
+            {meshes.isPending || meshes.error ? (
+              <FrameDescription>
+                {meshes.isPending
                   ? formatMessage({
-                      id: "page.meshes.list.panel.error",
-                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
+                      id: "page.meshes.list.panel.loading",
+                      defaultMessage: "Loading meshes. This usually takes a few seconds.",
                     })
                   : formatMessage({
-                      id: "page.meshes.list.panel.description",
-                      defaultMessage: "Open a mesh to see its nodes and gateways.",
+                      id: "page.meshes.list.panel.error",
+                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
                     })}
-            </FrameDescription>
+              </FrameDescription>
+            ) : null}
           </FrameHeader>
           <FramePanel>
             <div className="mb-4">
@@ -446,7 +445,7 @@ export function MeshesPage(): ReactElement {
       />
       <CreateMeshDialog start={createStart} onClose={() => setCreateStart(null)} />
       {meshToEdit ? (
-        <EditMeshDialog mesh={meshToEdit} open onClose={() => setMeshToEdit(null)} />
+        <EditMeshDialog key={meshToEdit.id} mesh={meshToEdit} open onClose={() => setMeshToEdit(null)} />
       ) : null}
       <DeleteMeshDialog
         key={meshToDelete?.id ?? "none"}
@@ -478,6 +477,18 @@ function CreateMeshDialog({
   // Only operators have sources to offer; everyone else's meshes use the default broker.
   const { isOperator } = useOwnerDirectory();
   const sources = useQuery({ ...sourceRepository.list(), enabled: open && isOperator });
+  const protocols = useQuery({ ...meshRepository.protocols(), enabled: open });
+  const [protocol, setProtocol] = useState<string | null>(null);
+  const [discover, setDiscover] = useState(false);
+  const [typedPsk, setTypedPsk] = useState("");
+  const discoveryBlocked = !isOperator && discoveryNeedsOperator(discover, typedPsk, null);
+  // The dialog stays mounted between sessions, so a pick from a cancelled one is dropped on close.
+  const close = () => {
+    setProtocol(null);
+    setDiscover(false);
+    setTypedPsk("");
+    onClose();
+  };
   const sourceItems = [
     {
       label: formatMessage({ id: "page.meshes.list.createDialog.defaultBroker", defaultMessage: "Default broker" }),
@@ -489,7 +500,7 @@ function CreateMeshDialog({
     ...meshRepository.create(),
     onSuccess: async (mesh) => {
       await queryClient.invalidateQueries({ queryKey: meshRepository.listKey() });
-      onClose();
+      close();
       void navigate({ to: routes.mesh, params: { meshId: mesh.id } });
     },
     onError: (error) => setErrors(readApiError(error).fields),
@@ -502,12 +513,14 @@ function CreateMeshDialog({
     const form = new FormData(event.currentTarget);
     const label = String(form.get("label") ?? "").trim();
     const picked = String(form.get("source_id") ?? DEFAULT_BROKER);
+    if (discoveryBlocked) return;
     const parsed = zMeshesCreateData.safeParse({
       body: {
         channel_id: String(form.get("channel_id") ?? "").trim(),
         psk_b64: String(form.get("psk_b64") ?? ""),
         label: label === "" ? null : label,
         discover_gateways: form.get("discover_gateways") === "on",
+        ...(protocol !== null ? { protocol } : {}),
         ...(isOperator && picked !== DEFAULT_BROKER ? { source_id: picked } : {}),
         // Required on the default broker; a mesh on a source is covered by the source's terms.
         ...(picked === DEFAULT_BROKER && termsAcceptance
@@ -531,11 +544,7 @@ function CreateMeshDialog({
     <Modal
       open={open}
       title={formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}
-      description={formatMessage({
-        id: "page.meshes.list.createDialog.description",
-        defaultMessage: "Gateways join with this channel id and pre-shared key.",
-      })}
-      onClose={onClose}
+      onClose={close}
     >
       <form key={start ? `${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}` : "closed"} className="flex flex-col gap-5" onSubmit={onSubmit}>
         <FieldGroup>
@@ -544,7 +553,7 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.labelHint",
-              defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
+              defaultMessage: "Optional. Shown instead of the channel ID.",
             })}
             error={errors.label}
           >
@@ -566,11 +575,18 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.pskHint",
-              defaultMessage: "The channel's pre-shared key, in Base64.",
+              defaultMessage: "In Base64.",
             })}
             error={errors.psk_b64}
           >
-            <Input id="mesh-psk" name="psk_b64" type="password" required autoComplete="new-password" />
+            <Input
+              id="mesh-psk"
+              name="psk_b64"
+              type="password"
+              required
+              autoComplete="new-password"
+              onChange={(event) => setTypedPsk(event.target.value)}
+            />
           </FormField>
           <div className="flex flex-col gap-1">
             <FormCheckbox
@@ -580,22 +596,34 @@ function CreateMeshDialog({
                 id: "page.meshes.list.createDialog.discoverGateways",
                 defaultMessage: "Add gateways automatically",
               })}
+              onCheckedChange={setDiscover}
             />
             <p className="pl-7 text-caption-1-regular text-text-tertiary">
               {formatMessage({
                 id: "page.meshes.list.createDialog.discoverGatewaysHint",
                 defaultMessage:
-                  "Registers any gateway whose packets decode with this channel and PSK, so you don't add them one by one. Only an operator can use it with a default or blank PSK.",
+                  "Register gateways automatically. Already discovered gateways are not removed if disabled.",
               })}
             </p>
+            {discoveryBlocked ? <DiscoveryOperatorWarning /> : null}
           </div>
+          <ProtocolField
+            id="mesh-protocol"
+            protocols={protocols.data}
+            failed={protocols.isError}
+            onRetry={() => void protocols.refetch()}
+            current={null}
+            value={protocol}
+            onValueChange={setProtocol}
+            error={errors.protocol}
+          />
           {isOperator ? (
             <FormField
               id="mesh-source"
               label={formatMessage({ id: "page.meshes.list.createDialog.source", defaultMessage: "Source" })}
               hint={formatMessage({
                 id: "page.meshes.list.createDialog.sourceHint",
-                defaultMessage: "Where this mesh's gateways publish. Leave on the default broker unless you bridge it.",
+                defaultMessage: "Leave on the default broker unless this mesh is bridged from another broker.",
               })}
               error={errors.source_id}
             >
@@ -624,10 +652,10 @@ function CreateMeshDialog({
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={onClose}>
+          <Button type="button" variant="secondary" size="small" onClick={close}>
             {formatMessage({ id: "page.meshes.list.createDialog.cancel", defaultMessage: "Cancel" })}
           </Button>
-          <Button type="submit" size="small" disabled={create.isPending}>
+          <Button type="submit" size="small" disabled={create.isPending || discoveryBlocked}>
             {create.isPending
               ? formatMessage({ id: "page.meshes.list.createDialog.creating", defaultMessage: "Creating mesh" })
               : formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}

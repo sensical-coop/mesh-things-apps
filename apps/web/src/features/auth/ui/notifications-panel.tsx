@@ -57,12 +57,8 @@ export function NotificationsPanel(): ReactElement {
     const parsed = zOwnersMeUpdateData.safeParse({
       body: {
         alarm_email_cooldown_seconds: seconds,
-        ...(isOperator
-          ? {
-              status_alerts_enabled: form.get("status_alerts_enabled") === "on",
-              source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on",
-            }
-          : {}),
+        status_alerts_enabled: form.get("status_alerts_enabled") === "on",
+        ...(isOperator ? { source_rate_alerts_enabled: form.get("source_rate_alerts_enabled") === "on" } : {}),
       },
     });
     if (!parsed.success) {
@@ -79,12 +75,6 @@ export function NotificationsPanel(): ReactElement {
         <FrameTitle>
           {formatMessage({ id: "page.profile.notifications.title", defaultMessage: "Notifications" })}
         </FrameTitle>
-        <FrameDescription>
-          {formatMessage({
-            id: "page.profile.notifications.description",
-            defaultMessage: "Choose which emails you get and how often.",
-          })}
-        </FrameDescription>
       </FrameHeader>
       <FramePanel>
         {!me ? (
@@ -94,7 +84,7 @@ export function NotificationsPanel(): ReactElement {
             <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
               <section className="flex flex-col gap-3">
                 <h3 className={sectionTitleClass}>
-                  {formatMessage({ id: "page.profile.alarms.title", defaultMessage: "Alarms" })}
+                  {formatMessage({ id: "page.profile.alarms.title", defaultMessage: "Data quality alarms" })}
                 </h3>
                 <FormField
                   id="profile-alarm-cooldown"
@@ -114,33 +104,37 @@ export function NotificationsPanel(): ReactElement {
                   />
                 </FormField>
               </section>
-              {isOperator ? (
-                <section className="flex flex-col gap-3">
-                  <h3 className={sectionTitleClass}>
-                    {formatMessage({ id: "page.profile.statusAlerts.title", defaultMessage: "Status alerts" })}
-                  </h3>
-                  <Field orientation="horizontal">
-                    <Checkbox
-                      id="profile-status-alerts"
-                      name="status_alerts_enabled"
-                      defaultChecked={me.status_alerts_enabled}
-                    />
-                    <FieldContent>
-                      <FieldLabel htmlFor="profile-status-alerts" className="text-body-regular text-text-primary">
-                        {formatMessage({
-                          id: "page.profile.statusAlerts.label",
-                          defaultMessage: "Email me when a source or sink stops working",
-                        })}
-                      </FieldLabel>
-                      <FieldDescription className="text-caption-1-regular text-text-tertiary">
-                        {formatMessage({
-                          id: "page.profile.statusAlerts.hint",
-                          defaultMessage:
-                            "Sent once when a source you created stays disconnected, or a sink with meshes or devices attached has nobody connected.",
-                        })}
-                      </FieldDescription>
-                    </FieldContent>
-                  </Field>
+              {/* Every owner is told about devices outgrowing their mesh's protocol; only operators have sources and sinks. */}
+              <section className="flex flex-col gap-3">
+                <h3 className={sectionTitleClass}>
+                  {formatMessage({ id: "page.profile.statusAlerts.title", defaultMessage: "Status alerts" })}
+                </h3>
+                <Field orientation="horizontal">
+                  <Checkbox
+                    id="profile-status-alerts"
+                    name="status_alerts_enabled"
+                    defaultChecked={me.status_alerts_enabled}
+                  />
+                  <FieldContent>
+                    <FieldLabel htmlFor="profile-status-alerts" className="text-body-regular text-text-primary">
+                      {formatMessage({ id: "page.profile.statusAlerts.label", defaultMessage: "Send status alerts" })}
+                    </FieldLabel>
+                    <FieldDescription className="text-caption-1-regular text-text-tertiary">
+                      {isOperator
+                        ? formatMessage({
+                            id: "page.profile.statusAlerts.hint",
+                            defaultMessage:
+                              "Status alerts are sent once when any of the following happens: a source you created was disconnected, a sink with meshes or devices attached has nobody connected, or a device on a mesh you own runs a newer protocol than the one its mesh declares.",
+                          })
+                        : formatMessage({
+                            id: "page.profile.statusAlerts.protocolHint",
+                            defaultMessage:
+                              "Status alerts are sent once when a device on a mesh you own runs a newer protocol than the one its mesh declares.",
+                          })}
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+                {isOperator ? (
                   <Field orientation="horizontal">
                     <Checkbox
                       id="profile-source-rate-alerts"
@@ -158,13 +152,13 @@ export function NotificationsPanel(): ReactElement {
                         {formatMessage({
                           id: "page.profile.sourceRateAlerts.hint",
                           defaultMessage:
-                            "Sent once when a source you created averages more messages per second over an hour than this instance allows. Administrators are always told.",
+                            "This alert is sent once a source you created sends more messages per second than normal. Platform administrators are always notified of these events.",
                         })}
                       </FieldDescription>
                     </FieldContent>
                   </Field>
-                </section>
-              ) : null}
+                ) : null}
+              </section>
             </div>
             {error ? <StatusCopy>{error}</StatusCopy> : null}
             {update.error && !error ? (

@@ -38,6 +38,12 @@ Los paquetes NodeInfo actualizan `name`, `short_name`, `hardware_type` y `role` 
 
 `last_seen` registra la última vez que el servicio de descifrado recibió un paquete del dispositivo. `discovered_at` se informa cuando el registro del dispositivo lo creó el descubrimiento de pasarelas.
 
+## Protocolo y firmware
+
+`protocol` es la versión de Meshtastic con la que se decodifican los paquetes del dispositivo, que siempre es la de su malla. Un dispositivo con su propio enlace MQTT y los informes de mapa activados también envía `firmware_version`, `region` y `modem_preset`, y `firmware_protocol` es la versión que habla ese firmware, o `unsupported` cuando es más reciente que todas las versiones compatibles. En los demás dispositivos esos campos quedan vacíos.
+
+`protocol_mismatch` se activa cuando parte de las lecturas del dispositivo se pierden o se leen mal con la versión de su malla. Puede ocurrir de dos maneras. El dispositivo puede enviar campos que la versión de su malla no conoce: `observed_protocol` indica entonces la versión más antigua que decodifica todo lo que ha enviado, o `unsupported` cuando ninguna versión compatible lo hace. O su firmware puede hablar una versión, más reciente o más antigua que la de la malla, que lee algunos valores de otra manera. Un firmware de otra versión que lee todos los valores igual no cuenta como discrepancia. La página del dispositivo explica qué caso aplica. Actualiza el firmware del dispositivo o cambia la malla a la versión que usan sus dispositivos. Los propietarios que activan los avisos de estado reciben un correo cuando un dispositivo usa una versión más reciente que su malla.
+
 ## Intervalos
 
 `reading_interval_seconds` es el intervalo de muestreo esperado del sensor. Los detectores y la alineación de las plantillas utilizan este valor. `publish_interval_seconds` es el intervalo de transmisión esperado de la radio; el detector de ausencia compara con él los periodos sin transmisiones.

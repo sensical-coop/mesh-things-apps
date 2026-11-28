@@ -28,6 +28,7 @@ export class MemoryMeshes implements IMeshRepository {
       isPublic: input.isPublic ?? false,
       sourceId: input.sourceId ?? null,
       discoverGateways: input.discoverGateways ?? false,
+      protocol: input.protocol,
       createdAt: now,
       updatedAt: now,
     });
@@ -44,6 +45,7 @@ export class MemoryMeshes implements IMeshRepository {
       isPublic?: boolean;
       sourceId?: string | null;
       discoverGateways?: boolean;
+      protocol?: string;
     },
   ): Promise<Mesh | null> {
     const mesh = this.items.get(id);
@@ -54,6 +56,7 @@ export class MemoryMeshes implements IMeshRepository {
     if (patch.isPublic !== undefined) mesh.isPublic = patch.isPublic;
     if (patch.sourceId !== undefined) mesh.sourceId = patch.sourceId;
     if (patch.discoverGateways !== undefined) mesh.discoverGateways = patch.discoverGateways;
+    if (patch.protocol !== undefined) mesh.protocol = patch.protocol;
     mesh.updatedAt = nowIso();
     return mesh;
   }

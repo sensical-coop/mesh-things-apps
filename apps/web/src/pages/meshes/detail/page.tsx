@@ -63,6 +63,8 @@ import { DeleteMeshDialog } from "@/features/mesh/ui/delete-mesh-dialog";
 import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 import { MeshAccessBadge } from "@/features/mesh/ui/mesh-access-badge";
 import { MeshSourceLabel } from "@/features/mesh/ui/mesh-source-label";
+import { MeshProtocolChip } from "@/features/mesh/ui/mesh-protocol-chip";
+import { MeshProtocolNotice } from "@/features/mesh/ui/mesh-protocol-notice";
 import { MeshTermsNotice } from "@/features/mesh/ui/mesh-terms-notice";
 import { termsLocale } from "@/features/terms/model";
 import { termsRepository } from "@/features/terms/repository";
@@ -277,6 +279,7 @@ export function MeshDetailPage(): ReactElement {
                 : formatMessage({ id: "page.meshes.detail.fallbackTitle", defaultMessage: "Mesh" })}
             </h1>
             {mesh.data ? <MeshAccessBadge mesh={mesh.data} /> : null}
+            {mesh.data ? <MeshProtocolChip mesh={mesh.data} /> : null}
             {/* Only a bridged mesh says so; the default broker is the norm. */}
             {mesh.data?.source_id ? <MeshSourceLabel mesh={mesh.data} sources={sources.data ?? []} /> : null}
             {meshState && meshState.kind !== "hidden" ? <MeshStatusChip status={meshState} /> : null}
@@ -320,6 +323,13 @@ export function MeshDetailPage(): ReactElement {
           canRenew={me !== undefined && mesh.data.owner_id === me.id}
         />
       ) : null}
+      {mesh.data ? (
+        <MeshProtocolNotice
+          mesh={mesh.data}
+          mismatched={(devices.data ?? []).filter((device) => device.protocol_mismatch).length}
+          onChange={canEdit ? () => setEditOpen(true) : undefined}
+        />
+      ) : null}
       <Tabs
         className="flex flex-col gap-0"
         value={tab}
@@ -349,12 +359,6 @@ export function MeshDetailPage(): ReactElement {
                   </code>
                 ) : null}
               </FrameTitle>
-              <FrameDescription>
-                {formatMessage({
-                  id: "page.meshes.detail.psk.description",
-                  defaultMessage: "Mesh PSK.",
-                })}
-              </FrameDescription>
             </FrameHeader>
             <FramePanel>
               {mesh.isPending ? <SkeletonRows rows={1} /> : null}
@@ -387,17 +391,14 @@ export function MeshDetailPage(): ReactElement {
                   <FrameTitle>
                     {formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}
                   </FrameTitle>
-                  <FrameDescription>
-                    {plotted.length
-                      ? formatMessage({
-                          id: "page.meshes.detail.fleet.hasCoords",
-                          defaultMessage: "Devices with coordinates.",
-                        })
-                      : formatMessage({
+                  {!plotted.length ? (
+                    <FrameDescription>
+                      {formatMessage({
                           id: "page.meshes.detail.fleet.noCoords",
                           defaultMessage: "No coordinates on this mesh yet.",
                         })}
-                  </FrameDescription>
+                    </FrameDescription>
+                  ) : null}
                 </div>
                 {plotted.length ? (
                   <Button
@@ -546,7 +547,7 @@ export function MeshDetailPage(): ReactElement {
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
       ) : null}
       {mesh.data && canEdit ? (
-        <EditMeshDialog mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
+        <EditMeshDialog key={mesh.data.id} mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
       ) : null}
       <DeleteMeshDialog
         mesh={deleteOpen ? (mesh.data ?? null) : null}

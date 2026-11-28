@@ -37,7 +37,8 @@ import {
   type TelemetryVariantFilter,
 } from "@mtt/domain/device/TelemetryVariantFilter";
 import type { MeasurementType } from "@mtt/domain/measurement/Measurement";
-import type { Mesh } from "@mtt/domain/mesh/Mesh";
+import { DEFAULT_PROTOCOL, type Mesh } from "@mtt/domain/mesh/Mesh";
+import { PROTOCOLS, protocolError } from "./protocols";
 import {
   canDecideOperatorRequests,
   canManageSinks,
@@ -243,6 +244,7 @@ function openPath(method: string, path: string): boolean {
     (method === "POST" && path === "/owners/reset-password") ||
     (method === "GET" && path === "/owners/verify-email") ||
     (method === "GET" && path === "/terms") ||
+    (method === "GET" && path === "/protocols") ||
     // Presigned: the signature in the link is the authorisation.
     (method === "GET" && path.startsWith(MOCK_S3_PATH))
   );
@@ -438,11 +440,12 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
   /** A source the caller may see, or the mesh's current one, which resending always keeps. */
   /** Devices as the API returns them, with the archive setting where the viewer may see it. */
   async function devicesJson(actor: Actor, devices: Device[]) {
-    const owners = new Map((await db.meshes.list()).map((mesh) => [mesh.id, mesh.ownerId]));
+    const meshes = new Map((await db.meshes.list()).map((mesh) => [mesh.id, mesh]));
     return devices.map((device) =>
       deviceJson(device, {
-        archive: canSeeArchiveSetting(actor, { ownerId: owners.get(device.meshId) ?? "" }),
+        archive: canSeeArchiveSetting(actor, { ownerId: meshes.get(device.meshId)?.ownerId ?? "" }),
         telemetryVariantIds: db.deviceTelemetryVariants.get(device.uuid) ?? [],
+        protocol: meshes.get(device.meshId)?.protocol ?? DEFAULT_PROTOCOL,
       }),
     );
   }
@@ -883,6 +886,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const parsed = zMeshesCreateData.safeParse({ body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     const sourceId = parsed.data.body.source_id ?? null;
+    const protocolInvalid = protocolError(parsed.data.body.protocol, null);
+    if (protocolInvalid) return c.json(protocolInvalid, 400);
     if (sourceId !== null && !(await canAttachSource(actor, sourceId, null))) {
       return c.json({ source_id: [`Invalid pk "${sourceId}" - object does not exist.`] }, 400);
     }
@@ -898,6 +903,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       ownerId: actor.id,
       sourceId,
       discoverGateways: parsed.data.body.discover_gateways ?? false,
+      protocol: parsed.data.body.protocol,
     });
     if (sourceId === null) {
       mesh.termsAcceptedVersion = TERMS_ENFORCED ? TERMS_VERSIONS.mesh : null;
@@ -905,6 +911,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     }
     return c.json(meshJson(mesh, true), 201);
   });
+
+  app.get("/protocols", (c) => c.json(PROTOCOLS));
 
   app.get("/meshes/terms", (c) => c.json(termsJson("mesh", termsLocale(c.req.query("locale")))));
 
@@ -982,6 +990,8 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const parsed = zMeshesUpdateData.safeParse({ path: { mesh_id: mesh.id }, body });
     if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
     const patch = parsed.data.body ?? {};
+    const protocolInvalid = protocolError(patch.protocol, mesh.protocol);
+    if (protocolInvalid) return c.json(protocolInvalid, 400);
     if (patch.source_id && !(await canAttachSource(actor, patch.source_id, mesh.sourceId))) {
       return c.json({ source_id: [`Invalid pk "${patch.source_id}" - object does not exist.`] }, 400);
     }
@@ -999,6 +1009,7 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
       isPublic: patch.is_public,
       sourceId: patch.source_id,
       discoverGateways: patch.discover_gateways,
+      protocol: patch.protocol,
     });
     if (!updated) return c.json({ detail: "Not found" }, 404);
     if (toDefault && patch.terms_version === TERMS_VERSIONS.mesh) {

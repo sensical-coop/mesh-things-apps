@@ -72,12 +72,6 @@ export function ProfilePage(): ReactElement {
         <Frame className="shadow-card">
           <FrameHeader>
             <FrameTitle>{formatMessage({ id: "page.profile.panel.title", defaultMessage: "Account" })}</FrameTitle>
-            <FrameDescription>
-              {formatMessage({
-                id: "page.profile.panel.description",
-                defaultMessage: "Changing your email requires verifying the new address before you can sign back in.",
-              })}
-            </FrameDescription>
           </FrameHeader>
           <FramePanel>
             {me.isPending ? (
@@ -97,7 +91,7 @@ export function ProfilePage(): ReactElement {
                     label={formatMessage({ id: "page.profile.email", defaultMessage: "Email" })}
                     hint={formatMessage({
                       id: "page.profile.emailHint",
-                      defaultMessage: "A new email sends a fresh verification link and signs you out of the console until you confirm it.",
+                      defaultMessage: "Changing your email requires verification.",
                     })}
                     error={errors.email}
                   >
@@ -137,7 +131,7 @@ export function ProfilePage(): ReactElement {
             <FrameDescription>
               {formatMessage({
                 id: "page.profile.dangerZone.description",
-                defaultMessage: "Delete your account and everything you own. This can't be undone.",
+                defaultMessage: "Delete your account and all its data (including meshes, devices and readings). This can't be undone.",
               })}
             </FrameDescription>
           </FrameHeader>
