@@ -378,22 +378,19 @@ export function MeshesPage(): ReactElement {
             <FrameTitle>
               {formatMessage({ id: "page.meshes.list.panel.title", defaultMessage: "Your meshes" })}
             </FrameTitle>
-            <FrameDescription>
-              {meshes.isPending
-                ? formatMessage({
-                    id: "page.meshes.list.panel.loading",
-                    defaultMessage: "Loading meshes. This usually takes a few seconds.",
-                  })
-                : meshes.error
+            {meshes.isPending || meshes.error ? (
+              <FrameDescription>
+                {meshes.isPending
                   ? formatMessage({
-                      id: "page.meshes.list.panel.error",
-                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
+                      id: "page.meshes.list.panel.loading",
+                      defaultMessage: "Loading meshes. This usually takes a few seconds.",
                     })
                   : formatMessage({
-                      id: "page.meshes.list.panel.description",
-                      defaultMessage: "Open a mesh to see its nodes and gateways.",
+                      id: "page.meshes.list.panel.error",
+                      defaultMessage: "Meshes didn't load. Check your connection or try again.",
                     })}
-            </FrameDescription>
+              </FrameDescription>
+            ) : null}
           </FrameHeader>
           <FramePanel>
             <div className="mb-4">
@@ -547,10 +544,6 @@ function CreateMeshDialog({
     <Modal
       open={open}
       title={formatMessage({ id: "page.meshes.list.createDialog.title", defaultMessage: "Create mesh" })}
-      description={formatMessage({
-        id: "page.meshes.list.createDialog.description",
-        defaultMessage: "Gateways join with this channel id and pre-shared key.",
-      })}
       onClose={close}
     >
       <form key={start ? `${start.sourceId ?? "default"}-${start.termsAcceptance?.version ?? "none"}` : "closed"} className="flex flex-col gap-5" onSubmit={onSubmit}>
@@ -560,7 +553,7 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.label", defaultMessage: "Label" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.labelHint",
-              defaultMessage: "Optional name shown in the console instead of the channel ID, for reference only.",
+              defaultMessage: "Optional. Shown instead of the channel ID.",
             })}
             error={errors.label}
           >
@@ -582,7 +575,7 @@ function CreateMeshDialog({
             label={formatMessage({ id: "page.meshes.list.createDialog.psk", defaultMessage: "PSK" })}
             hint={formatMessage({
               id: "page.meshes.list.createDialog.pskHint",
-              defaultMessage: "The channel's pre-shared key, in Base64.",
+              defaultMessage: "In Base64.",
             })}
             error={errors.psk_b64}
           >
@@ -630,7 +623,7 @@ function CreateMeshDialog({
               label={formatMessage({ id: "page.meshes.list.createDialog.source", defaultMessage: "Source" })}
               hint={formatMessage({
                 id: "page.meshes.list.createDialog.sourceHint",
-                defaultMessage: "Where this mesh's gateways publish. Leave on the default broker unless you bridge it.",
+                defaultMessage: "Leave on the default broker unless this mesh is bridged from another broker.",
               })}
               error={errors.source_id}
             >

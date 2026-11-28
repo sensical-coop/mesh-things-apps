@@ -65,13 +65,6 @@ export function CsvDownloadsPage(): ReactElement {
           <h1 className="min-w-0 text-title-2-medium tracking-tight text-text-primary">
             {formatMessage({ id: "page.csvDownloads.title", defaultMessage: "CSV downloads" })}
           </h1>
-          <p className="max-w-2xl text-body-regular text-text-secondary">
-            {formatMessage({
-              id: "page.csvDownloads.description",
-              defaultMessage:
-                "Here you can download your data as CSV files.",
-            })}
-          </p>
         </div>
       </div>
       <div className="flex flex-col gap-6">
@@ -80,12 +73,6 @@ export function CsvDownloadsPage(): ReactElement {
           <Frame className="shadow-card">
             <FrameHeader>
               <FrameTitle>{formatMessage({ id: "page.csvDownloads.new.title", defaultMessage: "New download" })}</FrameTitle>
-              <FrameDescription>
-                {formatMessage({
-                  id: "page.csvDownloads.new.description",
-                  defaultMessage: "Trigger a new CSV download.",
-                })}
-              </FrameDescription>
             </FrameHeader>
             <FramePanel className="flex flex-col gap-6">
               {meshes.isPending ? <SkeletonRows rows={3} /> : null}
@@ -112,7 +99,7 @@ export function CsvDownloadsPage(): ReactElement {
                 description={formatMessage({
                   id: "page.csvDownloads.history.description",
                   defaultMessage:
-                    "History of downloads. Once they expire, you will be able to request them again. For downloading different date ranges, use the calendar icon.",
+                    "Expired downloads can be requested again. Use the calendar icon for other date ranges.",
                 })}
               />
               {exports.isPending ? <SkeletonRows rows={3} /> : null}

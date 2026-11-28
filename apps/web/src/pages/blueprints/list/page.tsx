@@ -106,7 +106,7 @@ export function BlueprintsPage(): ReactElement {
               : formatMessage({
                   id: "page.blueprints.list.panel.description",
                   defaultMessage:
-                    "List of your blueprints and the public ones. Attach one to a device from the device page, where you wire its inputs and calibrate it.",
+                    "Attach a blueprint from the device page, where its inputs are wired and calibrated.",
                 })}
           </FrameDescription>
         </FrameHeader>

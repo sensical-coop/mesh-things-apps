@@ -1085,6 +1085,10 @@ export type OwnerProfile = {
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
+    /**
+     * When the account terms were last accepted. Null if never accepted.
+     */
+    readonly terms_accepted_at: string | null;
     readonly devices: Array<DeviceRead>;
 };
 
@@ -1127,6 +1131,10 @@ export type OwnerRead = {
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
+    /**
+     * When the account terms were last accepted. Null if never accepted.
+     */
+    readonly terms_accepted_at: string | null;
 };
 
 /**
@@ -1189,6 +1197,10 @@ export type OwnerWithApiKey = {
      * Version of the account terms last accepted. Null if never accepted. They never lapse.
      */
     readonly terms_accepted_version: string | null;
+    /**
+     * When the account terms were last accepted. Null if never accepted.
+     */
+    readonly terms_accepted_at: string | null;
     readonly api_key: string;
 };
 

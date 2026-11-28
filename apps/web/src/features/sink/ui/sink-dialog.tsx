@@ -67,7 +67,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
   // One list: each mesh, then its devices. Ticking a mesh sends all of them, so they show as included.
   const groups = useMemo(() => devicesByMesh(eligibleMeshes, devices.data ?? []), [eligibleMeshes, devices.data]);
 
-  const streamCopy: Record<StreamsEnum, { label: string; hint: string }> = {
+  const streamCopy: Record<StreamsEnum, { label: string; hint?: string }> = {
     decoded: {
       label: formatMessage({ id: "feature.sink.dialog.stream.decoded", defaultMessage: "Decoded readings" }),
       hint: formatMessage({
@@ -77,17 +77,9 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
     },
     derived: {
       label: formatMessage({ id: "feature.sink.dialog.stream.derived", defaultMessage: "Derived readings" }),
-      hint: formatMessage({
-        id: "feature.sink.dialog.stream.derivedHint",
-        defaultMessage: "Computed values.",
-      }),
     },
     alarms: {
       label: formatMessage({ id: "feature.sink.dialog.stream.alarms", defaultMessage: "Alarms" }),
-      hint: formatMessage({
-        id: "feature.sink.dialog.stream.alarmsHint",
-        defaultMessage: "Alarms as they trigger.",
-      }),
     },
   };
 
@@ -226,7 +218,7 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
           : formatMessage({
               id: "feature.sink.dialog.createDescription",
               defaultMessage:
-                "Publish readings from your meshes on this instance's MQTT broker. You can subscribe to it with its own credentials.",
+                "Each sink has its own credentials.",
             })
       }
       onClose={close}
@@ -257,7 +249,9 @@ export function SinkDialog({ open, sink, termsAcceptance, onClose, onCreated, on
                   />
                   <FieldLabel htmlFor={`sink-stream-${stream}`} className="flex flex-col items-start gap-0.5">
                     <span className="text-body-regular text-text-primary">{streamCopy[stream].label}</span>
-                    <span className="text-caption-1-regular text-text-tertiary">{streamCopy[stream].hint}</span>
+                    {streamCopy[stream].hint ? (
+                      <span className="text-caption-1-regular text-text-tertiary">{streamCopy[stream].hint}</span>
+                    ) : null}
                   </FieldLabel>
                 </Field>
               ))}

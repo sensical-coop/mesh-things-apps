@@ -105,10 +105,6 @@ export function AlarmDetectorsDialog({
         { id: "feature.alarm.detectorsDialog.title", defaultMessage: "Alarms — {label}" },
         { label },
       )}
-      description={formatMessage({
-        id: "feature.alarm.detectorsDialog.description",
-        defaultMessage: "Choose which detectors watch this channel and trigger an alarm.",
-      })}
       onClose={onClose}
     >
       <p className="mb-4 text-caption-1-regular text-text-tertiary">

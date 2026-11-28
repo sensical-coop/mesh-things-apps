@@ -47,7 +47,7 @@ export function DeviceLinksFrame({ device }: { device: DeviceRead }): ReactEleme
         <FrameDescription>
           {formatMessage({
             id: "page.devices.detail.links.description",
-            defaultMessage: "Nodes this device heard, and nodes that heard it, over the last 7 days.",
+            defaultMessage: "Over the last 7 days.",
           })}
         </FrameDescription>
       </FrameHeader>

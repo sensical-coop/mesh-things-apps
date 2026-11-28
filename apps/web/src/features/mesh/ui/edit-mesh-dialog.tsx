@@ -228,7 +228,7 @@ export function EditMeshDialog({
             label={formatMessage({ id: "feature.mesh.editDialog.psk", defaultMessage: "PSK" })}
             hint={formatMessage({
               id: "feature.mesh.editDialog.pskHint",
-              defaultMessage: "Base64 channel key. Leave blank to keep the current key.",
+              defaultMessage: "In Base64. Leave blank to keep the current key.",
             })}
             error={errors.psk_b64}
           >

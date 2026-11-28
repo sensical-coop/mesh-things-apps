@@ -969,6 +969,7 @@ export const zOwnerProfile = z.object({
     status_alerts_enabled: z.boolean().readonly(),
     source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.string().readonly().nullable(),
+    terms_accepted_at: z.iso.datetime().readonly().nullable(),
     devices: z.array(zDeviceRead).readonly()
 });
 
@@ -993,7 +994,8 @@ export const zOwnerRead = z.object({
     alarm_email_cooldown_seconds: z.int().readonly().nullable(),
     status_alerts_enabled: z.boolean().readonly(),
     source_rate_alerts_enabled: z.boolean().readonly(),
-    terms_accepted_version: z.string().readonly().nullable()
+    terms_accepted_version: z.string().readonly().nullable(),
+    terms_accepted_at: z.iso.datetime().readonly().nullable()
 });
 
 export const zOwnerRole = z.object({
@@ -1019,6 +1021,7 @@ export const zOwnerWithApiKey = z.object({
     status_alerts_enabled: z.boolean().readonly(),
     source_rate_alerts_enabled: z.boolean().readonly(),
     terms_accepted_version: z.string().readonly().nullable(),
+    terms_accepted_at: z.iso.datetime().readonly().nullable(),
     api_key: z.string().readonly()
 });
 

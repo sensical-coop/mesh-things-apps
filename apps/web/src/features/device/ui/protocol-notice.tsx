@@ -21,7 +21,7 @@ export function DeviceProtocolNotice({ device, onChangeMesh }: DeviceProtocolNot
       {
         id: "feature.device.protocolNotice.unsupported",
         defaultMessage:
-          "This device runs a Meshtastic version newer than any this instance decodes, so some of its readings are lost. Its mesh is on Meshtastic {protocol}.",
+          "We detected a firmware version on this device that is newer than what Mesh Things can decode. Some of its readings may be lost. The mesh is on Meshtastic {protocol}.",
       },
       { protocol: device.protocol },
     ),
@@ -29,8 +29,9 @@ export function DeviceProtocolNotice({ device, onChangeMesh }: DeviceProtocolNot
       {
         id: "feature.device.protocolNotice.ahead",
         defaultMessage:
-          "This device sends fields that its mesh can't decode, and some of its readings are dropped. Move the mesh to a newer firmware and update the firmware on their devices.",
+          "We detected that this device sends fields that Meshtastic {protocol} can't decode, and some of its readings may be dropped. To fix this, change the mesh to a newer protocol and update the firmware on older devices.",
       },
+      { protocol: device.protocol },
     ),
     behind: formatMessage(
       {

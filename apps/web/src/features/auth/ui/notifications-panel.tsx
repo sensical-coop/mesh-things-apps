@@ -75,12 +75,6 @@ export function NotificationsPanel(): ReactElement {
         <FrameTitle>
           {formatMessage({ id: "page.profile.notifications.title", defaultMessage: "Notifications" })}
         </FrameTitle>
-        <FrameDescription>
-          {formatMessage({
-            id: "page.profile.notifications.description",
-            defaultMessage: "Choose which emails you get and how often.",
-          })}
-        </FrameDescription>
       </FrameHeader>
       <FramePanel>
         {!me ? (
@@ -90,7 +84,7 @@ export function NotificationsPanel(): ReactElement {
             <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
               <section className="flex flex-col gap-3">
                 <h3 className={sectionTitleClass}>
-                  {formatMessage({ id: "page.profile.alarms.title", defaultMessage: "Alarms" })}
+                  {formatMessage({ id: "page.profile.alarms.title", defaultMessage: "Data quality alarms" })}
                 </h3>
                 <FormField
                   id="profile-alarm-cooldown"

@@ -6,6 +6,7 @@ import { RiMapPinLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
+import { HintTooltip } from "@/components/hint-tooltip";
 import { SkeletonRows } from "@/components/skeleton-rows";
 import { StatusCopy } from "@/components/status-copy";
 import { formLevelMessage } from "@/lib/api-errors";
@@ -104,6 +105,7 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
   }
 
   const label = device ? deviceTitle(device) : "";
+  // Instructions while editing and the empty state stay visible; the source of saved coordinates is on the badge.
   const description = editing
     ? formatMessage({
         id: "feature.device.location.editHint",
@@ -115,15 +117,16 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
           id: "page.devices.detail.location.noCoords",
           defaultMessage: "This device has no coordinates yet.",
         })
-      : device?.location_overridden
-        ? formatMessage({
-            id: "feature.device.location.manualHint",
-            defaultMessage: "Set by hand. The node's reported position is ignored.",
-          })
-        : formatMessage({
-            id: "page.devices.detail.location.hasCoords",
-            defaultMessage: "Last reported coordinates on the map.",
-          });
+      : null;
+  const sourceHint = device?.location_overridden
+    ? formatMessage({
+        id: "feature.device.location.manualHint",
+        defaultMessage: "Set by hand. The node's reported position is ignored.",
+      })
+    : formatMessage({
+        id: "page.devices.detail.location.hasCoords",
+        defaultMessage: "Last reported coordinates on the map.",
+      });
 
   return (
     <Frame className="shadow-card">
@@ -131,11 +134,13 @@ export function DeviceLocationFrame({ device, pending, canEdit }: DeviceLocation
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
             <FrameTitle>{formatMessage({ id: "page.devices.detail.location.title", defaultMessage: "Location" })}</FrameTitle>
-            {device && saved ? <DeviceLocationSourceBadge overridden={device.location_overridden} /> : null}
+            {device && saved ? (
+              <HintTooltip hint={sourceHint}>
+                <DeviceLocationSourceBadge overridden={device.location_overridden} />
+              </HintTooltip>
+            ) : null}
           </div>
-          <FrameDescription>
-            {description}
-          </FrameDescription>
+          {description ? <FrameDescription>{description}</FrameDescription> : null}
         </div>
         {device && canEdit && !editing ? (
           <Button type="button" size="xs" variant="secondary" leadingIcon={RiMapPinLine} onClick={() => setEditing(true)}>

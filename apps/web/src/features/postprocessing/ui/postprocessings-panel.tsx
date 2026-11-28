@@ -59,7 +59,7 @@ export function PostprocessingsPanel({ deviceUuid, meshOwnerId, measurements, ca
             {formatMessage({
               id: "feature.postprocessing.panel.description",
               defaultMessage:
-                "Below you can find blueprints computing new channels based on readings from this device in real time. Raw readings remain unchanged.",
+                "Raw readings remain unchanged.",
             })}
           </FrameDescription>
         </div>
