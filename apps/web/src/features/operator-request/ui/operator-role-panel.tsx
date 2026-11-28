@@ -90,7 +90,7 @@ export function OperatorRolePanel(): ReactElement | null {
           {isOperator
             ? formatMessage({
                 id: "feature.operatorRequest.panel.operatorDescription",
-                defaultMessage: "You're an operator: you can bridge other MQTT brokers into this platform as sources.",
+                defaultMessage: "You are currently an operator. An operator can bridge MQTT data into Mesh Things, forward it, and store data on the Parquet S3 archive.",
               })
             : formatMessage({
                 id: "feature.operatorRequest.panel.memberDescription",

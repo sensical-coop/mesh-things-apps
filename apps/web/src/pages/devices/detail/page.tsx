@@ -18,7 +18,8 @@ import {
 import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { type ReactElement, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Chip } from "@mtt/ui/components/base/badges/chip";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
+import { HintTooltip } from "@/components/hint-tooltip";
+import { Flag } from "@/components/flag";
 import { Link, notFound, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -50,7 +51,7 @@ import { chartRangeQuery, defaultChartRange, windowForSpanMs, type DeviceChartRa
 import { CHART_AGG_OPTIONS, availableResolutions, type ChartAgg } from "./chart-resolution";
 import { DeviceChartResolutionPicker } from "./chart-resolution-picker";
 import { deviceRepository } from "@/features/device/repository";
-import { deviceLastSeen, deviceTitle } from "@/features/device/model";
+import { deviceLastSeen, deviceTitle, formatNodeId } from "@/features/device/model";
 import { DeviceAllowedBadge } from "@/features/device/ui/allowed-badge";
 import { DeviceChartRangePicker } from "./chart-range-picker";
 import { DeviceRoleBadge } from "@/features/device/ui/role-badge";
@@ -351,23 +352,23 @@ function DeviceStatusTab({
       <div className="grid gap-6 lg:grid-cols-2">
         <Frame className="shadow-card">
           <FrameHeader>
-            <FrameTitle>{formatMessage({ id: "page.devices.detail.identity.title", defaultMessage: "Identity" })}</FrameTitle>
-            <FrameDescription>
-              {device.isPending
-                ? formatMessage({
-                    id: "page.devices.detail.identity.loading",
-                    defaultMessage: "Loading this registration.",
-                  })
-                : device.error
+            <FrameTitle className="flex items-center gap-2">
+              {formatMessage({ id: "page.devices.detail.identity.title", defaultMessage: "Identity" })}
+              {device.data ? <DeviceAllowedBadge allowed={device.data.is_allowed} /> : null}
+            </FrameTitle>
+            {device.isPending || device.error ? (
+              <FrameDescription>
+                {device.isPending
                   ? formatMessage({
-                      id: "page.devices.detail.identity.error",
-                      defaultMessage: "This device is not in the inventory.",
+                      id: "page.devices.detail.identity.loading",
+                      defaultMessage: "Loading this registration.",
                     })
                   : formatMessage({
-                      id: "page.devices.detail.identity.description",
-                      defaultMessage: "Registration, hardware, and last time it was heard.",
+                      id: "page.devices.detail.identity.error",
+                      defaultMessage: "This device is not in the inventory.",
                     })}
-            </FrameDescription>
+              </FrameDescription>
+            ) : null}
           </FrameHeader>
           <FramePanel className="flex-1">
             {device.isPending ? <SkeletonRows rows={4} /> : null}
@@ -375,7 +376,16 @@ function DeviceStatusTab({
               <dl className="oa-arrive grid gap-3 sm:grid-cols-2">
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.nodeId", defaultMessage: "Node ID" })}
-                  value={<span className="font-mono">{device.data.node_id}</span>}
+                  value={
+                    <HintTooltip
+                      hint={formatMessage(
+                        { id: "page.devices.detail.identity.nodeIdDecimal", defaultMessage: "Decimal: {id}" },
+                        { id: String(device.data.node_id) },
+                      )}
+                    >
+                      <span className="font-mono">{formatNodeId(device.data.node_id, "hex")}</span>
+                    </HintTooltip>
+                  }
                 />
                 {device.data.label && device.data.label.trim() !== deviceTitle(device.data) ? (
                   <Item
@@ -383,10 +393,6 @@ function DeviceStatusTab({
                     value={device.data.label}
                   />
                 ) : null}
-                <Item
-                  label={formatMessage({ id: "page.devices.detail.identity.allowed", defaultMessage: "Allowed" })}
-                  value={<DeviceAllowedBadge allowed={device.data.is_allowed} />}
-                />
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.lastSeen", defaultMessage: "Last seen" })}
                   value={formatLastSeen(deviceLastSeen(device.data))}
@@ -400,10 +406,35 @@ function DeviceStatusTab({
                 />
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.protocol", defaultMessage: "Protocol" })}
-                  value={formatMessage(
-                    { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version} (same as mesh)" },
-                    { version: device.data.protocol },
-                  )}
+                  value={
+                    <HintTooltip
+                      hint={
+                        device.data.protocol_mismatch
+                          ? formatMessage({
+                              id: "page.devices.detail.identity.protocolMismatch",
+                              defaultMessage: "Some of this device's readings do not decode with its mesh's protocol.",
+                            })
+                          : formatMessage({
+                              id: "page.devices.detail.identity.protocolMatches",
+                              defaultMessage: "Same as its mesh.",
+                            })
+                      }
+                    >
+                      <Flag
+                        on={!device.data.protocol_mismatch}
+                        yes={formatMessage(
+                          { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version}" },
+                          { version: device.data.protocol },
+                        )}
+                        no={formatMessage(
+                          { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version}" },
+                          { version: device.data.protocol },
+                        )}
+                        onColor="lime"
+                        offColor="rose"
+                      />
+                    </HintTooltip>
+                  }
                 />
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.firmware", defaultMessage: "Firmware" })}
@@ -610,7 +641,7 @@ function DeviceStatusTab({
           <FrameDescription>
             {formatMessage({
               id: "page.devices.detail.variants.description",
-              defaultMessage: "Payload variants this device has sent, and this device's valid ranges.",
+              defaultMessage: "Valid ranges for each variant from this device.",
             })}
           </FrameDescription>
         </FrameHeader>
@@ -939,12 +970,6 @@ function DeviceDashboardTab({
           <h2 className="text-title-3-medium text-text-primary">
             {formatMessage({ id: "page.devices.detail.dashboard.latest.title", defaultMessage: "Latest readings" })}
           </h2>
-          <p className="text-body-regular text-text-secondary">
-            {formatMessage({
-              id: "page.devices.detail.dashboard.latest.description",
-              defaultMessage: "Current values from this device.",
-            })}
-          </p>
         </div>
         {latestPending ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-hidden>
@@ -1002,12 +1027,6 @@ function DeviceDashboardTab({
             <h2 className="text-title-3-medium text-text-primary">
               {formatMessage({ id: "page.devices.detail.dashboard.history.title", defaultMessage: "History" })}
             </h2>
-            <p className="text-body-regular text-text-secondary">
-              {formatMessage({
-                id: "page.devices.detail.dashboard.history.description",
-                defaultMessage: "Values per channel for the selected range, resolution, and aggregation.",
-              })}
-            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <DeviceChartResolutionPicker
@@ -1119,7 +1138,7 @@ function qualityHeadlineKpis(
   formatMessage: IntlShape["formatMessage"],
   formatRatio: Formatters["formatRatio"],
   { withAlarms }: { withAlarms: boolean },
-): { label: string; value: string; hint: string }[] {
+): { label: string; value: string; hint?: string }[] {
   const alarms = Object.entries(quality.alarms_by_detector);
   const alarmCount = alarms.reduce((sum, [, n]) => sum + n, 0);
   const alarmHint =
@@ -1137,10 +1156,6 @@ function qualityHeadlineKpis(
     {
       label: formatMessage({ id: "page.devices.detail.quality.kpi.range", defaultMessage: "In range" }),
       value: formatRatio(quality.range_ratio),
-      hint: formatMessage({
-        id: "page.devices.detail.quality.kpi.rangeHint",
-        defaultMessage: "Readings inside the configured range",
-      }),
     },
     {
       label: formatMessage({ id: "page.devices.detail.quality.kpi.completeness", defaultMessage: "Completeness" }),
@@ -1180,19 +1195,6 @@ function formatGapShort(seconds: number | null, formatMessage: IntlShape["format
   return formatMessage(
     { id: "page.devices.detail.quality.gapMinutes", defaultMessage: "{count} min" },
     { count: Math.round(seconds / 60) },
-  );
-}
-
-/** Shows `hint` on hover or focus; renders the children alone when there is none. */
-function HintTooltip({ hint, children }: { hint?: string; children: ReactNode }): ReactElement {
-  if (!hint) return <>{children}</>;
-  return (
-    <Tooltip>
-      <TooltipTrigger delay={200} className="cursor-help text-left">
-        {children}
-      </TooltipTrigger>
-      <TooltipContent sideOffset={6}>{hint}</TooltipContent>
-    </Tooltip>
   );
 }
 

@@ -27,7 +27,7 @@ export function MeshProtocolNotice({ mesh, mismatched, onChange }: MeshProtocolN
         key="mismatch"
         title={formatMessage({
           id: "feature.mesh.protocolNotice.mismatchTitle",
-          defaultMessage: "Firmware mismatch detected",
+          defaultMessage: "Multiple firmwares detected",
         })}
         action={action}
       >
@@ -35,7 +35,7 @@ export function MeshProtocolNotice({ mesh, mismatched, onChange }: MeshProtocolN
           {
             id: "feature.mesh.protocolNotice.mismatch",
             defaultMessage:
-              "The firmware version of {count, plural, one {# device} other {# devices}} is different from the one defined for this mesh. It is possible that some of their readings are lost or misread as a consequence. Update their firmware or change the mesh's protocol.",
+              "{count,plural,one{We detected that the firmware version of # device is different from the one defined for this mesh. It is possible that some of their readings are lost or misread as a consequence. Update their firmware or change the mesh's protocol.} other{We detected that the firmware version of # devices is different from the one defined for this mesh. It is possible that some of their readings are lost or misread as a consequence. Update their firmware or change the mesh's protocol.}}",
           },
           { count: mismatched },
         )}

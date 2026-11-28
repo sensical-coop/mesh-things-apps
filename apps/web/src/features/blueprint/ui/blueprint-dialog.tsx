@@ -124,7 +124,7 @@ export function BlueprintDialog({ blueprint, onClose, onSaved }: BlueprintDialog
           : formatMessage({
               id: "feature.blueprint.dialog.createDescription",
               defaultMessage:
-                "A blueprint is a recipe that computes new channels from a device's readings. Create a blueprint here, and then attach it to devices from their page. Calibrations can be added on the device page too.",
+                "Once created, attach it to devices from their page, where calibrations are also added.",
             })
       }
       onClose={onClose}

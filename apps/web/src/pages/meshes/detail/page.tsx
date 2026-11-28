@@ -359,12 +359,6 @@ export function MeshDetailPage(): ReactElement {
                   </code>
                 ) : null}
               </FrameTitle>
-              <FrameDescription>
-                {formatMessage({
-                  id: "page.meshes.detail.psk.description",
-                  defaultMessage: "Mesh PSK.",
-                })}
-              </FrameDescription>
             </FrameHeader>
             <FramePanel>
               {mesh.isPending ? <SkeletonRows rows={1} /> : null}
@@ -397,17 +391,14 @@ export function MeshDetailPage(): ReactElement {
                   <FrameTitle>
                     {formatMessage({ id: "page.meshes.detail.fleet.title", defaultMessage: "Fleet" })}
                   </FrameTitle>
-                  <FrameDescription>
-                    {plotted.length
-                      ? formatMessage({
-                          id: "page.meshes.detail.fleet.hasCoords",
-                          defaultMessage: "Devices with coordinates.",
-                        })
-                      : formatMessage({
+                  {!plotted.length ? (
+                    <FrameDescription>
+                      {formatMessage({
                           id: "page.meshes.detail.fleet.noCoords",
                           defaultMessage: "No coordinates on this mesh yet.",
                         })}
-                  </FrameDescription>
+                    </FrameDescription>
+                  ) : null}
                 </div>
                 {plotted.length ? (
                   <Button

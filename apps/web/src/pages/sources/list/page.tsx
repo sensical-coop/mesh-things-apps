@@ -224,18 +224,14 @@ export function SourcesPage(): ReactElement {
             <FrameTitle>
               {formatMessage({ id: "page.sources.list.panel.title", defaultMessage: "Your sources" })}
             </FrameTitle>
-            <FrameDescription>
-              {sources.error
-                ? formatMessage({
+            {sources.error ? (
+              <FrameDescription>
+                {formatMessage({
                     id: "page.sources.list.panel.error",
                     defaultMessage: "Sources didn't load. Check your connection to the API and try again.",
-                  })
-                : formatMessage({
-                    id: "page.sources.list.panel.description",
-                    defaultMessage:
-                      "Remote MQTT brokers bridged into this instance.",
                   })}
-            </FrameDescription>
+              </FrameDescription>
+            ) : null}
           </FrameHeader>
           <FramePanel>
             {sources.isPending ? <SkeletonRows /> : null}
