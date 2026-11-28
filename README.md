@@ -1,10 +1,49 @@
-# Mesh Things apps
+<div align="center">
+
+<img src=".github/mesh_things_logo.png" alt="Mesh Things logo" width="320"/>
+<h1>Mesh Things Apps</h1>
+
+[![PR checks](https://img.shields.io/github/actions/workflow/status/sensical-coop/mesh-things-apps/pr-checks.yml?label=checks&logo=github)](https://github.com/sensical-coop/mesh-things-apps/actions/workflows/pr-checks.yml)
+[![License: LGPL-2.1](https://img.shields.io/badge/license-LGPL--2.1-blue)](LICENSE)
+![Node](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-10.6.1-F69220?logo=pnpm&logoColor=white)
+
+</div>
+
+<div align="center">
+	<a href="https://github.com/sensical-coop/meshtastic-things">Backend</a>
+	-
+	<a href="apps/docs">Documentation</a>
+	-
+	<a href="CONTRIBUTING.md">Contributing</a>
+</div>
+
+## Overview
+
+This repository contains the frontend for Mesh Things, a platform that turns Meshtastic LoRa mesh networks into a managed fleet of sensors. Gateways publish telemetry over MQTT; the [meshtastic-things](https://github.com/sensical-coop/meshtastic-things) backend decodes and stores it, and the apps here render it over HTTP.
+
+It is a pnpm + Turborepo monorepo:
+
+| Package | What it is |
+| --- | --- |
+| `apps/web` | React dashboard (Vite, React 19, TanStack Router/Query). Console at `/console` |
+| `apps/docs` | Documentation site (TanStack Start + Fumadocs) |
+| `apps/api-mock` | In-memory implementation of the HTTP contract, on port `8787` |
+| `packages/contracts` | API client, types and Zod schemas generated from `docs/openapi.json` |
+| `packages/domain` | Domain entities used by the mock |
+| `packages/ui` | Design tokens and UI primitives |
+
+### Get started
+
+- 🧪 **[Mock API](#mock-api)** - Run the dashboard with no backend.
+- 🔌 **[Local API](#local-api)** - Point the dashboard at a running backend.
+- 🐳 **[Docker](#running-via-docker-locally)** - Run the web container locally.
 
 ## Local development
 
 There are two options for local development: mock-api or with [meshtastic-things](https://github.com/sensical-coop/meshtastic-things) running on the same machine.
 
-### Mock-api
+### Mock API
 
 Quick-start against a mock-api:
 
@@ -54,9 +93,17 @@ ports `80`/`443`, which will collide if you already have your API's own Caddy (o
 else) locally. `web` itself only publishes to `127.0.0.1`, on the port set in
 `docker-compose.yml`, so it won't collide with other local services either.
 
+## Scripts
 
-## Licence
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Web, docs and (unless disabled) the mock API |
+| `pnpm build` | Build every app and package |
+| `pnpm typecheck` | Type-check the workspace |
+| `pnpm lint` | Stylelint and ESLint |
+| `pnpm test` | Run the tests |
+| `pnpm openapi:sync` | Fetch the API schema and regenerate `packages/contracts` |
 
-The Mesh Things apps are licensed under the [GNU Affero General Public License v3.0](LICENSE). If you run a modified version as a service, you must offer its source code to the people who use it.
+## License
 
-They are also available under a commercial licence, for use that cannot meet the AGPL's terms. Contact us at info@sensical.es.
+[LGPL-2.1](LICENSE).
