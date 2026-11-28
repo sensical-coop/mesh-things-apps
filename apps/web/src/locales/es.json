@@ -1635,11 +1635,14 @@
   "feature.terms.account.documentValue": "Condiciones de uso y Política de privacidad",
   "feature.terms.account.version": "Versión",
   "feature.terms.account.acceptedOn": "Aceptado el",
-  "page.profile.password.title": "Contraseña",
-  "page.profile.password.description": "Escribe tu contraseña actual para poner una nueva. No se cierra tu sesión.",
+  "page.profile.password.title": "Cambiar contraseña",
   "page.profile.password.current": "Contraseña actual",
   "page.profile.password.new": "Contraseña nueva",
   "page.profile.password.confirm": "Confirma la contraseña nueva",
   "page.profile.password.mismatch": "Las contraseñas no coinciden.",
-  "page.profile.password.error": "No se cambió la contraseña. Revisa los campos e inténtalo de nuevo."
+  "page.profile.password.error": "No se cambió la contraseña. Revisa los campos e inténtalo de nuevo.",
+  "page.profile.changePassword": "Cambiar contraseña",
+  "page.profile.password.same": "La nueva contraseña debe ser distinta de la actual.",
+  "page.profile.password.cancel": "Cancelar",
+  "page.profile.password.save": "Cambiar contraseña"
 }

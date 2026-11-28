@@ -1635,11 +1635,14 @@
   "feature.terms.account.documentValue": "Terms of Use and Privacy Policy",
   "feature.terms.account.version": "Version",
   "feature.terms.account.acceptedOn": "Accepted on",
-  "page.profile.password.title": "Password",
-  "page.profile.password.description": "Enter your current password to set a new one. You stay signed in.",
+  "page.profile.password.title": "Change password",
   "page.profile.password.current": "Current password",
   "page.profile.password.new": "New password",
   "page.profile.password.confirm": "Confirm new password",
   "page.profile.password.mismatch": "Passwords don't match.",
-  "page.profile.password.error": "The password was not changed. Check the fields and try again."
+  "page.profile.password.error": "The password was not changed. Check the fields and try again.",
+  "page.profile.changePassword": "Change password",
+  "page.profile.password.same": "The new password must be different from the current one.",
+  "page.profile.password.cancel": "Cancel",
+  "page.profile.password.save": "Change password"
 }

@@ -752,6 +752,9 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!(await ownerPasswordMatches(auth, actor.id, currentPassword))) {
       return c.json({ current_password: ["Incorrect password"] }, 400);
     }
+    if (newPassword === currentPassword) {
+      return c.json({ new_password: ["The new password must be different from the current one."] }, 400);
+    }
     await setOwnerPassword(auth, actor.id, newPassword);
     return c.json({ detail: "Password changed" });
   });
