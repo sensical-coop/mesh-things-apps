@@ -34,13 +34,15 @@ function proxyRemoteApi(): Plugin {
     configureServer(server) {
       const target = loadEnv(server.config.mode, server.config.envDir || process.cwd(), "").API_PROXY_TARGET;
       if (!target) return;
-      const { origin, host, protocol } = new URL(target);
+      const { origin, host, hostname, port, protocol } = new URL(target);
       const send = protocol === "https:" ? httpsRequest : request;
       // connect strips the /remote-api mount from req.url
       server.middlewares.use("/remote-api", (req, res, next) => {
         // Django's CSRF check compares Origin with the API host.
         const headers = { ...req.headers, host, origin, referer: `${origin}/` };
-        const upstream = send(new URL(req.url ?? "/", origin), { method: req.method, headers }, (response) => {
+        // A path, never a URL: `new URL("//evil.example/x", origin)` would leave the target host.
+        const options = { protocol, hostname, port, path: req.url, method: req.method, headers };
+        const upstream = send(options, (response) => {
           // Session and CSRF cookies come scoped to the API's domain (e.g. .sensical.es); keep them on localhost.
           const cookies = response.headers["set-cookie"];
           if (cookies) response.headers["set-cookie"] = cookies.map((c) => c.replace(/;\s*domain=[^;]*/i, ""));
