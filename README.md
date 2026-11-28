@@ -17,7 +17,7 @@ The web app runs on `5173`, against a mock API in `8787`.
 
 ### Local API
 
-Copy `.env.example` to `.env` at the repo root and set:
+Copy `apps/web/.env.example` to `apps/web/.env` and set:
 
 ```bash
 VITE_API_URL=http://localhost      # or wherever your API is
@@ -27,6 +27,17 @@ VITE_DISABLE_MOCK_API=true         # skip launching apps/api-mock
 `pnpm dev` reads this file automatically (`turbo` skips `api-mock` when the flag is set, and
 Vite picks up `VITE_API_URL` for the browser build). `VITE_API_URL` is baked in at build
 time, so changing it later needs a restart of `pnpm dev` (or a rebuild, for Docker).
+
+### Remote API
+
+```bash
+pnpm dev:remote
+```
+
+Runs web and docs in Vite mode `remote`, so each app also reads its `.env.remote`.
+`apps/web/.env.remote` points the web app at https://api.sensical.es through a
+`/remote-api` proxy on the dev server: the deployed API neither allows `localhost` in CORS
+nor sends its cookies to it. Personal overrides go in `.env.remote.local` (gitignored).
 
 ### Running via Docker locally
 
@@ -45,7 +56,7 @@ docker compose logs -f web        # wait for "ready"
 ```
 
 It uses the host's `node_modules`, so run `pnpm install` on the host first. Restart it
-(`docker compose restart web`) only after changing `.env` or dependencies.
+(`docker compose restart web`) only after changing `apps/web/.env` or dependencies.
 Without `COMPOSE_FILE`, the same command builds and runs the production image; add
 `--build` to pick up changes.
 
