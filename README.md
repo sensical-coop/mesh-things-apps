@@ -20,7 +20,9 @@
 
 ## Overview
 
-This repository contains the frontend for Mesh Things, a platform that turns Meshtastic LoRa mesh networks into a managed fleet of sensors. Gateways publish telemetry over MQTT; the [meshtastic-things](https://github.com/sensical-coop/meshtastic-things) backend decodes and stores it, and the apps here render it over HTTP.
+This repository contains the frontend for Mesh Things, a platform for monitoring sensors that report over LoRa mesh networks. It works with [Meshtastic](https://meshtastic.org) nodes and with any LoRa mesh-based sensor that publishes telemetry through a Meshtastic gateway: environmental probes, power and battery monitors, air quality sensors, trackers.
+
+Gateways forward the mesh traffic over MQTT. The [meshtastic-things](https://github.com/sensical-coop/meshtastic-things) backend decrypts, decodes and stores it. The apps in this repo turn it into a fleet you can manage: meshes, devices, live readings and history, data quality checks, alarms and exports.
 
 It is a pnpm + Turborepo monorepo:
 
@@ -28,44 +30,35 @@ It is a pnpm + Turborepo monorepo:
 | --- | --- |
 | `apps/web` | React dashboard (Vite, React 19, TanStack Router/Query). Console at `/console` |
 | `apps/docs` | Documentation site (TanStack Start + Fumadocs) |
-| `apps/api-mock` | In-memory implementation of the HTTP contract, on port `8787` |
 | `packages/contracts` | API client, types and Zod schemas generated from `docs/openapi.json` |
-| `packages/domain` | Domain entities used by the mock |
+| `packages/domain` | Shared domain entities |
 | `packages/ui` | Design tokens and UI primitives |
 
 ### Get started
 
-- 🧪 **[Mock API](#mock-api)** - Run the dashboard with no backend.
-- 🔌 **[Local API](#local-api)** - Point the dashboard at a running backend.
+- 🔌 **[Local development](#local-development)** - Point the dashboard at a running backend.
 - 🐳 **[Docker](#running-via-docker-locally)** - Run the web container locally.
 
 ## Local development
 
-There are two options for local development: mock-api or with [meshtastic-things](https://github.com/sensical-coop/meshtastic-things) running on the same machine.
+The web app runs against [meshtastic-things](https://github.com/sensical-coop/meshtastic-things), started on the same machine or reachable over the network.
 
-### Mock API
+Copy `.env.example` to `.env` at the repo root and set:
 
-Quick-start against a mock-api:
+```bash
+VITE_API_URL=http://localhost      # or wherever your API is
+```
+
+Then:
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-The web app runs on `5173`, against a mock API in `8787`.
-
-### Local API
-
-Copy `.env.example` to `.env` at the repo root and set:
-
-```bash
-VITE_API_URL=http://localhost      # or wherever your API is
-VITE_DISABLE_MOCK_API=true         # skip launching apps/api-mock
-```
-
-`pnpm dev` reads this file automatically (`turbo` skips `api-mock` when the flag is set, and
-Vite picks up `VITE_API_URL` for the browser build). `VITE_API_URL` is baked in at build
-time, so changing it later needs a restart of `pnpm dev` (or a rebuild, for Docker).
+The web app runs on `5173`. `pnpm dev` reads `.env` automatically and Vite picks up
+`VITE_API_URL` for the browser build. `VITE_API_URL` is baked in at build time, so changing
+it later needs a restart of `pnpm dev` (or a rebuild, for Docker).
 
 ### Running via Docker locally
 
@@ -97,7 +90,7 @@ else) locally. `web` itself only publishes to `127.0.0.1`, on the port set in
 
 | Command | What it does |
 | --- | --- |
-| `pnpm dev` | Web, docs and (unless disabled) the mock API |
+| `pnpm dev` | Web app and docs site |
 | `pnpm build` | Build every app and package |
 | `pnpm typecheck` | Type-check the workspace |
 | `pnpm lint` | Stylelint and ESLint |
