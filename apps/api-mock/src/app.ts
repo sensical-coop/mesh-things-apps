@@ -131,7 +131,16 @@ import {
   toleranceFor,
   type PostprocessingRow,
 } from "./features/postprocessing/repository";
-import { createMockAuth, ownerPasswordMatches, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
+import {
+  createMockAuth,
+  MIN_PASSWORD_LENGTH,
+  ownerPasswordMatches,
+  revokeOtherSessions,
+  seedStore,
+  setOwnerPassword,
+  stampLogin,
+  type MockAuth,
+} from "./auth";
 import {
   backfillJson,
   blueprintJson,
@@ -752,10 +761,19 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     if (!(await ownerPasswordMatches(auth, actor.id, currentPassword))) {
       return c.json({ current_password: ["Incorrect password"] }, 400);
     }
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return c.json(
+        { new_password: [`This password is too short. It must contain at least ${MIN_PASSWORD_LENGTH} characters.`] },
+        400,
+      );
+    }
     if (newPassword === currentPassword) {
       return c.json({ new_password: ["The new password must be different from the current one."] }, 400);
     }
     await setOwnerPassword(auth, actor.id, newPassword);
+    // The session that made the change stays signed in; a bearer caller has none to keep.
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    revokeOtherSessions(auth, actor.id, session?.session.id ?? null);
     return c.json({ detail: "Password changed" });
   });
 

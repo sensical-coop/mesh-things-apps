@@ -20,7 +20,9 @@ export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose
     onError: (error) => setErrors(readApiError(error).fields),
   });
 
+  // Dismissing while a change is in flight would let its late response land on a later opening.
   function close() {
+    if (change.isPending) return;
     setErrors({});
     change.reset();
     onClose();
@@ -113,7 +115,7 @@ export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose
           </StatusCopy>
         ) : null}
         <div className={dialogActionsClass}>
-          <Button type="button" variant="secondary" size="small" onClick={close}>
+          <Button type="button" variant="secondary" size="small" onClick={close} disabled={change.isPending}>
             {formatMessage({ id: "page.profile.password.cancel", defaultMessage: "Cancel" })}
           </Button>
           <Button type="submit" size="small" disabled={change.isPending}>

@@ -18,6 +18,8 @@ import {
 } from "./store";
 
 export const SESSION_COOKIE_NAME = "mtt_session";
+/** The shortest password the mock accepts, as Django's validators do in the API. */
+export const MIN_PASSWORD_LENGTH = 8;
 
 const t0 = "2026-01-01T00:00:00.000Z";
 
@@ -56,7 +58,7 @@ export function createMockAuth() {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
-      minPasswordLength: 8,
+      minPasswordLength: MIN_PASSWORD_LENGTH,
     },
     advanced: {
       database: { generateId: () => crypto.randomUUID() },
@@ -117,4 +119,12 @@ export async function ownerPasswordMatches(auth: MockAuth, ownerId: string, pass
   const accounts = auth._memory.account as Array<Record<string, unknown>>;
   const account = accounts.find((row) => row.providerId === "credential" && row.userId === ownerId);
   return typeof account?.password === "string" && verifyPassword({ hash: account.password, password });
+}
+
+/** Signs the owner out everywhere except `keepSessionId`, as the API does after a password change. */
+export function revokeOtherSessions(auth: MockAuth, ownerId: string, keepSessionId: string | null): void {
+  const sessions = auth._memory.session as Array<Record<string, unknown>>;
+  const kept = sessions.filter((session) => session.userId !== ownerId || session.id === keepSessionId);
+  // In place: the auth library holds this same array.
+  sessions.splice(0, sessions.length, ...kept);
 }
