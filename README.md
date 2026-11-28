@@ -54,3 +54,9 @@ ports `80`/`443`, which will collide if you already have your API's own Caddy (o
 else) locally. `web` itself only publishes to `127.0.0.1`, on the port set in
 `docker-compose.yml`, so it won't collide with other local services either.
 
+
+## Licence
+
+The Mesh Things apps are licensed under the [GNU Affero General Public License v3.0](LICENSE). If you run a modified version as a service, you must offer its source code to the people who use it.
+
+They are also available under a commercial licence, for use that cannot meet the AGPL's terms. Contact us at info@sensical.es.
