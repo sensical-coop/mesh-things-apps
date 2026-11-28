@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src=".github/mesh_things_logo.png" alt="Mesh Things logo" width="320"/>
+<img src=".github/assets/mesh_things_logo.png" alt="Mesh Things logo" width="320"/>
 <h1>Mesh Things Apps</h1>
 
 [![PR checks](https://img.shields.io/github/actions/workflow/status/sensical-coop/mesh-things-apps/pr-checks.yml?label=checks&logo=github)](https://github.com/sensical-coop/mesh-things-apps/actions/workflows/pr-checks.yml)
@@ -13,7 +13,7 @@
 <div align="center">
 	<a href="https://github.com/sensical-coop/meshtastic-things">Backend</a>
 	-
-	<a href="apps/docs">Documentation</a>
+	<a href="https://things.sensical.es/docs">Documentation</a>
 	-
 	<a href="CONTRIBUTING.md">Contributing</a>
 </div>
