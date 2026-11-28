@@ -448,7 +448,7 @@ export function MeshesPage(): ReactElement {
       />
       <CreateMeshDialog start={createStart} onClose={() => setCreateStart(null)} />
       {meshToEdit ? (
-        <EditMeshDialog mesh={meshToEdit} open onClose={() => setMeshToEdit(null)} />
+        <EditMeshDialog key={meshToEdit.id} mesh={meshToEdit} open onClose={() => setMeshToEdit(null)} />
       ) : null}
       <DeleteMeshDialog
         key={meshToDelete?.id ?? "none"}

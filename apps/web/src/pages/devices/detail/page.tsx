@@ -200,7 +200,7 @@ export function DeviceDetailPage(): ReactElement {
         />
       ) : null}
       {mesh.data && canEdit ? (
-        <EditMeshDialog mesh={mesh.data} open={meshEditOpen} onClose={() => setMeshEditOpen(false)} />
+        <EditMeshDialog key={mesh.data.id} mesh={mesh.data} open={meshEditOpen} onClose={() => setMeshEditOpen(false)} />
       ) : null}
       <Tabs
         className="flex flex-col gap-0"

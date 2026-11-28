@@ -556,7 +556,7 @@ export function MeshDetailPage(): ReactElement {
         <RegisterDeviceDialog meshId={mesh.data.id} open={open} onClose={() => setOpen(false)} />
       ) : null}
       {mesh.data && canEdit ? (
-        <EditMeshDialog mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
+        <EditMeshDialog key={mesh.data.id} mesh={mesh.data} open={editOpen} onClose={() => setEditOpen(false)} />
       ) : null}
       <DeleteMeshDialog
         mesh={deleteOpen ? (mesh.data ?? null) : null}

@@ -81,6 +81,16 @@ export function EditMeshDialog({
   const [protocol, setProtocol] = useState<string | null>(null);
   const [discover, setDiscover] = useState(mesh.discover_gateways ?? false);
   const [typedPsk, setTypedPsk] = useState("");
+  // The dialog stays mounted on the mesh and device pages, so each opening starts from the mesh as saved now.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setProtocol(null);
+      setDiscover(mesh.discover_gateways ?? false);
+      setTypedPsk("");
+    }
+  }
   // The API checks discovery only when it or the PSK changes, so an unchanged mesh stays savable.
   const discoveryBlocked =
     !isOperator &&

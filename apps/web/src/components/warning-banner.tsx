@@ -12,7 +12,7 @@ export type WarningBannerProps = {
 export function WarningBanner({ title, children, action }: WarningBannerProps): ReactElement {
   return (
     <div
-      role="alert"
+      role="status"
       className="oa-squircle mb-6 flex flex-wrap items-start justify-between gap-3 border border-warning-border bg-warning-background px-4 py-3"
     >
       <div className="flex min-w-0 flex-1 gap-3">
