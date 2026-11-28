@@ -1393,6 +1393,9 @@ export const ownersMeUpdateMutation = (options?: Partial<Options<OwnersMeUpdateD
 
 /**
  * Change the authenticated owner's password, confirming the current one first.
+ *
+ * The new password must differ from the current one. The session that made the change
+ * stays signed in. Other sessions of the owner are signed out.
  */
 export const ownersMeChangePasswordCreateMutation = (options?: Partial<Options<OwnersMeChangePasswordCreateData>>): UseMutationOptions<OwnersMeChangePasswordCreateResponse, DefaultError, Options<OwnersMeChangePasswordCreateData>> => {
     const mutationOptions: UseMutationOptions<OwnersMeChangePasswordCreateResponse, DefaultError, Options<OwnersMeChangePasswordCreateData>> = {

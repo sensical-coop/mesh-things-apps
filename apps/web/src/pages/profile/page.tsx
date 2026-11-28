@@ -24,6 +24,7 @@ import { AccountTermsPanel } from "@/features/terms/ui/account-terms-panel";
 import { formLevelMessage, issueErrors, readApiError } from "@/lib/api-errors";
 import { authRepository } from "@/features/auth/repository";
 import { ApiKeyPanel } from "@/features/auth/ui/api-key-panel";
+import { ChangePasswordDialog } from "@/features/auth/ui/change-password-dialog";
 import { DeleteAccountDialog } from "@/features/auth/ui/delete-account-dialog";
 import { NotificationsPanel } from "@/features/auth/ui/notifications-panel";
 import { routes } from "@/router";
@@ -35,6 +36,7 @@ export function ProfilePage(): ReactElement {
   const me = useQuery(authRepository.me());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const update = useMutation({
     ...authRepository.update(),
     onSuccess: async () => {
@@ -115,12 +117,16 @@ export function ProfilePage(): ReactElement {
                   </StatusCopy>
                 ) : null}
                 <div className={dialogActionsClass}>
+                  <Button type="button" variant="secondary" size="small" onClick={() => setPasswordOpen(true)}>
+                    {formatMessage({ id: "page.profile.changePassword", defaultMessage: "Change password" })}
+                  </Button>
                   <SaveButton pending={update.isPending} saved={update.isSuccess} savedKey={update.submittedAt} />
                 </div>
               </form>
             )}
           </FramePanel>
         </Frame>
+        <ChangePasswordDialog open={passwordOpen} onClose={() => setPasswordOpen(false)} />
         <ApiKeyPanel />
         <AccountTermsPanel />
         <OperatorRolePanel />

@@ -407,7 +407,7 @@
   "page.profile.dangerZone.delete": "Eliminar cuenta",
   "feature.auth.deleteAccountDialog.title": "Eliminar cuenta",
   "feature.auth.apiKey.title": "Clave de API",
-  "feature.auth.apiKey.description": "Tu clave de API sirve para acceder a la API REST. Nota: generar una clave nueva sustituye a la actual.",
+  "feature.auth.apiKey.description": "Tu clave de API sirve para acceder a la API REST.",
   "feature.auth.apiKey.generate": "Generar clave nueva",
   "feature.auth.rotateKey.title": "Generar una clave de API nueva",
   "feature.auth.rotateKey.description": "Cualquier servicio que use tu clave actual dejará de funcionar hasta que lo actualices con la nueva clave.",
@@ -1634,5 +1634,15 @@
   "feature.terms.account.document": "Documento",
   "feature.terms.account.documentValue": "Condiciones de uso y Política de privacidad",
   "feature.terms.account.version": "Versión",
-  "feature.terms.account.acceptedOn": "Aceptado el"
+  "feature.terms.account.acceptedOn": "Aceptado el",
+  "page.profile.password.title": "Cambiar contraseña",
+  "page.profile.password.current": "Contraseña actual",
+  "page.profile.password.new": "Contraseña nueva",
+  "page.profile.password.confirm": "Confirma la contraseña nueva",
+  "page.profile.password.mismatch": "Las contraseñas no coinciden.",
+  "page.profile.password.error": "No se cambió la contraseña. Revisa los campos e inténtalo de nuevo.",
+  "page.profile.changePassword": "Cambiar contraseña",
+  "page.profile.password.same": "La nueva contraseña debe ser distinta de la actual.",
+  "page.profile.password.cancel": "Cancelar",
+  "page.profile.password.save": "Cambiar contraseña"
 }

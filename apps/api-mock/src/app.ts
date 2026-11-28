@@ -6,6 +6,7 @@ import {
   zMeshesTermsAcceptanceCreateData,
   zMeshesUpdateData,
   zOwnersCreateData,
+  zOwnersMeChangePasswordCreateData,
   zOwnersMeResendVerificationCreateData,
   zOwnersLoginCreateData,
   zOwnersMeUpdateData,
@@ -130,7 +131,16 @@ import {
   toleranceFor,
   type PostprocessingRow,
 } from "./features/postprocessing/repository";
-import { createMockAuth, seedStore, setOwnerPassword, stampLogin, type MockAuth } from "./auth";
+import {
+  createMockAuth,
+  MIN_PASSWORD_LENGTH,
+  ownerPasswordMatches,
+  revokeOtherSessions,
+  seedStore,
+  setOwnerPassword,
+  stampLogin,
+  type MockAuth,
+} from "./auth";
 import {
   backfillJson,
   blueprintJson,
@@ -740,6 +750,31 @@ export async function createApp(store?: Store, auth: MockAuth = createMockAuth()
     const actor = c.get("actor");
     const verification = db.verifications.get(actor.id) ?? NO_VERIFICATION;
     return c.json(ownerWithApiKeyJson(actor, verification, `mtt_mock_${newId()}`, ownerTerms(actor.id)));
+  });
+
+  app.post("/owners/me/change-password", async (c) => {
+    const body: unknown = await c.req.json().catch(() => null);
+    const parsed = zOwnersMeChangePasswordCreateData.safeParse({ body });
+    if (!parsed.success) return c.json(fieldErrors(parsed.error.issues), 400);
+    const actor = c.get("actor");
+    const { current_password: currentPassword, new_password: newPassword } = parsed.data.body;
+    if (!(await ownerPasswordMatches(auth, actor.id, currentPassword))) {
+      return c.json({ current_password: ["Incorrect password"] }, 400);
+    }
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return c.json(
+        { new_password: [`This password is too short. It must contain at least ${MIN_PASSWORD_LENGTH} characters.`] },
+        400,
+      );
+    }
+    if (newPassword === currentPassword) {
+      return c.json({ new_password: ["The new password must be different from the current one."] }, 400);
+    }
+    await setOwnerPassword(auth, actor.id, newPassword);
+    // The session that made the change stays signed in; a bearer caller has none to keep.
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    revokeOtherSessions(auth, actor.id, session?.session.id ?? null);
+    return c.json({ detail: "Password changed" });
   });
 
   app.post("/owners/me/resend-verification", async (c) => {
