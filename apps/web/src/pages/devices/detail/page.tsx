@@ -16,7 +16,9 @@ import {
   FrameTitle,
 } from "@mtt/ui/reui/frame";
 import { useQueries, useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { type ReactElement, useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactElement, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Chip } from "@mtt/ui/components/base/badges/chip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@mtt/ui/components/ui/tooltip";
 import { Link, notFound, useParams } from "@tanstack/react-router";
 import { RiArrowLeftLine } from "@remixicon/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
@@ -59,6 +61,9 @@ import { DeviceLinksFrame } from "@/features/mesh-network/ui/device-links-frame"
 import { DeviceTrackFrame } from "@/features/mesh-network/ui/device-track-frame";
 import { DeviceTrafficFrame } from "@/features/mesh-network/ui/device-traffic-frame";
 import { DeviceSilentBadge } from "@/features/device/ui/silent-badge";
+import { DeviceProtocolBadge } from "@/features/device/ui/protocol-badge";
+import { DeviceProtocolNotice } from "@/features/device/ui/protocol-notice";
+import { EditMeshDialog } from "@/features/mesh/ui/edit-mesh-dialog";
 
 const DEVICE_TABS = ["status", "dashboard"] as const;
 
@@ -99,6 +104,7 @@ export function DeviceDetailPage(): ReactElement {
   // Only on an operator's mesh, and only for its owner or a superuser.
   const canArchive = device.data != null && canEdit && canArchiveDevice(device.data, me, mesh.data?.owner_id);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [meshEditOpen, setMeshEditOpen] = useState(false);
   const [scrollToChannel, setScrollToChannel] = useState<string | null>(null);
 
   function handleViewChart(channel: string) {
@@ -193,6 +199,9 @@ export function DeviceDetailPage(): ReactElement {
           onClose={() => setSettingsOpen(false)}
         />
       ) : null}
+      {mesh.data && canEdit ? (
+        <EditMeshDialog key={mesh.data.id} mesh={mesh.data} open={meshEditOpen} onClose={() => setMeshEditOpen(false)} />
+      ) : null}
       <Tabs
         className="flex flex-col gap-0"
         value={tab}
@@ -231,6 +240,7 @@ export function DeviceDetailPage(): ReactElement {
                 </h1>
                 {device.data ? <DeviceRoleBadge device={device.data} /> : null}
                 {device.data ? <DeviceSilentBadge device={device.data} /> : null}
+                {device.data ? <DeviceProtocolBadge device={device.data} /> : null}
               </div>
             </div>
           </div>
@@ -246,6 +256,14 @@ export function DeviceDetailPage(): ReactElement {
             </div>
           ) : null}
         </div>
+        {device.data ? (
+          <div className="mt-6">
+            <DeviceProtocolNotice
+              device={device.data}
+              onChangeMesh={canEdit ? () => setMeshEditOpen(true) : undefined}
+            />
+          </div>
+        ) : null}
         <TabsList className="mt-3 p-1">
           <TabsTrigger value="status" className="px-4 py-1.5 text-body-medium">
             {formatMessage({ id: "page.devices.detail.tabs.status", defaultMessage: "Status" })}
@@ -357,7 +375,7 @@ function DeviceStatusTab({
               <dl className="oa-arrive grid gap-3 sm:grid-cols-2">
                 <Item
                   label={formatMessage({ id: "page.devices.detail.identity.nodeId", defaultMessage: "Node ID" })}
-                  value={String(device.data.node_id)}
+                  value={<span className="font-mono">{device.data.node_id}</span>}
                 />
                 {device.data.label && device.data.label.trim() !== deviceTitle(device.data) ? (
                   <Item
@@ -380,6 +398,56 @@ function DeviceStatusTab({
                     formatMessage({ id: "page.devices.detail.identity.unknownHardware", defaultMessage: "Unknown" })
                   }
                 />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.protocol", defaultMessage: "Protocol" })}
+                  value={formatMessage(
+                    { id: "page.devices.detail.identity.protocolValue", defaultMessage: "Meshtastic {version} (same as mesh)" },
+                    { version: device.data.protocol },
+                  )}
+                />
+                <Item
+                  label={formatMessage({ id: "page.devices.detail.identity.firmware", defaultMessage: "Firmware" })}
+                  value={
+                    device.data.firmware_version ? (
+                      <HintTooltip
+                        hint={
+                          device.data.firmware_seen_at
+                            ? formatMessage(
+                                { id: "page.devices.detail.identity.firmwareSeen", defaultMessage: "Reported {when}" },
+                                { when: formatWhen(device.data.firmware_seen_at) },
+                              )
+                            : undefined
+                        }
+                      >
+                        <Chip variant="subtle" color="neutral" className="font-mono">
+                          {device.data.firmware_version}
+                        </Chip>
+                      </HintTooltip>
+                    ) : (
+                      <HintTooltip
+                        hint={formatMessage({
+                          id: "page.devices.detail.identity.noFirmwareHint",
+                          defaultMessage: "Only a device with its own MQTT uplink and map reports sends it.",
+                        })}
+                      >
+                        {formatMessage({ id: "page.devices.detail.identity.noFirmware", defaultMessage: "Not reported" })}
+                      </HintTooltip>
+                    )
+                  }
+                />
+                {device.data.region || device.data.modem_preset ? (
+                  <Item
+                    label={formatMessage({
+                      id: "page.devices.detail.identity.radio",
+                      defaultMessage: "Region / preset",
+                    })}
+                    value={
+                      <span className="font-mono">
+                        {device.data.region ?? "—"} / {device.data.modem_preset ?? "—"}
+                      </span>
+                    }
+                  />
+                ) : null}
                 <Item
                   label={formatMessage({
                     id: "page.devices.detail.identity.readPublish",
@@ -1112,6 +1180,19 @@ function formatGapShort(seconds: number | null, formatMessage: IntlShape["format
   return formatMessage(
     { id: "page.devices.detail.quality.gapMinutes", defaultMessage: "{count} min" },
     { count: Math.round(seconds / 60) },
+  );
+}
+
+/** Shows `hint` on hover or focus; renders the children alone when there is none. */
+function HintTooltip({ hint, children }: { hint?: string; children: ReactNode }): ReactElement {
+  if (!hint) return <>{children}</>;
+  return (
+    <Tooltip>
+      <TooltipTrigger delay={200} className="cursor-help text-left">
+        {children}
+      </TooltipTrigger>
+      <TooltipContent sideOffset={6}>{hint}</TooltipContent>
+    </Tooltip>
   );
 }
 

@@ -233,41 +233,6 @@ export const zDeviceQualityResponse = z.object({
 });
 
 /**
- * admin_keys_b64 and the archive fields are shown only to the mesh owner and superusers.
- *
- * `uuid` is the registration; `node_id` is the Meshtastic node number.
- * The storage column is `device_id`.
- */
-export const zDeviceRead = z.object({
-    uuid: z.uuid().readonly(),
-    node_id: z.int().readonly(),
-    mesh_id: z.uuid().readonly(),
-    label: z.string().readonly().nullable(),
-    is_gateway: z.boolean().readonly().default(false),
-    is_allowed: z.boolean().readonly().default(true),
-    admin_keys_b64: z.array(z.string()).readonly().optional(),
-    latitude: z.number().readonly().nullable(),
-    longitude: z.number().readonly().nullable(),
-    location_overridden: z.boolean().readonly(),
-    name: z.string().readonly().nullable(),
-    short_name: z.string().readonly().nullable(),
-    hardware_type: z.string().readonly().nullable(),
-    role: z.string().readonly().nullable(),
-    nodeinfo_overridden: z.boolean().readonly(),
-    reading_interval_seconds: z.int().readonly().nullable(),
-    publish_interval_seconds: z.int().readonly().nullable(),
-    absence_detection_enabled: z.boolean().readonly(),
-    archive_enabled: z.boolean().readonly().optional(),
-    archive_enabled_at: z.iso.datetime().readonly().nullish(),
-    archive_enabled_by: z.uuid().readonly().nullish(),
-    last_seen: z.iso.datetime().readonly().nullable(),
-    discovered_at: z.iso.datetime().readonly().nullable(),
-    telemetry_variant_ids: z.array(z.uuid()).readonly(),
-    created_at: z.iso.datetime().readonly(),
-    updated_at: z.iso.datetime().readonly()
-});
-
-/**
  * node_id/mesh are fixed at creation. Role and whether it is a gateway are editable.
  */
 export const zDeviceUpdate = z.object({
@@ -344,6 +309,14 @@ export const zExportRequest = z.object({
     node_ids: z.array(z.int().gte(0)).max(100).optional()
 });
 
+export const zGatewayBroker = z.object({
+    host: z.string(),
+    port: z.int(),
+    tls: z.boolean(),
+    username: z.string(),
+    password: z.string()
+});
+
 export const zLatestReading = z.object({
     payload_kind: z.string(),
     field_name: z.string(),
@@ -360,44 +333,6 @@ export const zLatestReadingsResponse = z.object({
     mesh_id: z.string(),
     node_id: z.int(),
     readings: z.array(zLatestReading)
-});
-
-/**
- * Mesh terms, needed only for a mesh on the default broker; a source's terms cover the rest.
- */
-export const zMesh = z.object({
-    id: z.uuid().readonly(),
-    channel_id: z.string().max(255),
-    psk_b64: z.string().optional(),
-    label: z.string().max(255).nullish(),
-    owner_id: z.uuid().readonly(),
-    is_public: z.boolean().optional(),
-    source_id: z.uuid().nullish(),
-    terms_accepted_version: z.string().readonly().nullish(),
-    terms_expires_at: z.iso.datetime().readonly().nullish(),
-    paused_at: z.iso.datetime().readonly().nullish(),
-    discover_gateways: z.boolean().optional(),
-    created_at: z.iso.datetime().readonly(),
-    updated_at: z.iso.datetime().readonly()
-});
-
-/**
- * Creating a mesh: its own schema component, so the response's owner-only fields can be optional.
- */
-export const zMeshCreate = z.object({
-    id: z.uuid().readonly(),
-    channel_id: z.string().max(255),
-    psk_b64: z.string(),
-    label: z.string().max(255).nullish(),
-    owner_id: z.uuid().readonly(),
-    is_public: z.boolean().optional(),
-    source_id: z.uuid().nullish(),
-    terms_accepted_version: z.string().readonly().nullable(),
-    terms_expires_at: z.iso.datetime().readonly().nullable(),
-    paused_at: z.iso.datetime().readonly().nullable(),
-    discover_gateways: z.boolean().optional(),
-    created_at: z.iso.datetime().readonly(),
-    updated_at: z.iso.datetime().readonly()
 });
 
 export const zMeshGatewayPair = z.object({
@@ -467,21 +402,6 @@ export const zMeshStatsSummary = z.object({
     channel_utilization_peak: z.number().nullable()
 });
 
-/**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
- *
- * channel_id/psk_b64 are a pair configured together on the physical
- * devices, so both can change here the same way - the pipeline decrypts by
- * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
- */
-export const zMeshUpdate = z.object({
-    channel_id: z.string().max(255).optional(),
-    label: z.string().max(255).nullish(),
-    is_public: z.boolean().optional(),
-    source_id: z.uuid().nullish(),
-    discover_gateways: z.boolean().optional()
-});
-
 export const zMetricsResponse = z.object({
     devices: z.int(),
     owners: z.int(),
@@ -496,6 +416,64 @@ export const zNodePort = z.object({
 });
 
 export const zNullEnum = z.unknown();
+
+/**
+ * * `2.7` - 2.7
+ * * `2.8` - 2.8
+ * * `unsupported` - unsupported
+ */
+export const zObservedProtocolEnum = z.enum([
+    '2.7',
+    '2.8',
+    'unsupported'
+]);
+
+/**
+ * admin_keys_b64 and the archive fields are shown only to the mesh owner and superusers.
+ *
+ * `uuid` is the registration; `node_id` is the Meshtastic node number.
+ * The storage column is `device_id`.
+ */
+export const zDeviceRead = z.object({
+    uuid: z.uuid().readonly(),
+    node_id: z.int().readonly(),
+    mesh_id: z.uuid().readonly(),
+    label: z.string().readonly().nullable(),
+    is_gateway: z.boolean().readonly().default(false),
+    is_allowed: z.boolean().readonly().default(true),
+    admin_keys_b64: z.array(z.string()).readonly().optional(),
+    latitude: z.number().readonly().nullable(),
+    longitude: z.number().readonly().nullable(),
+    location_overridden: z.boolean().readonly(),
+    name: z.string().readonly().nullable(),
+    short_name: z.string().readonly().nullable(),
+    hardware_type: z.string().readonly().nullable(),
+    role: z.string().readonly().nullable(),
+    nodeinfo_overridden: z.boolean().readonly(),
+    reading_interval_seconds: z.int().readonly().nullable(),
+    publish_interval_seconds: z.int().readonly().nullable(),
+    absence_detection_enabled: z.boolean().readonly(),
+    archive_enabled: z.boolean().readonly().optional(),
+    archive_enabled_at: z.iso.datetime().readonly().nullish(),
+    archive_enabled_by: z.uuid().readonly().nullish(),
+    last_seen: z.iso.datetime().readonly().nullable(),
+    discovered_at: z.iso.datetime().readonly().nullable(),
+    protocol: z.string().readonly(),
+    observed_protocol: z.union([
+        zObservedProtocolEnum,
+        zNullEnum
+    ]).nullable(),
+    observed_protocol_at: z.iso.datetime().readonly().nullable(),
+    firmware_version: z.string().readonly().nullable(),
+    firmware_protocol: z.string().readonly().nullable(),
+    firmware_seen_at: z.iso.datetime().readonly().nullable(),
+    region: z.string().readonly().nullable(),
+    modem_preset: z.string().readonly().nullable(),
+    protocol_mismatch: z.boolean().readonly(),
+    telemetry_variant_ids: z.array(z.uuid()).readonly(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
 
 export const zOperatorRequestCreate = z.object({
     reason: z.string().max(2000)
@@ -729,6 +707,96 @@ export const zPostprocessingBlueprintCreate = z.object({
     inputs: z.array(zBlueprintInput),
     steps: z.array(zPostprocessingStep),
     notes: z.string().nullish()
+});
+
+/**
+ * * `2.7` - 2.7
+ * * `2.8` - 2.8
+ */
+export const zProtocolEnum = z.enum(['2.7', '2.8']);
+
+/**
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id, discover_gateways and protocol are editable.
+ *
+ * channel_id/psk_b64 are a pair configured together on the physical
+ * devices, so both can change here the same way - the pipeline decrypts by
+ * gateway_id/psk_b64 alone, not by channel_id, so this is a metadata update.
+ */
+export const zMeshUpdate = z.object({
+    channel_id: z.string().max(255).optional(),
+    label: z.string().max(255).nullish(),
+    is_public: z.boolean().optional(),
+    source_id: z.uuid().nullish(),
+    discover_gateways: z.boolean().optional(),
+    protocol: zProtocolEnum.optional()
+});
+
+/**
+ * * `current` - current
+ * * `supported` - supported
+ * * `deprecated` - deprecated
+ * * `sunset` - sunset
+ */
+export const zProtocolStatusEnum = z.enum([
+    'current',
+    'supported',
+    'deprecated',
+    'sunset'
+]);
+
+/**
+ * Mesh terms, needed only for a mesh on the default broker; a source's terms cover the rest.
+ */
+export const zMesh = z.object({
+    id: z.uuid().readonly(),
+    channel_id: z.string().max(255),
+    psk_b64: z.string().optional(),
+    label: z.string().max(255).nullish(),
+    owner_id: z.uuid().readonly(),
+    is_public: z.boolean().optional(),
+    source_id: z.uuid().nullish(),
+    terms_accepted_version: z.string().readonly().nullish(),
+    terms_expires_at: z.iso.datetime().readonly().nullish(),
+    paused_at: z.iso.datetime().readonly().nullish(),
+    discover_gateways: z.boolean().optional(),
+    protocol: zProtocolEnum.optional(),
+    protocol_status: zProtocolStatusEnum,
+    protocol_sunset: z.iso.date().readonly().nullable(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * Creating a mesh: its own schema component, so the response's owner-only fields can be optional.
+ */
+export const zMeshCreate = z.object({
+    id: z.uuid().readonly(),
+    channel_id: z.string().max(255),
+    psk_b64: z.string(),
+    label: z.string().max(255).nullish(),
+    owner_id: z.uuid().readonly(),
+    is_public: z.boolean().optional(),
+    source_id: z.uuid().nullish(),
+    terms_accepted_version: z.string().readonly().nullable(),
+    terms_expires_at: z.iso.datetime().readonly().nullable(),
+    paused_at: z.iso.datetime().readonly().nullable(),
+    discover_gateways: z.boolean().optional(),
+    protocol: zProtocolEnum.optional(),
+    protocol_status: zProtocolStatusEnum,
+    protocol_sunset: z.iso.date().readonly().nullable(),
+    created_at: z.iso.datetime().readonly(),
+    updated_at: z.iso.datetime().readonly()
+});
+
+/**
+ * One Meshtastic protocol version this instance decodes.
+ */
+export const zProtocol = z.object({
+    version: z.string(),
+    status: zProtocolStatusEnum,
+    sunset: z.iso.date().nullable(),
+    source_ref: z.string(),
+    is_default: z.boolean()
 });
 
 /**
@@ -1283,7 +1351,8 @@ export const zMeshWritable = z.object({
     source_id: z.uuid().nullish(),
     terms_version: z.string().optional(),
     terms_locale: zTermsLocaleEnum.optional(),
-    discover_gateways: z.boolean().optional()
+    discover_gateways: z.boolean().optional(),
+    protocol: zProtocolEnum.optional()
 });
 
 /**
@@ -1297,11 +1366,12 @@ export const zMeshCreateWritable = z.object({
     source_id: z.uuid().nullish(),
     terms_version: z.string().optional(),
     terms_locale: zTermsLocaleEnum.optional(),
-    discover_gateways: z.boolean().optional()
+    discover_gateways: z.boolean().optional(),
+    protocol: zProtocolEnum.optional()
 });
 
 /**
- * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id and discover_gateways are editable.
+ * PUT /meshes/{id}: channel_id, psk_b64, label, is_public, source_id, discover_gateways and protocol are editable.
  *
  * channel_id/psk_b64 are a pair configured together on the physical
  * devices, so both can change here the same way - the pipeline decrypts by
@@ -1314,6 +1384,7 @@ export const zMeshUpdateWritable = z.object({
     is_public: z.boolean().optional(),
     source_id: z.uuid().nullish(),
     discover_gateways: z.boolean().optional(),
+    protocol: zProtocolEnum.optional(),
     terms_version: z.string().optional(),
     terms_locale: zTermsLocaleEnum.optional()
 });
@@ -1770,6 +1841,8 @@ export const zOwnersMeChangePasswordCreateResponse = zDetail;
 
 export const zOwnersMeDevicesRetrieveResponse = zOwnerDevices;
 
+export const zOwnersMeGatewayBrokerRetrieveResponse = zGatewayBroker;
+
 export const zOwnersMeOperatorRequestRetrieveResponse = zOperatorRequest;
 
 export const zOwnersMeOperatorRequestCreateBody = zOperatorRequestCreate;
@@ -1878,6 +1951,8 @@ export const zPostprocessingBlueprintsVersionsRetrievePath = z.object({
 });
 
 export const zPostprocessingBlueprintsVersionsRetrieveResponse = zBlueprintVersion;
+
+export const zProtocolsListResponse = z.array(zProtocol);
 
 export const zReadingsArchiveMeshesRetrievePath = z.object({
     mesh_id: z.uuid()
@@ -2556,6 +2631,12 @@ export const zOwnersMeDevicesRetrieveData = z.object({
     query: z.never().optional()
 });
 
+export const zOwnersMeGatewayBrokerRetrieveData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
 export const zOwnersMeOperatorRequestRetrieveData = z.object({
     body: z.never().optional(),
     path: z.never().optional(),
@@ -2667,6 +2748,12 @@ export const zPostprocessingBlueprintsVersionsCreateData = z.object({
 export const zPostprocessingBlueprintsVersionsRetrieveData = z.object({
     body: z.never().optional(),
     path: zPostprocessingBlueprintsVersionsRetrievePath,
+    query: z.never().optional()
+});
+
+export const zProtocolsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
     query: z.never().optional()
 });
 

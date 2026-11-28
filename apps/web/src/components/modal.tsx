@@ -25,7 +25,7 @@ export function Modal({
 }: {
   open: boolean;
   title: string;
-  description: string;
+  description?: string;
   onClose: () => void;
   /** `wide` for editors that lay fields side by side; `large` for long reference content. */
   size?: ModalSize;
@@ -36,7 +36,7 @@ export function Modal({
       <DialogContent showCloseButton={false} className={SIZE_CLASS[size]}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         {children}
       </DialogContent>
