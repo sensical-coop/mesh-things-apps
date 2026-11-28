@@ -4,14 +4,14 @@
 <h1>Mesh Things Apps</h1>
 
 [![PR checks](https://img.shields.io/github/actions/workflow/status/sensical-coop/mesh-things-apps/pr-checks.yml?label=checks&logo=github)](https://github.com/sensical-coop/mesh-things-apps/actions/workflows/pr-checks.yml)
-[![License: LGPL-2.1](https://img.shields.io/badge/license-LGPL--2.1-blue)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 ![Node](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)
 ![pnpm](https://img.shields.io/badge/pnpm-10.6.1-F69220?logo=pnpm&logoColor=white)
 
 </div>
 
 <div align="center">
-	<a href="https://github.com/sensical-coop/meshtastic-things">Backend</a>
+	<a href="https://github.com/sensical-coop/mesh-things">Backend</a>
 	-
 	<a href="https://things.sensical.es/docs">Documentation</a>
 	-
@@ -22,11 +22,11 @@
 
 This repository contains the frontend for Mesh Things, a platform for monitoring sensors that report over LoRa mesh networks. It works with [Meshtastic](https://meshtastic.org) nodes and with any LoRa mesh-based sensor that publishes telemetry through a Meshtastic gateway: environmental probes, power and battery monitors, air quality sensors, trackers.
 
-Gateways forward the mesh traffic over MQTT. The [meshtastic-things](https://github.com/sensical-coop/meshtastic-things) backend decrypts, decodes and stores it. The apps in this repo turn it into a fleet you can manage: meshes, devices, live readings and history, data quality checks, alarms and exports.
+Gateways forward the mesh traffic over MQTT. The [mesh-things](https://github.com/sensical-coop/mesh-things) backend decrypts, decodes and stores it. The apps in this repo turn it into a fleet you can manage: meshes, devices, live readings and history, data quality checks, alarms and exports.
 
 It is a pnpm + Turborepo monorepo:
 
-| Package | What it is |
+| Package | Purpose |
 | --- | --- |
 | `apps/web` | React dashboard (Vite, React 19, TanStack Router/Query). Console at `/console` |
 | `apps/docs` | Documentation site (TanStack Start + Fumadocs) |
@@ -41,7 +41,7 @@ It is a pnpm + Turborepo monorepo:
 
 ## Local development
 
-The web app runs against [meshtastic-things](https://github.com/sensical-coop/meshtastic-things), started on the same machine or reachable over the network.
+The web app runs against [mesh-things](https://github.com/sensical-coop/mesh-things), started on the same machine or reachable over the network.
 
 Copy `.env.example` to `.env` at the repo root and set:
 
