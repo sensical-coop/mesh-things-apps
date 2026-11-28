@@ -407,7 +407,7 @@
   "page.profile.dangerZone.delete": "Delete account",
   "feature.auth.deleteAccountDialog.title": "Delete account",
   "feature.auth.apiKey.title": "API key",
-  "feature.auth.apiKey.description": "Your API key can be used to access the REST API. Note: generating a new key will replace the current one.",
+  "feature.auth.apiKey.description": "Your API key can be used to access the REST API.",
   "feature.auth.apiKey.generate": "Generate new key",
   "feature.auth.rotateKey.title": "Generate a new API key",
   "feature.auth.rotateKey.description": "Any service using your current key will stop working until you update it with the new key.",
@@ -1634,5 +1634,15 @@
   "feature.terms.account.document": "Document",
   "feature.terms.account.documentValue": "Terms of Use and Privacy Policy",
   "feature.terms.account.version": "Version",
-  "feature.terms.account.acceptedOn": "Accepted on"
+  "feature.terms.account.acceptedOn": "Accepted on",
+  "page.profile.password.title": "Change password",
+  "page.profile.password.current": "Current password",
+  "page.profile.password.new": "New password",
+  "page.profile.password.confirm": "Confirm new password",
+  "page.profile.password.mismatch": "Passwords don't match.",
+  "page.profile.password.error": "The password was not changed. Check the fields and try again.",
+  "page.profile.changePassword": "Change password",
+  "page.profile.password.same": "The new password must be different from the current one.",
+  "page.profile.password.cancel": "Cancel",
+  "page.profile.password.save": "Change password"
 }

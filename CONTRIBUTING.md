@@ -2,6 +2,10 @@
 
 Thank you for helping with the Mesh Things apps. This guide covers how changes reach `main`: branches, commits, pull requests, the API contract, and the deploy notes every pull request carries. Code structure and style follow [AGENTS.md](AGENTS.md) and the guides it links to in `docs/`.
 
+## Contributor License Agreement
+
+Before your first pull request can be merged, you sign the [Contributor License Agreement](https://github.com/sensical-coop/mesh-things/blob/main/CLA.md), the same one as for the Mesh Things API. It lets Sensical distribute your contribution under the project's licence and under a commercial licence. The CLA check comments on your pull request with the sentence to reply with, and remembers your signature for later pull requests.
+
 ## Branches
 
 Each pull request has its own branch, created from `main` with `git switch -c` in this checkout. Do not use worktrees or a second checkout. Name the branch after the issue it addresses: `feat/<issue>-<slug>`, or `fix/` and `chore/` when those fit better. Do not reuse a branch for another pull request.
