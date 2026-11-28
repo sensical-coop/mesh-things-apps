@@ -407,7 +407,7 @@
   "page.profile.dangerZone.delete": "Delete account",
   "feature.auth.deleteAccountDialog.title": "Delete account",
   "feature.auth.apiKey.title": "API key",
-  "feature.auth.apiKey.description": "Your API key can be used to access the REST API. Note: generating a new key will replace the current one.",
+  "feature.auth.apiKey.description": "Your API key can be used to access the REST API.",
   "feature.auth.apiKey.generate": "Generate new key",
   "feature.auth.rotateKey.title": "Generate a new API key",
   "feature.auth.rotateKey.description": "Any service using your current key will stop working until you update it with the new key.",

@@ -407,7 +407,7 @@
   "page.profile.dangerZone.delete": "Eliminar cuenta",
   "feature.auth.deleteAccountDialog.title": "Eliminar cuenta",
   "feature.auth.apiKey.title": "Clave de API",
-  "feature.auth.apiKey.description": "Tu clave de API sirve para acceder a la API REST. Nota: generar una clave nueva sustituye a la actual.",
+  "feature.auth.apiKey.description": "Tu clave de API sirve para acceder a la API REST.",
   "feature.auth.apiKey.generate": "Generar clave nueva",
   "feature.auth.rotateKey.title": "Generar una clave de API nueva",
   "feature.auth.rotateKey.description": "Cualquier servicio que use tu clave actual dejará de funcionar hasta que lo actualices con la nueva clave.",
